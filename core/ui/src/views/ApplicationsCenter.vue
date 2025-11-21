@@ -376,10 +376,9 @@
       :visible="isShowNote"
       :isEdit="noteText.length > 0"
       :currentNote="noteText"
-      :loading="loading.addNote"
-      :error="error.addNote"
+      :noteInstance="noteInstance"
       @hide="hideAddNoteModal"
-      @save="saveNote"
+      @saveNoteCompleted="listModules"
     />
     <AppInfoModal
       :app="appInfo.app"
@@ -868,70 +867,13 @@ export default {
     showSoftwareCenterCoreApps() {
       this.$router.push("/software-center/core-apps");
     },
-    async saveNote(note) {
-      this.error.addNote = "";
-      this.loading.addNote = true;
-      const taskAction = "set-note";
-      const eventId = this.getUuid();
-
-      // register to task completion
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.saveNoteCompleted
-      );
-      // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        this.saveNoteAborted
-      );
-
-      const res = await to(
-        this.createModuleTaskForApp(this.noteInstance.id, {
-          action: taskAction,
-          data: {
-            note: note,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.addNote = this.getErrorMessage(err);
-        this.loading.addNote = false;
-        return;
-      }
-    },
-    saveNoteAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.addNote = this.$t("error.generic_error");
-      this.loading.addNote = false;
-    },
-    saveNoteCompleted() {
-      this.loading.addNote = false;
-      this.hideAddNoteModal();
-      this.listModules();
-    },
     hideAddNoteModal() {
       this.isShowNote = false;
-      this.noteInstance = null;
-      this.noteText = "";
-      this.error.addNote = "";
     },
     showAddNoteModal(instance) {
-      // Always reset modal state before opening
-      this.isShowNote = false;
-      this.$nextTick(() => {
-        this.noteInstance = instance;
-        this.noteText = instance.ui_note || "";
-        this.error.addNote = "";
-        this.isShowNote = true;
-      });
+      this.noteInstance = instance;
+      this.noteText = instance.ui_note || "";
+      this.isShowNote = true;
     },
   },
 };

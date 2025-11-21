@@ -1,9 +1,9 @@
 <template>
   <NsModal
     :visible="visible"
-    :isLoading="loading"
-    @primary-click="handleSave"
-    @hide="handleHide"
+    :isLoading="loading.saveNote"
+    @primary-click="saveNote"
+    @modal-hidden="onModalHidden"
     size="default"
   >
     <template slot="title">{{
@@ -25,12 +25,12 @@
           :placeholder="$t('applications.enter_note')"
           :maxLength="100"
           :rows="4"
-          :disabled="loading"
+          :disabled="loading.saveNote"
           :invalid-message="invalidMessage"
           :helper-text="$t('applications.note_helper_text')"
         />
         <cv-inline-notification
-          v-if="error"
+          v-if="error.saveNote"
           kind="error"
           :title="$t('action.set-note')"
           :description="error"
@@ -46,8 +46,11 @@
 </template>
 
 <script>
+import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
+import to from "await-to-js";
 export default {
-  name: "AddNoteModal",
+  name: "saveNoteModal",
+  mixins: [UtilService, TaskService, IconService],
   props: {
     visible: {
       type: Boolean,
@@ -61,18 +64,13 @@ export default {
       type: String,
       default: "",
     },
-    loading: {
-      type: Boolean,
-      default: false,
-    },
-    error: {
-      type: String,
-      default: "",
-    },
+    noteInstance: Object,
   },
   data() {
     return {
       note: this.currentNote,
+      error: { saveNote: "" },
+      loading: { saveNote: false },
     };
   },
   watch: {
@@ -98,19 +96,64 @@ export default {
     },
   },
   methods: {
-    handleSave() {
-      if (this.invalidMessage) {
+    onModalHidden() {
+      this.clearErrors();
+      this.$emit("hide");
+    },
+    async saveNote() {
+      this.error.saveNote = "";
+      this.loading.saveNote = true;
+      const taskAction = "set-note";
+      const eventId = this.getUuid();
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.saveNoteCompleted
+      );
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.saveNoteAborted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.noteInstance.id, {
+          action: taskAction,
+          data: {
+            note: this.note,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.saveNote = this.getErrorMessage(err);
+        this.loading.saveNote = false;
         return;
       }
-      this.$emit("save", this.note);
-    },
-    handleHide() {
+      // emit event to close modal
       this.$emit("hide");
+    },
+    saveNoteAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.saveNote = this.$t("error.generic_error");
+      this.loading.saveNote = false;
+    },
+    saveNoteCompleted() {
+      this.loading.saveNote = false;
+      this.$emit("hide");
+      this.$emit("saveNoteCompleted");
     },
   },
 };
 </script>
-
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 </style>
