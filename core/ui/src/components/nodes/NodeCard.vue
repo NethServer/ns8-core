@@ -243,7 +243,10 @@ export default {
   },
   methods: {
     goToApplications() {
-      this.$router.push("/applications-center?node=" + this.nodeId);
+      this.$router.push({
+        path: "/applications-center",
+        query: { node: this.nodeId },
+      });
     },
   },
 };

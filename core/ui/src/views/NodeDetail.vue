@@ -657,7 +657,10 @@ export default {
       });
     },
     goToApplications() {
-      this.$router.push("/applications-center?node=" + this.nodeId);
+      this.$router.push({
+        path: "/applications-center",
+        query: { node: this.nodeId },
+      });
     },
     async listNodes() {
       if (!this.isOnline) {
