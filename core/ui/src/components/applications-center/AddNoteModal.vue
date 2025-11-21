@@ -11,10 +11,12 @@
     }}</template>
     <template slot="content">
       <div class="mg-bottom-md">{{ $t("applications.note_description") }}</div>
-      <div class="add-note-modal-content">
-        <div class="note-row note-label">
-          <label>{{ $t("applications.note") }}</label>
-          <span>{{ note.length }}/100</span>
+      <div class="flex flex-col">
+        <div class="flex items-center justify-center">
+          <div class="bx--label no-mg-bottom">
+            {{ $t("applications.note") }}
+          </div>
+          <div class="bx--label no-mg-bottom">{{ note.length }}/100</div>
         </div>
         <cv-text-area
           v-model="note"
@@ -107,18 +109,6 @@ export default {
 };
 </script>
 
-<style scoped>
-.add-note-modal-content {
-  display: flex;
-  flex-direction: column;
-}
-.note-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.note-label {
-  font-size: 0.875rem;
-  color: #6f6f6f;
-}
+<style scoped lang="scss">
+@import "../../styles/carbon-utils";
 </style>
