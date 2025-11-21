@@ -596,19 +596,6 @@ export default {
   },
   created() {
     this.listModules();
-
-    this.$nextTick(() => {
-      // Only set default filters if not already set (e.g. from URL)
-      if (!this.filter.moduleType) {
-        this.filter.moduleType = "any";
-      }
-      if (!this.filter.selectedNodeId) {
-        this.filter.selectedNodeId = "any";
-      }
-      if (!this.filter.text) {
-        this.filter.text = "";
-      }
-    });
   },
   methods: {
     ...mapActions(["setUpdateInProgressInStore"]),
