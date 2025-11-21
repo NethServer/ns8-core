@@ -1688,7 +1688,7 @@
         "title_tooltip": "This page displays all the applications installed on the cluster and lets you manage them easily. To install a new application, use the software center page.",
         "go_to_software_center": "Go to software center",
         "no_application": "No application installed",
-        "no_application_description": "You can find and install apps in the software center.",
+        "no_application_description": "You can find and install applications in the software center.",
         "name": "Name",
         "version": "Version",
         "type": "Type",
