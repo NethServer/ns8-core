@@ -448,7 +448,6 @@ export default {
       isShownEditInstanceLabel: false,
       currentInstance: null,
       newInstanceLabel: "",
-      appToUninstall: null,
       instanceToUninstall: null,
       isShownUninstallModal: false,
       isShowRestartModuleModal: false,
@@ -723,7 +722,6 @@ export default {
       this.isShowRestartModuleModal = false;
     },
     showUninstallModal(instance) {
-      this.appToUninstall = instance;
       this.instanceToUninstall = instance;
       this.error.removeModule = "";
       this.isShownUninstallModal = true;
