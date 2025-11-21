@@ -188,7 +188,7 @@
                     </cv-interactive-tooltip>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
-                    <a @click="showAppInfo(row.cloneOrMoveAppData)">
+                    <a @click="showAppInfo(row.appInfoData)">
                       <img
                         :src="
                           row.logo
@@ -372,7 +372,7 @@
       :instanceId="cloneOrMove.instanceId"
       :instanceUiName="cloneOrMove.instanceUiName"
       :installationNode="cloneOrMove.installationNode"
-      :app="cloneOrMoveAppData"
+      :app="appInfoData"
       @hide="cloneOrMove.isModalShown = false"
       @cloneOrMoveCompleted="listModules"
     />
@@ -461,7 +461,7 @@ export default {
         instanceUiName: null,
         installationNode: 1,
       },
-      cloneOrMoveAppData: {
+      appInfoData: {
         install_destinations: [],
       },
       instanceToUpdate: null,
@@ -651,7 +651,7 @@ export default {
       this.cloneOrMove.instanceId = instance.id;
       this.cloneOrMove.instanceUiName = instance.ui_name;
       this.cloneOrMove.installationNode = parseInt(instance.node);
-      this.cloneOrMoveAppData = instance.cloneOrMoveAppData;
+      this.appInfoData = instance.appInfoData;
       this.cloneOrMove.isModalShown = true;
     },
     showMoveAppModal(instance) {
@@ -659,7 +659,7 @@ export default {
       this.cloneOrMove.instanceId = instance.id;
       this.cloneOrMove.instanceUiName = instance.ui_name;
       this.cloneOrMove.installationNode = parseInt(instance.node);
-      this.cloneOrMoveAppData = instance.cloneOrMoveAppData;
+      this.appInfoData = instance.appInfoData;
       this.cloneOrMove.isModalShown = true;
     },
     showRestartModuleModal(instance) {
@@ -922,7 +922,7 @@ export default {
             ui_note: source.ui_note || "",
             version: source.version || "",
             update: source.update || "",
-            cloneOrMoveAppData: obj, // needed for clone/move
+            appInfoData: obj, // needed for clone/move/info modals
           });
         }
       }
