@@ -967,7 +967,7 @@ export default {
       ];
       this.nodesTypeOptions = nodesForFilter;
 
-      // Workaround to update node filter combo box
+      // Workaround to update filter combo box
       this.$nextTick(() => {
         if (!this.filter.selectedNodeId) {
           this.filter.selectedNodeId = "any";
