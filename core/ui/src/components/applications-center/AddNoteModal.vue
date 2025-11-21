@@ -12,11 +12,13 @@
     <template slot="content">
       <div class="mg-bottom-md">{{ $t("applications.note_description") }}</div>
       <div class="flex flex-col">
-        <div class="flex items-center justify-center">
+        <div class="flex items-center justify-between">
           <div class="bx--label no-mg-bottom">
             {{ $t("applications.note") }}
           </div>
-          <div class="bx--label no-mg-bottom">{{ note.length }}/100</div>
+          <div class="bx--label no-mg-bottom text-right">
+            {{ note.length }}/100
+          </div>
         </div>
         <cv-text-area
           v-model="note"
