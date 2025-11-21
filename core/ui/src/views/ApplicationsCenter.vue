@@ -414,7 +414,7 @@ import {
 import { mapState, mapActions } from "vuex";
 
 export default {
-  name: "SoftwareCenter",
+  name: "ApplicationsCenter",
   components: {
     CloneOrMoveAppModal,
     UpdateAppModal,
