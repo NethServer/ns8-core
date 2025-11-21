@@ -251,7 +251,9 @@
                               : $t('applications.add_note')
                           "
                         >
-                          <RequestQuote20 slot="icon" />
+                          <template slot="icon">
+                            <RequestQuote20 />
+                          </template>
                         </NsMenuItem>
                       </cv-overflow-menu-item>
                       <!-- update to stable version -->
