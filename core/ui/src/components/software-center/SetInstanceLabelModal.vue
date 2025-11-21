@@ -40,7 +40,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("software_center.edit_instance_label")
+      $t("common.save")
     }}</template>
   </NsModal>
 </template>
