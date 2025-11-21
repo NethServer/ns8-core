@@ -438,12 +438,10 @@
     <!-- set instance label modal -->
     <SetInstanceLabelModal
       :visible="isShownEditInstanceLabel"
-      :loading="loading.setInstanceLabel"
       :currentInstance="currentInstance"
       :newInstanceLabel="newInstanceLabel"
-      :error="error.setInstanceLabel"
       @hide="hideSetInstanceLabelModal"
-      @primary-click="setInstanceLabel"
+      @setInstanceLabelCompleted="listModules"
     />
     <CloneOrMoveAppModal
       :isShown="cloneOrMove.isModalShown"
@@ -525,7 +523,6 @@ export default {
       },
       loading: {
         modules: true,
-        setInstanceLabel: false,
         updateModule: false,
         restartModule: false,
       },
@@ -535,7 +532,6 @@ export default {
         addFavorite: "",
         removeFavorite: "",
         setNodeLabel: "",
-        setInstanceLabel: "",
         updateModule: "",
         restartModule: "",
       },
@@ -855,51 +851,10 @@ export default {
     showSetInstanceLabelModal(instance) {
       this.currentInstance = instance;
       this.newInstanceLabel = instance.ui_name;
-      this.error.setInstanceLabel = "";
       this.isShownEditInstanceLabel = true;
     },
     hideSetInstanceLabelModal() {
       this.isShownEditInstanceLabel = false;
-    },
-    async setInstanceLabel(label) {
-      this.error.setInstanceLabel = "";
-      this.loading.setInstanceLabel = true;
-      const taskAction = "set-name";
-
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.setInstanceLabelCompleted
-      );
-
-      const res = await to(
-        this.createModuleTaskForApp(this.currentInstance.id, {
-          action: taskAction,
-          data: {
-            name: label,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.setInstanceLabel = this.getErrorMessage(err);
-        this.loading.setInstanceLabel = false;
-        return;
-      }
-    },
-    setInstanceLabelCompleted() {
-      this.loading.setInstanceLabel = false;
-      this.hideSetInstanceLabelModal();
-      this.listModules();
-
-      // update instance label in app drawer
-      this.$root.$emit("reloadAppDrawer");
     },
     showCloneAppModal(instance) {
       this.cloneOrMove.isClone = true;

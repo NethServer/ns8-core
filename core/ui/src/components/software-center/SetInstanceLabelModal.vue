@@ -3,15 +3,15 @@
     size="default"
     :visible="visible"
     :isLoading="loading"
-    @modal-hidden="$emit('hide')"
-    @primary-click="onPrimaryClick"
+    @modal-hidden="onModalHidden"
+    @primary-click="setInstanceLabel"
   >
-    <template slot="title">{{
-      $t("software_center.edit_instance_label")
-    }}</template>
+    <template slot="title">
+      {{ $t("software_center.edit_instance_label") }}
+    </template>
     <template slot="content">
       <template v-if="currentInstance">
-        <cv-form @submit.prevent="onPrimaryClick">
+        <cv-form @submit.prevent="setInstanceLabel">
           <cv-text-input
             :label="
               $t('software_center.instance_label') +
@@ -19,21 +19,19 @@
               $t('common.optional') +
               ')'
             "
-            v-model.trim="labelValue"
+            v-model="localLabel"
             :placeholder="$t('common.no_label')"
             :helper-text="$t('software_center.instance_label_tooltip')"
-            maxlength="24"
-            ref="newInstanceLabel"
-            data-modal-primary-focus
-          >
-          </cv-text-input>
-          <NsInlineNotification
-            v-if="error"
-            kind="error"
-            :title="$t('action.set-name')"
-            :description="error"
-            :showCloseButton="false"
+            :disabled="loading"
           />
+          <div v-if="error.setInstanceLabel">
+            <NsInlineNotification
+              kind="error"
+              :title="$t('action.set-instance-label')"
+              :description="error.setInstanceLabel"
+              :showCloseButton="false"
+            />
+          </div>
         </cv-form>
       </template>
     </template>
@@ -41,50 +39,88 @@
     <template slot="primary-button">{{ $t("common.save") }}</template>
   </NsModal>
 </template>
-
 <script>
+import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
+import to from "await-to-js";
 export default {
   name: "SetInstanceLabelModal",
+  mixins: [UtilService, TaskService, IconService],
   props: {
-    visible: {
-      type: Boolean,
-      required: true,
-    },
-    currentInstance: {
-      type: Object,
-      default: null,
-    },
-    newInstanceLabel: {
-      type: String,
-      default: "",
-    },
-    error: {
-      type: String,
-      default: "",
-    },
-    loading: {
-      type: Boolean,
-      default: false,
-    },
+    visible: Boolean,
+    currentInstance: Object,
+    newInstanceLabel: String,
   },
   data() {
     return {
-      labelValue: this.newInstanceLabel,
+      localLabel: this.newInstanceLabel || "",
+      loading: false,
+      error: {
+        setInstanceLabel: "",
+      },
     };
   },
   watch: {
     newInstanceLabel(newVal) {
-      this.labelValue = newVal;
-    },
-    visible(newVal) {
-      if (newVal) {
-        this.labelValue = this.newInstanceLabel;
-      }
+      this.localLabel = newVal || "";
     },
   },
   methods: {
-    onPrimaryClick() {
-      this.$emit("primary-click", this.labelValue);
+    async setInstanceLabel() {
+      this.error.setInstanceLabel = "";
+      this.loading = true;
+      const taskAction = "set-name";
+      const eventId = this.getUuid();
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.setInstanceLabelCompleted
+      );
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.setInstanceLabelAborted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.currentInstance.id, {
+          action: taskAction,
+          data: {
+            name: this.localLabel,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setInstanceLabel = this.getErrorMessage(err);
+        return;
+      }
+      // emit event to close modal
+      this.$emit("hide");
+    },
+    setInstanceLabelAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setInstanceLabel = this.$t("error.generic_error");
+      this.loading = false;
+    },
+    setInstanceLabelCompleted() {
+      this.loading = false;
+      this.$emit("hide");
+      // update instance label in app drawer
+      this.$root.$emit("reloadAppDrawer");
+      // reload instances and highlight new instance
+      this.$emit("setInstanceLabelCompleted");
+    },
+    onModalHidden() {
+      this.clearErrors();
+      this.$emit("hide");
     },
   },
 };

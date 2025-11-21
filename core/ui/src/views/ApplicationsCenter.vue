@@ -314,12 +314,10 @@
     <!-- set instance label modal -->
     <SetInstanceLabelModal
       :visible="isShownEditInstanceLabel"
-      :loading="loading.setInstanceLabel"
       :currentInstance="currentInstance"
       :newInstanceLabel="newInstanceLabel"
-      :error="error.setInstanceLabel"
       @hide="hideSetInstanceLabelModal"
-      @primary-click="setInstanceLabel"
+      @setInstanceLabelCompleted="listModules"
     />
     <!-- uninstall instance modal -->
     <NsDangerDeleteModal
@@ -470,13 +468,11 @@ export default {
       nodesTypeOptions: [],
       loading: {
         listModules: true,
-        setInstanceLabel: false,
         addNote: false,
         restartModule: false,
       },
       error: {
         listModules: "",
-        setInstanceLabel: "",
         removeModule: "",
         restartModule: "",
         addNote: "",
@@ -759,63 +755,10 @@ export default {
     showSetInstanceLabelModal(instance) {
       this.currentInstance = instance;
       this.newInstanceLabel = instance.ui_name;
-      this.error.setInstanceLabel = "";
       this.isShownEditInstanceLabel = true;
     },
     hideSetInstanceLabelModal() {
       this.isShownEditInstanceLabel = false;
-    },
-    async setInstanceLabel(label) {
-      this.error.setInstanceLabel = "";
-      this.loading.setInstanceLabel = true;
-      const taskAction = "set-name";
-      const eventId = this.getUuid();
-
-      // register to task completion
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.setInstanceLabelCompleted
-      );
-      // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        this.setInstanceLabelAborted
-      );
-
-      const res = await to(
-        this.createModuleTaskForApp(this.currentInstance.id, {
-          action: taskAction,
-          data: {
-            name: label,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.setInstanceLabel = this.getErrorMessage(err);
-        this.loading.setInstanceLabel = false;
-        return;
-      }
-    },
-    setInstanceLabelAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.setInstanceLabel = this.$t("error.generic_error");
-      this.loading.setInstanceLabel = false;
-    },
-    setInstanceLabelCompleted() {
-      this.loading.setInstanceLabel = false;
-      this.hideSetInstanceLabelModal();
-      this.listModules();
-
-      // update instance label in app drawer
-      this.$root.$emit("reloadAppDrawer");
     },
     openInstance(instance) {
       this.$router.push(`/apps/${instance.id}`);
