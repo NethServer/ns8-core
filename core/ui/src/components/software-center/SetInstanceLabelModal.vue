@@ -25,7 +25,6 @@
             maxlength="24"
             ref="newInstanceLabel"
             data-modal-primary-focus
-            @input="onInput"
           >
           </cv-text-input>
           <NsInlineNotification
@@ -39,9 +38,7 @@
       </template>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template slot="primary-button">{{
-      $t("common.save")
-    }}</template>
+    <template slot="primary-button">{{ $t("common.save") }}</template>
   </NsModal>
 </template>
 
@@ -86,10 +83,6 @@ export default {
     },
   },
   methods: {
-    onInput(val) {
-      this.labelValue = val;
-      this.$emit("update:newInstanceLabel", val);
-    },
     onPrimaryClick() {
       this.$emit("primary-click", this.labelValue);
     },

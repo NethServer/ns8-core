@@ -444,7 +444,6 @@
       :error="error.setInstanceLabel"
       @hide="hideSetInstanceLabelModal"
       @primary-click="setInstanceLabel"
-      @update:newInstanceLabel="newInstanceLabel = $event"
     />
     <CloneOrMoveAppModal
       :isShown="cloneOrMove.isModalShown"
@@ -861,7 +860,7 @@ export default {
     hideSetInstanceLabelModal() {
       this.isShownEditInstanceLabel = false;
     },
-    async setInstanceLabel() {
+    async setInstanceLabel(label) {
       this.error.setInstanceLabel = "";
       this.loading.setInstanceLabel = true;
       const taskAction = "set-name";
@@ -876,7 +875,7 @@ export default {
         this.createModuleTaskForApp(this.currentInstance.id, {
           action: taskAction,
           data: {
-            name: this.newInstanceLabel,
+            name: label,
           },
           extra: {
             title: this.$t("action." + taskAction),
