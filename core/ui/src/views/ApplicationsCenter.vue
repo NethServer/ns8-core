@@ -225,15 +225,10 @@
                     />
                   </cv-data-table-cell>
                   <cv-data-table-cell class="table-overflow-menu-cell">
-                    <cv-overflow-menu
-                      flip-menu
-                      class="table-overflow-menu"
-                      :data-test-id="row.id + '-menu'"
-                    >
+                    <cv-overflow-menu flip-menu class="table-overflow-menu">
                       <cv-overflow-menu-item
                         primary-focus
                         @click="openInstance(row)"
-                        :data-test-id="row.id + '-app'"
                       >
                         <NsMenuItem
                           :icon="Application20"
@@ -242,7 +237,6 @@
                       </cv-overflow-menu-item>
                       <cv-overflow-menu-item
                         @click="showSetInstanceLabelModal(row)"
-                        :data-test-id="row.id + '-edit-label'"
                       >
                         <NsMenuItem
                           :icon="Edit20"
@@ -256,7 +250,6 @@
                               ? $t('applications.edit_note')
                               : $t('applications.add_note')
                           "
-                          :data-test-id="row.id + '-add-note'"
                         >
                           <RequestQuote20 slot="icon" />
                         </NsMenuItem>
@@ -266,7 +259,6 @@
                         v-if="row.update"
                         :disabled="isUpdateInProgress"
                         @click="updateInstance(row)"
-                        :data-test-id="row.id + '-update'"
                       >
                         <NsMenuItem
                           :icon="Upgrade20"
@@ -277,7 +269,6 @@
                         <NsMenuItem
                           :icon="Copy20"
                           :label="$t('applications.clone')"
-                          :data-test-id="row.id + '-clone'"
                         />
                       </cv-overflow-menu-item>
                       <cv-overflow-menu-item
@@ -287,7 +278,6 @@
                         <NsMenuItem
                           :icon="ArrowRight20"
                           :label="$t('applications.move')"
-                          :data-test-id="row.id + '-move'"
                         />
                       </cv-overflow-menu-item>
 
@@ -297,7 +287,6 @@
                         <NsMenuItem
                           :icon="Restart20"
                           :label="$t('applications.restart')"
-                          :data-test-id="row.id + '-restart'"
                         />
                       </cv-overflow-menu-item>
 
@@ -305,7 +294,6 @@
                       <cv-overflow-menu-item
                         danger
                         @click="showUninstallModal(row)"
-                        :data-test-id="row.id + '-uninstall'"
                       >
                         <NsMenuItem
                           :icon="TrashCan20"
