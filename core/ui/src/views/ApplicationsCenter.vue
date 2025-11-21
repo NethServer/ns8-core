@@ -143,6 +143,9 @@
                 <template v-else>
                   <!-- no applications installed -->
                   <NsEmptyState :title="$t('applications.no_application')">
+                    <template #pictogram>
+                      <AppsPictogram />
+                    </template>
                     <template #description>
                       <div>
                         {{ $t("applications.no_application_description") }}
