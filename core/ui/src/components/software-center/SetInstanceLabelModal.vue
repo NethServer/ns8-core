@@ -5,32 +5,35 @@
     :isLoading="loading"
     @modal-hidden="onModalHidden"
     @primary-click="setInstanceLabel"
+    :primary-button-disabled="inputLabelError ? true : false"
   >
     <template slot="title">
       {{ $t("software_center.edit_instance_label") }}
     </template>
     <template slot="content">
       <template v-if="currentInstance">
-          <cv-text-input
-            :label="
-              $t('software_center.instance_label') +
-              ' (' +
-              $t('common.optional') +
-              ')'
-            "
-            v-model="inputLabel"
-            :placeholder="$t('common.no_label')"
-            :helper-text="$t('software_center.instance_label_tooltip')"
-            :disabled="loading"
+        <NsTextInput
+          ref="inputLabel"
+          :label="
+            $t('software_center.instance_label') +
+            ' (' +
+            $t('common.optional') +
+            ')'
+          "
+          v-model="inputLabel"
+          :placeholder="$t('common.no_label')"
+          :helper-text="$t('software_center.instance_label_tooltip')"
+          :disabled="loading"
+          :invalid-message="$t(inputLabelError)"
+        />
+        <div v-if="error.setInstanceLabel">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.set-instance-label')"
+            :description="error.setInstanceLabel"
+            :showCloseButton="false"
           />
-          <div v-if="error.setInstanceLabel">
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.set-instance-label')"
-              :description="error.setInstanceLabel"
-              :showCloseButton="false"
-            />
-          </div>
+        </div>
       </template>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
@@ -66,6 +69,18 @@ export default {
       if (newVal) {
         this.inputLabel = this.newInstanceLabel || "";
       }
+    },
+  },
+  computed: {
+    inputLabelError() {
+      if (this.inputLabel.length > 24) {
+        return "software_center.instance_label_too_long";
+      }
+      const alphanumRegex = /^[a-zA-Z0-9 ]*$/;
+      if (!alphanumRegex.test(this.inputLabel)) {
+        return "software_center.instance_label_alphanum_only";
+      }
+      return "";
     },
   },
   methods: {
