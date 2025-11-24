@@ -3,6 +3,7 @@
     :visible="visible"
     :isLoading="loading.saveNote"
     @primary-click="saveNote"
+    :primary-button-disabled="invalidMessage ? true : false"
     @modal-hidden="onModalHidden"
     size="default"
   >
@@ -85,7 +86,7 @@ export default {
   },
   computed: {
     invalidMessage() {
-      if (this.note.length >= 100) {
+      if (this.note.length > 100) {
         return this.$t("applications.note_too_long");
       }
       const alphanumRegex = /^[a-zA-Z0-9 ]*$/;
