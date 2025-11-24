@@ -18,7 +18,7 @@
               $t('common.optional') +
               ')'
             "
-            v-model="localLabel"
+            v-model="inputLabel"
             :placeholder="$t('common.no_label')"
             :helper-text="$t('software_center.instance_label_tooltip')"
             :disabled="loading"
@@ -50,7 +50,7 @@ export default {
   },
   data() {
     return {
-      localLabel: this.newInstanceLabel || "",
+      inputLabel: this.newInstanceLabel || "",
       loading: false,
       error: {
         setInstanceLabel: "",
@@ -59,7 +59,13 @@ export default {
   },
   watch: {
     newInstanceLabel(newVal) {
-      this.localLabel = newVal || "";
+      this.inputLabel = newVal || "";
+    },
+    visible(newVal) {
+      // When modal is opened, reset inputLabel to prop value
+      if (newVal) {
+        this.inputLabel = this.newInstanceLabel || "";
+      }
     },
   },
   methods: {
@@ -84,7 +90,7 @@ export default {
         this.createModuleTaskForApp(this.currentInstance.id, {
           action: taskAction,
           data: {
-            name: this.localLabel,
+            name: this.inputLabel,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -118,6 +124,8 @@ export default {
     },
     onModalHidden() {
       this.clearErrors();
+      // Reset inputLabel to prop value when modal is hidden (cancelled)
+      this.inputLabel = this.newInstanceLabel || "";
       this.$emit("hide");
     },
   },
