@@ -139,8 +139,6 @@ export default {
     },
     onModalHidden() {
       this.clearErrors();
-      // Reset inputLabel to prop value when modal is hidden (cancelled)
-      this.inputLabel = this.newInstanceLabel || "";
       this.$emit("hide");
     },
   },

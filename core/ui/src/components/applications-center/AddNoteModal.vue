@@ -99,7 +99,6 @@ export default {
   methods: {
     onModalHidden() {
       this.clearErrors();
-      this.note = ""; // reset note on close
       this.$emit("hide");
     },
     async saveNote() {
