@@ -169,9 +169,13 @@
                 >
                   <cv-data-table-cell>
                     <span>
-                      {{
-                        row.ui_name ? row.ui_name + " (" + row.id + ")" : row.id
-                      }}
+                      <a class="app-name" @click="openInstance(row)">
+                        {{
+                          row.ui_name
+                            ? row.ui_name + " (" + row.id + ")"
+                            : row.id
+                        }}
+                      </a>
                     </span>
                     <cv-interactive-tooltip
                       v-if="row.ui_note"
@@ -905,6 +909,6 @@ export default {
   margin-right: 8px;
 }
 .app-name {
-  font-weight: bold;
+  font-weight: 600;
 }
 </style>
