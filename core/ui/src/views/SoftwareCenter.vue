@@ -15,14 +15,13 @@
               class="info"
             >
               <template slot="content">
-                <div class="margin-bottom-sm">
-                  {{ $t("software_center.title_tooltip") }}
-                </div>
-                <div class="mg-top-md mg-bottom-xs">
-                  <cv-link @click="goToApplicationsCenter">
-                    {{ $t("software_center.go_to_applications_center") }}
-                  </cv-link>
-                </div>
+                <i18n path="software_center.title_tooltip" tag="p">
+                  <template v-slot:applications>
+                    <cv-link @click="goToApplicationsCenter">
+                      {{ $t("applications.title") }}
+                    </cv-link>
+                  </template>
+                </i18n>
               </template>
             </cv-interactive-tooltip>
           </h2>
