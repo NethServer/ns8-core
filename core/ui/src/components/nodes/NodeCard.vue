@@ -245,7 +245,7 @@ export default {
     goToApplications() {
       this.$router.push({
         path: "/applications-center",
-        query: { node: this.nodeId },
+        query: { selectedNodeId: this.nodeId },
       });
     },
   },
