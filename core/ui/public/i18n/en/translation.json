@@ -954,7 +954,7 @@
     },
     "software_center": {
         "title": "Software center",
-        "title_tooltip": "Discover, install and update applications in your cluster. To manage installed applications, use the {applications} page",
+        "title_tooltip": "Discover, install and update applications in your cluster. To manage installed applications, go to {applications} page",
         "go_to_applications_center": "Go to applications center",
         "search_placeholder": "Search apps",
         "software_updates": "Updates",
@@ -1687,10 +1687,10 @@
     },
     "applications": {
         "title": "Applications",
-        "title_tooltip": "This page displays all the applications installed on the cluster and lets you manage them easily. To install a new application, use the {software} page.",
-        "go_to_software_center": "Go to software center",
+        "title_tooltip": "This page displays all the applications installed on the cluster and lets you manage them easily. To install a new application, go to {software} page.",
+        "go_to_software_center": "Go to Software center",
         "no_application": "No application installed",
-        "no_application_description": "You can find and install applications in the software center.",
+        "no_application_description": "You can find and install applications in the Software center.",
         "name": "Name",
         "version": "Version",
         "type": "Type",
