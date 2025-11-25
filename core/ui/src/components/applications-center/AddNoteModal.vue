@@ -29,6 +29,7 @@
           :disabled="loading.saveNote"
           :invalid-message="invalidNoteAlphanum || invalidNoteLength"
           :helper-text="$t('applications.note_helper_text')"
+          data-modal-primary-focus
         />
         <cv-inline-notification
           v-if="error.saveNote"

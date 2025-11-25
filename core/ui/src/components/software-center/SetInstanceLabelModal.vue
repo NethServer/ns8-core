@@ -25,6 +25,7 @@
           :helper-text="$t('software_center.instance_label_tooltip')"
           :disabled="loading"
           :invalid-message="$t(inputLabelError)"
+          data-modal-primary-focus
         />
         <div v-if="error.setInstanceLabel">
           <NsInlineNotification
