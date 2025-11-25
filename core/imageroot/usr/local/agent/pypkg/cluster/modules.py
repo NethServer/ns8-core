@@ -387,6 +387,7 @@ def list_installed(rdb, skip_core_modules = False):
                 'version': mtag,
                 'module': msource.rsplit("/", 1)[1],
                 'ui_name': rdb.get(f'module/{module_id}/ui_name') or "",
+                'ui_note': rdb.get(f'module/{module_id}/ui_note') or "",
                 'node': mnode_id,
                 'node_ui_name': hnode_names[mnode_id],
                 'logo': logos.get(module_id, ""),

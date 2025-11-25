@@ -92,7 +92,9 @@
         "not_available": "Not available",
         "release_notes": "Release notes",
         "plus_others": "+{num} other | +{num} others",
-        "choose_a_node": "Choose a node"
+        "choose_a_node": "Choose a node",
+        "type": "Type",
+        "any": "Any"
     },
     "error": {
         "error": "Error",
@@ -425,7 +427,8 @@
         "get-metrics-id": "Get metrics ID",
         "restart-module": "Restart instance",
         "list-alerts": "List alerts",
-        "list-nodes": "List nodes"
+        "list-nodes": "List nodes",
+        "set-note": "Set note"
     },
     "network": {
         "title": "Network"
@@ -951,6 +954,8 @@
     },
     "software_center": {
         "title": "Software center",
+        "title_tooltip": "Discover, install and update applications in your cluster. To manage installed applications, go to {applications} page",
+        "go_to_applications_center": "Go to applications center",
         "search_placeholder": "Search apps",
         "software_updates": "Updates",
         "you_have_updates": "You have {numUpdates} app to update | You have {numUpdates} apps to update",
@@ -1004,7 +1009,7 @@
         "no_instance_installed": "No instance installed",
         "instance": "Instance",
         "instance_label": "App instance label",
-        "instance_label_tooltip": "You can assign the app instance an easy to remember name",
+        "instance_label_tooltip": "You can give the application a memorable label to help recall its name.",
         "edit_instance_label": "Edit instance label",
         "app_managed_in": "This app is managed in",
         "reload_software_repositories": "Reload repositories",
@@ -1099,7 +1104,9 @@
             "rootfull_certification_level_too_low": "Apps with administrative privileges must have a minimum certification level of {certification_min}/5 to be installed"
         },
         "migrating_app_title": "This app instance is undergoing migration",
-        "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete."
+        "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
+        "instance_label_too_long": "Application label must be 24 characters or less",
+        "instance_label_alphanum_only": "Application label can only contain alphanumeric characters and spaces"
     },
     "system_logs": {
         "title": "System logs",
@@ -1199,6 +1206,7 @@
         "title": "Cluster status",
         "go_to_nodes": "Go to Nodes",
         "go_to_software_center": "Go to Software center",
+        "go_to_applications": "Go to Applications",
         "go_to_backup": "Go to Backup",
         "backups_failed_c": "{num} app backup failed | {num} app backups failed",
         "backup_disabled_c": "{num} backup disabled | {num} backups disabled",
@@ -1676,5 +1684,40 @@
         "available_with_subscription_title": "Activate subscription to enable this feature",
         "available_with_subscription": "Send a stream of security logs from applications and nodes of this cluster to Cloud Log Manager, where you can store, archive, and search them in a central place.",
         "cluster_id_notification": "Security logs from this cluster are available in the Cloud Log Manager UI under the host '{clusterId}'."
+    },
+    "applications": {
+        "title": "Applications",
+        "title_tooltip": "This page displays all the applications installed on the cluster and lets you manage them easily. To install a new application, go to {software} page.",
+        "go_to_software_center": "Go to Software center",
+        "no_application": "No application installed",
+        "no_application_description": "You can find and install applications in the Software center.",
+        "name": "Name",
+        "version": "Version",
+        "type": "Type",
+        "node": "Node",
+        "status": "Status",
+        "update_available": "Update available",
+        "edit_label": "Edit label",
+        "restart": "Restart",
+        "open": "Open",
+        "clone": "Clone",
+        "move": "Move",
+        "uninstall": "Uninstall",
+        "instance_uninstallation": "Uninstall {instance}",
+        "uninstalling": "Uninstalling",
+        "restart_instance_name": "Restart {instance}",
+        "update": "Update",
+        "app_uninstallation": "Uninstall {app}",
+        "uninstall_app": "Uninstall {name}? App data will be deleted too. This action is NOT reversible",
+        "restarting": "Restarting",
+        "add_note": "Add note",
+        "edit_note": "Edit note",
+        "note": "Note",
+        "enter_note": "Enter note (max 100 characters)",
+        "note_too_long": "Note must be 100 characters or less",
+        "note_description": "A short note to help identify or describe this application.",
+        "note_alphanum_only": "Note can only contain alphanumeric characters and spaces",
+        "note_helper_text": "Only alphanumeric characters and spaces are allowed",
+        "filter_applications": "Filter applications"
     }
 }

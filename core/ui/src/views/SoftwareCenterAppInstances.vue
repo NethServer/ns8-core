@@ -70,16 +70,6 @@
           />
         </cv-column>
       </cv-row>
-      <cv-row v-if="error.restartModule">
-        <cv-column>
-          <NsInlineNotification
-            kind="error"
-            :title="$t('action.restart-module')"
-            :description="error.restartModule"
-            :showCloseButton="false"
-          />
-        </cv-column>
-      </cv-row>
       <cv-row v-if="updateInstancesTimeout">
         <cv-column>
           <NsInlineNotification
@@ -401,37 +391,11 @@
       @updateCompleted="onUpdateCompleted"
     />
     <!-- Restart instance modal -->
-    <NsModal
-      size="default"
+    <RestartModuleModal
       :visible="isShowRestartModuleModal"
-      @modal-hidden="hideRestartModuleModal"
-      @primary-click="restartModule"
-    >
-      <template slot="title">{{
-        $t("software_center.app_restart", {
-          app: instanceToRestart ? instanceToRestart.id : "",
-        })
-      }}</template>
-      <template slot="content">
-        <NsInlineNotification
-          kind="warning"
-          :title="$t('common.please_read_carefully')"
-          :description="$t('software_center.restart_module_warning')"
-          :showCloseButton="false"
-        />
-        <div>
-          {{
-            $t("software_center.restart_app", {
-              name: instanceToRestart ? instanceToRestart.id : "",
-            })
-          }}
-        </div>
-      </template>
-      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{
-        $t("software_center.restart_instance")
-      }}</template>
-    </NsModal>
+      :instanceToRestart="instanceToRestart"
+      @hide="hideRestartModuleModal"
+    />
 
     <!-- uninstall instance modal -->
     <NsDangerDeleteModal
@@ -460,48 +424,13 @@
       @confirmDelete="uninstallInstance"
     />
     <!-- set instance label modal -->
-    <NsModal
-      size="default"
+    <SetInstanceLabelModal
       :visible="isShownEditInstanceLabel"
-      @modal-hidden="hideSetInstanceLabelModal"
-      @primary-click="setInstanceLabel"
-    >
-      <template slot="title">{{
-        $t("software_center.edit_instance_label")
-      }}</template>
-      <template slot="content">
-        <template v-if="currentInstance">
-          <cv-form @submit.prevent="setInstanceLabel">
-            <cv-text-input
-              :label="
-                $t('software_center.instance_label') +
-                ' (' +
-                $t('common.optional') +
-                ')'
-              "
-              v-model.trim="newInstanceLabel"
-              :placeholder="$t('common.no_label')"
-              :helper-text="$t('software_center.instance_label_tooltip')"
-              maxlength="24"
-              ref="newInstanceLabel"
-              data-modal-primary-focus
-            >
-            </cv-text-input>
-            <NsInlineNotification
-              v-if="error.setInstanceLabel"
-              kind="error"
-              :title="$t('action.set-name')"
-              :description="error.setInstanceLabel"
-              :showCloseButton="false"
-            />
-          </cv-form>
-        </template>
-      </template>
-      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{
-        $t("software_center.edit_instance_label")
-      }}</template>
-    </NsModal>
+      :currentInstance="currentInstance"
+      :newInstanceLabel="newInstanceLabel"
+      @hide="hideSetInstanceLabelModal"
+      @setInstanceLabelCompleted="listModules"
+    />
     <CloneOrMoveAppModal
       :isShown="cloneOrMove.isModalShown"
       :isClone="cloneOrMove.isClone"
@@ -528,6 +457,8 @@ import {
 import { mapState, mapActions } from "vuex";
 import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
 import UpdateAppModal from "../components/software-center/UpdateAppModal";
+import SetInstanceLabelModal from "@/components/software-center/SetInstanceLabelModal.vue";
+import RestartModuleModal from "@/components/software-center/RestartModuleModal.vue";
 import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
@@ -537,6 +468,8 @@ export default {
     CloneOrMoveAppModal,
     UpdateAppModal,
     Information16,
+    SetInstanceLabelModal,
+    RestartModuleModal,
   },
   mixins: [
     TaskService,
@@ -578,7 +511,6 @@ export default {
       },
       loading: {
         modules: true,
-        setInstanceLabel: false,
         updateModule: false,
       },
       error: {
@@ -587,7 +519,6 @@ export default {
         addFavorite: "",
         removeFavorite: "",
         setNodeLabel: "",
-        setInstanceLabel: "",
         updateModule: "",
       },
     };
@@ -841,60 +772,9 @@ export default {
     },
     showRestartModuleModal(instance) {
       this.instanceToRestart = instance;
-      this.error.restartModule = "";
       this.isShowRestartModuleModal = true;
     },
     hideRestartModuleModal() {
-      this.isShowRestartModuleModal = false;
-    },
-    async restartModule() {
-      this.error.restartModule = "";
-      const taskAction = "restart-module";
-      const eventId = this.getUuid();
-
-      // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        this.restartModuleAborted
-      );
-
-      // register to task completion
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.restartModuleCompleted
-      );
-
-      const res = await to(
-        this.createNodeTask(this.instanceToRestart.node, {
-          action: taskAction,
-          data: {
-            module_id: this.instanceToRestart.id,
-          },
-          extra: {
-            title: this.$t("software_center.restart_instance_name", {
-              instance: this.instanceToRestart.ui_name
-                ? this.instanceToRestart.ui_name
-                : this.instanceToRestart.id,
-            }),
-            description: this.$t("software_center.restarting"),
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.restartModule = this.getErrorMessage(err);
-        return;
-      }
-      this.isShowRestartModuleModal = false;
-    },
-    restartModuleAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.restartModule = this.$t("error.generic_error");
-    },
-    restartModuleCompleted() {
       this.isShowRestartModuleModal = false;
     },
     installInstance() {
@@ -903,51 +783,10 @@ export default {
     showSetInstanceLabelModal(instance) {
       this.currentInstance = instance;
       this.newInstanceLabel = instance.ui_name;
-      this.error.setInstanceLabel = "";
       this.isShownEditInstanceLabel = true;
     },
     hideSetInstanceLabelModal() {
       this.isShownEditInstanceLabel = false;
-    },
-    async setInstanceLabel() {
-      this.error.setInstanceLabel = "";
-      this.loading.setInstanceLabel = true;
-      const taskAction = "set-name";
-
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.setInstanceLabelCompleted
-      );
-
-      const res = await to(
-        this.createModuleTaskForApp(this.currentInstance.id, {
-          action: taskAction,
-          data: {
-            name: this.newInstanceLabel,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.setInstanceLabel = this.getErrorMessage(err);
-        this.loading.setInstanceLabel = false;
-        return;
-      }
-    },
-    setInstanceLabelCompleted() {
-      this.loading.setInstanceLabel = false;
-      this.hideSetInstanceLabelModal();
-      this.listModules();
-
-      // update instance label in app drawer
-      this.$root.$emit("reloadAppDrawer");
     },
     showCloneAppModal(instance) {
       this.cloneOrMove.isClone = true;

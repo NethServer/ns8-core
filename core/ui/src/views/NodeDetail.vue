@@ -119,9 +119,9 @@
                     <span class="label">{{
                       $t("node_detail.applications_count")
                     }}</span>
-                    <!-- <cv-link @click.prevent="goToApplications">  -->
-                    {{ nodeStatus.app_count }}
-                    <!-- </cv-link> -->
+                    <cv-link @click.prevent="goToApplications">
+                      {{ nodeStatus.app_count }}
+                    </cv-link>
                   </div>
                 </template>
                 <template
@@ -658,8 +658,8 @@ export default {
     },
     goToApplications() {
       this.$router.push({
-        name: "applications",
-        params: { nodeId: this.nodeId },
+        path: "/applications-center",
+        query: { node: this.nodeId },
       });
     },
     async listNodes() {

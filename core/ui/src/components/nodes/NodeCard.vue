@@ -98,10 +98,9 @@
         <div class="tr">
           <div class="td label">{{ $t("nodes.applications") }}</div>
           <div class="td">
-            <!-- <cv-link v-if="applications" @click.prevent="goToApplications"> -->
-            {{ applications }}
-            <!-- </cv-link> -->
-            <!-- <span v-else>-</span> -->
+            <cv-link v-if="applications" @click.prevent="goToApplications">
+              {{ applications }}
+            </cv-link>
           </div>
         </div>
       </div>
@@ -245,8 +244,8 @@ export default {
   methods: {
     goToApplications() {
       this.$router.push({
-        name: "applications",
-        params: { nodeId: this.nodeId },
+        path: "/applications-center",
+        query: { selectedNodeId: this.nodeId },
       });
     },
   },

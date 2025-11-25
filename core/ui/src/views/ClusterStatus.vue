@@ -129,9 +129,9 @@
               <NsButton
                 kind="ghost"
                 :icon="ArrowRight20"
-                @click="$router.push('/software-center?search=&view=installed')"
+                @click="$router.push('/applications-center')"
               >
-                {{ $t("cluster_status.go_to_software_center") }}
+                {{ $t("cluster_status.go_to_applications") }}
               </NsButton>
             </template>
           </NsInfoCard>
