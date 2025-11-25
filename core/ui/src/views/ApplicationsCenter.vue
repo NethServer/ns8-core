@@ -77,7 +77,7 @@
               >
               </NsComboBox>
               <NsComboBox
-                v-model="filter.selectedNodeId"
+                v-model="q.selectedNodeId"
                 :label="$t('common.choose')"
                 :title="$t('common.node')"
                 :auto-filter="true"
@@ -435,6 +435,9 @@ export default {
   },
   data() {
     return {
+      q: {
+        selectedNodeId: "",
+      },
       isShownEditInstanceLabel: false,
       currentInstance: null,
       newInstanceLabel: "",
@@ -460,7 +463,6 @@ export default {
       tableColumns: ["name", "type", "node", "version"],
       tablePage: [],
       filter: {
-        selectedNodeId: "",
         moduleType: "",
         text: "",
       },
@@ -509,7 +511,7 @@ export default {
       return (
         (this.filter.text && this.filter.text.trim() !== "") ||
         (this.filter.moduleType && this.filter.moduleType !== "any") ||
-        (this.filter.selectedNodeId && this.filter.selectedNodeId !== "any")
+        (this.q.selectedNodeId && this.q.selectedNodeId !== "any")
       );
     },
     filteredModules() {
@@ -528,12 +530,12 @@ export default {
 
       // filter by selected node id
       if (
-        this.filter.selectedNodeId &&
-        this.filter.selectedNodeId !== "any" &&
-        this.filter.selectedNodeId.length > 0
+        this.q.selectedNodeId &&
+        this.q.selectedNodeId !== "any" &&
+        this.q.selectedNodeId.length > 0
       ) {
         filteredModules = filteredModules.filter(
-          (module) => module.node === this.filter.selectedNodeId
+          (module) => module.node === this.q.selectedNodeId
         );
       }
       // filter by text
@@ -558,35 +560,13 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      // Synchronize node filter from URL
-      if (to.query.node) {
-        vm.filter.selectedNodeId = to.query.node;
-      }
       vm.watchQueryData(vm);
       vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    // Synchronize node filter from URL
-    if (to.query.node) {
-      this.filter.selectedNodeId = to.query.node;
-    }
     this.queryParamsToDataForCore(this, to.query);
     next();
-  },
-  watch: {
-    "filter.selectedNodeId": function (newVal) {
-      // Update URL query param when node filter changes
-      // URL will be http://localhost:8080/#/applications-center?node=any
-      if (this.$route.query.node !== newVal) {
-        this.$router.replace({
-          query: {
-            ...this.$route.query,
-            node: newVal,
-          },
-        });
-      }
-    },
   },
   created() {
     this.listModules();
@@ -606,7 +586,7 @@ export default {
       }, 250);
     },
     clearFilters() {
-      this.filter.selectedNodeId = "any";
+      this.q.selectedNodeId = "any";
       this.filter.text = "";
       this.filter.moduleType = "any";
     },
@@ -814,7 +794,6 @@ export default {
           ).values()
         ),
       ];
-
       this.moduleTypeOptions = moduleTypes;
 
       // Ensure unique node values for filter
@@ -841,16 +820,15 @@ export default {
       ];
       this.nodesTypeOptions = nodesForFilter;
 
-      // Workaround to update filter combo box
       this.$nextTick(() => {
-        if (!this.filter.selectedNodeId) {
-          this.filter.selectedNodeId = "any";
+        if (!this.q.selectedNodeId) {
+          this.q.selectedNodeId = "any";
         } else {
-          const nodeId = this.filter.selectedNodeId;
+          const nodeId = this.q.selectedNodeId;
           // workaround to update combo box
-          this.filter.selectedNodeId = "";
+          this.q.selectedNodeId = "";
           this.$nextTick(() => {
-            this.filter.selectedNodeId = nodeId;
+            this.q.selectedNodeId = nodeId;
           });
         }
         if (!this.filter.moduleType) {
