@@ -75,6 +75,13 @@ if rdb.exists(f'module/{module_id}/ui_name'):
         if dump_p.returncode == 0:
             backup_args.append('state/ui_name.dump')
 
+# Dump ui_note key, if exists
+if rdb.exists(f'module/{module_id}/ui_note'):
+    with open('ui_note.dump', 'wb') as fp:
+        dump_p = subprocess.run(["redis-dump", f'module/{module_id}/ui_note'], stdout=fp)
+        if dump_p.returncode == 0:
+            backup_args.append('state/ui_note.dump')
+
 try:
     subprocess.run(["module-dump-state"] + sys.argv[1:], check=True)
 except FileNotFoundError:
