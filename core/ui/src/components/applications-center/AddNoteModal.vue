@@ -87,9 +87,10 @@ export default {
   },
   computed: {
     invalidNoteAlphanum() {
-      const alphanumRegex = /^[a-zA-Z0-9 ]*$/;
-      if (!alphanumRegex.test(this.note)) {
-        return this.$t("applications.note_alphanum_only");
+      // Forbid shell escape and all quotes: ', ", `, \
+      const forbiddenRegex = /['"`\\]/;
+      if (forbiddenRegex.test(this.note)) {
+        return this.$t("applications.note_forbidden_chars");
       }
       return "";
     },
