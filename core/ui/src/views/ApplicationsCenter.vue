@@ -98,6 +98,7 @@
               :sortable="true"
               :pageSizes="[10, 25, 50, 100]"
               :isSearchable="false"
+              :overflow-menu="true"
               :searchPlaceholder="$t('common.search')"
               :searchClearLabel="$t('common.clear_search')"
               :noSearchResultsLabel="$t('common.no_search_results')"
@@ -498,14 +499,9 @@ export default {
         : this.instanceToUninstall.id;
     },
     i18nTableColumns() {
-      // Last column is for overflow menu, so header should be empty
-      return [
-        this.$t("applications.name"),
-        this.$t("applications.type"),
-        this.$t("applications.node"),
-        this.$t("applications.version"),
-        "",
-      ];
+      return this.tableColumns.map((column) => {
+        return this.$t("applications." + column);
+      });
     },
     hasActiveFilters() {
       return (
