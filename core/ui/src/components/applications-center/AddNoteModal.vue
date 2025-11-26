@@ -3,7 +3,7 @@
     :visible="visible"
     :isLoading="loading.saveNote"
     @primary-click="saveNote"
-    :primary-button-disabled="invalidNoteAlphanum ? true : false"
+    :primary-button-disabled="invalidNoteForbiddenChars ? true : false"
     @modal-hidden="onModalHidden"
     size="default"
   >
@@ -27,7 +27,7 @@
           :maxLength="100"
           :rows="4"
           :disabled="loading.saveNote"
-          :invalid-message="invalidNoteAlphanum || invalidNoteLength"
+          :invalid-message="invalidNoteForbiddenChars || invalidNoteLength"
           :helper-text="$t('applications.note_helper_text')"
           data-modal-primary-focus
         />
@@ -86,7 +86,7 @@ export default {
     },
   },
   computed: {
-    invalidNoteAlphanum() {
+    invalidNoteForbiddenChars() {
       // Forbid shell escape and all quotes: ', ", `, \
       const forbiddenRegex = /['"`\\]/;
       if (forbiddenRegex.test(this.note)) {
