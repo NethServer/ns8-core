@@ -1716,8 +1716,7 @@
         "enter_note": "Enter note (max 100 characters)",
         "note_too_long": "Note must be 100 characters or less",
         "note_description": "A short note to help identify or describe this application.",
-        "note_helper_text": "Quotes and shell escape characters are not allowed.",
-        "note_forbidden_chars": "Quotes and shell escape characters (' \" ` \\) are not allowed in the note.",
+        "note_helper_text": "This note must be 100 characters or less.",
         "filter_applications": "Filter applications"
     }
 }
