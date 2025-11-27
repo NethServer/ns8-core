@@ -128,6 +128,11 @@ ui_name = rdb.get(f'module/{smid}/ui_name')
 if not ui_name is None:
     rdb.set(f'module/{dmid}/ui_name', ui_name)
 
+# Copy the UI module note ui_note
+ui_note = rdb.get(f'module/{smid}/ui_note')
+if not ui_note is None:
+    rdb.set(f'module/{dmid}/ui_note', ui_note)
+
 # Erase existing module
 if replace:
     remove_retval = agent.tasks.run("cluster", "remove-module",

@@ -3,7 +3,6 @@
     :visible="visible"
     :isLoading="loading.saveNote"
     @primary-click="saveNote"
-    :primary-button-disabled="invalidNoteAlphanum ? true : false"
     @modal-hidden="onModalHidden"
     size="default"
   >
@@ -27,7 +26,7 @@
           :maxLength="100"
           :rows="4"
           :disabled="loading.saveNote"
-          :invalid-message="invalidNoteAlphanum || invalidNoteLength"
+          :invalid-message="invalidNoteLength"
           :helper-text="$t('applications.note_helper_text')"
           data-modal-primary-focus
         />
@@ -86,13 +85,6 @@ export default {
     },
   },
   computed: {
-    invalidNoteAlphanum() {
-      const alphanumRegex = /^[a-zA-Z0-9 ]*$/;
-      if (!alphanumRegex.test(this.note)) {
-        return this.$t("applications.note_alphanum_only");
-      }
-      return "";
-    },
     invalidNoteLength() {
       if (this.note.length == 100) {
         return this.$t("applications.note_too_long");
