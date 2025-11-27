@@ -3,7 +3,6 @@
     :visible="visible"
     :isLoading="loading.saveNote"
     @primary-click="saveNote"
-    :primary-button-disabled="invalidNoteForbiddenChars ? true : false"
     @modal-hidden="onModalHidden"
     size="default"
   >
@@ -27,7 +26,7 @@
           :maxLength="100"
           :rows="4"
           :disabled="loading.saveNote"
-          :invalid-message="invalidNoteForbiddenChars || invalidNoteLength"
+          :invalid-message="invalidNoteLength"
           :helper-text="$t('applications.note_helper_text')"
           data-modal-primary-focus
         />
@@ -86,14 +85,6 @@ export default {
     },
   },
   computed: {
-    invalidNoteForbiddenChars() {
-      // Forbid shell escape and all quotes: ', ", `, \
-      const forbiddenRegex = /['"`\\]/;
-      if (forbiddenRegex.test(this.note)) {
-        return this.$t("applications.note_forbidden_chars");
-      }
-      return "";
-    },
     invalidNoteLength() {
       if (this.note.length == 100) {
         return this.$t("applications.note_too_long");
