@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2023 Nethesis S.r.l.
+# Copyright (C) 2025 Nethesis S.r.l.
 # http://www.nethesis.it - nethserver@nethesis.it
 #
 
 exec 1>&2 # Redirect any output to the journal (stderr)
 
 if [ -f ui_note.dump ]; then
-    redis-restore module/$MODULE_ID/ui_note < ui_note.dump
+    redis-restore module/"${MODULE_ID}"/ui_note < ui_note.dump
     rm -f ui_note.dump
 fi
