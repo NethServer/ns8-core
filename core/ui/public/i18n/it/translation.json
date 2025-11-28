@@ -78,7 +78,7 @@
         "update_app_instances": "Aggiornare le istanze di {app}",
         "updating_n_instances_c": "Aggiornamento di {num} istanza | Aggiornamento di {num} istanze",
         "n_instances_will_be_updated_c": "L'aggiornamento di {num} istanza inizierà tra un momento... | L'aggiornamento di {num} istanze inizierà tra poco...",
-        "instance_label_tooltip": "È possibile assegnare all'istanza dell'app un nome facile da ricordare.",
+        "instance_label_tooltip": "Puoi dare all'applicazione un'etichetta per ricordare il suo nome più facilmente.",
         "app_managed_in": "Questa app è gestita in",
         "update_app": "Aggiorna {app}",
         "open_app": "Apri app",
@@ -161,7 +161,11 @@
         "app_restart": "Riavviare l'istanza {app}",
         "restart_app": "Il riavvio dell'istanza {nome} interromperà il suo funzionamento e può produrre downtime.",
         "restart_module_warning": "Procedere solo se è necessario e dopo aver informato gli utenti.",
-        "restart_instance": "Riavvia istanza"
+        "restart_instance": "Riavvia istanza",
+        "instance_label_too_long": "L'etichetta dell'applicazione deve essere 24 caratteri o meno",
+        "instance_label_alphanum_only": "L'etichetta dell'applicazione può contenere solo caratteri alfanumerici e spazi",
+        "title_tooltip": "Scopri, installa e aggiorna le applicazioni nel tuo cluster. Per gestire le applicazioni installate, vai alla pagina {applications}",
+        "go_to_applications_center": "Vai ad Applicazioni"
     },
     "nodes": {
         "title": "Nodi",
@@ -740,7 +744,8 @@
         "get-metrics-ids": "Identifica Metrics",
         "restart-module": "Riavvia istanza",
         "list-alerts": "Elenca allarmi",
-        "list-nodes": "Elenca nodi"
+        "list-nodes": "Elenca nodi",
+        "set-note": "Imposta nota"
     },
     "backup": {
         "configure": "Configura",
@@ -1068,7 +1073,9 @@
         "not_available": "Non disponibile",
         "release_notes": "Note di rilascio",
         "plus_others": "+{num} altro | +{num} altri",
-        "choose_a_node": "Scegli un nodo"
+        "choose_a_node": "Scegli un nodo",
+        "type": "Tipo",
+        "any": "Qualsiasi"
     },
     "error": {
         "error": "Errore",
@@ -1316,7 +1323,8 @@
         "go_to_settings": "Vai alle impostazioni",
         "go_to_system_logs": "Vai a Log di sistema",
         "active_instance": "Istanza attiva: {instance}",
-        "system_logs": "Log di sistema"
+        "system_logs": "Log di sistema",
+        "go_to_applications": "Vai ad Applicazioni"
     },
     "domain_users": {
         "attributes": "Attributi",
@@ -1676,5 +1684,39 @@
         "lets_encrypt_disabled_warning_description": "L'applicazione sarà temporaneamente non disponibile e i client HTTP connessi al nodo {node} subiranno una breve disconnessione.",
         "request_https_certificate": "Richiedi un certificato Let's Encrypt",
         "go_to_tls_certificates": "Vai a Certificati TLS"
+    },
+    "applications": {
+        "restarting": "Riavvio",
+        "note_helper_text": "Questa nota deve essere di 100 caratteri o meno",
+        "go_to_software_center": "Vai al Software Center",
+        "status": "Stato",
+        "uninstalling": "Disinstallazione",
+        "uninstall_app": "Disinstallare {name}? Anche i dati dell'app verranno eliminati. Questa azione NON è reversibile",
+        "open": "Apri",
+        "type": "Tipo",
+        "note": "Nota",
+        "filter_applications": "Filtra applicazioni",
+        "node": "Nodo",
+        "uninstall": "Disinstalla",
+        "note_too_long": "La nota deve essere 100 caratteri o meno",
+        "version": "Versione",
+        "restart": "Riavvia",
+        "instance_uninstallation": "Disinstalla {instance}",
+        "enter_note": "Inserisci nota (max 100 caratteri)",
+        "title": "Applicazioni",
+        "no_application": "Nessuna applicazione installata",
+        "edit_note": "Modifica nota",
+        "name": "Nome",
+        "edit_label": "Modifica etichetta",
+        "clone": "Clona",
+        "update_available": "Aggiornamento disponibile",
+        "add_note": "Aggiungi nota",
+        "no_application_description": "È possibile trovare e installare applicazioni dal Software center.",
+        "update": "Aggiorna",
+        "note_description": "Una breve nota per aiutare a identificare o descrivere questa applicazione.",
+        "app_uninstallation": "Disinstalla {app}",
+        "restart_instance_name": "Riavvia {instance}",
+        "move": "Sposta",
+        "title_tooltip": "Questa pagina visualizza tutte le applicazioni installate nel cluster e consente di gestirle facilmente. Per installare una nuova applicazione, vai alla pagina {software}."
     }
 }
