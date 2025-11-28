@@ -252,7 +252,8 @@
         "restart-module": "Instanz neustarten",
         "set-default-certificate": "Zertifikat anfragen",
         "list-alerts": "List alerts",
-        "list-nodes": "List nodes"
+        "list-nodes": "List nodes",
+        "set-note": "Set note"
     },
     "common": {
         "hide": "verstecken",
@@ -347,7 +348,9 @@
         "clear_filters": "Filter zurücksetzen",
         "drag_and_drop_or_click_to_upload": "Drag and drop file here, or click to upload",
         "choose_a_node": "Wählen Sie einen Knoten",
-        "any_node": "Irgendein Knoten"
+        "any_node": "Irgendein Knoten",
+        "type": "Type",
+        "any": "Any"
     },
     "error": {
         "403": "Vorgang nicht autorisiert",
@@ -618,7 +621,11 @@
         "app_restart": "Instanz {app} neustarten",
         "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
-        "restart_instance": "Restart instance"
+        "restart_instance": "Restart instance",
+        "instance_label_too_long": "Application label must be 24 characters or less",
+        "instance_label_alphanum_only": "Application label can only contain alphanumeric characters and spaces",
+        "title_tooltip": "Discover, install and update applications in your cluster. To manage installed applications, go to {applications} page",
+        "go_to_applications_center": "Go to applications center"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Admin {admin} löschen",
@@ -1503,7 +1510,8 @@
         "go_to_system_logs": "zu System-Protokollen wechsel",
         "active_instance": "Aktive Instanz: {instance}",
         "system_logs": "System-Protokolle",
-        "backup_disabled_c": "{num} backup disabled | {num} backups disabled"
+        "backup_disabled_c": "{num} backup disabled | {num} backups disabled",
+        "go_to_applications": "Go to Applications"
     },
     "calendar": {
         "days": "Tage",
@@ -1676,5 +1684,39 @@
         "lets_encrypt_disabled_warning_description": "The application will be temporarily unavailable, and HTTP clients connected to node {node} will experience a brief disconnection.",
         "request_https_certificate": "Request a Let's Encrypt certificate",
         "go_to_tls_certificates": "Go to TLS certificates"
+    },
+    "applications": {
+        "restarting": "Restarting",
+        "note_helper_text": "Only alphanumeric characters and spaces are allowed",
+        "go_to_software_center": "Go to Software center",
+        "status": "Status",
+        "uninstalling": "Uninstalling",
+        "uninstall_app": "Uninstall {name}? App data will be deleted too. This action is NOT reversible",
+        "open": "Open",
+        "type": "Type",
+        "note": "Note",
+        "filter_applications": "Filter applications",
+        "node": "Node",
+        "uninstall": "Uninstall",
+        "note_too_long": "Note must be 100 characters or less",
+        "version": "Version",
+        "restart": "Restart",
+        "instance_uninstallation": "Uninstall {instance}",
+        "enter_note": "Enter note (max 100 characters)",
+        "title": "Applications",
+        "no_application": "No application installed",
+        "edit_note": "Edit note",
+        "name": "Name",
+        "edit_label": "Edit label",
+        "clone": "Clone",
+        "update_available": "Update available",
+        "add_note": "Add note",
+        "no_application_description": "You can find and install applications in the Software center.",
+        "update": "Update",
+        "note_description": "A short note to help identify or describe this application.",
+        "app_uninstallation": "Uninstall {app}",
+        "restart_instance_name": "Restart {instance}",
+        "move": "Move",
+        "title_tooltip": "This page displays all the applications installed on the cluster and lets you manage them easily. To install a new application, go to {software} page."
     }
 }
