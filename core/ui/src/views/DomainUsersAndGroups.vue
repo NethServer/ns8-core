@@ -16,11 +16,7 @@
               <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
             </cv-breadcrumb-item>
             <cv-breadcrumb-item>
-              <span>{{
-                $t("domain_users.domain_name_users_and_groups", {
-                  domain: domainName,
-                })
-              }}</span>
+              <span> {{ domainName }}</span>
             </cv-breadcrumb-item>
           </cv-breadcrumb>
         </cv-column>
@@ -28,23 +24,29 @@
       <cv-row>
         <cv-column :md="4" :xlg="10" class="subpage-title">
           <h3>
-            {{
-              $t("domain_users.domain_name_users_and_groups", {
-                domain: domainName,
-              })
-            }}
+            {{ domainName }}
           </h3>
         </cv-column>
         <cv-column :md="4" :xlg="6">
-          <div class="page-toolbar">
+          <div class="page-toolbar flex gap-4">
             <NsButton
-              kind="tertiary"
+              v-if="domain && domain.location == 'internal'"
+              kind="secondary"
               size="field"
-              :icon="Settings20"
-              @click="goToDomainConfiguration()"
+              :icon="Export20"
+              @click="exportUsersData()"
               class="subpage-toolbar-item"
-              >{{ $t("domain_configuration.configuration") }}</NsButton
-            >
+              >{{ $t("domain_users.export_data") }}
+            </NsButton>
+            <NsButton
+              v-if="domain && domain.location == 'internal'"
+              kind="secondary"
+              size="field"
+              :icon="Upload20"
+              @click="showImportUsersModal()"
+              class="subpage-toolbar-item"
+              >{{ $t("domain_users.import_data") }}
+            </NsButton>
           </div>
         </cv-column>
       </cv-row>
@@ -70,7 +72,7 @@
       </cv-row>
       <cv-row>
         <cv-column>
-          <cv-tile light>
+          <cv-tile>
             <NsTabs
               :container="false"
               :aria-label="$t('common.tab_navigation')"
@@ -99,11 +101,25 @@
                   @groupsLoaded="onGroupsLoaded"
                 />
               </cv-tab>
+              <cv-tab
+                id="tab-3"
+                :label="$t('domain_configuration.configuration')"
+                :selected="q.view === 'configuration'"
+              >
+                <DomainConfiguration :domainName="domainName" />
+              </cv-tab>
             </NsTabs>
           </cv-tile>
         </cv-column>
       </cv-row>
     </cv-grid>
+    <ImportUsersModal
+      :isShown="isShownImportUsersModal"
+      :isResumeConfiguration="importData.isResumeConfiguration"
+      :domain="importData.domain"
+      @hide="hideImportUsersModal"
+      @reloadDomains="listUserDomains"
+    />
   </div>
 </template>
 
@@ -117,13 +133,20 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import DomainUsers from "@/components/domains/DomainUsers";
 import DomainGroups from "@/components/domains/DomainGroups";
+import DomainConfiguration from "@/views/DomainConfiguration.vue";
+import Upload20 from "@carbon/icons-vue/es/upload/20";
+import Export20 from "@carbon/icons-vue/es/export/20";
+import ImportUsersModal from "@/components/domains/ImportUsersModal";
 import to from "await-to-js";
+import Papa from "papaparse";
 
 export default {
   name: "DomainUsersAndGroups",
   components: {
     DomainUsers,
     DomainGroups,
+    DomainConfiguration,
+    ImportUsersModal,
   },
   mixins: [
     TaskService,
@@ -149,6 +172,17 @@ export default {
       },
       error: {
         listUserDomains: "",
+        downloadCsvFile: "",
+      },
+      Upload20,
+      Export20,
+      importData: {
+        isResumeConfiguration: false,
+        domain: {},
+      },
+      isShownImportUsersModal: false,
+      downloadCsv: {
+        name: "",
       },
     };
   },
@@ -172,11 +206,172 @@ export default {
     }
   },
   methods: {
-    goToDomainConfiguration() {
-      this.$router.push({
-        name: "DomainConfiguration",
-        params: { domainName: this.domainName },
+    async exportUsersData() {
+      this.loading.downloadCsvFile = true;
+      this.error.downloadCsvFile = "";
+      this.downloadCsv.name = this.domain.name;
+      const taskAction = "export-users";
+      const eventId = this.getUuid();
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.exportUsersDataAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.exportUsersDataCompleted
+      );
+
+      // register to task validation
+      this.$root.$once(
+        `${taskAction}-validation-ok-${eventId}`,
+        this.exportUsersDataValidationOk
+      );
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.exportUsersDataValidationFailed
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.domain.providers[0].id, {
+          action: taskAction,
+          data: {},
+          extra: {
+            title: this.$t("action.export-users"),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.downloadCsvFile = this.getErrorMessage(err);
+        this.loading.downloadCsvFile = false;
+        return;
+      }
+    },
+    exportUsersDataAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.downloadCsvFile = false;
+    },
+    exportUsersDataCompleted(taskContext, taskResult) {
+      const jsonData = taskResult.output.records;
+
+      // Parse JSON if it's a string
+      let records = jsonData;
+      if (typeof jsonData === "string") {
+        try {
+          records = JSON.parse(jsonData);
+        } catch (err) {
+          console.error("Error parsing JSON records:", err);
+          this.loading.downloadCsvFile = false;
+          return;
+        }
+      }
+
+      // Ensure records is an array
+      if (!Array.isArray(records) || records.length === 0) {
+        console.error("Records is not a valid array");
+        this.loading.downloadCsvFile = false;
+        return;
+      }
+
+      // Define column order based on domain type
+      let columnOrder = [
+        "user",
+        "display_name",
+        "password",
+        "mail",
+        "groups",
+        "locked",
+        "must_change_password",
+        "no_password_expiration",
+      ];
+
+      // Reorder records according to schema column order
+      const orderedRecords = records.map((record) => {
+        const orderedRecord = {};
+        columnOrder.forEach((column) => {
+          // Convert groups array to pipe-delimited string
+          if (column === "groups" && Array.isArray(record[column])) {
+            orderedRecord[column] = record[column].join("|");
+          } else {
+            orderedRecord[column] = record[column];
+          }
+        });
+        return orderedRecord;
       });
+
+      // Convert JSON array to CSV using PapaParse with ordered columns
+      const csv = Papa.unparse(orderedRecords, {
+        header: true,
+        columns: columnOrder,
+      });
+
+      // Create a blob from the CSV string
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+
+      // Create a temporary URL for the blob
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+
+      // Generate timestamp: YYYYMMDDHHMMSS
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(
+        now.getDate()
+      )}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+
+      // Set the download attributes
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `${this.downloadCsv.name}_${timestamp}.csv`
+      );
+      link.style.visibility = "hidden";
+
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the object URL
+      URL.revokeObjectURL(url);
+
+      this.loading.downloadCsvFile = false;
+    },
+    exportUsersDataValidationOk() {
+      this.loading.downloadCsvFile = false;
+    },
+    exportUsersDataValidationFailed(validationErrors) {
+      this.loading.downloadCsvFile = false;
+      let focusAlreadySet = false;
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+        // set i18n error message
+        this.error[param] = this.$t("domain_users." + validationError.error, {
+          tok: validationError.value,
+        });
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    showImportUsersModal() {
+      this.importData.isResumeConfiguration = false;
+      this.importData.domain = this.domain;
+      this.$nextTick(() => {
+        this.isShownImportUsersModal = true;
+      });
+    },
+    hideImportUsersModal() {
+      this.isShownImportUsersModal = false;
     },
     async listUserDomains() {
       this.loading.listUserDomains = true;
@@ -240,6 +435,8 @@ export default {
         this.q.view = "users";
       } else if (tabNum == 1) {
         this.q.view = "groups";
+      } else if (tabNum == 2) {
+        this.q.view = "configuration";
       }
     },
   },
