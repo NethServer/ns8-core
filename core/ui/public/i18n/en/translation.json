@@ -1756,6 +1756,7 @@
         "delete_your_file_after_import":"Delete your file after the import",
         "delete_your_file_after_import_description":"If the file contains user passwords, it’s recommended to delete the CSV after the import for security reasons.",
         "no_import_users": "No users to import",
-        "no_import_users_description": "The CSV file does not contain any user to import."
+        "no_import_users_description": "The CSV file does not contain any user to import.",
+        "invalid_csv_format_not_expected_columns": "Invalid CSV format: not expected columns."
     }
 }

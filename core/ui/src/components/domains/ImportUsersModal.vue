@@ -328,21 +328,11 @@ export default {
             // Define expected column
             let expectedColumns = 8;
             // Validate column count in all rows
-            if (results.data.length > 0) {
-              const firstRow = results.data[0];
-              if (firstRow.length !== expectedColumns) {
-                this.error.uploadCsvFile = "import_users.invalid_csv_format";
+            for (let i = 0; i < results.data.length; i++) {
+              if (results.data[i].length !== expectedColumns) {
+                this.error.uploadCsvFile = "import_users.invalid_csv_format_not_expected_columns";
                 this.loading.getPreviewData = false;
                 return;
-              }
-
-              // Check all rows have correct number of columns
-              for (let i = 0; i < results.data.length; i++) {
-                if (results.data[i].length !== expectedColumns) {
-                  this.error.uploadCsvFile = "import_users.invalid_csv_format";
-                  this.loading.getPreviewData = false;
-                  return;
-                }
               }
             }
 
