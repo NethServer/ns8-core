@@ -29,6 +29,8 @@
           :label="$t('domain_users.username')"
           :invalid-message="error.user"
           :disabled="isEditing || loading.addUser || loading.alterUser"
+          :helper-text="$t('domain_users.username_helper_text')"
+          :placeholder="$t('domain_users.username_placeholder')"
           data-modal-primary-focus
           autocomplete="off"
           ref="user"
@@ -37,7 +39,9 @@
           v-model.trim="displayName"
           :label="$t('domain_users.display_name')"
           :invalid-message="error.display_name"
+          :helper-text="$t('domain_users.display_name_helper_text')"
           :disabled="loading.addUser || loading.alterUser"
+          :placeholder="$t('domain_users.display_name_placeholder')"
           autocomplete="off"
           ref="display_name"
         />
@@ -47,6 +51,7 @@
           :invalid-message="error.mail"
           :disabled="loading.addUser || loading.alterUser"
           autocomplete="off"
+          :placeholder="$t('domain_users.mail_placeholder')"
           ref="mail"
           type="email"
         />
@@ -78,7 +83,7 @@
         <NsPasswordInput
           v-if="!isEditing"
           :newPasswordLabel="$t('password.password')"
-          :confirmPasswordLabel="$t('password.re_enter_password')"
+          :confirmPasswordLabel="$t('domain_users.confirm_password')"
           v-model="newPassword"
           @passwordValidation="onPasswordValidation"
           :newPasswordInvalidMessage="$t(error.newPassword)"
@@ -102,6 +107,7 @@
             policy.strength.enforced ? policy.strength.complexity_check : false
           "
           autocomplete="new-password"
+          newPasswordHelperText
         />
         <NsToggle
           v-if="!isEditing && isActiveDirectory"
