@@ -145,6 +145,8 @@ cluster.grants.grant(rdb, action_clause="add-public-service",  to_clause="tunadm
 cluster.grants.grant(rdb, action_clause="remove-public-service",  to_clause="tunadm,portsadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="add-custom-zone",  to_clause="tunadm,portsadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="remove-custom-zone",  to_clause="tunadm,portsadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="add-rich-rules",  to_clause="fwadm,portsadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="remove-rich-rules",  to_clause="fwadm,portsadm", on_clause='node/1')
 
 cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovider", on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountconsumer", on_clause='cluster')

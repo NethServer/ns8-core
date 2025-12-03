@@ -485,6 +485,37 @@ def remove_custom_zone(name):
     )
     return response['exit_code'] == 0
 
+def add_rich_rules(rich_rules):
+    """
+    Apply an array of firewall rich rules on the node using firewall-cmd.
+    Each element of `rich_rules` should be a complete rich-rule string as
+    accepted by `--add-rich-rule`. Example:
+      'rule family=ipv4 forward-port port=5060 protocol=udp to-port=5060 to-addr=192.168.1.100'
+    """
+    node_id = os.environ['NODE_ID']
+    data = {'rich_rules': rich_rules}
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='add-rich-rules',
+        data=data
+    )
+    return response['exit_code'] == 0
+
+def remove_rich_rules(rich_rules):
+    """
+    Remove an array of firewall rich rules on the node using firewall-cmd.
+    Each element of `rich_rules` should be a complete rich-rule string as
+    accepted by `--remove-rich-rule` (the same format used for add).
+    """
+    node_id = os.environ['NODE_ID']
+    data = {'rich_rules': rich_rules}
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='remove-rich-rules',
+        data=data
+    )
+    return response['exit_code'] == 0
+
 
 def list_service_providers(rdb, service, transport='*', filters={}):
     """Look up the endpoint information about a given service. Filter
