@@ -12,11 +12,10 @@ import agent
 request = json.load(sys.stdin)
 
 rich_rules = request.get('rich_rules', [])
-if not isinstance(rich_rules, list) or len(rich_rules) == 0:
-    agent.assert_exp(False, 'rich_rules must be a non-empty array')
+
 
 for rule in rich_rules:
-    # Apply rule for both families if not already family-qualified
+    # Add the rich rule as specified
     print(agent.SD_INFO + f'Adding rich-rule: {rule}', file=sys.stderr)
     agent.run_helper('firewall-cmd', '--permanent', f'--add-rich-rule={rule}')
 

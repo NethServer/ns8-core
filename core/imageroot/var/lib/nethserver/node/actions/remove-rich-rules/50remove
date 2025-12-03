@@ -12,8 +12,7 @@ import agent
 request = json.load(sys.stdin)
 
 rich_rules = request.get('rich_rules', [])
-if not isinstance(rich_rules, list) or len(rich_rules) == 0:
-    agent.assert_exp(False, 'rich_rules must be a non-empty array')
+
 
 for rule in rich_rules:
     print(agent.SD_INFO + f'Removing rich-rule: {rule}', file=sys.stderr)
