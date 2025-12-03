@@ -25,6 +25,7 @@
     "lodash": "^4.17.21",
     "lottie-web-vue": "^1.2.0",
     "mark.js": "^8.11.1",
+    "papaparse": "^5.5.3",
     "qrcode.vue": "^1.7.0",
     "uuid": "^3.4.0",
     "vue": "^2.6.11",

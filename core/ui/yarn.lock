@@ -13311,6 +13311,7 @@ __metadata:
     lodash: ^4.17.21
     lottie-web-vue: ^1.2.0
     mark.js: ^8.11.1
+    papaparse: ^5.5.3
     prettier: ^2.2.1
     qrcode.vue: ^1.7.0
     sass: ^1.34.1
@@ -13792,6 +13793,13 @@ __metadata:
   version: 1.0.11
   resolution: "pako@npm:1.0.11"
   checksum: 1be2bfa1f807608c7538afa15d6f25baa523c30ec870a3228a89579e474a4d992f4293859524e46d5d87fd30fa17c5edf34dbef0671251d9749820b488660b16
+  languageName: node
+  linkType: hard
+
+"papaparse@npm:^5.5.3":
+  version: 5.5.3
+  resolution: "papaparse@npm:5.5.3"
+  checksum: 369d68a16340e5fad95d411a0efca34bedbf93550744e6374fa9b60aaf6bc655e29a6d1a39a56afea0cf7dbc4454fd190f50a9ad76db80987b43d6c6c319f018
   languageName: node
   linkType: hard
 
