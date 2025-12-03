@@ -235,11 +235,23 @@
                       :data-test-id="domain.name + '-menu'"
                     >
                       <cv-overflow-menu-item
-                        @click="goToDomainConfiguration(domain)"
+                        v-if="domain.location == 'internal'"
+                        @click="showImportUsersModal(domain)"
+                        :data-test-id="domain.name + '-import-data'"
                       >
                         <NsMenuItem
-                          :icon="Settings20"
-                          :label="$t('domain_configuration.configuration')"
+                          :icon="Upload20"
+                          :label="$t('domain_users.import_data')"
+                        />
+                      </cv-overflow-menu-item>
+                      <cv-overflow-menu-item
+                        v-if="domain.location == 'internal'"
+                        @click="exportUsersData(domain)"
+                        :data-test-id="domain.name + '-export-data'"
+                      >
+                        <NsMenuItem
+                          :icon="Export20"
+                          :label="$t('domain_users.export_data')"
                         />
                       </cv-overflow-menu-item>
                       <cv-overflow-menu-item
@@ -309,17 +321,13 @@
                         class="row icon-and-text"
                       >
                         <NsSvg :svg="Warning16" class="icon ns-warning" />
-                        <cv-link
-                          @click="goToDomainConfiguration(domain, 'providers')"
-                        >
+                        <cv-link @click="goToDomainConfiguration(domain)">
                           <span>{{ $t("domains.unconfigured_provider") }}</span>
                         </cv-link>
                       </div>
                       <!-- number of providers -->
                       <div v-else class="row">
-                        <cv-link
-                          @click="goToDomainConfiguration(domain, 'providers')"
-                        >
+                        <cv-link @click="goToDomainConfiguration(domain)">
                           {{ domain.providers.length }}
                           {{
                             $tc("domains.providers", domain.providers.length)
@@ -337,10 +345,10 @@
                       <div class="row actions">
                         <NsButton
                           kind="ghost"
-                          :icon="Group20"
+                          :icon="ArrowRight20"
                           @click="goToDomainUsersAndGroups(domain)"
                           :data-test-id="domain.name + '-users-and-groups'"
-                          >{{ $t("domains.users_and_groups") }}</NsButton
+                          >{{ $t("common.see_details") }}</NsButton
                         >
                       </div>
                     </div>
@@ -352,6 +360,13 @@
         </template>
       </template>
     </cv-grid>
+    <ImportUsersModal
+      :isShown="isShownImportUsersModal"
+      :isResumeConfiguration="importData.isResumeConfiguration"
+      :domain="importData.domain"
+      @hide="hideImportUsersModal"
+      @reloadDomains="listUserDomains"
+    />
     <!-- create domain modal -->
     <CreateDomainModal
       :isShown="isShownCreateDomainModal"
@@ -396,12 +411,16 @@ import {
   PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import CreateDomainModal from "@/components/domains/CreateDomainModal";
+import ImportUsersModal from "@/components/domains/ImportUsersModal";
+import Upload20 from "@carbon/icons-vue/es/upload/20";
+import Export20 from "@carbon/icons-vue/es/export/20";
 import to from "await-to-js";
 import { mapState } from "vuex";
+import Papa from "papaparse";
 
 export default {
   name: "Domains",
-  components: { CreateDomainModal },
+  components: { CreateDomainModal, ImportUsersModal },
   mixins: [
     TaskService,
     UtilService,
@@ -438,7 +457,18 @@ export default {
         removeModule: "",
         removeExternalDomain: "",
         removeInternalDomain: "",
+        downloadCsvFile: "",
       },
+      Upload20,
+      Export20,
+      importData: {
+        isResumeConfiguration: false,
+        domain: {},
+      },
+      downloadCsv: {
+        name: "",
+      },
+      isShownImportUsersModal: false,
     };
   },
   computed: {
@@ -533,6 +563,172 @@ export default {
       this.unconfiguredDomains = unconfiguredDomains;
 
       this.loading.listUserDomains = false;
+    },
+    async exportUsersData(domain) {
+      this.loading.downloadCsvFile = true;
+      this.error.downloadCsvFile = "";
+      this.downloadCsv.name = domain.name;
+      const taskAction = "export-users";
+      const eventId = this.getUuid();
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.exportUsersDataAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.exportUsersDataCompleted
+      );
+
+      // register to task validation
+      this.$root.$once(
+        `${taskAction}-validation-ok-${eventId}`,
+        this.exportUsersDataValidationOk
+      );
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.exportUsersDataValidationFailed
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(domain.providers[0].id, {
+          action: taskAction,
+          data: {},
+          extra: {
+            title: this.$t("action.export-users"),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.downloadCsvFile = this.getErrorMessage(err);
+        this.loading.downloadCsvFile = false;
+        return;
+      }
+    },
+    exportUsersDataAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.downloadCsvFile = false;
+    },
+    exportUsersDataCompleted(taskContext, taskResult) {
+      const jsonData = taskResult.output.records;
+
+      // Parse JSON if it's a string
+      let records = jsonData;
+      if (typeof jsonData === "string") {
+        try {
+          records = JSON.parse(jsonData);
+        } catch (err) {
+          console.error("Error parsing JSON records:", err);
+          this.loading.downloadCsvFile = false;
+          return;
+        }
+      }
+
+      // Ensure records is an array
+      if (!Array.isArray(records) || records.length === 0) {
+        console.error("Records is not a valid array");
+        this.loading.downloadCsvFile = false;
+        return;
+      }
+
+      let columnOrder = [
+        "user",
+        "display_name",
+        "password",
+        "mail",
+        "groups",
+        "locked",
+        "must_change_password",
+        "no_password_expiration",
+      ];
+
+      // Reorder records according to schema column order
+      const orderedRecords = records.map((record) => {
+        const orderedRecord = {};
+        columnOrder.forEach((column) => {
+          // Convert groups array to pipe-delimited string
+          if (column === "groups" && Array.isArray(record[column])) {
+            orderedRecord[column] = record[column].join("|");
+          } else {
+            orderedRecord[column] = record[column];
+          }
+        });
+        return orderedRecord;
+      });
+
+      // Convert JSON array to CSV using PapaParse with ordered columns
+      const csv = Papa.unparse(orderedRecords, {
+        header: true,
+        columns: columnOrder,
+      });
+
+      // Create a blob from the CSV string
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+
+      // Create a temporary URL for the blob
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+
+      // Generate timestamp: YYYYMMDDHHMMSS
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(
+        now.getDate()
+      )}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+
+      // Set the download attributes
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `${this.downloadCsv.name}_${timestamp}.csv`
+      );
+      link.style.visibility = "hidden";
+
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the object URL
+      URL.revokeObjectURL(url);
+
+      this.loading.downloadCsvFile = false;
+    },
+    exportUsersDataValidationOk() {
+      this.loading.downloadCsvFile = false;
+    },
+    exportUsersDataValidationFailed(validationErrors) {
+      this.loading.downloadCsvFile = false;
+      let focusAlreadySet = false;
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+        // set i18n error message
+        this.error[param] = this.$t("domain_users." + validationError.error, {
+          tok: validationError.value,
+        });
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    showImportUsersModal(domain) {
+      this.importData.isResumeConfiguration = false;
+      this.importData.domain = domain;
+      this.$nextTick(() => {
+        this.isShownImportUsersModal = true;
+      });
+    },
+    hideImportUsersModal() {
+      this.isShownImportUsersModal = false;
     },
     showCreateDomainModal() {
       this.createDomain.isResumeConfiguration = false;
@@ -704,11 +900,11 @@ export default {
       this.domainToDelete = null;
       this.listUserDomains();
     },
-    goToDomainConfiguration(domain, anchor) {
+    goToDomainConfiguration(domain) {
       this.$router.push({
-        name: "DomainConfiguration",
+        name: "DomainUsersAndGroups",
         params: { domainName: domain.name },
-        hash: anchor ? "#" + anchor : "",
+        query: { view: "configuration" },
       });
     },
     goToFileServer(fileServerProvider) {
