@@ -271,13 +271,6 @@ export default {
         }
       }
 
-      // Ensure records is an array
-      if (!Array.isArray(records) || records.length === 0) {
-        console.error("Records is not a valid array");
-        this.loading.downloadCsvFile = false;
-        return;
-      }
-
       // Define column order based on domain type
       let columnOrder = [
         "user",
