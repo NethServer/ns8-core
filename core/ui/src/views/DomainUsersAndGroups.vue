@@ -364,9 +364,7 @@ export default {
     showImportUsersModal() {
       this.importData.isResumeConfiguration = false;
       this.importData.domain = this.domain;
-      this.$nextTick(() => {
-        this.isShownImportUsersModal = true;
-      });
+      this.isShownImportUsersModal = true;
     },
     hideImportUsersModal() {
       this.isShownImportUsersModal = false;
