@@ -312,6 +312,16 @@ export default {
               return;
             }
 
+            // Check if first row is the header and remove it
+            const headerString =
+              "user,display_name,password,mail,groups,locked,must_change_password,no_password_expiration";
+            if (
+              results.data.length > 0 &&
+              results.data[0].join(",") === headerString
+            ) {
+              results.data = results.data.slice(1);
+            }
+
             // Define expected column
             let expectedColumns = 8;
             // Validate column count in all rows
