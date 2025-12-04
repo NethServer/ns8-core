@@ -50,7 +50,7 @@
           >
             {{ $t(error.uploadCsvFile) }}
           </div>
-          <label class="bx--label mb-1">
+          <label class="bx--label">
             {{ $t("import_users.manage_existing_users") }}
             <cv-interactive-tooltip
               alignment="center"
