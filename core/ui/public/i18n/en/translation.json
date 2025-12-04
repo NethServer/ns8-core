@@ -1446,7 +1446,11 @@
         "eg_value": "e.g. {value}",
         "confirm_password": "Confirm password",
         "import_data": "Import data",
-        "export_data": "Export data"
+        "export_data": "Export data",
+        "password":"Password",
+        "locked": "Locked",
+        "must_change_password": "Must change password",
+        "no_password_expiration": "No password expiration"
     },
     "domain_configuration": {
         "title": "Domain configuration",
@@ -1737,14 +1741,6 @@
         "manage_existing_users_tooltip": "Specify how to handle users that already exist in the cluster. You can either skip them or overwrite their data with the values from the file.",
         "skip_existing_users": "Skip existing users",
         "overwrite_existing_users": "Overwrite existing users",
-        "user": "User",
-        "display_name": "Display name",
-        "password": "Password",
-        "mail": "Mail",
-        "groups": "Groups",
-        "locked": "Locked",
-        "must_change_password": "Must change password",
-        "no_password_expiration": "No password expiration",
         "preview": "Preview",
         "preview_description": "{users} users and {groups} groups will be imported. Review the data contained in the CSV file; only the first 5 rows are displayed.",
         "too_many_users": "File exceeds size limit. Max 10000 rows are allowed",

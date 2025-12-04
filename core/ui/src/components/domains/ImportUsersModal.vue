@@ -248,7 +248,7 @@ export default {
     },
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
-        return this.$t("import_users." + column);
+        return this.$t("domain_users." + column);
       });
     },
     areFileSelected: function () {
