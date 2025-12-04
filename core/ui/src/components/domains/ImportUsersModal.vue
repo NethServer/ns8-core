@@ -170,7 +170,6 @@
             </cv-tile>
             <NsInlineNotification
               kind="info"
-              size="large"
               :title="$t('import_users.delete_your_file_after_import')"
               :description="
                 $t('import_users.delete_your_file_after_import_description')
