@@ -437,9 +437,6 @@ export default {
         this.step = this.steps[this.stepIndex - 1];
       }
     },
-    toggleSetupKey() {
-      this.isShownSetupKey = !this.isShownSetupKey;
-    },
     async importDataCsv() {
       this.loading.uploadCsvFile = true;
       this.error.importDataCsv = "";
