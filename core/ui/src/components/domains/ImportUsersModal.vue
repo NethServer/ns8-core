@@ -66,17 +66,15 @@
           </label>
           <cv-radio-group vertical>
             <cv-radio-button
-              v-model="skip_existing"
-              value="true"
+              v-model="existingPolicy"
+              value="skip"
               :label="$t('import_users.skip_existing_users')"
-              ref="skip_existing"
               checked
             ></cv-radio-button>
             <cv-radio-button
-              v-model="skip_existing"
-              value="false"
+              v-model="existingPolicy"
+              value="overwrite"
               :label="$t('import_users.overwrite_existing_users')"
-              ref="overwrite_existing"
             ></cv-radio-button>
           </cv-radio-group>
         </template>
@@ -213,7 +211,7 @@ export default {
       step: "",
       steps: ["importData", "previewData"],
       csvFile: null,
-      skip_existing: "true",
+      existingPolicy: "skip",
       loading: {
         uploadCsvFile: false,
         getPreviewData: false,
@@ -284,10 +282,11 @@ export default {
   },
   methods: {
     onModalHidden() {
+      this.$emit("hide");
       this.clearErrors();
       this.importData = "";
       this.csvFile = null;
-      this.$emit("hide");
+      this.existingPolicy = "skip";
     },
     convertFileToJson() {
       this.loading.getPreviewData = true;
@@ -477,7 +476,7 @@ export default {
         this.createModuleTaskForApp(this.mainProvider, {
           action: taskAction,
           data: {
-            skip_existing: this.skip_existing === "true",
+            skip_existing: this.existingPolicy === "skip",
             records: this.importData,
           },
           extra: {
