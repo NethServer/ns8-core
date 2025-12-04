@@ -113,7 +113,6 @@
     </cv-grid>
     <ImportUsersModal
       :isShown="isShownImportUsersModal"
-      :isResumeConfiguration="importData.isResumeConfiguration"
       :domain="importData.domain"
       @hide="hideImportUsersModal"
       @reloadDomains="listUserDomains"
@@ -175,7 +174,6 @@ export default {
       Upload20,
       Export20,
       importData: {
-        isResumeConfiguration: false,
         domain: {},
       },
       isShownImportUsersModal: false,
@@ -355,7 +353,6 @@ export default {
       }
     },
     showImportUsersModal() {
-      this.importData.isResumeConfiguration = false;
       this.importData.domain = this.domain;
       this.isShownImportUsersModal = true;
     },

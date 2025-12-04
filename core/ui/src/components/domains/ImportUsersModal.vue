@@ -201,10 +201,6 @@ export default {
       type: Object,
       default: null,
     },
-    isResumeConfiguration: {
-      type: Boolean,
-      default: false,
-    },
   },
   data() {
     return {
