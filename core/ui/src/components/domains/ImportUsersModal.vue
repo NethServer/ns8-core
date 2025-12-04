@@ -321,7 +321,7 @@ export default {
             }
 
             // Define expected column
-            let expectedColumns = 8;
+            let expectedColumns = this.tableColumns.length;
             // Validate column count in all rows
             for (let i = 0; i < results.data.length; i++) {
               if (results.data[i].length !== expectedColumns) {
