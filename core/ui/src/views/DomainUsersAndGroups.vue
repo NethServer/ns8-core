@@ -291,7 +291,7 @@ export default {
       ];
 
       // Reorder records according to schema column order
-      const orderedRecords = records.map((record) => {
+      const csvRecords = records.map((record) => {
         const orderedRecord = {};
         columnOrder.forEach((column) => {
           // Convert groups array to pipe-delimited string
@@ -305,7 +305,7 @@ export default {
       });
 
       // Convert JSON array to CSV using PapaParse with ordered columns
-      const csv = Papa.unparse(orderedRecords, {
+      const csv = Papa.unparse(csvRecords, {
         header: true,
         columns: columnOrder,
       });
