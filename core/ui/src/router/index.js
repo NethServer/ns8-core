@@ -10,7 +10,7 @@ import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
 import Domains from "../views/Domains";
 import Nodes from "../views/Nodes";
 import NodeDetail from "../views/NodeDetail";
-import DomainUsersAndGroups from "../views/DomainUsersAndGroups";
+import DomainUsersAndGroups from "../components/domains/DomainUsersAndGroups";
 
 Vue.use(VueRouter);
 
