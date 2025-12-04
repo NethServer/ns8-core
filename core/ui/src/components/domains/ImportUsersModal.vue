@@ -96,76 +96,78 @@
                 })
               }}
             </div>
-            <span class="font-bold">
+            <div class="font-bold mg-bottom-md">
               {{ $t("import_users.preview") }}
-            </span>
-            <NsDataTable
-              :allRows="previewRows"
-              :columns="i18nTableColumns"
-              :rawColumns="tableColumns"
-              :sortable="true"
-              :pageSizes="[]"
-              :searchPlaceholder="$t('domain_users.search_user')"
-              :searchClearLabel="$t('common.clear_search')"
-              :noSearchResultsLabel="$t('common.no_search_results')"
-              :noSearchResultsDescription="
-                $t('common.no_search_results_description')
-              "
-              :isLoading="loading.getPreviewData"
-              :skeletonRows="5"
-              :isErrorShown="!!error.getPreviewData"
-              :errorTitle="$t('action.list-domain-users')"
-              :errorDescription="error.getPreviewData"
-              :itemsPerPageLabel="$t('pagination.items_per_page')"
-              :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
-              :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-              :backwardText="$t('pagination.previous_page')"
-              :forwardText="$t('pagination.next_page')"
-              :pageNumberLabel="$t('pagination.page_number')"
-              @updatePage="tablePage = $event"
-            >
-              <template slot="empty-state">
-                <NsEmptyState :title="$t('import_users.no_import_users')">
-                  <template #description>
-                    <div>
-                      {{ $t("import_users.no_import_users_description") }}
-                    </div>
-                  </template>
-                </NsEmptyState>
-              </template>
-              <template slot="data">
-                <cv-data-table-row
-                  v-for="(row, rowIndex) in tablePage"
-                  :key="`${rowIndex}`"
-                  :value="`${rowIndex}`"
-                >
-                  <cv-data-table-cell>
-                    <span>{{ row.user }}</span>
-                  </cv-data-table-cell>
-                  <cv-data-table-cell>
-                    {{ row.display_name }}
-                  </cv-data-table-cell>
-                  <cv-data-table-cell>
-                    {{ row.password }}
-                  </cv-data-table-cell>
-                  <cv-data-table-cell>
-                    {{ row.mail }}
-                  </cv-data-table-cell>
-                  <cv-data-table-cell>
-                    {{ row.groups.join(", ") }}
-                  </cv-data-table-cell>
-                  <cv-data-table-cell>
-                    {{ row.locked }}
-                  </cv-data-table-cell>
-                  <cv-data-table-cell>
-                    {{ row.must_change_password }}
-                  </cv-data-table-cell>
-                  <cv-data-table-cell>
-                    {{ row.no_password_expiration }}
-                  </cv-data-table-cell>
-                </cv-data-table-row>
-              </template>
-            </NsDataTable>
+            </div>
+            <cv-tile light>
+              <NsDataTable
+                :allRows="previewRows"
+                :columns="i18nTableColumns"
+                :rawColumns="tableColumns"
+                :sortable="true"
+                :pageSizes="[]"
+                :searchPlaceholder="$t('domain_users.search_user')"
+                :searchClearLabel="$t('common.clear_search')"
+                :noSearchResultsLabel="$t('common.no_search_results')"
+                :noSearchResultsDescription="
+                  $t('common.no_search_results_description')
+                "
+                :isLoading="loading.getPreviewData"
+                :skeletonRows="5"
+                :isErrorShown="!!error.getPreviewData"
+                :errorTitle="$t('action.list-domain-users')"
+                :errorDescription="error.getPreviewData"
+                :itemsPerPageLabel="$t('pagination.items_per_page')"
+                :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
+                :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+                :backwardText="$t('pagination.previous_page')"
+                :forwardText="$t('pagination.next_page')"
+                :pageNumberLabel="$t('pagination.page_number')"
+                @updatePage="tablePage = $event"
+              >
+                <template slot="empty-state">
+                  <NsEmptyState :title="$t('import_users.no_import_users')">
+                    <template #description>
+                      <div>
+                        {{ $t("import_users.no_import_users_description") }}
+                      </div>
+                    </template>
+                  </NsEmptyState>
+                </template>
+                <template slot="data">
+                  <cv-data-table-row
+                    v-for="(row, rowIndex) in tablePage"
+                    :key="`${rowIndex}`"
+                    :value="`${rowIndex}`"
+                  >
+                    <cv-data-table-cell>
+                      <span>{{ row.user }}</span>
+                    </cv-data-table-cell>
+                    <cv-data-table-cell>
+                      {{ row.display_name }}
+                    </cv-data-table-cell>
+                    <cv-data-table-cell>
+                      {{ row.password }}
+                    </cv-data-table-cell>
+                    <cv-data-table-cell>
+                      {{ row.mail }}
+                    </cv-data-table-cell>
+                    <cv-data-table-cell>
+                      {{ row.groups.join(", ") }}
+                    </cv-data-table-cell>
+                    <cv-data-table-cell>
+                      {{ row.locked }}
+                    </cv-data-table-cell>
+                    <cv-data-table-cell>
+                      {{ row.must_change_password }}
+                    </cv-data-table-cell>
+                    <cv-data-table-cell>
+                      {{ row.no_password_expiration }}
+                    </cv-data-table-cell>
+                  </cv-data-table-row>
+                </template>
+              </NsDataTable>
+            </cv-tile>
             <NsInlineNotification
               kind="info"
               size="large"
