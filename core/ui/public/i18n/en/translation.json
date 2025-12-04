@@ -1443,9 +1443,7 @@
         "mail_format": "Invalid mail format",
         "username_helper_text": "Must start with a letter. Only letters, numbers, hyphens and underscores are allowed",
         "display_name_helper_text": "Name displayed to other users",
-        "username_placeholder": "e.g. jane_doe",
-        "display_name_placeholder": "e.g. Jane Doe",
-        "mail_placeholder": "e.g. jane.doe@email.com",
+        "eg_value": "e.g. {value}",
         "confirm_password": "Confirm password",
         "import_data": "Import data",
         "export_data": "Export data"

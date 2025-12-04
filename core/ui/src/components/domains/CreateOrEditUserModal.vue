@@ -30,7 +30,7 @@
           :invalid-message="error.user"
           :disabled="isEditing || loading.addUser || loading.alterUser"
           :helper-text="$t('domain_users.username_helper_text')"
-          :placeholder="$t('domain_users.username_placeholder')"
+          :placeholder="$t('domain_users.eg_value', { value: 'jane.doe' })"
           data-modal-primary-focus
           autocomplete="off"
           ref="user"
@@ -41,7 +41,7 @@
           :invalid-message="error.display_name"
           :helper-text="$t('domain_users.display_name_helper_text')"
           :disabled="loading.addUser || loading.alterUser"
-          :placeholder="$t('domain_users.display_name_placeholder')"
+          :placeholder="$t('domain_users.eg_value', { value: 'Jane Doe' })"
           autocomplete="off"
           ref="display_name"
         />
@@ -51,7 +51,9 @@
           :invalid-message="error.mail"
           :disabled="loading.addUser || loading.alterUser"
           autocomplete="off"
-          :placeholder="$t('domain_users.mail_placeholder')"
+          :placeholder="
+            $t('domain_users.eg_value', { value: 'jane.doe@example.com' })
+          "
           ref="mail"
           type="email"
         />
