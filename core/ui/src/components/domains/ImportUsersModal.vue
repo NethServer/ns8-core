@@ -50,7 +50,7 @@
           >
             {{ $t(error.uploadCsvFile) }}
           </div>
-          <span class="label">
+          <label class="bx--label mb-1">
             {{ $t("import_users.manage_existing_users") }}
             <cv-interactive-tooltip
               alignment="center"
@@ -63,7 +63,7 @@
                 </div>
               </template>
             </cv-interactive-tooltip>
-          </span>
+          </label>
           <cv-radio-group vertical>
             <cv-radio-button
               v-model="skip_existing"
