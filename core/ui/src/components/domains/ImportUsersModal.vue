@@ -21,10 +21,10 @@
     <template slot="content">
       <cv-form @submit.prevent="nextStep">
         <NsInlineNotification
-          v-if="error.ImportDataCsv"
+          v-if="error.importDataCsv"
           kind="error"
           :title="$t('import_users.import_error')"
-          :description="error.ImportDataCsv"
+          :description="error.importDataCsv"
           :showCloseButton="false"
         />
         <template v-if="step == 'importData'">
@@ -219,7 +219,7 @@ export default {
       error: {
         uploadCsvFile: "",
         getPreviewData: "",
-        ImportDataCsv: "",
+        importDataCsv: "",
       },
       previewRows: [],
       tablePage: [],
@@ -431,7 +431,7 @@ export default {
       }
 
       if (this.isLastStep) {
-        this.ImportDataCsv();
+        this.importDataCsv();
       } else {
         this.step = this.steps[this.stepIndex + 1];
       }
@@ -444,9 +444,9 @@ export default {
     toggleSetupKey() {
       this.isShownSetupKey = !this.isShownSetupKey;
     },
-    async ImportDataCsv() {
+    async importDataCsv() {
       this.loading.uploadCsvFile = true;
-      this.error.ImportDataCsv = "";
+      this.error.importDataCsv = "";
       const taskAction = "import-users";
       const eventId = this.getUuid();
 
@@ -490,7 +490,7 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.ImportDataCsv = this.getErrorMessage(err);
+        this.error.importDataCsv = this.getErrorMessage(err);
         this.loading.uploadCsvFile = false;
         return;
       }
