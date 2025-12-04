@@ -226,6 +226,16 @@ export default {
       tablePage: [],
       userCount: 0,
       groupCount: 0,
+      tableColumns: [
+        "user",
+        "display_name",
+        "password",
+        "mail",
+        "groups",
+        "locked",
+        "must_change_password",
+        "no_password_expiration",
+      ],
     };
   },
   computed: {
@@ -234,31 +244,6 @@ export default {
         return this.domain.providers[0].id;
       }
       return "";
-    },
-    tableColumns() {
-      if (this.isSamba) {
-        return [
-          "user",
-          "display_name",
-          "password",
-          "mail",
-          "groups",
-          "locked",
-          "must_change_password",
-          "no_password_expiration",
-        ];
-      } else if (this.isOpenLdap) {
-        return [
-          "user",
-          "display_name",
-          "password",
-          "mail",
-          "groups",
-          "locked",
-          "must_change_password",
-        ];
-      }
-      return [];
     },
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
@@ -330,7 +315,8 @@ export default {
             // Validate column count in all rows
             for (let i = 0; i < results.data.length; i++) {
               if (results.data[i].length !== expectedColumns) {
-                this.error.uploadCsvFile = "import_users.invalid_csv_format_not_expected_columns";
+                this.error.uploadCsvFile =
+                  "import_users.invalid_csv_format_not_expected_columns";
                 this.loading.getPreviewData = false;
                 return;
               }
