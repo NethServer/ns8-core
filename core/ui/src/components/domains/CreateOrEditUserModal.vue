@@ -109,7 +109,6 @@
             policy.strength.enforced ? policy.strength.complexity_check : false
           "
           autocomplete="new-password"
-          newPasswordHelperText
         />
         <NsToggle
           v-if="!isEditing && isActiveDirectory"
