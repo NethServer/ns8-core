@@ -474,7 +474,9 @@ export default {
           },
           extra: {
             title: this.$t("action.import-users"),
-            description: this.$t("common.processing"),
+            description: this.$t("import_users.importing_data_on_domain_name", {
+              name: this.domain.name,
+            }),
             eventId,
           },
         })

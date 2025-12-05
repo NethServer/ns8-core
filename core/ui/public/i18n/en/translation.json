@@ -1752,6 +1752,7 @@
         "no_import_users": "No users to import",
         "no_import_users_description": "The CSV file does not contain any user to import.",
         "invalid_csv_format_not_expected_columns": "Invalid CSV format: unexpected number of columns",
-        "file_read_error": "File read error"
+        "file_read_error": "File read error",
+        "importing_data_on_domain_name": "Importing data on domain {name}"
     }
 }
