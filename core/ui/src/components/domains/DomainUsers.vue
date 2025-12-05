@@ -10,7 +10,7 @@
           <cv-column>
             <NsButton
               v-if="domain && domain.location === 'internal'"
-              kind="secondary"
+              kind="primary"
               :icon="Add20"
               @click="showCreateUserModal"
               >{{ $t("domain_users.create_user") }}
@@ -23,7 +23,7 @@
                 $t('domain_users.cannot_make_changes_to_an_external_domain')
               "
             >
-              <NsButton kind="secondary" :icon="Add20" disabled
+              <NsButton kind="primary" :icon="Add20" disabled
                 >{{ $t("domain_users.create_user") }}
               </NsButton>
             </cv-tooltip>

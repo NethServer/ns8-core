@@ -29,6 +29,8 @@
           :label="$t('domain_users.username')"
           :invalid-message="error.user"
           :disabled="isEditing || loading.addUser || loading.alterUser"
+          :helper-text="$t('domain_users.username_helper_text')"
+          :placeholder="$t('common.eg_value', { value: 'jane.doe' })"
           data-modal-primary-focus
           autocomplete="off"
           ref="user"
@@ -37,7 +39,9 @@
           v-model.trim="displayName"
           :label="$t('domain_users.display_name')"
           :invalid-message="error.display_name"
+          :helper-text="$t('domain_users.display_name_helper_text')"
           :disabled="loading.addUser || loading.alterUser"
+          :placeholder="$t('common.eg_value', { value: 'Jane Doe' })"
           autocomplete="off"
           ref="display_name"
         />
@@ -47,6 +51,9 @@
           :invalid-message="error.mail"
           :disabled="loading.addUser || loading.alterUser"
           autocomplete="off"
+          :placeholder="
+            $t('common.eg_value', { value: 'jane.doe@example.com' })
+          "
           ref="mail"
           type="email"
         />
@@ -78,7 +85,7 @@
         <NsPasswordInput
           v-if="!isEditing"
           :newPasswordLabel="$t('password.password')"
-          :confirmPasswordLabel="$t('password.re_enter_password')"
+          :confirmPasswordLabel="$t('domain_users.confirm_password')"
           v-model="newPassword"
           @passwordValidation="onPasswordValidation"
           :newPasswordInvalidMessage="$t(error.newPassword)"
