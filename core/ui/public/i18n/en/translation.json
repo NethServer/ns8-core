@@ -94,7 +94,8 @@
         "plus_others": "+{num} other | +{num} others",
         "choose_a_node": "Choose a node",
         "type": "Type",
-        "any": "Any"
+        "any": "Any",
+        "eg_value": "e.g. {value}"
     },
     "error": {
         "error": "Error",
@@ -1443,7 +1444,6 @@
         "mail_format": "Invalid mail format",
         "username_helper_text": "Must start with a letter. Only letters, numbers, hyphens and underscores are allowed",
         "display_name_helper_text": "Name displayed to other users",
-        "eg_value": "e.g. {value}",
         "confirm_password": "Confirm password",
         "import_data": "Import data",
         "export_data": "Export data",
