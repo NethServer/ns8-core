@@ -1744,14 +1744,14 @@
         "preview": "Preview",
         "preview_description": "{users} users and {groups} groups will be imported. Review the data contained in the CSV file; only the first 5 rows are displayed.",
         "too_many_users": "File exceeds size limit. Max 10000 rows are allowed",
-        "invalid_csv_format": "Invalid CSV format.",
+        "invalid_csv_format": "Invalid CSV format",
         "import_error": "Import error",
         "import": "Import",
         "delete_your_file_after_import":"Delete your file after the import",
         "delete_your_file_after_import_description":"If the file contains user passwords, it's recommended to delete the CSV after the import for security reasons.",
         "no_import_users": "No users to import",
         "no_import_users_description": "The CSV file does not contain any user to import.",
-        "invalid_csv_format_not_expected_columns": "Invalid CSV format: unexpected number of columns.",
-        "file_read_error": "File read error."
+        "invalid_csv_format_not_expected_columns": "Invalid CSV format: unexpected number of columns",
+        "file_read_error": "File read error"
     }
 }
