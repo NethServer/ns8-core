@@ -137,7 +137,8 @@
         "choose_a_node": "Choose a node",
         "any_node": "Any node",
         "type": "Type",
-        "any": "Any"
+        "any": "Any",
+        "eg_value": "e.g. {value}"
     },
     "backup": {
         "aws": "Amazon S3",
@@ -555,7 +556,10 @@
         "set-default-certificate": "Request certificate",
         "list-alerts": "List alerts",
         "list-nodes": "List nodes",
-        "set-note": "Set note"
+        "set-note": "Set note",
+        "import-users": "Import users",
+        "export-users": "Export users",
+        "get-password-warning": "Get password warning"
     },
     "shell": {
         "app_launcher": "Aplikazioen abiarazlea",
@@ -1321,7 +1325,16 @@
         "change_password_at_next_login": "User has to change password at next login",
         "no_password_expiration_policy": "Password never expires",
         "no_password_expiration_policy_tooltip": "User's password does not expire, regardless of age-related policy settings",
-        "must_change_password_information_title": "Require password change at next login"
+        "must_change_password_information_title": "Require password change at next login",
+        "no_password_expiration": "No password expiration",
+        "display_name_helper_text": "Name displayed to other users",
+        "import_data": "Import data",
+        "password": "Password",
+        "locked": "Locked",
+        "confirm_password": "Confirm password",
+        "username_helper_text": "Must start with a letter. Only letters, numbers, hyphens and underscores are allowed",
+        "must_change_password": "Must change password",
+        "export_data": "Export data"
     },
     "settings_tls_certificates": {
         "cert_upload_label": "Ziurtagiria",
@@ -1718,5 +1731,28 @@
         "restart_instance_name": "Restart {instance}",
         "move": "Move",
         "title_tooltip": "This page displays all the applications installed on the cluster and lets you manage them easily. To install a new application, go to {software} page."
+    },
+    "import_users": {
+        "csv_upload_label": "Upload file",
+        "delete_your_file_after_import": "Delete your file after the import",
+        "invalid_csv_format_not_expected_columns": "Invalid CSV format: unexpected number of columns",
+        "delete_your_file_after_import_description": "If the file contains user passwords, it's recommended to delete the CSV after the import for security reasons.",
+        "manage_existing_users_tooltip": "Specify how to handle users that already exist in the cluster. You can either skip them or overwrite their data with the values from the file.",
+        "preview_description": "{users} users and {groups} groups will be imported. Review the data contained in the CSV file; only the first 5 rows are displayed.",
+        "manage_existing_users": "Manage existing users",
+        "preview": "Preview",
+        "skip_existing_users": "Skip existing users",
+        "no_import_users_description": "The CSV file does not contain any user to import.",
+        "import_error": "Import error",
+        "upload_csv_file_description": "Upload a CSV file containing user data. If the file includes group assignments, those groups will be imported as well.",
+        "invalid_csv_format": "Invalid CSV format",
+        "importing_data_on_domain_name": "Importing data on domain {name}",
+        "no_import_users": "No users to import",
+        "overwrite_existing_users": "Overwrite existing users",
+        "too_many_users": "File exceeds size limit. Max 10000 rows are allowed",
+        "csv_upload_helper_text": "Max 10000 rows. Supported format: CSV",
+        "import": "Import",
+        "file_read_error": "File read error",
+        "import_data": "Import data"
     }
 }
