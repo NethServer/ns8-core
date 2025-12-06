@@ -1753,6 +1753,15 @@
         "no_import_users_description": "The CSV file does not contain any user to import.",
         "invalid_csv_format_not_expected_columns": "Invalid CSV format: unexpected number of columns",
         "file_read_error": "File read error",
-        "importing_data_on_domain_name": "Importing data on domain {name}"
+        "importing_data_on_domain_name": "Importing data on domain {name}",
+        "csv_missing_header": "CSV file is missing the header row.",
+        "expected_columns": "Expected columns: {columns}",
+        "found_columns": "Found: {columns}",
+        "csv_missing_columns": "CSV file is missing required columns: {columns}",
+        "no_header_found": "no header row detected",
+        "csv_parse_errors": "CSV parsing errors detected:",
+        "csv_column_mismatch": "Line {line}: expected {expected} columns, found {found}",
+        "line": "Line",
+        "and_more_errors": "... and {count} more errors"
     }
 }
