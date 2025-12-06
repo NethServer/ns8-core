@@ -47,9 +47,8 @@
           <div
             v-if="error.uploadCsvFile"
             class="validation-failed-invalid-message"
-          >
-            {{ $t(error.uploadCsvFile) }}
-          </div>
+            v-html="$t(error.uploadCsvFile)"
+          ></div>
           <label class="bx--label">
             {{ $t("import_users.manage_existing_users") }}
             <cv-interactive-tooltip
@@ -294,50 +293,92 @@ export default {
         reader.onload = (e) => {
           try {
             const csvContent = e.target.result;
-            const results = Papa.parse(csvContent, {
-              header: false, // Important: no header, we process columns by index
+
+            // First parse with auto-detection to determine delimiter
+            const detectionResults = Papa.parse(csvContent, {
+              preview: 1,
               skipEmptyLines: true,
             });
 
-            // Check if Papa parse encountered errors
-            if (results.errors && results.errors.length > 0) {
-              this.error.uploadCsvFile = "import_users.invalid_csv_format";
+            // Check if first row contains valid headers
+            const firstRow = detectionResults.data[0] || [];
+            const trimmedFirstRow = firstRow.map((cell) =>
+              typeof cell === "string" ? cell.trim() : cell
+            );
+
+            // Detect if header row is present by checking if first row matches expected columns
+            const hasValidHeaders = this.tableColumns.every((col) =>
+              trimmedFirstRow.includes(col)
+            );
+
+            if (!hasValidHeaders) {
+              // Show which columns are expected with line breaks
+              const expectedCols = this.tableColumns.join(", ");
+              const foundCols = trimmedFirstRow.length > 0
+                ? trimmedFirstRow.join(", ")
+                : this.$t("import_users.no_header_found");
+              
+              this.error.uploadCsvFile =
+                this.$t("import_users.csv_missing_header") +
+                "<br>" +
+                this.$t("import_users.expected_columns", { columns: expectedCols }) +
+                "<br>" +
+                this.$t("import_users.found_columns", { columns: foundCols });
               this.loading.getPreviewData = false;
               return;
             }
 
-            // Check if first row is the header and remove it
-            const headerString =
-              "user,display_name,password,mail,groups,locked,must_change_password,no_password_expiration";
-            if (
-              results.data.length > 0 &&
-              results.data[0].join(",") === headerString
-            ) {
-              results.data = results.data.slice(1);
+            // Parse with detected delimiter and header support
+            const results = Papa.parse(csvContent, {
+              header: true, // Use first row as headers
+              skipEmptyLines: true,
+              delimiter: detectionResults.meta.delimiter, // Use auto-detected delimiter
+              transformHeader: (header) => header.trim(), // Trim header names
+            });
+
+            // Check if Papa parse encountered errors
+            if (results.errors && results.errors.length > 0) {
+              // Build detailed error message showing line-by-line issues
+              const errorDetails = results.errors
+                .slice(0, 5) // Show first 5 errors max
+                .map(err => {
+                  if (err.type === 'FieldMismatch') {
+                    return this.$t('import_users.csv_column_mismatch', {
+                      line: err.row + 2, // +2 because row is 0-indexed and we have header
+                      expected: results.meta.fields.length,
+                      found: err.row < results.data.length ? Object.keys(results.data[err.row]).length : '?'
+                    });
+                  }
+                  return `${this.$t('import_users.line')} ${err.row + 2}: ${err.message}`;
+                })
+                .join('<br>');
+              
+              const moreErrors = results.errors.length > 5 
+                ? '<br>' + this.$t('import_users.and_more_errors', { count: results.errors.length - 5 })
+                : '';
+              
+              this.error.uploadCsvFile = 
+                this.$t('import_users.csv_parse_errors') + '<br>' + errorDetails + moreErrors;
+              this.loading.getPreviewData = false;
+              return;
             }
 
-            // Define expected column
-            let expectedColumns = this.tableColumns.length;
-            // Validate column count in all rows
-            for (let i = 0; i < results.data.length; i++) {
-              if (results.data[i].length !== expectedColumns) {
-                this.error.uploadCsvFile =
-                  "import_users.invalid_csv_format_not_expected_columns";
-                this.loading.getPreviewData = false;
-                return;
-              }
-            }
+            // Validate that all required columns are present (double-check after parsing)
+            const requiredColumns = this.tableColumns;
+            const headers = results.meta.fields || [];
 
-            let COLUMN_MAPPING = {
-              0: "user",
-              1: "display_name",
-              2: "password",
-              3: "mail",
-              4: "groups",
-              5: "locked",
-              6: "must_change_password",
-              7: "no_password_expiration",
-            };
+            const missingColumns = requiredColumns.filter(
+              (col) => !headers.includes(col)
+            );
+
+            if (missingColumns.length > 0) {
+              this.error.uploadCsvFile = this.$t(
+                "import_users.csv_missing_columns",
+                { columns: missingColumns.join(", ") }
+              );
+              this.loading.getPreviewData = false;
+              return;
+            }
 
             // Define which fields should be booleans
             const booleanFields = [
@@ -346,11 +387,13 @@ export default {
               "no_password_expiration",
             ];
 
-            // Transform rows into objects with correct keys
+            // Transform rows - Papa.parse already created objects with headers as keys
             this.importData = results.data.map((row) => {
               const obj = {};
-              Object.entries(COLUMN_MAPPING).forEach(([index, key]) => {
-                let value = row[index];
+
+              // Process each expected column
+              this.tableColumns.forEach((key) => {
+                let value = row[key];
 
                 // Trim whitespace from string values
                 if (typeof value === "string") {
@@ -378,6 +421,7 @@ export default {
                 }
                 obj[key] = value;
               });
+
               return obj;
             });
 
