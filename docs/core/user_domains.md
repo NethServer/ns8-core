@@ -61,8 +61,10 @@ event handler. Create an executable script with path
 `${AGENT_INSTALL_DIR}/events/user-domain-changed/10handler`. For instance:
 
 ```shell
-read -r domain < <(jq -r .domain)
-if [[ "${domain}" == "mydomain" ]]; then
+mydomain="ad.example.org"
+
+# Check if $mydomain is in the list of changed domains
+if jq -e --arg d "$mydomain" '.domains | index($d)' >/dev/null; then
     systemctl --user reload mymodule.service
 fi
 ```

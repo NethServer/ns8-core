@@ -22,7 +22,8 @@ Events should respect the following rules:
 Well known events:
 - `user-domain-changed`: the user domain has become available, has been
   removed, or its configuration has changed. The JSON parameter format is
-  `{"node_id":INT,"domain":STRING}`. The `node_id` attribute is optional.
+  `{"node_id":INT,"domains":LIST[STRING]}`. The `node_id` attribute is not
+  present for external domains. `domains` is a list of domain names.
 - `ldap-provider-changed`: an external LDAP account provider was removed
   or added to a user-domain. The JSON parameter format is
   `{"domain":STRING,"key":STRING}`.
