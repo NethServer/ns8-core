@@ -94,13 +94,13 @@ For more advanced firewall configurations, you can use rich rules to define comp
 Use the `add_rich_rules()` function to apply firewall rich rules on the node:
 
 ```python
-from agent import add_rich_rules
+import agent
 
 rules = [
     'rule family=ipv4 forward-port port=5060 protocol=udp to-port=5060 to-addr=192.168.1.100',
     'rule family=ipv4 source address=10.1.2.3 port port=22 protocol=tcp accept'
 ]
-result = add_rich_rules(rules)
+result = agent.add_rich_rules(rules)
 if not result:
     print("Failed to add rich rules")
 ```
@@ -112,12 +112,12 @@ Each element in the `rules` list should be a complete rich-rule string as accept
 Use the `remove_rich_rules()` function to remove firewall rich rules from the node:
 
 ```python
-from agent import remove_rich_rules
+import agent
 
 rules = [
     'rule family=ipv4 forward-port port=5060 protocol=udp to-port=5060 to-addr=192.168.1.100'
 ]
-result = remove_rich_rules(rules)
+result = agent.remove_rich_rules(rules)
 if not result:
     print("Failed to remove rich rules")
 ```
