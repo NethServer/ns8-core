@@ -745,7 +745,10 @@
         "restart-module": "Riavvia istanza",
         "list-alerts": "Elenca allarmi",
         "list-nodes": "Elenca nodi",
-        "set-note": "Imposta nota"
+        "set-note": "Imposta nota",
+        "import-users": "Importa utenti",
+        "export-users": "Esporta utenti",
+        "get-password-warning": "Ottieni avviso password"
     },
     "backup": {
         "configure": "Configura",
@@ -1075,7 +1078,8 @@
         "plus_others": "+{num} altro | +{num} altri",
         "choose_a_node": "Scegli un nodo",
         "type": "Tipo",
-        "any": "Qualsiasi"
+        "any": "Qualsiasi",
+        "eg_value": "Es. {value}"
     },
     "error": {
         "error": "Errore",
@@ -1377,14 +1381,23 @@
         "group_with_same_name": "Un gruppo con questo nome esiste già",
         "user_with_same_name": "Un utente con questo nome esiste già",
         "mail": "Indirizzo email",
-        "mail_field": "Indirizzo email (opzionale)",
+        "mail_field": "Email (opzionale)",
         "mail_format": "Formato email non valido",
         "must_change_password_information_description": "Assegna una password temporanea; l'utente deve cambiarla al prossimo accesso",
         "must_change_password_tooltip": "Se abilitato, sarà richiesto all'utente di cambiare password al prossimo accesso",
         "change_password_at_next_login": "L'utente deve cambiare password al prossimo accesso",
         "no_password_expiration_policy": "Password senza scadenza",
         "no_password_expiration_policy_tooltip": "La password dell'utente non scade, indipendentemente dalla policy di scadenza impostata",
-        "must_change_password_information_title": "Richiesta cambio password al prossimo accesso"
+        "must_change_password_information_title": "Richiesta cambio password al prossimo accesso",
+        "no_password_expiration": "No password expiration",
+        "display_name_helper_text": "Nome visualizzato ad altri utenti",
+        "import_data": "Importa dati",
+        "password": "Password",
+        "locked": "Disabilitato",
+        "confirm_password": "Conferma password",
+        "username_helper_text": "Deve cominciare con una lettera. Sono consentite solo lettere, numeri, trattini e underscore",
+        "must_change_password": "Must change password",
+        "export_data": "Esporta dati"
     },
     "domain_configuration": {
         "add_provider": "Aggiungi provider",
@@ -1718,5 +1731,28 @@
         "restart_instance_name": "Riavvia {instance}",
         "move": "Sposta",
         "title_tooltip": "Questa pagina visualizza tutte le applicazioni installate nel cluster e consente di gestirle facilmente. Per installare una nuova applicazione, vai alla pagina {software}."
+    },
+    "import_users": {
+        "csv_upload_label": "Upload file",
+        "delete_your_file_after_import": "Eliminare il file dopo l'importazione",
+        "invalid_csv_format_not_expected_columns": "Formato CSV non valido: numero imprevisto di colonne",
+        "delete_your_file_after_import_description": "Se il file contiene password utente, si consiglia di eliminare il CSV dopo l'importazione per motivi di sicurezza.",
+        "manage_existing_users_tooltip": "Specify how to handle users that already exist in the cluster. You can either skip them or overwrite their data with the values from the file.",
+        "preview_description": "{users} users and {groups} groups will be imported. Review the data contained in the CSV file; only the first 5 rows are displayed.",
+        "manage_existing_users": "Manage existing users",
+        "preview": "Preview",
+        "skip_existing_users": "Skip existing users",
+        "no_import_users_description": "Il file CSV non contiene alcun utente da importare.",
+        "import_error": "Errore di importazione",
+        "upload_csv_file_description": "Upload a CSV file containing user data. If the file includes group assignments, those groups will be imported as well.",
+        "invalid_csv_format": "Formato CSV non valido",
+        "importing_data_on_domain_name": "Importazione dei dati sul dominio {name}",
+        "no_import_users": "Nessun utente da importare",
+        "overwrite_existing_users": "Overwrite existing users",
+        "too_many_users": "Il file supera il limite di dimensione. Sono consentite max 10000 righe",
+        "csv_upload_helper_text": "Max 10000 rows. Supported format: CSV",
+        "import": "Importa",
+        "file_read_error": "Errore di lettura del file",
+        "import_data": "Import data"
     }
 }
