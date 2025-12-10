@@ -44,5 +44,6 @@ if protocol == 'ldap':
     }))
     # Advertise new user domain setup
     rdb.publish(os.getenv('AGENT_ID') + '/event/user-domain-changed', json.dumps({
-        'domain': domain
+        'domain': domain, # obsolete
+        'domains': [domain], # since core 3.16.0
     }))
