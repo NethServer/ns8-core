@@ -65,55 +65,6 @@
           </NsInfoCard>
           <NsInfoCard
             light
-            :title="$t('cluster_status.subscription_status')"
-            :icon="Badge32"
-            :loading="loading.getSubscription"
-            :isErrorShown="error.getSubscription"
-            :errorTitle="$t('error.cannot_retrieve_subscription_status')"
-            :errorDescription="error.getSubscription"
-            class="min-height-card"
-          >
-            <template slot="content">
-              <div class="card-rows">
-                <div class="card-row">
-                  <div v-if="!loading.getSubscription" class="card-row">
-                    <cv-tag
-                      v-if="subscription_status === 'active'"
-                      kind="green"
-                      :label="$t('common.active')"
-                    ></cv-tag>
-                    <cv-tag
-                      v-else
-                      kind="high-contrast"
-                      :label="$t('common.not_active')"
-                    ></cv-tag>
-                  </div>
-                </div>
-                <div
-                  v-if="support_active && !loading.getSubscription"
-                  class="card-row"
-                >
-                  <div class="mg-top-sm icon-and-text">
-                    <NsSvg :svg="InformationFilled16" class="icon ns-info" />
-                    <span>{{
-                      $t("settings_subscription.remote_support_in_progress")
-                    }}</span>
-                  </div>
-                </div>
-                <div v-if="!loading.getSubscription" class="card-row">
-                  <NsButton
-                    kind="ghost"
-                    :icon="ArrowRight20"
-                    @click="$router.push('/settings/subscription')"
-                  >
-                    {{ $t("cluster_status.go_to_subscription") }}
-                  </NsButton>
-                </div>
-              </div>
-            </template>
-          </NsInfoCard>
-          <NsInfoCard
-            light
             :title="installedModules.length.toString()"
             :description="
               $tc('cluster_status.apps_installed_c', installedModules.length)
@@ -380,6 +331,55 @@
                     @click="$router.push('/settings/system-logs')"
                   >
                     {{ $t("cluster_status.go_to_system_logs") }}
+                  </NsButton>
+                </div>
+              </div>
+            </template>
+          </NsInfoCard>
+          <NsInfoCard
+            light
+            :title="$t('cluster_status.subscription_status')"
+            :icon="Badge32"
+            :loading="loading.getSubscription"
+            :isErrorShown="error.getSubscription"
+            :errorTitle="$t('error.cannot_retrieve_subscription_status')"
+            :errorDescription="error.getSubscription"
+            class="min-height-card"
+          >
+            <template slot="content">
+              <div class="card-rows">
+                <div class="card-row">
+                  <div v-if="!loading.getSubscription" class="card-row">
+                    <cv-tag
+                      v-if="subscription_status === 'active'"
+                      kind="green"
+                      :label="$t('common.active')"
+                    ></cv-tag>
+                    <cv-tag
+                      v-else
+                      kind="high-contrast"
+                      :label="$t('common.not_active')"
+                    ></cv-tag>
+                  </div>
+                </div>
+                <div
+                  v-if="support_active && !loading.getSubscription"
+                  class="card-row"
+                >
+                  <div class="mg-top-sm icon-and-text">
+                    <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+                    <span>{{
+                      $t("settings_subscription.remote_support_in_progress")
+                    }}</span>
+                  </div>
+                </div>
+                <div v-if="!loading.getSubscription" class="card-row">
+                  <NsButton
+                    kind="ghost"
+                    :icon="ArrowRight20"
+                    @click="$router.push('/settings/subscription')"
+                  >
+                    {{ $t("cluster_status.go_to_subscription") }}
                   </NsButton>
                 </div>
               </div>
@@ -757,7 +757,7 @@ export default {
       this.loading.getClusterStatus = false;
     },
     async listModules() {
-      this.loading.modules = true;
+      this.loading.listModules = true;
       this.error.listModules = "";
       const taskAction = "list-modules";
       const eventId = this.getUuid();

@@ -16,6 +16,20 @@ export default {
       control: { type: "radio" },
     },
   },
+  args: {
+    title: "Card title",
+    description: "Card description",
+    titleTooltip: "",
+    titleTooltipAlignment: "center",
+    titleTooltipDirection: "bottom",
+    loading: false,
+    isErrorShown: false,
+    errorTitle: "",
+    errorDescription: "",
+    icon: Application32,
+    wrapTitle: false,
+    light: true,
+  },
 };
 
 const Template = (args, { argTypes }) => ({
@@ -30,33 +44,12 @@ const Template = (args, { argTypes }) => ({
 });
 
 export const Default = Template.bind({});
-Default.args = {
-  title: "Card title",
-  description: "Card description",
-  titleTooltip: "",
-  titleTooltipAlignment: "center",
-  titleTooltipDirection: "bottom",
-  loading: false,
-  isErrorShown: false,
-  errorTitle: "",
-  errorDescription: "",
-  light: true,
-  icon: Application32,
-};
+Default.args = {};
 
 export const TitleTooltip = Template.bind({});
 TitleTooltip.args = {
   title: "Card title with tooltip",
-  description: "Card description",
   titleTooltip: "This is a tooltip",
-  titleTooltipAlignment: "center",
-  titleTooltipDirection: "bottom",
-  loading: false,
-  isErrorShown: false,
-  errorTitle: "",
-  errorDescription: "",
-  light: true,
-  icon: Application32,
 };
 
 const TitleTooltipSlotTemplate = (args, { argTypes }) => ({
@@ -77,46 +70,18 @@ const TitleTooltipSlotTemplate = (args, { argTypes }) => ({
 export const TitleTooltipSlot = TitleTooltipSlotTemplate.bind({});
 TitleTooltipSlot.args = {
   title: "Card title with tooltip",
-  description: "Card description",
-  titleTooltip: "",
-  titleTooltipAlignment: "center",
-  titleTooltipDirection: "bottom",
-  loading: false,
-  isErrorShown: false,
-  errorTitle: "",
-  errorDescription: "",
-  light: true,
-  icon: Application32,
 };
 
 export const Loading = Template.bind({});
 Loading.args = {
-  title: "Card title",
-  description: "Card description",
-  titleTooltip: "",
-  titleTooltipAlignment: "center",
-  titleTooltipDirection: "bottom",
   loading: true,
-  isErrorShown: false,
-  errorTitle: "",
-  errorDescription: "",
-  light: true,
-  icon: Application32,
 };
 
 export const Error = Template.bind({});
 Error.args = {
-  title: "Card title",
-  description: "Card description",
-  titleTooltip: "",
-  titleTooltipAlignment: "center",
-  titleTooltipDirection: "bottom",
-  loading: false,
   isErrorShown: true,
   errorTitle: "Error title",
   errorDescription: "Detailed error description",
-  light: true,
-  icon: Application32,
 };
 
 const OverflowMenuTemplate = (args, { argTypes }) => ({
@@ -150,16 +115,11 @@ const OverflowMenuTemplate = (args, { argTypes }) => ({
 });
 
 export const OverflowMenu = OverflowMenuTemplate.bind({});
-OverflowMenu.args = {
-  title: "Card title",
-  description: "Card description",
-  titleTooltip: "",
-  titleTooltipAlignment: "center",
-  titleTooltipDirection: "bottom",
-  loading: false,
-  isErrorShown: false,
-  errorTitle: "",
-  errorDescription: "",
-  light: true,
-  icon: Application32,
+OverflowMenu.args = {};
+
+export const WrapTitle = Template.bind({});
+WrapTitle.args = {
+  title:
+    "This is a card with a very long card title that should wrap into multiple lines since the wrapTitle property is set to true. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+  wrapTitle: true,
 };
