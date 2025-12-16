@@ -102,6 +102,7 @@
                   light
                   :title="$t('domains.unconfigured_domain')"
                   :icon="WarningAlt32"
+                  :wrapTitle="true"
                 >
                   <template #menu>
                     <cv-overflow-menu
@@ -225,6 +226,7 @@
                   light
                   :title="domain.name"
                   :icon="Events32"
+                  :wrapTitle="true"
                 >
                   <template #menu>
                     <cv-overflow-menu
