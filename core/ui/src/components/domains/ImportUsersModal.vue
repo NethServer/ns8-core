@@ -27,6 +27,7 @@
           :description="error.importDataCsv"
           :showCloseButton="false"
         />
+        <NsProgress :stepId="step" :steps="progressSteps" class="progress" />
         <template v-if="step == 'importData'">
           <p class="mg-bottom-lg">
             {{ $t("import_users.upload_csv_file_description") }}
@@ -206,6 +207,16 @@ export default {
     return {
       step: "",
       steps: ["importData", "previewData"],
+      progressSteps: [
+        {
+          id: "importData",
+          label: this.$t("import_users.csv_upload_label"),
+        },
+        {
+          id: "previewData",
+          label: this.$t("import_users.preview"),
+        },
+      ],
       csvFile: null,
       existingPolicy: "skip",
       loading: {
@@ -536,5 +547,10 @@ export default {
     padding: $spacing-02;
     max-width: 320px;
   }
+}
+
+.progress {
+  margin-top: 1rem;
+  margin-bottom: 3rem;
 }
 </style>
