@@ -95,7 +95,9 @@
         "choose_a_node": "Choose a node",
         "type": "Type",
         "any": "Any",
-        "eg_value": "e.g. {value}"
+        "eg_value": "e.g. {value}",
+        "go_to_page": "Go to {page}",
+        "not_configured": "Not configured"
     },
     "error": {
         "error": "Error",
@@ -426,7 +428,7 @@
         "set-metrics-configuration": "Set metrics configuration",
         "set-metrics-notifications": "Set metrics notifications",
         "get-metrics-id": "Get metrics ID",
-        "restart-module": "Restart instance",
+        "restart-module": "Restart application",
         "list-alerts": "List alerts",
         "list-nodes": "List nodes",
         "set-note": "Set note",
@@ -903,6 +905,15 @@
         "lets_encrypt_disabled_warning": "Traefik will be restarted",
         "request_https_certificate": "Request a Let's Encrypt certificate",
         "cannot_obtain_certificate": "Cannot obtain Let's Encrypt certificate"
+    },
+    "apps_status": {
+        "application": "Application",
+        "restart_application": "Restart application",
+        "go_to_node_details": "Go to node",
+        "application_images": "Application images",
+        "application_volumes": "Application volumes",
+        "search_images": "Search images",
+        "search_volumes": "Search volumes"
     },
     "settings_account": {
         "title": "Account",
