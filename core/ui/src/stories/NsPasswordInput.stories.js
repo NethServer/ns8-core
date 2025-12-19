@@ -14,8 +14,8 @@ const Template = (args, { argTypes }) => ({
 export const Default = Template.bind({});
 Default.args = {
   value: "",
-  newPaswordHelperText: "",
-  confirmPaswordHelperText: "",
+  newPasswordHelperText: "",
+  confirmPasswordHelperText: "",
   newPasswordInvalidMessage: "",
   confirmPasswordInvalidMessage: "",
   newPasswordLabel: "New password",
