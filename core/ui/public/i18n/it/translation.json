@@ -61,7 +61,7 @@
         "repository": "Repository",
         "app_installation": "Installa {app}",
         "installing_on_node": "Installazione su {node} in corso",
-        "instance_installed_on_node": "{modulo_id} installato su {node}",
+        "instance_installed_on_node": "{module_id} installato su {node}",
         "app_uninstallation": "Disinstalla {app}",
         "uninstall_instance": "Disinstalla istanza",
         "uninstalling": "Disinstallazione",
@@ -70,7 +70,7 @@
         "move_app": "Sposta app",
         "moving_app_to_node": "Spostamento di {instance} su {node}",
         "app_with_ui_name_cloned_to_node": "{instance} clonata su {node}",
-        "app_without_ui_name_cloned_to_node": "{instance} clonata su {node} come {modulo_id}",
+        "app_without_ui_name_cloned_to_node": "{instance} clonata su {node} come {module_id}",
         "app_with_ui_name_moved_to_node": "{instance} spostata su {node}",
         "app_without_ui_name_moved_to_node": "{instance} spostata su {node} come {module_id}",
         "core_app_update_available_description": "Alcune app di base devono essere aggiornate",
@@ -742,7 +742,7 @@
         "set-metrics-configuration": "Imposta configurazione Metrics",
         "get-metrics-id": "Identifica Metrics",
         "get-metrics-ids": "Identifica Metrics",
-        "restart-module": "Riavvia istanza",
+        "restart-module": "Riavvia applicazione",
         "list-alerts": "Elenca allarmi",
         "list-nodes": "Elenca nodi",
         "set-note": "Imposta nota",
@@ -1079,7 +1079,9 @@
         "choose_a_node": "Scegli un nodo",
         "type": "Tipo",
         "any": "Qualsiasi",
-        "eg_value": "Es. {value}"
+        "eg_value": "es. {value}",
+        "go_to_page": "Vai a {page}",
+        "not_configured": "Non configurato"
     },
     "error": {
         "error": "Errore",
@@ -1697,6 +1699,15 @@
         "lets_encrypt_disabled_warning_description": "L'applicazione sarà temporaneamente non disponibile e i client HTTP connessi al nodo {node} subiranno una breve disconnessione.",
         "request_https_certificate": "Richiedi un certificato Let's Encrypt",
         "go_to_tls_certificates": "Vai a Certificati TLS"
+    },
+    "apps_status": {
+        "application": "Applicazione",
+        "restart_application": "Riavvia applicazione",
+        "go_to_node_details": "Vai al nodo",
+        "application_images": "Immagini applicazione",
+        "application_volumes": "Volumi applicazione",
+        "search_images": "Cerca immagini",
+        "search_volumes": "Cerca volumi"
     },
     "applications": {
         "restarting": "Riavvio",

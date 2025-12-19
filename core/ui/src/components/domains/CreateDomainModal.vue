@@ -286,7 +286,7 @@
               :confirmPasswordLabel="$t('openldap.admpass_confirm')"
               v-model="openldap.admpass"
               @passwordValidation="onNewOpenLdapPasswordValidation"
-              :newPaswordHelperText="
+              :newPasswordHelperText="
                 $t('openldap.choose_openldap_admin_password')
               "
               :newPasswordInvalidMessage="$t(error.openldap.admpass)"
