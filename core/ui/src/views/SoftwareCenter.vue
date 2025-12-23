@@ -333,16 +333,11 @@
           <h6 class="search-results-title">
             {{ $t("software_center.search_results") }}
           </h6>
-          <AppList
-            v-if="searchResults.length"
-            :apps="searchResults"
-            :skeleton="loading.listModules || loading.listCoreModules"
-            tab="search"
-            @install="openInstallModal"
-            key="search-app-list"
+          <cv-tile
+            v-if="!searchResults.length && !loading.listModules"
+            kind="standard"
             :light="true"
-          />
-          <cv-tile v-else kind="standard" :light="true">
+          >
             <NsEmptyState
               :title="$t('software_center.no_app_found')"
               :animationData="GhostLottie"
@@ -355,6 +350,15 @@
               </template>
             </NsEmptyState>
           </cv-tile>
+          <AppList
+            v-else
+            :apps="searchResults"
+            :skeleton="loading.listModules || loading.listCoreModules"
+            tab="search"
+            @install="openInstallModal"
+            key="search-app-list"
+            :light="true"
+          />
         </div>
       </div>
     </cv-grid>
@@ -473,9 +477,10 @@ export default {
     },
   },
   watch: {
-    "q.search": function () {
-      if (!this.q.search) {
-        this.q.view = "all";
+    modules() {
+      // perform search again when modules are updated
+      if (this.q.view === "search" && this.q.search) {
+        this.searchApp(this.q.search);
       }
     },
   },
@@ -563,11 +568,6 @@ export default {
       }
       this.appUpdates = appUpdates;
       this.modules = modules;
-
-      // perform search on browser history navigation (e.g. going back to software center)
-      if (this.q.search) {
-        this.searchApp(this.q.search);
-      }
       this.listCoreModules();
     },
     async listCoreModules() {
@@ -709,6 +709,7 @@ export default {
       }
     },
     contentSwitcherSelected(value) {
+      this.q.search = "";
       this.q.view = value;
     },
     goToUpdates() {
