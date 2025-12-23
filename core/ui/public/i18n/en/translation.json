@@ -273,7 +273,7 @@
         "hostname_pattern": "Invalid hostname format",
         "forbidden_hostname_value": "Forbidden hostname",
         "apps_restoration": "Applications restoration",
-        "apps_restoration_single_node_description": "You can choose which apps to restore in the next step, after the cluster has been restored.",
+        "apps_restoration_single_node_description": "You can choose which applications to restore in the next step, after the cluster has been restored.",
         "apps_restoration_multi_node_description": "Applications cannot be restored automatically because the original cluster consisted of multiple nodes. You can manually restore applications later by going to '@:backup.title > @:backup.restore_app'"
     },
     "shell": {
