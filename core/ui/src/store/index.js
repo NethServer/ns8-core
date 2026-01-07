@@ -18,12 +18,6 @@ export default new Vuex.Store({
     isTaskErrorShown: false,
     loggedUser: "",
     isWebsocketConnected: false,
-    socket: {
-      //// remove
-      isConnected: false,
-      message: "",
-      reconnectError: false,
-    },
     isClusterInitialized: false,
     leaderListenPort: null,
     clusterLabel: "",
