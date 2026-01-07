@@ -35,7 +35,7 @@ export default new Vuex.Store({
     },
     migratingApps: [],
     taskContextCache: new Map(),
-    taskContextCacheSize: 50, //// 50?
+    taskContextCacheSize: 50,
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -193,8 +193,6 @@ export default new Vuex.Store({
       state.migratingApps = migratingApps;
     },
     refreshTaskContextInCache(state, payload) {
-      console.log("@@ refreshTaskContextInCache", payload); ////
-
       const taskId = payload.taskId;
       const taskContext = payload.taskContext;
 
@@ -203,8 +201,6 @@ export default new Vuex.Store({
       state.taskContextCache.set(taskId, taskContext);
     },
     setTaskContextInCache(state, payload) {
-      console.log("@@ setTaskContextInCache", payload); ////
-
       const taskId = payload.taskId;
       const taskContext = payload.taskContext;
 
@@ -218,8 +214,6 @@ export default new Vuex.Store({
       if (state.taskContextCache.size >= state.taskContextCacheSize) {
         const oldestKey = state.taskContextCache.keys().next().value;
         state.taskContextCache.delete(oldestKey);
-
-        console.log("@@ deleted old key", oldestKey); ////
       }
       state.taskContextCache.set(taskId, taskContext);
     },
@@ -316,17 +310,11 @@ export default new Vuex.Store({
       context.commit("setMigratingApps", migratingApps);
     },
     getTaskContextFromCache: (context, taskId) => {
-      console.log("@@ getTaskContextFromCache", taskId); ////
-
       if (!context.state.taskContextCache.has(taskId)) {
-        console.log("@@ cache MISS", taskId); ////
-
         // The requested task ID is not in the cache
         return null;
       }
       const taskContext = context.state.taskContextCache.get(taskId);
-
-      console.log("@@ cache HIT", taskId, taskContext); ////
 
       // Refresh the item: delete and re-insert so it's "newest"
       context.commit("refreshTaskContextInCache", { taskId, taskContext });

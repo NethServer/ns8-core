@@ -189,12 +189,7 @@ export default {
     async handleProgressTaskMessage(taskPath, taskId, payload) {
       let taskContext = await this.getTaskContextFromCache(taskId);
 
-      console.log("@@ handleProgressTaskMessage", taskId); ////
-      console.log("@@ taskContext from cache", taskContext); ////
-
       if (!taskContext) {
-        console.log("@@ miss, calling context api..."); ////
-
         // fetch task context from API and store it in cache
         const [err, contextResponse] = await to(this.getTaskContext(taskPath));
 
@@ -213,11 +208,8 @@ export default {
           return;
         }
         taskContext = contextResponse.data.data.context;
-        this.setTaskContextInCache({ taskId, taskContext }); ////
-
-        console.log("@@ taskContext from api", taskContext); ////
+        this.setTaskContextInCache({ taskId, taskContext });
       }
-      console.log("@@ taskContext!", taskContext); ////
 
       let taskResult;
       const taskStatus = payload.status;
