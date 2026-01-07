@@ -24,7 +24,7 @@ export default {
       "setPollingTimerForTaskInStore",
       "getTaskContextFromCache",
     ]),
-    ...mapMutations(["setTaskContextInCache", "refreshTaskContextInCache"]),
+    ...mapMutations(["setTaskContextInCache"]),
     createNotification(notification) {
       // fill missing attributes
       if (!notification.type) {
