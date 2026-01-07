@@ -206,19 +206,31 @@ export default {
             );
           }
         }
+        // Add offline nodes message
+        for (const node of this.clusterNodes) {
+          if (!node.online) {
+            nodesInfo[node.id] = this.$t("software_center.node_offline");
+          }
+        }
       }
       return nodesInfo;
     },
     disabledNodes() {
-      return this.app.install_destinations
+      // Get non-eligible nodes from install_destinations
+      const nonEligibleNodeIds = this.app.install_destinations
         .filter((nodeInfo) => !nodeInfo.eligible)
         .map((nodeInfo) => nodeInfo.node_id);
+      // Get offline nodes from clusterNodes
+      const offlineNodeIds = this.clusterNodes
+        .filter((node) => !node.online)
+        .map((node) => node.id);
+      // Combine and remove duplicates
+      return [...new Set([...nonEligibleNodeIds, ...offlineNodeIds])];
     },
   },
   methods: {
     onModalShown() {
       this.agreeTerms = false;
-
       if (this.clusterNodes.length == 1 && this.canInstallOnSingleNode) {
         this.selectedNode = this.clusterNodes[0];
       } else {
