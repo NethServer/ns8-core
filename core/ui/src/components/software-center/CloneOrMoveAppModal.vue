@@ -6,8 +6,9 @@
   <NsModal
     size="default"
     :visible="isShown"
-    @modal-hidden="$emit('hide')"
+    @modal-hidden="onModalHidden"
     @primary-click="cloneOrMove"
+    @modal-shown="onModalShown"
     :primary-button-disabled="
       !selectedNode ||
       (!isClone && installationNode == selectedNode.id) ||
@@ -27,9 +28,16 @@
             : $t("software_center.move_app_description", { instanceLabel })
         }}
       </div>
+      <NsInlineNotification
+        v-if="error.getClusterStatus"
+        kind="error"
+        :title="$t('action.get-cluster-status')"
+        :description="error.getClusterStatus"
+        :showCloseButton="false"
+      />
       <div>{{ $t("software_center.select_destination_node") }}:</div>
       <NsInlineNotification
-        v-if="clusterNodes.length == disabledNodes.length"
+        v-if="clusterStatus.length == disabledNodes.length"
         kind="info"
         :title="
           isClone
@@ -42,6 +50,7 @@
         class="mg-top-xlg"
         @selectNode="onSelectNode"
         :disabledNodes="disabledNodes"
+        :loading="loading.getClusterStatus"
       >
         <template v-for="(nodeMessages, nodeId) in nodesInfo">
           <template :slot="`node-${nodeId}`">
@@ -109,11 +118,14 @@ export default {
   data() {
     return {
       selectedNode: null,
+      clusterStatus: [],
       loading: {
         cloneModule: false,
+        getClusterStatus: false,
       },
       error: {
         cloneModule: "",
+        getClusterStatus: "",
       },
     };
   },
@@ -174,7 +186,7 @@ export default {
           nodesInfo[nodeInfo.node_id] = nodeMessages;
         }
         // Add offline nodes message
-        for (const node of this.clusterNodes) {
+        for (const node of this.clusterStatus) {
           if (!node.online) {
             if (!nodesInfo[node.id]) {
               nodesInfo[node.id] = [];
@@ -195,8 +207,8 @@ export default {
         .filter((nodeInfo) => !nodeInfo.eligible)
         .map((nodeInfo) => nodeInfo.node_id);
 
-      // Get offline nodes from clusterNodes
-      const offlineNodeIds = this.clusterNodes
+      // Get offline nodes from clusterStatus
+      const offlineNodeIds = this.clusterStatus
         .filter((node) => !node.online)
         .map((node) => node.id);
 
@@ -215,6 +227,61 @@ export default {
     },
   },
   methods: {
+    onModalShown() {
+      // reset state before showing modal
+      this.selectedNode = null;
+      this.clusterStatus = [];
+      this.getClusterStatus();
+    },
+    onModalHidden() {
+      // reset state
+      this.selectedNode = null;
+      this.clusterStatus = [];
+      this.clearErrors();
+      this.$emit("hide");
+    },
+    async getClusterStatus() {
+      this.error.getClusterStatus = "";
+      this.loading.getClusterStatus = true;
+      const taskAction = "get-cluster-status";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      this.clusterStatus = taskResult.output.nodes;
+      this.loading.getClusterStatus = false;
+    },
     async cloneOrMove() {
       this.loading.cloneModule = true;
       const taskAction = "clone-module";
