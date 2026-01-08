@@ -121,7 +121,14 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
-            v-if="clusterNodes.length == disabledNodes.length"
+            v-if="error.getClusterStatus"
+            kind="error"
+            :title="$t('action.get-cluster-status')"
+            :description="error.getClusterStatus"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
+            v-if="clusterStatus.length == disabledNodes.length"
             kind="info"
             :title="$t('backup.no_node_eligible_for_instance_restoration')"
             :showCloseButton="false"
@@ -129,7 +136,9 @@
           <NodeSelector
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"
-            :loading="loading.determineRestoreEligibility"
+            :loading="
+              loading.determineRestoreEligibility || loading.getClusterStatus
+            "
             class="mg-top-xlg"
           >
             <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
@@ -189,17 +198,20 @@ export default {
       selectedSnapshot: null,
       replaceExistingApp: false,
       installDestinations: [],
+      clusterStatus: [],
       loading: {
         readBackupRepositories: true,
         restoreModule: false,
         readBackupSnapshots: false,
         determineRestoreEligibility: false,
+        getClusterStatus: false,
       },
       error: {
         readBackupRepositories: "",
         restoreModule: "",
         readBackupSnapshots: "",
         determineRestoreEligibility: "",
+        getClusterStatus: "",
       },
     };
   },
@@ -285,7 +297,7 @@ export default {
         }
       }
       // Add offline nodes message
-      for (const node of this.clusterNodes) {
+      for (const node of this.clusterStatus) {
         if (!node.online) {
           nodesInfo[node.id] = this.$t("software_center.node_offline");
         }
@@ -298,7 +310,7 @@ export default {
         .filter((nodeInfo) => !nodeInfo.eligible)
         .map((nodeInfo) => nodeInfo.node_id);
       // Get offline nodes from clusterNodes
-      const offlineNodeIds = this.clusterNodes
+      const offlineNodeIds = this.clusterStatus
         .filter((node) => !node.online)
         .map((node) => node.id);
       // Combine and remove duplicates
@@ -578,6 +590,49 @@ export default {
     determineRestoreEligibilityCompleted(taskContext, taskResult) {
       this.installDestinations = taskResult.output.install_destinations;
       this.loading.determineRestoreEligibility = false;
+      this.getClusterStatus();
+    },
+    async getClusterStatus() {
+      this.error.getClusterStatus = "";
+      this.loading.getClusterStatus = true;
+      const taskAction = "get-cluster-status";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      this.clusterStatus = taskResult.output.nodes;
+      this.loading.getClusterStatus = false;
     },
   },
 };
