@@ -1,4 +1,4 @@
-import { mapState, mapActions, mapGetters } from "vuex";
+import { mapState, mapActions, mapGetters, mapMutations } from "vuex";
 import to from "await-to-js";
 import {
   UtilService,
@@ -22,7 +22,9 @@ export default {
       "setNotificationDrawerShownInStore",
       "deleteNotificationInStore",
       "setPollingTimerForTaskInStore",
+      "getTaskContextFromCache",
     ]),
+    ...mapMutations(["setTaskContextInCache"]),
     createNotification(notification) {
       // fill missing attributes
       if (!notification.type) {
@@ -185,27 +187,32 @@ export default {
       return `${taskContext.action}-${result}${eventId}`;
     },
     async handleProgressTaskMessage(taskPath, taskId, payload) {
-      const [err, contextResponse] = await to(this.getTaskContext(taskPath));
+      let taskContext = await this.getTaskContextFromCache(taskId);
 
-      if (err) {
-        console.error("error retrieving task info", err);
-        return;
+      if (!taskContext) {
+        // fetch task context from API and store it in cache
+        const [err, contextResponse] = await to(this.getTaskContext(taskPath));
+
+        if (err) {
+          console.error("error retrieving task info", err);
+          return;
+        }
+
+        if (!contextResponse.data.data) {
+          console.warn(
+            "task context not found, skipping",
+            taskId,
+            taskPath,
+            payload
+          );
+          return;
+        }
+        taskContext = contextResponse.data.data.context;
+        this.setTaskContextInCache({ taskId, taskContext });
       }
 
-      const taskStatus = payload.status;
-
-      if (!contextResponse.data.data) {
-        console.warn(
-          "task context not found, skipping",
-          taskId,
-          taskPath,
-          payload
-        );
-        return;
-      }
-
-      const taskContext = contextResponse.data.data.context;
       let taskResult;
+      const taskStatus = payload.status;
 
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
         // get output and error

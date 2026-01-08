@@ -18,12 +18,6 @@ export default new Vuex.Store({
     isTaskErrorShown: false,
     loggedUser: "",
     isWebsocketConnected: false,
-    socket: {
-      //// remove
-      isConnected: false,
-      message: "",
-      reconnectError: false,
-    },
     isClusterInitialized: false,
     leaderListenPort: null,
     clusterLabel: "",
@@ -34,6 +28,8 @@ export default new Vuex.Store({
       description: "",
     },
     migratingApps: [],
+    taskContextCache: new Map(),
+    taskContextCacheSize: 50,
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -190,6 +186,31 @@ export default new Vuex.Store({
     setMigratingApps(state, migratingApps) {
       state.migratingApps = migratingApps;
     },
+    refreshTaskContextInCache(state, payload) {
+      const taskId = payload.taskId;
+      const taskContext = payload.taskContext;
+
+      // Refresh the item: delete and re-insert so it's "newest"
+      state.taskContextCache.delete(taskId);
+      state.taskContextCache.set(taskId, taskContext);
+    },
+    setTaskContextInCache(state, payload) {
+      const taskId = payload.taskId;
+      const taskContext = payload.taskContext;
+
+      // If it already exists, delete it first to update the position
+      if (state.taskContextCache.has(taskId)) {
+        state.taskContextCache.delete(taskId);
+      }
+
+      // Remove the oldest entry if limit is reached
+      // .keys().next().value returns the first (oldest) key
+      if (state.taskContextCache.size >= state.taskContextCacheSize) {
+        const oldestKey = state.taskContextCache.keys().next().value;
+        state.taskContextCache.delete(oldestKey);
+      }
+      state.taskContextCache.set(taskId, taskContext);
+    },
   },
   actions: {
     setPollingTimerForTaskInStore(context, obj) {
@@ -281,6 +302,17 @@ export default new Vuex.Store({
     },
     setMigratingAppsInStore(context, migratingApps) {
       context.commit("setMigratingApps", migratingApps);
+    },
+    getTaskContextFromCache: (context, taskId) => {
+      if (!context.state.taskContextCache.has(taskId)) {
+        // The requested task ID is not in the cache
+        return null;
+      }
+      const taskContext = context.state.taskContextCache.get(taskId);
+
+      // Refresh the item: delete and re-insert so it's "newest"
+      context.commit("refreshTaskContextInCache", { taskId, taskContext });
+      return taskContext;
     },
   },
 });
