@@ -173,6 +173,15 @@ export default {
           }
           nodesInfo[nodeInfo.node_id] = nodeMessages;
         }
+        // Add offline nodes message
+        for (const node of this.clusterNodes) {
+          if (!node.online) {
+            if (!nodesInfo[node.id]) {
+              nodesInfo[node.id] = [];
+            }
+            nodesInfo[node.id].push(this.$t("software_center.node_offline"));
+          }
+        }
       }
       return nodesInfo;
     },
@@ -181,16 +190,27 @@ export default {
         return [];
       }
 
+      // Get non-eligible nodes from install_destinations
       const ineligibleNodes = this.app.install_destinations
         .filter((nodeInfo) => !nodeInfo.eligible)
         .map((nodeInfo) => nodeInfo.node_id);
 
+      // Get offline nodes from clusterNodes
+      const offlineNodeIds = this.clusterNodes
+        .filter((node) => !node.online)
+        .map((node) => node.id);
+
       if (this.isClone) {
-        // cloning app
-        return ineligibleNodes;
+        // cloning app: combine ineligible and offline nodes
+        return [...new Set([...ineligibleNodes, ...offlineNodeIds])];
       } else {
-        // moving app: add current node to ineligible nodes and remove possible duplicates
-        return [...new Set(ineligibleNodes.concat(this.installationNode))];
+        // moving app: add current node to ineligible/offline nodes and remove possible duplicates
+        return [
+          ...new Set([
+            ...ineligibleNodes.concat(this.installationNode),
+            ...offlineNodeIds,
+          ]),
+        ];
       }
     },
   },
