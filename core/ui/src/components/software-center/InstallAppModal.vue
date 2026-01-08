@@ -42,7 +42,14 @@
             }}
           </div>
           <NsInlineNotification
-            v-if="clusterNodes.length == disabledNodes.length"
+            v-if="error.getClusterStatus"
+            kind="error"
+            :title="$t('action.get-cluster-status')"
+            :description="error.getClusterStatus"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
+            v-if="clusterStatus.length == disabledNodes.length"
             kind="info"
             :title="$t('software_center.no_node_eligible_for_app_installation')"
             :showCloseButton="false"
@@ -50,6 +57,7 @@
           <NodeSelector
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"
+            :loading="loading.getClusterStatus"
             class="mg-top-lg"
           >
             <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
@@ -142,8 +150,13 @@ export default {
     return {
       selectedNode: null,
       agreeTerms: false,
+      loading: {
+        getClusterStatus: false,
+      },
+      clusterStatus: [],
       error: {
         addModule: "",
+        getClusterStatus: "",
       },
     };
   },
@@ -207,7 +220,7 @@ export default {
           }
         }
         // Add offline nodes message
-        for (const node of this.clusterNodes) {
+        for (const node of this.clusterStatus) {
           if (!node.online) {
             nodesInfo[node.id] = this.$t("software_center.node_offline");
           }
@@ -220,8 +233,8 @@ export default {
       const nonEligibleNodeIds = this.app.install_destinations
         .filter((nodeInfo) => !nodeInfo.eligible)
         .map((nodeInfo) => nodeInfo.node_id);
-      // Get offline nodes from clusterNodes
-      const offlineNodeIds = this.clusterNodes
+      // Get offline nodes from clusterStatus
+      const offlineNodeIds = this.clusterStatus
         .filter((node) => !node.online)
         .map((node) => node.id);
       // Combine and remove duplicates
@@ -231,11 +244,57 @@ export default {
   methods: {
     onModalShown() {
       this.agreeTerms = false;
+      // reset state before showing modal
+      this.clearErrors();
+      this.clusterStatus = [];
       if (this.clusterNodes.length == 1 && this.canInstallOnSingleNode) {
         this.selectedNode = this.clusterNodes[0];
       } else {
         this.selectedNode = null;
       }
+      this.getClusterStatus();
+    },
+    async getClusterStatus() {
+      this.error.getClusterStatus = "";
+      this.loading.getClusterStatus = true;
+      const taskAction = "get-cluster-status";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      this.clusterStatus = taskResult.output.nodes;
+      this.loading.getClusterStatus = false;
     },
     async installInstance() {
       this.error.addModule = "";
@@ -324,6 +383,9 @@ export default {
     },
     onModalHidden() {
       this.clearErrors(this);
+      // reset state
+      this.selectedNode = null;
+      this.clusterStatus = [];
       this.$emit("close");
     },
     onSelectNode(selectedNode) {
