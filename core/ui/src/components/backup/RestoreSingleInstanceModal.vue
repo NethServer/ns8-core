@@ -134,7 +134,12 @@
           >
             <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
               <template :slot="`node-${nodeId}`">
-                {{ nodeInfoMessage }}
+                <template v-if="Array.isArray(nodeInfoMessage)">
+                  {{ nodeInfoMessage.join(", ") }}
+                </template>
+                <template v-else>
+                  {{ nodeInfoMessage }}
+                </template>
               </template>
             </template>
           </NodeSelector>
@@ -240,7 +245,13 @@ export default {
     },
     replaceExistingDisabled() {
       //check if the selected instance is not in an array ['loki']
-      const notAllowed = ["samba", "loki", "mail", "ejabberd", "nethvoice-proxy"];
+      const notAllowed = [
+        "samba",
+        "loki",
+        "mail",
+        "ejabberd",
+        "nethvoice-proxy",
+      ];
       return notAllowed.includes(this.selectedInstance.name) ? true : false;
     },
     nodesInfo() {
@@ -273,12 +284,25 @@ export default {
           );
         }
       }
+      // Add offline nodes message
+      for (const node of this.clusterNodes) {
+        if (!node.online) {
+          nodesInfo[node.id] = this.$t("software_center.node_offline");
+        }
+      }
       return nodesInfo;
     },
     disabledNodes() {
-      return this.installDestinations
+      // Get non-eligible nodes from install_destinations
+      const nonEligibleNodeIds = this.installDestinations
         .filter((nodeInfo) => !nodeInfo.eligible)
         .map((nodeInfo) => nodeInfo.node_id);
+      // Get offline nodes from clusterNodes
+      const offlineNodeIds = this.clusterNodes
+        .filter((node) => !node.online)
+        .map((node) => node.id);
+      // Combine and remove duplicates
+      return [...new Set([...nonEligibleNodeIds, ...offlineNodeIds])];
     },
   },
   watch: {
