@@ -31,64 +31,41 @@
           "
           :showCloseButton="false"
         />
-        <template v-if="clusterNodes.length > 1">
-          <!-- node selection -->
-          <div>
-            {{
-              $t("software_center.choose_node_for_installation", {
-                app: app.name,
-                version: appVersion,
-              })
-            }}
-          </div>
-          <NsInlineNotification
-            v-if="error.getClusterStatus"
-            kind="error"
-            :title="$t('action.get-cluster-status')"
-            :description="error.getClusterStatus"
-            :showCloseButton="false"
-          />
-          <NsInlineNotification
-            v-if="clusterStatus.length == disabledNodes.length"
-            kind="info"
-            :title="$t('software_center.no_node_eligible_for_app_installation')"
-            :showCloseButton="false"
-          />
-          <NodeSelector
-            @selectNode="onSelectNode"
-            :disabledNodes="disabledNodes"
-            :loading="loading.getClusterStatus"
-            class="mg-top-lg"
-          >
-            <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
-              <template :slot="`node-${nodeId}`">
-                {{ nodeInfoMessage }}
-              </template>
-            </template>
-          </NodeSelector>
-        </template>
-        <!-- single node -->
-        <div v-else class="mg-bottom-lg">
-          <template v-if="canInstallOnSingleNode">
-            {{
-              $t("software_center.about_to_install_app", {
-                app: app.name,
-                version: appVersion,
-                node: firstNodeLabel,
-              })
-            }}
-          </template>
-          <template v-else>
-            {{
-              $t("software_center.cannot_install_app_on_node", {
-                app: app.name,
-                version: appVersion,
-                node: firstNodeLabel,
-              })
-            }}:
-            {{ nodesInfo[clusterNodes[0].id] }}
-          </template>
+        <!-- node selection -->
+        <div>
+          {{
+            $t("software_center.choose_node_for_installation", {
+              app: app.name,
+              version: appVersion,
+            })
+          }}
         </div>
+        <NsInlineNotification
+          v-if="error.getClusterStatus"
+          kind="error"
+          :title="$t('action.get-cluster-status')"
+          :description="error.getClusterStatus"
+          :showCloseButton="false"
+        />
+        <NsInlineNotification
+          v-if="clusterStatus.length == disabledNodes.length"
+          kind="info"
+          :title="$t('software_center.no_node_eligible_for_app_installation')"
+          :showCloseButton="false"
+        />
+        <NodeSelector
+          @selectNode="onSelectNode"
+          :disabledNodes="disabledNodes"
+          :loading="loading.getClusterStatus"
+          :selectedNode="2"
+          class="mg-top-lg"
+        >
+          <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
+            <template :slot="`node-${nodeId}`">
+              {{ nodeInfoMessage }}
+            </template>
+          </template>
+        </NodeSelector>
         <!-- terms and conditions -->
         <NsCheckbox
           v-if="app.docs.terms_url"
@@ -247,8 +224,10 @@ export default {
       // reset state before showing modal
       this.clearErrors();
       this.clusterStatus = [];
+      // Force selection to node 1 if only available
       if (this.clusterNodes.length == 1 && this.canInstallOnSingleNode) {
         this.selectedNode = this.clusterNodes[0];
+        this.clusterNodes[0].selected = true;
       } else {
         this.selectedNode = null;
       }
