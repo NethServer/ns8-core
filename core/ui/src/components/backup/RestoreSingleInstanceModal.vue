@@ -128,7 +128,11 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
-            v-if="clusterStatus.length == disabledNodes.length"
+            v-if="
+              clusterStatus.length == disabledNodes.length &&
+              !loading.determineRestoreEligibility &&
+              !loading.getClusterStatus
+            "
             kind="info"
             :title="$t('backup.no_node_eligible_for_instance_restoration')"
             :showCloseButton="false"
