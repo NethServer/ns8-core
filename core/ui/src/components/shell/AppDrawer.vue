@@ -314,7 +314,7 @@ export default {
       apps: [],
       searchResults: [],
       isSearchActive: false,
-      searchFields: ["id", "label"],
+      searchFields: ["id", "ui_name"],
       loading: {
         apps: true,
       },
