@@ -3,116 +3,143 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
-  <NsModal
+  <NsWizard
     size="default"
     :visible="isShown"
     @modal-hidden="onModalHidden"
     @modal-shown="onModalShown"
-    @primary-click="installInstance"
     class="no-pad-modal"
-    :primary-button-disabled="
-      !selectedNode ||
-      (app && app.docs.terms_url && !agreeTerms) ||
-      loading.getClusterStatus ||
-      clusterStatus.length == disabledNodes.length
+    :cancelLabel="$t('common.cancel')"
+    :previousLabel="$t('common.previous')"
+    :nextLabel="
+      isLastStep || shouldShowInstallLabel
+        ? $t('software_center.install')
+        : $t('common.next')
     "
+    :isPreviousDisabled="isFirstStep || loading.getClusterStatus"
+    @previousStep="previousStep"
+    @nextStep="nextStep"
+    @cancel="onModalHidden"
+    :isNextDisabled="isNextButtonDisabled"
+    :isNextLoading="loading.getClusterStatus"
   >
     <template v-if="app" slot="title">{{
       $t("software_center.app_installation", { app: app.name })
     }}</template>
     <template v-if="app" slot="content">
-      <cv-form @submit.prevent="installInstance">
-        <!-- warning for rootfull app -->
-        <NsInlineNotification
-          v-if="app.rootfull && app.certification_level < 3"
-          kind="warning"
-          :title="$t('software_center.rootfull_app_warning_title')"
-          :description="
-            $t('software_center.rootfull_app_warning_description', {
-              appName: app.name,
-            })
-          "
-          :showCloseButton="false"
-        />
-        <!-- node selection -->
-        <div>
-          {{
-            $t("software_center.choose_node_for_installation", {
-              app: app.name,
-              version: appVersion,
-            })
-          }}
-        </div>
-        <NsInlineNotification
-          v-if="error.getClusterStatus"
-          kind="error"
-          :title="$t('action.get-cluster-status')"
-          :description="error.getClusterStatus"
-          :showCloseButton="false"
-        />
-        <NsInlineNotification
-          v-if="
-            clusterStatus.length == disabledNodes.length &&
-            !loading.getClusterStatus
-          "
-          kind="info"
-          :title="$t('software_center.no_node_eligible_for_app_installation')"
-          :showCloseButton="false"
-        />
-        <NodeSelector
-          @selectNode="onSelectNode"
-          :disabledNodes="disabledNodes"
-          :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
-          :loading="loading.getClusterStatus"
-          :selectedNode="2"
-          class="mg-top-lg"
-        >
-          <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
-            <template :slot="`node-${nodeId}`">
-              {{ nodeInfoMessage }}
-            </template>
-          </template>
-        </NodeSelector>
-        <!-- terms and conditions -->
-        <NsCheckbox
-          v-if="app.docs.terms_url"
-          v-model="agreeTerms"
-          value="checkTerms"
-        >
-          <template slot="label">
-            <i18n path="software_center.agree_terms_before_install" tag="span">
-              <template v-slot:appName>
-                {{ app.name }}
-              </template>
-              <template v-slot:terms>
-                <cv-link
-                  :href="app.docs.terms_url"
-                  target="_blank"
-                  rel="noreferrer"
-                  class="inline"
-                >
-                  {{ $t("common.terms_and_conditions") }}
-                </cv-link>
-              </template>
-            </i18n>
-          </template>
-        </NsCheckbox>
-        <!-- add-module error -->
-        <div v-if="error.addModule">
+      <cv-form @submit.prevent="nextStep">
+        <template v-if="step == 'node'">
+          <!-- warning for rootfull app -->
           <NsInlineNotification
-            kind="error"
-            :title="$t('action.add-module')"
-            :description="error.addModule"
+            v-if="app.rootfull && app.certification_level < 3"
+            kind="warning"
+            :title="$t('software_center.rootfull_app_warning_title')"
+            :description="
+              $t('software_center.rootfull_app_warning_description', {
+                appName: app.name,
+              })
+            "
             :showCloseButton="false"
           />
-        </div>
+          <!-- node selection -->
+          <div>
+            {{
+              $t("software_center.choose_node_for_installation", {
+                app: app.name,
+                version: appVersion,
+              })
+            }}
+          </div>
+          <NsInlineNotification
+            v-if="error.getClusterStatus"
+            kind="error"
+            :title="$t('action.get-cluster-status')"
+            :description="error.getClusterStatus"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
+            v-if="
+              clusterStatus.length == disabledNodes.length &&
+              !loading.getClusterStatus
+            "
+            kind="info"
+            :title="$t('software_center.no_node_eligible_for_app_installation')"
+            :showCloseButton="false"
+          />
+          <NodeSelector
+            @selectNode="onSelectNode"
+            :disabledNodes="disabledNodes"
+            :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
+            :loading="loading.getClusterStatus"
+            :selectedNode="2"
+            class="mg-top-lg"
+          >
+            <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
+              <template :slot="`node-${nodeId}`">
+                {{ nodeInfoMessage }}
+              </template>
+            </template>
+          </NodeSelector>
+          <!-- terms and conditions -->
+          <NsCheckbox
+            v-if="app.docs.terms_url"
+            v-model="agreeTerms"
+            value="checkTerms"
+          >
+            <template slot="label">
+              <i18n
+                path="software_center.agree_terms_before_install"
+                tag="span"
+              >
+                <template v-slot:appName>
+                  {{ app.name }}
+                </template>
+                <template v-slot:terms>
+                  <cv-link
+                    :href="app.docs.terms_url"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="inline"
+                  >
+                    {{ $t("common.terms_and_conditions") }}
+                  </cv-link>
+                </template>
+              </i18n>
+            </template>
+          </NsCheckbox>
+          <!-- add-module error -->
+          <div v-if="error.addModule">
+            <NsInlineNotification
+              kind="error"
+              :title="$t('action.add-module')"
+              :description="error.addModule"
+              :showCloseButton="false"
+            />
+          </div>
+        </template>
+        <template v-else-if="step == 'volumes'">
+          <div>
+            {{
+              $t("software_center.select_node_volume_for_installation", {
+                node: selectedNode.ui_name
+                  ? selectedNode.ui_name +
+                    " (" +
+                    $t("common.node") +
+                    ` ${selectedNode.id})`
+                  : ` ${selectedNode.id}`,
+              })
+            }}
+          </div>
+          <!-- additonal volumes -->
+          <AdditionnalVolumesSelector
+            :volumes="additionnalVolumes"
+            :light="true"
+            class="mg-top-lg"
+          />
+        </template>
       </cv-form>
     </template>
-    <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template slot="primary-button">{{
-      $t("software_center.install")
-    }}</template>
-  </NsModal>
+  </NsWizard>
 </template>
 
 <script>
@@ -120,11 +147,12 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
 import NodeSelector from "@/components/nodes/NodeSelector";
+import AdditionnalVolumesSelector from "@/components/software-center/AdditionnalVolumesSelector.vue";
 import { mapState } from "vuex";
 
 export default {
   name: "InstallAppModal",
-  components: { NodeSelector },
+  components: { NodeSelector, AdditionnalVolumesSelector },
   mixins: [UtilService, TaskService, IconService, NotificationService],
   props: {
     isShown: Boolean,
@@ -134,11 +162,25 @@ export default {
     return {
       selectedNode: null,
       agreeTerms: false,
+      step: "node",
+      steps: ["node", "volumes"],
       loading: {
         getClusterStatus: true,
+        restoreModule: false,
+        determineRestoreEligibility: false,
       },
       clusterStatus: [],
       listNodes: [],
+      additionnalVolumes: [
+        {
+          path: "/mnt/data",
+          label: "",
+          size: 67317051392,
+          used: 24576,
+          available: 67317026816,
+          ui_name: "data",
+        },
+      ],
       error: {
         addModule: "",
         getClusterStatus: "",
@@ -148,6 +190,38 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    stepIndex() {
+      return this.steps.indexOf(this.step);
+    },
+    isFirstStep() {
+      return this.stepIndex == 0;
+    },
+    isLastStep() {
+      return this.stepIndex == this.steps.length - 1;
+    },
+    shouldShowInstallLabel() {
+      return (
+        this.step == "node" &&
+        this.selectedNode &&
+        !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+      );
+    },
+    isNextButtonDisabled() {
+      if (this.step == "node") {
+        return (
+          this.loading.getClusterStatus ||
+          !this.selectedNode ||
+          this.clusterStatus.length == this.disabledNodes.length ||
+          (this.app && this.app.docs.terms_url && !this.agreeTerms)
+        );
+      } else if (this.step == "volumes") {
+        return (
+          !this.selectedNode ||
+          !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+        );
+      }
+      return false;
+    },
     firstNodeLabel() {
       if (this.clusterNodes.length && this.clusterNodes[0]) {
         if (this.clusterNodes[0].ui_name) {
@@ -230,10 +304,7 @@ export default {
       const nodeIds = [];
       if (this.listNodes && Array.isArray(this.listNodes.nodes)) {
         for (const node of this.listNodes.nodes) {
-          if (
-            node.additionnal_storage !== undefined &&
-            node.additionnal_storage !== null
-          ) {
+          if (node.additionnal_storage === true) {
             nodeIds.push(node.node_id);
           }
         }
@@ -241,7 +312,65 @@ export default {
       return nodeIds;
     },
   },
+  watch: {
+    // isShown: function () {
+    //   if (this.isShown) {
+    //     // show first step
+    //     this.step = this.steps[0];
+    //     this.selectedInstance = null;
+    //     this.replaceExistingApp = false;
+    //     this.readBackupRepositories();
+    //   }
+    // },
+    // step: function () {
+    //   // if (this.step == "instance") {
+    //   //   this.selectedInstance = null;
+    //   //   this.replaceExistingApp = false;
+    //   // } else if (this.step == "snapshot") {
+    //   //   this.selectedSnapshot = null;
+    //   //   this.readBackupSnapshots();
+    //   // } else
+    //   if (this.step == "node") {
+    //     // this.determineRestoreEligibility();
+    //   } else if (this.step == "volumes") {
+    //     // load additionnal volumes
+    //     // this.additionnalVolumes = [];
+    //     // if (
+    //     //   this.selectedNode &&
+    //     //   this.selectedNode.additionnal_volumes &&
+    //     //   Array.isArray(this.selectedNode.additionnal_volumes)
+    //     // ) {
+    //     //   this.additionnalVolumes = this.selectedNode.additionnal_volumes;
+    //     // }
+    //   }
+    // },
+  },
   methods: {
+    nextStep() {
+      if (this.isNextButtonDisabled) {
+        return;
+      }
+
+      if (this.isLastStep) {
+        // this.restoreModule();
+      } else {
+        // Check if we should skip the volumes step
+        if (
+          this.step == "node" &&
+          !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+        ) {
+          // Skip volumes step, go directly to installation
+          this.installInstance();
+        } else {
+          this.step = this.steps[this.stepIndex + 1];
+        }
+      }
+    },
+    previousStep() {
+      if (!this.isFirstStep) {
+        this.step = this.steps[this.stepIndex - 1];
+      }
+    },
     onModalShown() {
       this.agreeTerms = false;
       // reset state before showing modal
@@ -308,10 +437,7 @@ export default {
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
-      this.$root.$once(
-        taskAction + "-completed",
-        this.ListNodesCompleted
-      );
+      this.$root.$once(taskAction + "-completed", this.ListNodesCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -368,6 +494,7 @@ export default {
             },
             network_interface_count: 0,
             node_id: 4,
+            additionnal_storage: false,
             os_release: {
               name: "",
               version: "",
