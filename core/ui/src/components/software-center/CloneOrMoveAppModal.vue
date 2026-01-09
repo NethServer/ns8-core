@@ -12,7 +12,9 @@
     :primary-button-disabled="
       !selectedNode ||
       (!isClone && installationNode == selectedNode.id) ||
-      loading.cloneModule
+      loading.cloneModule ||
+      loading.getClusterStatus ||
+      clusterStatus.length == disabledNodes.length
     "
   >
     <template slot="title">{{
@@ -37,7 +39,10 @@
       />
       <div>{{ $t("software_center.select_destination_node") }}:</div>
       <NsInlineNotification
-        v-if="clusterStatus.length == disabledNodes.length"
+        v-if="
+          clusterStatus.length == disabledNodes.length &&
+          !loading.getClusterStatus
+        "
         kind="info"
         :title="
           isClone
@@ -121,7 +126,7 @@ export default {
       clusterStatus: [],
       loading: {
         cloneModule: false,
-        getClusterStatus: false,
+        getClusterStatus: true,
       },
       error: {
         cloneModule: "",
@@ -229,20 +234,26 @@ export default {
   methods: {
     onModalShown() {
       // reset state before showing modal
-      this.selectedNode = null;
+      // Force selection to node 1 if only available
+      if (this.clusterNodes.length == 1) {
+        this.selectedNode = this.clusterNodes[0];
+        this.clusterNodes[0].selected = true;
+      } else {
+        this.selectedNode = null;
+      }
       this.clusterStatus = [];
       this.getClusterStatus();
     },
     onModalHidden() {
       // reset state
+      this.$emit("hide");
+      this.clearErrors();
       this.selectedNode = null;
       this.clusterStatus = [];
-      this.clearErrors();
-      this.$emit("hide");
+      this.loading.getClusterStatus = true;
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
-      this.loading.getClusterStatus = true;
       const taskAction = "get-cluster-status";
 
       // register to task error
