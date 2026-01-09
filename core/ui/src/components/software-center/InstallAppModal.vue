@@ -11,7 +11,10 @@
     @primary-click="installInstance"
     class="no-pad-modal"
     :primary-button-disabled="
-      !selectedNode || (app && app.docs.terms_url && !agreeTerms)
+      !selectedNode ||
+      (app && app.docs.terms_url && !agreeTerms) ||
+      loading.getClusterStatus ||
+      clusterStatus.length == disabledNodes.length
     "
   >
     <template v-if="app" slot="title">{{
@@ -48,7 +51,10 @@
           :showCloseButton="false"
         />
         <NsInlineNotification
-          v-if="clusterStatus.length == disabledNodes.length"
+          v-if="
+            clusterStatus.length == disabledNodes.length &&
+            !loading.getClusterStatus
+          "
           kind="info"
           :title="$t('software_center.no_node_eligible_for_app_installation')"
           :showCloseButton="false"
@@ -128,7 +134,7 @@ export default {
       selectedNode: null,
       agreeTerms: false,
       loading: {
-        getClusterStatus: false,
+        getClusterStatus: true,
       },
       clusterStatus: [],
       error: {
@@ -235,7 +241,6 @@ export default {
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
-      this.loading.getClusterStatus = true;
       const taskAction = "get-cluster-status";
 
       // register to task error
@@ -361,11 +366,12 @@ export default {
       }, 15000);
     },
     onModalHidden() {
+      this.$emit("close");
       this.clearErrors(this);
       // reset state
       this.selectedNode = null;
       this.clusterStatus = [];
-      this.$emit("close");
+      this.loading.getClusterStatus = true;
     },
     onSelectNode(selectedNode) {
       this.selectedNode = selectedNode;
