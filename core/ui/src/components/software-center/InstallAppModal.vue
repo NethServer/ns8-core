@@ -62,6 +62,7 @@
         <NodeSelector
           @selectNode="onSelectNode"
           :disabledNodes="disabledNodes"
+          :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
           :loading="loading.getClusterStatus"
           :selectedNode="2"
           class="mg-top-lg"
@@ -137,9 +138,11 @@ export default {
         getClusterStatus: true,
       },
       clusterStatus: [],
+      listNodes: [],
       error: {
         addModule: "",
         getClusterStatus: "",
+        listNodes: "",
       },
     };
   },
@@ -223,6 +226,20 @@ export default {
       // Combine and remove duplicates
       return [...new Set([...nonEligibleNodeIds, ...offlineNodeIds])];
     },
+    nodesWithAdditionalStorage() {
+      const nodeIds = [];
+      if (this.listNodes && Array.isArray(this.listNodes.nodes)) {
+        for (const node of this.listNodes.nodes) {
+          if (
+            node.additionnal_storage !== undefined &&
+            node.additionnal_storage !== null
+          ) {
+            nodeIds.push(node.node_id);
+          }
+        }
+      }
+      return nodeIds;
+    },
   },
   methods: {
     onModalShown() {
@@ -230,6 +247,7 @@ export default {
       // reset state before showing modal
       this.clearErrors();
       this.clusterStatus = [];
+      this.listNodes = [];
       // Force selection to node 1 if only available
       if (this.clusterNodes.length == 1 && this.canInstallOnSingleNode) {
         this.selectedNode = this.clusterNodes[0];
@@ -237,7 +255,7 @@ export default {
       } else {
         this.selectedNode = null;
       }
-      this.getClusterStatus();
+      this.fetchListNodes();
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
@@ -279,6 +297,172 @@ export default {
     getClusterStatusCompleted(taskContext, taskResult) {
       this.clusterStatus = taskResult.output.nodes;
       this.loading.getClusterStatus = false;
+    },
+    async fetchListNodes() {
+      this.error.listNodes = "";
+      const taskAction = "list-nodes";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.listNodesAborted);
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.ListNodesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listNodes = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listNodesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listNodes = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    // ListNodesCompleted(taskResult, taskContext) {
+    ListNodesCompleted() {
+      // this.listNodes = taskResult.output.nodes;
+      this.listNodes = {
+        nodes: [
+          {
+            app_count: 0,
+            cpu: {
+              count: 0,
+              family: "",
+              microcode: "",
+              model: "",
+              model_name: "",
+              package: "",
+              stepping: "",
+              usage: 0,
+              vendor: "",
+            },
+            disks: [],
+            fqdn: "",
+            load: {
+              "15min": 0,
+              "1min": 0,
+              "5min": 0,
+            },
+            main_ip: "127.0.0.1",
+            memory: {
+              free: 0,
+              total: 0,
+              used: 0,
+            },
+            network_interface_count: 0,
+            node_id: 4,
+            os_release: {
+              name: "",
+              version: "",
+            },
+            role: "worker",
+            swap: {
+              free: 0,
+              total: 0,
+              used: 0,
+            },
+            ui_name: "",
+            vpn_endpoint: "",
+            vpn_ip_address: "10.5.4.4",
+            vpn_listen_port: "",
+          },
+          {
+            app_count: 2,
+            cpu: {
+              count: 8,
+              family: "15",
+              microcode: "0x1000065",
+              model: "107",
+              model_name: "QEMU Virtual CPU version 2.5+",
+              package: "0",
+              stepping: "1",
+              usage: 0.0021164197510120664,
+              vendor: "AuthenticAMD",
+            },
+            disks: [
+              {
+                device: "/dev/mapper/rl-root",
+                free: 52930420736,
+                fstype: "xfs",
+                mountpoint: "/",
+                total: 60747141120,
+                used: 7816720384,
+              },
+              {
+                device: "/dev/mapper/rl-root",
+                free: 52930420736,
+                fstype: "xfs",
+                mountpoint: "/var/lib/containers/storage/overlay",
+                total: 60747141120,
+                used: 7816720384,
+              },
+              {
+                device: "/dev/sda1",
+                free: 63864328192,
+                fstype: "ext4",
+                mountpoint: "/mnt/data",
+                total: 67317051392,
+                used: 3452723200,
+              },
+              {
+                device: "/dev/sdb1",
+                free: 619704320,
+                fstype: "xfs",
+                mountpoint: "/boot",
+                total: 1063256064,
+                used: 443551744,
+              },
+            ],
+            fqdn: "R1-pve.rocky9-pve.org",
+            load: {
+              "15min": 0,
+              "1min": 0.01,
+              "5min": 0.02,
+            },
+            main_ip: "192.168.12.110",
+            memory: {
+              free: 6578237440,
+              total: 8052805632,
+              used: 1474568192,
+            },
+            network_interface_count: 2,
+            node_id: 1,
+            additionnal_storage: true,
+            os_release: {
+              name: "Rocky Linux",
+              version: "9.7",
+            },
+            role: "leader",
+            swap: {
+              free: 6874460160,
+              total: 6874460160,
+              used: 0,
+            },
+            ui_name: "",
+            vpn_endpoint: "R1-pve.rocky9-pve.org:55820",
+            vpn_ip_address: "10.5.4.1",
+            vpn_listen_port: "55820",
+          },
+        ],
+      };
+      this.getClusterStatus();
     },
     async installInstance() {
       this.error.addModule = "";
