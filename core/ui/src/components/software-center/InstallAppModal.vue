@@ -20,8 +20,12 @@
     @previousStep="previousStep"
     @nextStep="nextStep"
     @cancel="onModalHidden"
-    :isNextDisabled="isNextButtonDisabled"
-    :isNextLoading="loading.getClusterStatus"
+    :isNextDisabled="
+      isNextButtonDisabled ||
+      loading.getClusterStatus ||
+      loading.listMountPoints
+    "
+    :isNextLoading="loading.getClusterStatus || loading.listMountPoints"
   >
     <template v-if="app" slot="title">{{
       $t("software_center.app_installation", { app: app.name })
@@ -117,7 +121,7 @@
             />
           </div>
         </template>
-        <template v-else-if="step == 'volumes'">
+        <template v-else-if="step == 'volumes' && selectedNode">
           <div>
             {{
               $t("software_center.select_node_volume_for_installation", {
@@ -130,9 +134,19 @@
               })
             }}
           </div>
+          <div v-if="error.listMountPoints">
+            <NsInlineNotification
+              kind="error"
+              :title="$t('action.list-mountpoints')"
+              :description="error.listMountPoints"
+              :showCloseButton="false"
+            />
+          </div>
           <!-- additonal volumes -->
           <AdditionnalVolumesSelector
+            @selectVolume="onSelectVolume"
             :volumes="additionnalVolumes"
+            :loading="loading.listMountPoints"
             :light="true"
             class="mg-top-lg"
           />
@@ -168,23 +182,17 @@ export default {
         getClusterStatus: true,
         restoreModule: false,
         determineRestoreEligibility: false,
+        listMountPoints: false,
       },
       clusterStatus: [],
       listNodes: [],
-      additionnalVolumes: [
-        {
-          path: "/mnt/data",
-          label: "",
-          size: 67317051392,
-          used: 24576,
-          available: 67317026816,
-          ui_name: "data",
-        },
-      ],
+      selectedVolume: {},
+      additionnalVolumes: [],
       error: {
         addModule: "",
         getClusterStatus: "",
         listNodes: "",
+        listMountPoints: "",
       },
     };
   },
@@ -216,6 +224,7 @@ export default {
         );
       } else if (this.step == "volumes") {
         return (
+          this.loading.getClusterStatus ||
           !this.selectedNode ||
           !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
         );
@@ -322,28 +331,29 @@ export default {
     //     this.readBackupRepositories();
     //   }
     // },
-    // step: function () {
-    //   // if (this.step == "instance") {
-    //   //   this.selectedInstance = null;
-    //   //   this.replaceExistingApp = false;
-    //   // } else if (this.step == "snapshot") {
-    //   //   this.selectedSnapshot = null;
-    //   //   this.readBackupSnapshots();
-    //   // } else
-    //   if (this.step == "node") {
-    //     // this.determineRestoreEligibility();
-    //   } else if (this.step == "volumes") {
-    //     // load additionnal volumes
-    //     // this.additionnalVolumes = [];
-    //     // if (
-    //     //   this.selectedNode &&
-    //     //   this.selectedNode.additionnal_volumes &&
-    //     //   Array.isArray(this.selectedNode.additionnal_volumes)
-    //     // ) {
-    //     //   this.additionnalVolumes = this.selectedNode.additionnal_volumes;
-    //     // }
-    //   }
-    // },
+    step: function () {
+      // if (this.step == "instance") {
+      //   this.selectedInstance = null;
+      //   this.replaceExistingApp = false;
+      // } else if (this.step == "snapshot") {
+      //   this.selectedSnapshot = null;
+      //   this.readBackupSnapshots();
+      // } else
+      if (this.step == "node") {
+        // this.determineRestoreEligibility();
+      } else if (this.step == "volumes") {
+        this.listMountPoints();
+        // load additionnal volumes
+        // this.additionnalVolumes = [];
+        // if (
+        //   this.selectedNode &&
+        //   this.selectedNode.additionnal_volumes &&
+        //   Array.isArray(this.selectedNode.additionnal_volumes)
+        // ) {
+        //   this.additionnalVolumes = this.selectedNode.additionnal_volumes;
+        // }
+      }
+    },
   },
   methods: {
     nextStep() {
@@ -352,7 +362,7 @@ export default {
       }
 
       if (this.isLastStep) {
-        // this.restoreModule();
+        this.installInstance(this.selectedVolume);
       } else {
         // Check if we should skip the volumes step
         if (
@@ -591,7 +601,50 @@ export default {
       };
       this.getClusterStatus();
     },
-    async installInstance() {
+    async listMountPoints() {
+      this.error.listMountPoints = "";
+      this.loading.listMountPoints = true;
+      const taskAction = "list-mountpoints";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.listMountPointsAborted);
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listMountPointsCompleted
+      );
+      const res = await to(
+        this.createNodeTask(this.selectedNode.id, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listNodes = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listMountPointsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listMountPoints = this.$t("error.generic_error");
+      this.loading.listMountPoints = false;
+    },
+    listMountPointsCompleted(taskContext, taskResult) {
+      this.additionnalVolumes = taskResult.output.mountpoints;
+      console.log("additionnalVolumes", this.additionnalVolumes);
+      console.log("selectedNode", this.selectedNode);
+      this.loading.listMountPoints = false;
+    },
+    async installInstance(volumes) {
       this.error.addModule = "";
       const taskAction = "add-module";
       const eventId = this.getUuid();
@@ -611,13 +664,22 @@ export default {
         this.selectedNode.ui_name ||
         this.$t("common.node") + ` ${this.selectedNode.id}`;
 
+      const data = {
+        image: this.app.source + ":" + this.appVersion,
+        node: parseInt(this.selectedNode.id),
+      };
+
+      // Add volumes if provided
+      if (volumes && Object.keys(volumes).length > 0) {
+        data.volumes = {
+          shares: volumes.path,
+        };
+      }
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
-          data: {
-            image: this.app.source + ":" + this.appVersion,
-            node: parseInt(this.selectedNode.id),
-          },
+          data,
           extra: {
             title: this.$t("software_center.app_installation", {
               app: this.app.name,
@@ -657,7 +719,6 @@ export default {
 
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
-
       // backup notification
 
       setTimeout(() => {
@@ -686,6 +747,9 @@ export default {
     },
     onSelectNode(selectedNode) {
       this.selectedNode = selectedNode;
+    },
+    onSelectVolume(selectedVolume) {
+      this.selectedVolume = selectedVolume;
     },
   },
 };

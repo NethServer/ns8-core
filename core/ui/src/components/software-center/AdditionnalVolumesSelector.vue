@@ -36,12 +36,29 @@
         @click="deselectOtherVolumes(volume)"
         class="volume-tile"
       >
-        <div>
-          {{ volume.path }} - {{ (volume.size / (1024 * 1024 * 1024)).toFixed(2) }} GB
+        <div class="mg-bottom-lg">
+          <strong>
+            {{ $t("software_center.additionnal_storage") }}
+            {{ volume.label ? volume.label : volume.ui_name }}
+          </strong>
         </div>
-        <!-- <div v-if="index == 0" class="secondary-row">
-          {{ $t("backup.most_recent") }}
-        </div> -->
+        <div>{{ volume.path }}</div>
+        <div class="mg-bottom-sm">
+          {{ (volume.used / (1024 * 1024 * 1024)).toFixed(2) }} GB
+          {{ $t("software_center.used") }}
+          {{ $t("software_center.of") }}
+          {{ (volume.size / (1024 * 1024 * 1024)).toFixed(2) }} GB
+          ({{ ((volume.used / volume.available) * 100).toFixed(2) }}% {{ $t("software_center.used") }})
+        </div>
+        <NsProgressBar
+          :value="loading ? 0 : (volume.used / volume.available) * 100"
+          :loading="loading"
+          :warningThreshold="70"
+          :dangerThreshold="90"
+          :height="'10px'"
+          :useHealthyColor="false"
+          class="mg-bottom-lg"
+        />
       </NsTile>
       <infinite-loading
         :identifier="infiniteId"
@@ -86,8 +103,8 @@ export default {
     },
   },
   watch: {
-    selectedSnapshot: function () {
-      this.$emit("select", this.selectedSnapshot);
+    selectedVolume: function () {
+      this.$emit("selectVolume", this.additionnalVolumes);
     },
     volumes: function () {
       this.updateInternalVolumes();
@@ -103,12 +120,6 @@ export default {
     this.updateInternalVolumes();
   },
   methods: {
-    // formatSnapshotTimestamp(timestamp) {
-    //   return new Intl.DateTimeFormat(navigator.language, {
-    //     dateStyle: "long",
-    //     timeStyle: "short",
-    //   }).format(new Date(timestamp * 1000));
-    // },
     updateInternalVolumes() {
       // deep copy (needed to avoid reactivity issues)
       let additionnalVolumes = _cloneDeep(this.volumes);
@@ -117,6 +128,7 @@ export default {
         volume.selected = false;
       }
       this.additionnalVolumes = additionnalVolumes;
+      this.$emit("selectVolume", this.additionnalVolumes);
     },
     deselectOtherVolumes(volume) {
       for (let s of this.additionnalVolumes) {
