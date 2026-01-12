@@ -1051,8 +1051,6 @@
         "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
         "restart_instance": "Restart instance",
-        "instance_label_too_long": "Application label must be 24 characters or less",
-        "instance_label_alphanum_only": "Application label can only contain alphanumeric characters and spaces",
         "title_tooltip": "Discover, install and update applications in your cluster. To manage installed applications, go to {applications} page",
         "go_to_applications_center": "Go to applications center"
     },

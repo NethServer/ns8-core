@@ -593,8 +593,6 @@
         "restart_app": "Als u de module {name} opnieuw opstart, wordt de werking ervan onderbroken en kan er downtime ontstaan.",
         "restart_module_warning": "Ga alleen verder als er onderhoud nodig is en de gebruikers hiervan op de hoogte zijn.",
         "restart_instance": "Herstart module",
-        "instance_label_too_long": "Application label must be 24 characters or less",
-        "instance_label_alphanum_only": "Application label can only contain alphanumeric characters and spaces",
         "title_tooltip": "Discover, install and update applications in your cluster. To manage installed applications, go to {applications} page",
         "go_to_applications_center": "Go to applications center"
     },
