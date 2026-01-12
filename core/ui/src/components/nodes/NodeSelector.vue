@@ -32,6 +32,22 @@
           :line-count="2"
           class="mg-top-lg"
         ></cv-skeleton-text>
+        <div v-else class="mg-top-sm">
+          <template v-if="nodesWithAdditionalStorage.includes(node.id)"
+            ><VmdkDisk16
+          /></template>
+          {{
+            nodesWithAdditionalStorage.includes(node.id)
+              ? $t("software_center.additional_storage_available")
+              : ""
+          }}
+        </div>
+        <cv-skeleton-text
+          v-if="loading"
+          :paragraph="true"
+          :line-count="2"
+          class="mg-top-lg"
+        ></cv-skeleton-text>
         <div v-else-if="$slots[`node-${node.id}`]" class="mg-top-md">
           <slot :name="`node-${node.id}`"></slot>
         </div>
@@ -44,12 +60,20 @@
 import { UtilService, IconService } from "@nethserver/ns8-ui-lib";
 import _cloneDeep from "lodash/cloneDeep";
 import { mapState } from "vuex";
+import VmdkDisk16 from "@carbon/icons-vue/es/vmdk-disk/16";
 
 export default {
   name: "NodeSelector",
+  components: {
+    VmdkDisk16,
+  },
   mixins: [UtilService, IconService],
   props: {
     disabledNodes: {
+      type: Array,
+      default: () => [],
+    },
+    nodesWithAdditionalStorage: {
       type: Array,
       default: () => [],
     },
