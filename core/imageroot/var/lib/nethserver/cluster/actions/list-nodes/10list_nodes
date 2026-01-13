@@ -39,6 +39,7 @@ def main():
             "memory": get_memory(node_id),
             "swap": get_swap(node_id),
             "disks": get_disks(node_id),
+            "base_path_count": get_base_path_count(node_id),
             "app_count": app_count.get(node_id, 0),
             "os_release": get_os_release(node_id),
             "network_interface_count": get_network_interface_count(node_id),
@@ -146,6 +147,9 @@ def get_disks(node_id):
             "free": avail
         })
     return disks
+
+def get_base_path_count(node_id):
+    return int(get_scalar(f'ns8_node_base_paths{{node="{node_id}"}}'))
 
 def get_os_release(node_id):
     info = next(iter(q(f'node_os_info{{node="{node_id}"}}')), {"metric":{}})
