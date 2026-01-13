@@ -624,8 +624,6 @@ export default {
     },
     listMountPointsCompleted(taskContext, taskResult) {
       this.additionnalVolumes = taskResult.output.mountpoints;
-      console.log("additionnalVolumes", this.additionnalVolumes);
-      console.log("selectedNode", this.selectedNode);
       this.loading.listMountPoints = false;
     },
     async installInstance(volumes) {
