@@ -58,6 +58,13 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
+            v-if="error.listNodes"
+            kind="error"
+            :title="$t('action.list-nodes')"
+            :description="error.listNodes"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
             v-if="
               clusterStatus.length == disabledNodes.length &&
               !loading.getClusterStatus
@@ -108,14 +115,13 @@
             </template>
           </NsCheckbox>
           <!-- add-module error -->
-          <div v-if="error.addModule">
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.add-module')"
-              :description="error.addModule"
-              :showCloseButton="false"
-            />
-          </div>
+          <NsInlineNotification
+            v-if="error.addModule"
+            kind="error"
+            :title="$t('action.add-module')"
+            :description="error.addModule"
+            :showCloseButton="false"
+          />
         </template>
         <template v-else-if="step == 'volumes' && selectedNode">
           <div>
@@ -130,14 +136,21 @@
               })
             }}
           </div>
-          <div v-if="error.listMountPoints">
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.list-mountpoints')"
-              :description="error.listMountPoints"
-              :showCloseButton="false"
-            />
-          </div>
+          <NsInlineNotification
+            v-if="error.listMountPoints"
+            kind="error"
+            :title="$t('action.list-mountpoints')"
+            :description="error.listMountPoints"
+            :showCloseButton="false"
+          />
+          <!-- add-module error -->
+          <NsInlineNotification
+            v-if="error.addModule"
+            kind="error"
+            :title="$t('action.add-module')"
+            :description="error.addModule"
+            :showCloseButton="false"
+          />
           <!-- additonal volumes -->
           <AdditionnalVolumesSelector
             @selectVolume="onSelectVolume"
