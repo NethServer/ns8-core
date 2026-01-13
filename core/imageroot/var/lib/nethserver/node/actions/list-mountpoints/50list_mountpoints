@@ -10,12 +10,23 @@ import agent.volumes
 import json
 import sys
 import os
+import subprocess
+
+def fetch_rootmp():
+    findmnt_proc = subprocess.run(['findmnt', '--json', '--bytes', '--output=size,used,label', '/'], stdout=subprocess.PIPE)
+    rootmp = json.loads(findmnt_proc.stdout)["filesystems"][0]
+    if rootmp["label"] is None:
+        rootmp["label"] = ""
+    rootmp["available"] = rootmp["size"] - rootmp["used"]
+    rootmp["path"] = "/"
+    return rootmp
 
 def main():
     mountpoints = agent.volumes.get_base_paths()
+    rootfs = fetch_rootmp()
     for mp in mountpoints:
         mp["ui_name"] = mp["label"] or os.path.basename(mp["path"])
-    json.dump({"mountpoints":mountpoints}, fp=sys.stdout)
+    json.dump({"mountpoints": mountpoints, "rootfs": rootfs}, fp=sys.stdout)
 
 if __name__ == "__main__":
     main()

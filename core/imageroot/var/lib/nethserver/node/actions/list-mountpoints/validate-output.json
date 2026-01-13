@@ -5,6 +5,13 @@
     "description": "Output schema of the list-mountpoints action",
     "examples": [
         {
+            "rootfs": {
+                "path": "/",
+                "size": 63254278144,
+                "used": 11392909312,
+                "label": "rl1_root",
+                "available": 51861368832
+            },
             "mountpoints": [
                 {
                     "ui_name": "disk00",
@@ -25,15 +32,18 @@
     ],
     "type": "object",
     "properties": {
+        "rootfs": {
+            "$ref": "#/$defs/fsinfo"
+        },
         "mountpoints": {
             "type": "array",
             "items": {
-                "$ref": "#/$defs/mountpoint"
+                "$ref": "#/$defs/fsinfo"
             }
         }
     },
     "$defs": {
-        "mountpoint": {
+        "fsinfo": {
             "type": "object",
             "properties": {
                 "ui_name": {
