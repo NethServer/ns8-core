@@ -5,7 +5,6 @@
     :isLoading="loading"
     @modal-hidden="onModalHidden"
     @primary-click="setInstanceLabel"
-    :primary-button-disabled="inputLabelError ? true : false"
   >
     <template slot="title">
       {{ $t("software_center.edit_instance_label") }}
@@ -24,7 +23,7 @@
           :placeholder="$t('common.no_label')"
           :helper-text="$t('software_center.instance_label_tooltip')"
           :disabled="loading"
-          :invalid-message="$t(inputLabelError)"
+          maxlength="24"
           data-modal-primary-focus
         />
         <div v-if="error.setInstanceLabel">
@@ -70,18 +69,6 @@ export default {
       if (newVal) {
         this.inputLabel = this.newInstanceLabel || "";
       }
-    },
-  },
-  computed: {
-    inputLabelError() {
-      if (this.inputLabel.length > 24) {
-        return "software_center.instance_label_too_long";
-      }
-      const alphanumRegex = /^[a-zA-Z0-9 ]*$/;
-      if (!alphanumRegex.test(this.inputLabel)) {
-        return "software_center.instance_label_alphanum_only";
-      }
-      return "";
     },
   },
   methods: {

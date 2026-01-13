@@ -162,8 +162,6 @@
         "restart_app": "Il riavvio dell'istanza {nome} interromperà il suo funzionamento e può produrre downtime.",
         "restart_module_warning": "Procedere solo se è necessario e dopo aver informato gli utenti.",
         "restart_instance": "Riavvia istanza",
-        "instance_label_too_long": "L'etichetta dell'applicazione deve essere 24 caratteri o meno",
-        "instance_label_alphanum_only": "L'etichetta dell'applicazione può contenere solo caratteri alfanumerici e spazi",
         "title_tooltip": "Scopri, installa e aggiorna le applicazioni nel tuo cluster. Per gestire le applicazioni installate, vai alla pagina {applications}",
         "go_to_applications_center": "Vai ad Applicazioni"
     },
