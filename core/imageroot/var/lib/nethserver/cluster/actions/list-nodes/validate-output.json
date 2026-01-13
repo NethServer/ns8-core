@@ -232,7 +232,7 @@
                 },
                 "base_path_count": {
                     "type": "number",
-                    "description": "Number of additional disks on the node, for application volumes"
+                    "description": "Number of additional base paths (mount points) on the node, for application volumes"
                 },
                 "disks": {
                     "description": "Storage information by partition",
