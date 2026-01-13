@@ -24,7 +24,6 @@ ExecStart=/usr/bin/podman run \
 
 ExecStartPost=-/usr/local/bin/redis-wait-ready --retries 30 --period 1
 ExecStartPost=-/usr/local/bin/acl-load
-ExecStartPost=-/usr/local/sbin/apply-vpn-routes
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/redis.cid
 PIDFile=%t/redis.pid

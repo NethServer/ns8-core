@@ -67,6 +67,22 @@ def resolve_endpoint(endpoint):
     # sockaddr item (index 4)
     return (addrinfo[0][4][0] , str(port))
 
+def get_runtime_wg_endpoints():
+    wg_endpoints = {}
+    wg_show_proc = subprocess.run(['wg', 'show', 'wg0', 'endpoints'], stdout=subprocess.PIPE, text=True)
+    for wgrecord in filter(None, wg_show_proc.stdout.split("\n")):
+        try:
+            pubkey, endpoint = wgrecord.split("\t", 1)
+            host_addr, port = endpoint.split(":", 1)
+        except ValueError as ex:
+            print(agent.SD_ERR + "Parse error of 'wg show wg0 endpoints' output. Ignored line:", wgrecord, "Exception:", ex, file=sys.stderr)
+        wg_endpoints[pubkey] = (host_addr, port)
+    return wg_endpoints
+
+# Save existing endpoint values before changing them. If a peer address
+# cannot be resolved by DNS these values provide a safe default.
+wg_endpoints = get_runtime_wg_endpoints()
+
 # Find the networks of the local interfaces. Addresses of these networks
 # are not routed through the VPN.
 cluster_onetwork = ipm.ip_network(cluster_network, strict=False)
@@ -82,8 +98,18 @@ for iface in ipaddr_reply:
 errors = 0
 valid_destinations = []
 for node_id in destmap:
+    allowed_ips = destmap[node_id]
     peer_host, peer_port = resolve_endpoint(peers[node_id].get('endpoint', ''))
-    allowed_ips = destmap[node_id] - {peer_host}
+    if not peer_host:
+        # If DNS did not return the endpoint IP, fall back to current
+        # runtime value. This may happen at boot time when
+        # wg-quick@wg0.service has restored settings from wg0.conf file.
+        try:
+            peer_host = wg_endpoints[peers[node_id]['public_key']][0]
+        except KeyError:
+            pass # ignore missing public_key and unknown endpoint errors
+    # Ensure the endpoint IP is never routed through the VPN:
+    allowed_ips.discard(peer_host)
     # Apply immediately the new configuration to the WireGuard wg0 interface...
     wset_proc = agent.run_helper('wg', 'set', 'wg0', 'peer', peers[node_id]["public_key"],
         'persistent-keepalive', '25',
