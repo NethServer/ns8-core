@@ -10,6 +10,7 @@
                 "size": 63254278144,
                 "used": 11392909312,
                 "label": "rl1_root",
+                "ui_name": "rl1_root",
                 "available": 51861368832
             },
             "mountpoints": [
