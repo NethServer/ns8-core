@@ -76,6 +76,7 @@ def get_runtime_wg_endpoints():
             host_addr, port = endpoint.split(":", 1)
         except ValueError as ex:
             print(agent.SD_ERR + "Parse error of 'wg show wg0 endpoints' output. Ignored line:", wgrecord, "Exception:", ex, file=sys.stderr)
+            continue
         wg_endpoints[pubkey] = (host_addr, port)
     return wg_endpoints
 
