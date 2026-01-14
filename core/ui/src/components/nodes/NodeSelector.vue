@@ -33,7 +33,10 @@
           class="mg-top-lg"
         ></cv-skeleton-text>
         <div v-else class="mg-top-md">
-          <div v-if="nodesWithAdditionalStorage.includes(node.id)" class="icon-text-container">
+          <div
+            v-if="nodesWithAdditionalStorage.includes(node.id)"
+            class="icon-text-container"
+          >
             <VmdkDisk16 class="icon-spacing" />
             {{ $t("software_center.additional_storage_available") }}
           </div>
