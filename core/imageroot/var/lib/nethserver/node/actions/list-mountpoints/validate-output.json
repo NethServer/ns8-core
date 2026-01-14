@@ -5,7 +5,7 @@
     "description": "Output schema of the list-mountpoints action",
     "examples": [
         {
-            "rootfs": {
+            "default_disk": {
                 "path": "/",
                 "size": 63254278144,
                 "used": 11392909312,
@@ -32,7 +32,7 @@
     ],
     "type": "object",
     "properties": {
-        "rootfs": {
+        "default_disk": {
             "$ref": "#/$defs/fsinfo"
         },
         "mountpoints": {

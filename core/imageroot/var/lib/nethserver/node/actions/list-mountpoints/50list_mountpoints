@@ -12,21 +12,31 @@ import sys
 import os
 import subprocess
 
-def fetch_rootmp():
-    findmnt_proc = subprocess.run(['findmnt', '--json', '--bytes', '--output=size,used,label', '/'], stdout=subprocess.PIPE)
-    rootmp = json.loads(findmnt_proc.stdout)["filesystems"][0]
-    if rootmp["label"] is None:
-        rootmp["label"] = ""
-    rootmp["available"] = rootmp["size"] - rootmp["used"]
-    rootmp["path"] = "/"
-    return rootmp
+def fetch_home_disk() -> dict:
+    # Find where applications are installed, looking at the disk where
+    # HOME_BASEDIR (/home by default) is mounted.
+    findmnt_proc = subprocess.run([
+            'findmnt', '--json', '--bytes',
+            '--output=size,used,label,target',
+            '--target', os.getenv("HOME_BASEDIR", "/home"),
+        ],
+        stdout=subprocess.PIPE)
+    mp = json.loads(findmnt_proc.stdout)["filesystems"][0]
+    return {
+        "size": mp["size"],
+        "used": mp["used"],
+        "available": mp["size"] - mp["used"],
+        "path": mp["target"],
+        "label": mp["label"] or "",
+        "ui_name": mp["label"] or os.path.basename(mp["target"]),
+    }
 
 def main():
     mountpoints = agent.volumes.get_base_paths()
-    rootfs = fetch_rootmp()
+    default_disk = fetch_home_disk()
     for mp in mountpoints:
         mp["ui_name"] = mp["label"] or os.path.basename(mp["path"])
-    json.dump({"mountpoints": mountpoints, "rootfs": rootfs}, fp=sys.stdout)
+    json.dump({"mountpoints": mountpoints, "default_disk": default_disk}, fp=sys.stdout)
 
 if __name__ == "__main__":
     main()
