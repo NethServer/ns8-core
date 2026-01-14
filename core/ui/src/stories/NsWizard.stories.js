@@ -42,6 +42,8 @@ Default.args = {
   isNextDisabled: false,
   isNextLoading: false,
   isCancelDisabled: false,
+  isPreviousShown: true,
+  isCancelShown: true,
   closeAriaLabel: "Close modal",
   autoHideOff: false,
   visible: true,
