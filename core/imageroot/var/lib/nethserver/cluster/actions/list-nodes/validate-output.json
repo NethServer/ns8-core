@@ -36,7 +36,7 @@
                         "used": 8179712.0,
                         "free": 4186120192.0
                     },
-                    "base_path_count": 1,
+                    "additional_disk_count": 1,
                     "disks": [
                         {
                             "device": "/dev/sda",
@@ -230,9 +230,9 @@
                         }
                     }
                 },
-                "base_path_count": {
+                "additional_disk_count": {
                     "type": "number",
-                    "description": "Number of additional base paths (mount points) on the node, for application volumes"
+                    "description": "Number of additional disks available on the node for application volume mapping"
                 },
                 "disks": {
                     "description": "Storage information by partition",

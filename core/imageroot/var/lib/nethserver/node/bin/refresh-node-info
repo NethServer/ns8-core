@@ -25,9 +25,9 @@ function write_prom_file()
         echo "# TYPE ns8_node_info gauge"
         printf 'ns8_node_info{wg0_port="%s",fqdn="%s"} 1\n' "${wg0_port}" "${fqdn}"
 
-        echo "# HELP ns8_node_base_paths Number of additional disks on the node"
-        echo "# TYPE ns8_node_base_paths gauge"
-        printf 'ns8_node_base_paths %d\n' ${basepaths_count:-0}
+        echo "# HELP ns8_additional_disks Number of additional disks on the node for application volume mapping"
+        echo "# TYPE ns8_additional_disks gauge"
+        printf 'ns8_additional_disks %d\n' ${basepaths_count:-0}
     } >"$outfile.$$"
     mv "$outfile.$$" "$outfile"
 }
