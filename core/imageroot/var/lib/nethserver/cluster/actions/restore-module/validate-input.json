@@ -28,7 +28,7 @@
                     "description": "Absolute filesystem directory path under /",
                     "example": "/srv/pool0",
                     "type": "string",
-                    "pattern": "^/.+$"
+                    "pattern": "^/"
                 }
             }
         },
