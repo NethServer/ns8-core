@@ -100,5 +100,9 @@ cluster_env = agent.read_envfile("/var/lib/nethserver/cluster/state/environment"
 cluster_env["NODE_ID"] = str(node_id)
 agent.write_envfile("/var/lib/nethserver/cluster/state/environment", cluster_env)
 
-# Restart Redis to sync ACLs and additional VPN routes
+# Restart Redis to sync ACLs
 agent.run_helper('systemctl', 'restart', 'redis.service').check_returncode()
+
+# Initial VPN configuration. Call the same command of node's vpn-changed
+# event handler:
+agent.run_helper('/usr/local/sbin/apply-vpn-routes').check_returncode()
