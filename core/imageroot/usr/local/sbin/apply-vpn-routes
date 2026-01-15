@@ -106,7 +106,7 @@ for node_id in destmap:
         # runtime value. This may happen at boot time when
         # wg-quick@wg0.service has restored settings from wg0.conf file.
         try:
-            peer_host = wg_endpoints[peers[node_id]['public_key']][0]
+            peer_host, peer_port = wg_endpoints[peers[node_id]['public_key']]
         except KeyError:
             pass # ignore missing public_key and unknown endpoint errors
     # Ensure the endpoint IP is never routed through the VPN:
