@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 
 def main():
+    workdir = Path.cwd().resolve()
     request = json.load(sys.stdin)
     module_id = os.environ["MODULE_ID"]
     # Init defaults from /etc/nethserver/volumes.conf
@@ -20,6 +21,8 @@ def main():
     # Set values from request:
     volpaths.update(request.get('volumes', {}))
     for volname, basepath in volpaths.items():
+        if workdir.is_relative_to(basepath):
+            continue # ignore basepaths like / /home /home1 HOME_BASEDIR
         # volpath example: /srv/pool0/samba1/shares/_data
         volpath = Path(basepath) / module_id / volname.strip("/") / "_data"
         os.makedirs(volpath)

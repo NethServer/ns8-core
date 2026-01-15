@@ -14,6 +14,7 @@ function write_prom_file()
     main6=$(ip -6 -j route get 2000:: 2>/dev/null | jq -r '.[0].prefsrc')
     fqdn=$(hostname -f)
     wg0_port=$(wg show wg0 dump | awk 'NR==1 { print $3 }')
+    basepaths_count=$(volumectl list-base-paths | wc -l)
     {
         echo "# HELP ns8_node_main_ip_address Main IP address selected by routing table"
         echo "# TYPE ns8_node_main_ip_address gauge"
@@ -23,6 +24,10 @@ function write_prom_file()
         echo "# HELP ns8_node_info Node additional information"
         echo "# TYPE ns8_node_info gauge"
         printf 'ns8_node_info{wg0_port="%s",fqdn="%s"} 1\n' "${wg0_port}" "${fqdn}"
+
+        echo "# HELP ns8_additional_disks Number of additional disks on the node for application volume mapping"
+        echo "# TYPE ns8_additional_disks gauge"
+        printf 'ns8_additional_disks %d\n' ${basepaths_count:-0}
     } >"$outfile.$$"
     mv "$outfile.$$" "$outfile"
 }
