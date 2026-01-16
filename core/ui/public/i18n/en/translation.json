@@ -1127,7 +1127,8 @@
         "of": "of",
         "used": "used",
         "available": "available",
-        "additionnal_storage": "Additional storage"
+        "additionnal_storage": "Additional storage",
+        "default_storage": "Default storage"
     },
     "system_logs": {
         "title": "System logs",
