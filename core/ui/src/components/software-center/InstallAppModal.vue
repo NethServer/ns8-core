@@ -503,9 +503,12 @@ export default {
     },
     listMountPointsCompleted(taskContext, taskResult) {
       this.additionnalVolumes = taskResult.output.mountpoints;
-      // Add default disk at the end
+      // Add default disk at the end, push default property
       if (taskResult.output.default_disk) {
-        this.additionnalVolumes.push(taskResult.output.default_disk);
+        this.additionnalVolumes.push({
+          ...taskResult.output.default_disk,
+          default: true, // mark as default disk
+        });
       }
       this.loading.listMountPoints = false;
     },
@@ -534,8 +537,8 @@ export default {
         node: parseInt(this.selectedNode.id),
       };
 
-      // Add volumes if provided and if not default "/"
-      if (volumes && Object.keys(volumes).length > 0 && volumes.path !== "/") {
+      // Add volumes path if any
+      if (volumes?.path) {
         data.volumes = {
           shares: volumes.path,
         };
