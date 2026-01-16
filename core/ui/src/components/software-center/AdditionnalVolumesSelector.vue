@@ -37,7 +37,10 @@
         class="volume-tile"
       >
         <div class="mg-bottom-lg">
-          <strong>
+          <strong v-if="volume.default">
+            {{ $t("software_center.default_storage") }}
+          </strong>
+          <strong v-else>
             {{ $t("software_center.additionnal_storage") }}
             {{ volume.label ? volume.label : volume.ui_name }}
           </strong>
