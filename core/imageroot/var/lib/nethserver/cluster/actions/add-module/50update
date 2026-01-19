@@ -46,6 +46,7 @@ if volumes:
     )
     if list_mountpoints_result['exit_code'] == 0:
         valid_paths = [x["path"] for x in list_mountpoints_result['output'].get('mountpoints', [])]
+        valid_paths.append(list_mountpoints_result['output']['default_disk']['path'])
         for qpath in volumes.values():
             if qpath not in valid_paths:
                 print(agent.SD_ERR + f'Unknown mountpoint path "{qpath}" in node {node_id}.', file=sys.stderr)
