@@ -136,7 +136,7 @@
             :description="error.listMountPoints"
             :showCloseButton="false"
           />
-          <!-- additonal volumes -->
+          <!-- additional volumes -->
           <AdditionnalVolumesSelector
             @selectVolume="onSelectVolume"
             :volumes="additionnalVolumes"

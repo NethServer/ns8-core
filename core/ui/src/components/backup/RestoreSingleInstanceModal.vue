@@ -198,7 +198,7 @@
               })
             }}
           </div>
-          <!-- additonal volumes -->
+          <!-- additional volumes -->
           <AdditionnalVolumesSelector
             @selectVolume="onSelectVolume"
             :volumes="additionnalVolumes"
