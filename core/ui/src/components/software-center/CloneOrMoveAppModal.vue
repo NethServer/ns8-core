@@ -3,7 +3,7 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
-  <nsWizard
+  <NsWizard
     size="default"
     :visible="isShown"
     @primary-click="cloneOrMove"
@@ -128,7 +128,7 @@
         />
       </cv-form>
     </template>
-  </nsWizard>
+  </NsWizard>
 </template>
 
 <script>
