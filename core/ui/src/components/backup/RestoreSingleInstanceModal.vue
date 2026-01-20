@@ -645,7 +645,7 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.listNodes = this.getErrorMessage(err);
+        this.error.listMountPoints = this.getErrorMessage(err);
         return;
       }
     },
