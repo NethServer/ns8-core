@@ -37,7 +37,7 @@
             v-if="nodesWithAdditionalStorage.includes(node.id)"
             class="icon-text-container"
           >
-            <VmdkDisk16 class="icon-spacing" />
+            <VmdkDisk20 class="icon-spacing" />
             {{ $t("software_center.additional_storage_available") }}
           </div>
         </div>
@@ -59,12 +59,12 @@
 import { UtilService, IconService } from "@nethserver/ns8-ui-lib";
 import _cloneDeep from "lodash/cloneDeep";
 import { mapState } from "vuex";
-import VmdkDisk16 from "@carbon/icons-vue/es/vmdk-disk/16";
+import VmdkDisk20 from "@carbon/icons-vue/es/vmdk-disk/20";
 
 export default {
   name: "NodeSelector",
   components: {
-    VmdkDisk16,
+    VmdkDisk20,
   },
   mixins: [UtilService, IconService],
   props: {
