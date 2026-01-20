@@ -434,7 +434,8 @@
         "set-note": "Set note",
         "import-users": "Import users",
         "export-users": "Export users",
-        "get-password-warning": "Get password warning"
+        "get-password-warning": "Get password warning",
+        "list-mountpoints": "List mountpoints"
     },
     "network": {
         "title": "Network"
@@ -1011,7 +1012,7 @@
         "source_package": "Application image",
         "app_installation": "Install {app}",
         "choose_node_for_installation": "Select installation node for {app} {version}:",
-        "about_to_install_app": "{app} {version} will be installed on {node}.",
+        "select_node_volume_for_installation": "Select the volume installation on node {node} for application data:",
         "installing_on_node": "Installing on {node}",
         "instance_installed_on_node": "{module_id} installed on {node}",
         "app_instances": "{app} instances",
@@ -1109,10 +1110,10 @@
         "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
         "reason_min_core_requirement": "Core version is lower than {param}",
         "search_core_apps": "Search core applications",
-        "cannot_install_app_on_node": "Cannot install {app} {version} on {node}",
         "no_node_eligible_for_app_installation": "No node is eligible for application installation",
         "no_node_eligible_for_instance_cloning": "No node is eligible for instance cloning",
         "no_node_eligible_for_instance_migration": "No node is eligible for instance migration",
+        "node_offline": "Node is offline",
         "no_version_reason": {
             "no_app_version": "No stable release of {app_name} is available in the '{app_repository}' repository",
             "core_version_too_low": "Update core to version {core_min} or higher to install this application",
@@ -1121,7 +1122,13 @@
         "migrating_app_title": "This application instance is undergoing migration",
         "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
         "instance_label_too_long": "Application label must be 24 characters or less",
-        "instance_label_alphanum_only": "Application label can only contain alphanumeric characters and spaces"
+        "instance_label_alphanum_only": "Application label can only contain alphanumeric characters and spaces",
+        "additional_storage_available": "Additional storage available",
+        "of": "of",
+        "used": "used",
+        "available": "available",
+        "default_storage": "Default storage",
+        "no_volume_to_restore": "No volume to restore"
     },
     "system_logs": {
         "title": "System logs",
