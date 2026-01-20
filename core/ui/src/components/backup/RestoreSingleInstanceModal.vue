@@ -201,7 +201,7 @@
           <!-- additional volumes -->
           <AdditionnalVolumesSelector
             @selectVolume="onSelectVolume"
-            :volumes="additionnalVolumes"
+            :volumes="additionalVolumes"
             :loading="loading.listMountPoints"
             :light="true"
             class="mg-top-lg"
@@ -255,7 +255,7 @@ export default {
       replaceExistingApp: false,
       installDestinations: [],
       clusterStatus: [],
-      additionnalVolumes: [],
+      additionalVolumes: [],
       listNodes: [],
       selectedVolume: {},
       modules: [],
@@ -510,7 +510,7 @@ export default {
       this.selectedSnapshot = null;
       this.replaceExistingApp = false;
       this.installDestinations = [];
-      this.additionnalVolumes = [];
+      this.additionalVolumes = [];
       // Reset loading states
       this.loading = {
         readBackupRepositories: true,
@@ -655,10 +655,10 @@ export default {
       this.loading.listMountPoints = false;
     },
     listMountPointsCompleted(taskContext, taskResult) {
-      this.additionnalVolumes = taskResult.output.mountpoints;
+      this.additionalVolumes = taskResult.output.mountpoints;
       // Add default disk at the end, push default property
       if (taskResult.output.default_disk) {
-        this.additionnalVolumes.push({
+        this.additionalVolumes.push({
           ...taskResult.output.default_disk,
           default: true, // mark as default disk
         });

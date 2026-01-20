@@ -112,7 +112,7 @@
           <!-- additional volumes -->
           <AdditionnalVolumesSelector
             @selectVolume="onSelectVolume"
-            :volumes="additionnalVolumes"
+            :volumes="additionalVolumes"
             :loading="loading.listMountPoints"
             :light="true"
             class="mg-top-lg"
@@ -175,7 +175,7 @@ export default {
       steps: ["node", "volumes"],
       clusterStatus: [],
       listNodes: [],
-      additionnalVolumes: [],
+      additionalVolumes: [],
       selectedVolume: {},
       loading: {
         cloneModule: false,
@@ -404,7 +404,7 @@ export default {
       this.selectedVolume = {};
       this.clusterStatus = [];
       this.listNodes = [];
-      this.additionnalVolumes = [];
+      this.additionalVolumes = [];
       this.step = this.steps[0];
       this.loading.getClusterStatus = true;
     },
@@ -525,10 +525,10 @@ export default {
       this.loading.listMountPoints = false;
     },
     listMountPointsCompleted(taskContext, taskResult) {
-      this.additionnalVolumes = taskResult.output.mountpoints;
+      this.additionalVolumes = taskResult.output.mountpoints;
       // Add default disk at the end, push default property
       if (taskResult.output.default_disk) {
-        this.additionnalVolumes.push({
+        this.additionalVolumes.push({
           ...taskResult.output.default_disk,
           default: true, // mark as default disk
         });
@@ -645,7 +645,7 @@ export default {
       this.selectedVolume = {};
       this.clusterStatus = [];
       this.listNodes = [];
-      this.additionnalVolumes = [];
+      this.additionalVolumes = [];
       this.step = this.steps[0];
       this.loading.getClusterStatus = true;
 

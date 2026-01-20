@@ -21,7 +21,7 @@
       </div>
       <!-- no volume to restore -->
       <NsEmptyState
-        v-else-if="!additionnalVolumes.length"
+        v-else-if="!additionalVolumes.length"
         :title="$t('software_center.no_volume_to_restore')"
       />
       <!-- volume list -->
@@ -92,7 +92,7 @@ export default {
   },
   data() {
     return {
-      additionnalVolumes: [],
+      additionalVolumes: [],
       // infinite scroll
       additionalVolumesLoaded: [],
       pageNum: 0,
@@ -102,7 +102,7 @@ export default {
   },
   computed: {
     selectedSnapshot() {
-      return this.additionnalVolumes.find((i) => i.selected);
+      return this.additionalVolumes.find((i) => i.selected);
     },
   },
   watch: {
@@ -112,7 +112,7 @@ export default {
     volumes: function () {
       this.updateInternalVolumes();
     },
-    additionnalVolumes: function () {
+    additionalVolumes: function () {
       this.additionalVolumesLoaded = [];
       this.pageNum = 0;
       this.infiniteId += 1;
@@ -125,22 +125,22 @@ export default {
   methods: {
     updateInternalVolumes() {
       // deep copy (needed to avoid reactivity issues)
-      let additionnalVolumes = _cloneDeep(this.volumes);
+      let additionalVolumes = _cloneDeep(this.volumes);
       // select the first additionnal volume by default
-      additionnalVolumes.forEach((volume, index) => {
+      additionalVolumes.forEach((volume, index) => {
         volume.selected = index === 0;
       });
-      this.additionnalVolumes = additionnalVolumes;
+      this.additionalVolumes = additionalVolumes;
     },
     deselectOtherVolumes(volume) {
-      for (let s of this.additionnalVolumes) {
+      for (let s of this.additionalVolumes) {
         if (s.path !== volume.path) {
           s.selected = false;
         }
       }
     },
     infiniteScrollHandler($state) {
-      const pageItems = this.additionnalVolumes.slice(
+      const pageItems = this.additionalVolumes.slice(
         this.pageNum * this.pageSize,
         (this.pageNum + 1) * this.pageSize
       );
