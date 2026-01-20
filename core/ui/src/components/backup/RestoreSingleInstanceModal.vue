@@ -21,7 +21,6 @@
     @cancel="$emit('hide')"
     @previousStep="previousStep"
     @nextStep="nextStep"
-    :isPreviousShown="hasAdditionalStorageAvailable"
   >
     <template slot="title">{{ $t("backup.restore_app") }}</template>
     <template slot="content">
@@ -298,7 +297,8 @@ export default {
         (this.step == "node" &&
           (this.loading.determineRestoreEligibility ||
             !this.selectedNode ||
-            this.clusterNodes.length == this.disabledNodes.length)) ||
+            (this.clusterNodes.length == this.disabledNodes.length &&
+              !this.shouldShowRestoreLabel))) ||
         (this.step == "volumes" &&
           (this.loading.listMountPoints ||
             !this.selectedNode ||
@@ -437,9 +437,6 @@ export default {
       }
       return nodeIds;
     },
-    hasAdditionalStorageAvailable() {
-      return this.nodesWithAdditionalStorage.length > 0;
-    },
     shouldShowRestoreLabel() {
       return (
         this.step == "node" &&
@@ -533,7 +530,6 @@ export default {
       this.loading.listModules = true;
       this.error.listModules = "";
       this.modules = [];
-      this.selectedNode = null;
       const taskAction = "list-modules";
       const eventId = this.getUuid();
 
