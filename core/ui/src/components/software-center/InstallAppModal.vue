@@ -137,7 +137,7 @@
             :showCloseButton="false"
           />
           <!-- additional volumes -->
-          <AdditionnalVolumesSelector
+          <AdditionalVolumesSelector
             @selectVolume="onSelectVolume"
             :volumes="additionalVolumes"
             :loading="loading.listMountPoints"
@@ -163,12 +163,12 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
 import NodeSelector from "@/components/nodes/NodeSelector";
-import AdditionnalVolumesSelector from "@/components/software-center/AdditionnalVolumesSelector.vue";
+import AdditionalVolumesSelector from "@/components/software-center/AdditionalVolumesSelector.vue";
 import { mapState } from "vuex";
 
 export default {
   name: "InstallAppModal",
-  components: { NodeSelector, AdditionnalVolumesSelector },
+  components: { NodeSelector, AdditionalVolumesSelector },
   mixins: [UtilService, TaskService, IconService, NotificationService],
   props: {
     isShown: Boolean,

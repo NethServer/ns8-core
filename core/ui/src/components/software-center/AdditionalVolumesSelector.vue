@@ -76,7 +76,7 @@ import { UtilService, DateTimeService } from "@nethserver/ns8-ui-lib";
 import _cloneDeep from "lodash/cloneDeep";
 
 export default {
-  name: "AdditionnalVolumesSelector",
+  name: "AdditionalVolumesSelector",
   components: {},
   mixins: [UtilService, DateTimeService],
   props: {

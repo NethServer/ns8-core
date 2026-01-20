@@ -199,7 +199,7 @@
             }}
           </div>
           <!-- additional volumes -->
-          <AdditionnalVolumesSelector
+          <AdditionalVolumesSelector
             @selectVolume="onSelectVolume"
             :volumes="additionalVolumes"
             :loading="loading.listMountPoints"
@@ -226,7 +226,7 @@ import NodeSelector from "@/components/nodes/NodeSelector";
 import RestoreSingleInstanceSelector from "@/components/backup/RestoreSingleInstanceSelector";
 import { mapState } from "vuex";
 import RestoreSingleInstanceSnapshotSelector from "./RestoreSingleInstanceSnapshotSelector.vue";
-import AdditionnalVolumesSelector from "@/components/software-center/AdditionnalVolumesSelector.vue";
+import AdditionalVolumesSelector from "@/components/software-center/AdditionalVolumesSelector.vue";
 
 export default {
   name: "RestoreSingleInstanceModal",
@@ -234,7 +234,7 @@ export default {
     NodeSelector,
     RestoreSingleInstanceSelector,
     RestoreSingleInstanceSnapshotSelector,
-    AdditionnalVolumesSelector,
+    AdditionalVolumesSelector,
   },
   mixins: [UtilService, TaskService, IconService],
   props: {

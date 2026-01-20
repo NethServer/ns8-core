@@ -110,7 +110,7 @@
             :showCloseButton="false"
           />
           <!-- additional volumes -->
-          <AdditionnalVolumesSelector
+          <AdditionalVolumesSelector
             @selectVolume="onSelectVolume"
             :volumes="additionalVolumes"
             :loading="loading.listMountPoints"
@@ -135,12 +135,12 @@
 import { UtilService, IconService, TaskService } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
 import NodeSelector from "@/components/nodes/NodeSelector";
-import AdditionnalVolumesSelector from "@/components/software-center/AdditionnalVolumesSelector.vue";
+import AdditionalVolumesSelector from "@/components/software-center/AdditionalVolumesSelector.vue";
 import to from "await-to-js";
 
 export default {
   name: "CloneOrMoveAppModal",
-  components: { NodeSelector, AdditionnalVolumesSelector },
+  components: { NodeSelector, AdditionalVolumesSelector },
   mixins: [UtilService, IconService, TaskService],
   props: {
     isShown: {
