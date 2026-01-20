@@ -27,7 +27,7 @@
       <!-- volume list -->
       <NsTile
         v-else
-        v-for="(volume, index) of additionnalVolumesLoaded"
+        v-for="(volume, index) of additionalVolumesLoaded"
         :key="index"
         :light="light"
         kind="selectable"
@@ -94,7 +94,7 @@ export default {
     return {
       additionnalVolumes: [],
       // infinite scroll
-      additionnalVolumesLoaded: [],
+      additionalVolumesLoaded: [],
       pageNum: 0,
       pageSize: 20,
       infiniteId: +new Date(),
@@ -113,7 +113,7 @@ export default {
       this.updateInternalVolumes();
     },
     additionnalVolumes: function () {
-      this.additionnalVolumesLoaded = [];
+      this.additionalVolumesLoaded = [];
       this.pageNum = 0;
       this.infiniteId += 1;
       this.infiniteScrollHandler();
@@ -147,7 +147,7 @@ export default {
 
       if (pageItems.length) {
         this.pageNum++;
-        this.additionnalVolumesLoaded.push(...pageItems);
+        this.additionalVolumesLoaded.push(...pageItems);
 
         if ($state) {
           $state.loaded();
