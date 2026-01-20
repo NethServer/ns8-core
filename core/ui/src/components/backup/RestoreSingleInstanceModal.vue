@@ -14,7 +14,7 @@
         : $t('common.next')
     "
     :isPreviousDisabled="isFirstStep || loading.restoreModule"
-    :isNextDisabled="isNextButtonDisabled"
+    :isNextDisabled="isNextButtonDisabled || isNextButtonLoading"
     :isNextLoading="isNextButtonLoading"
     @modal-hidden="$emit('hide')"
     @modal-shown="onModalShown"
