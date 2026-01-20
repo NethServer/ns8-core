@@ -418,7 +418,7 @@ export default {
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.ListNodesCompleted);
+      this.$root.$once(taskAction + "-completed", this.listNodesCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -442,7 +442,7 @@ export default {
       this.error.listNodes = this.$t("error.generic_error");
       this.loading.getClusterStatus = false;
     },
-    ListNodesCompleted(taskContext, taskResult) {
+    listNodesCompleted(taskContext, taskResult) {
       this.listNodes = taskResult.output.nodes;
       this.getClusterStatus();
     },
