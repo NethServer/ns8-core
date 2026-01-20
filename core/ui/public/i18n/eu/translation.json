@@ -138,7 +138,9 @@
         "any_node": "Any node",
         "type": "Type",
         "any": "Any",
-        "eg_value": "e.g. {value}"
+        "eg_value": "e.g. {value}",
+        "not_configured": "Not configured",
+        "go_to_page": "Go to {page}"
     },
     "backup": {
         "aws": "Amazon S3",
@@ -1171,8 +1173,6 @@
         "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
         "restart_instance": "Restart instance",
-        "instance_label_too_long": "Application label must be 24 characters or less",
-        "instance_label_alphanum_only": "Application label can only contain alphanumeric characters and spaces",
         "title_tooltip": "Discover, install and update applications in your cluster. To manage installed applications, go to {applications} page",
         "go_to_applications_center": "Go to applications center"
     },
@@ -1752,5 +1752,14 @@
         "import": "Import",
         "file_read_error": "File read error",
         "import_data": "Import data"
+    },
+    "apps_status": {
+        "search_images": "Search images",
+        "search_volumes": "Search volumes",
+        "restart_application": "Restart application",
+        "go_to_node_details": "Go to node",
+        "application": "Application",
+        "application_images": "Application images",
+        "application_volumes": "Application volumes"
     }
 }

@@ -36,6 +36,7 @@
                         "used": 8179712.0,
                         "free": 4186120192.0
                     },
+                    "additional_disk_count": 1,
                     "disks": [
                         {
                             "device": "/dev/sda",
@@ -228,6 +229,10 @@
                             "type": "number"
                         }
                     }
+                },
+                "additional_disk_count": {
+                    "type": "number",
+                    "description": "Number of additional disks available on the node for application volume mapping"
                 },
                 "disks": {
                     "description": "Storage information by partition",

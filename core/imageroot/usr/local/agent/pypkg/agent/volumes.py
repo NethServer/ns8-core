@@ -6,6 +6,7 @@
 import sys
 import subprocess
 import json
+import os
 from configparser import ConfigParser
 
 def _parse_config() -> ConfigParser:
@@ -53,6 +54,7 @@ def get_configuration(module_id:str) -> dict:
     return volmap
 
 def get_base_paths() -> list:
+    home_basedir = os.getenv("HOME_BASEDIR", "/home")
     with subprocess.Popen(["findmnt", "--real", "--json", "--bytes", "--output", "SOURCE,TARGET,SIZE,USED,LABEL", "--nofsroot", "--type", "nofat,novfat"], stdout=subprocess.PIPE) as hproc:
         ofindmnt = json.load(hproc.stdout)
     orootfs = ofindmnt["filesystems"][0]
@@ -62,6 +64,8 @@ def get_base_paths() -> list:
             continue # ignore bind mounts
         elif ofs["target"].startswith("/boot"):
             continue # ignore /boot* mountpoints
+        elif ofs["target"] in ["/", home_basedir]:
+            continue # ignore HOME_BASEDIR and root volume
         opath = {
             "path": ofs["target"],
             "label": ofs["label"] or "",
