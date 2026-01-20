@@ -611,7 +611,7 @@ export default {
     },
     onModalHidden() {
       this.$emit("close");
-      this.clearErrors(this);
+      this.clearErrors();
       // reset state
       this.selectedNode = null;
       this.selectedVolume = {};
