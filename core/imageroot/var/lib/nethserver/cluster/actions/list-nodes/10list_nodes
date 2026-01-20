@@ -11,7 +11,7 @@ import os
 import sys
 import agent
 
-def init_prom_query_url(base_url):
+def discover_prom_query_url(base_url):
     api_path = '/api/v1/query'
     try:
         # Check if prefix is not necessary:
@@ -23,11 +23,11 @@ def init_prom_query_url(base_url):
             if r.status_code == 302 and 'Location' in r.headers:
                 base_url += r.headers['Location']
     except Exception as ex:
-        print("init_prom_query_url(): cannot parse Metrics/Prometheus headers. Reason: ", ex, file=sys.stderr)
+        print("discover_prom_query_url(): cannot parse Metrics/Prometheus headers. Reason: ", ex, file=sys.stderr)
     return base_url + api_path
 
 # Calculate the full Prometheus API endpoint
-PROM_QUERY_URL = init_prom_query_url("http://127.0.0.1:9091")
+PROM_QUERY_URL = discover_prom_query_url("http://127.0.0.1:9091")
 
 def main():
     node_list=[]
