@@ -8,14 +8,20 @@
     :visible="isShown"
     :cancelLabel="$t('common.cancel')"
     :previousLabel="$t('common.previous')"
-    :nextLabel="isLastStep ? $t('backup.restore') : $t('common.next')"
+    :nextLabel="
+      isLastStep || shouldShowRestoreLabel
+        ? $t('backup.restore')
+        : $t('common.next')
+    "
     :isPreviousDisabled="isFirstStep || loading.restoreModule"
     :isNextDisabled="isNextButtonDisabled"
-    :isNextLoading="loading.restoreModule"
+    :isNextLoading="isNextButtonLoading"
     @modal-hidden="$emit('hide')"
+    @modal-shown="onModalShown"
     @cancel="$emit('hide')"
     @previousStep="previousStep"
     @nextStep="nextStep"
+    :isPreviousShown="hasAdditionalStorageAvailable"
   >
     <template slot="title">{{ $t("backup.restore_app") }}</template>
     <template slot="content">
@@ -67,7 +73,7 @@
                     >
                       {{
                         $t(
-                          "backup.replace_existing_app_is_not_available_tooltip"
+                          "backup.replace_existing_app_is_not_available_tooltip",
                         )
                       }}
                     </div>
@@ -121,31 +127,93 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
-            v-if="clusterNodes.length == disabledNodes.length"
+            v-if="error.getClusterStatus"
+            kind="error"
+            :title="$t('action.get-cluster-status')"
+            :description="error.getClusterStatus"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
+            v-if="error.listModules"
+            kind="error"
+            :title="$t('action.list-modules')"
+            :description="error.listModules"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
+            v-if="error.listNodes"
+            kind="error"
+            :title="$t('action.list-nodes')"
+            :description="error.listNodes"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
+            v-if="
+              clusterStatus.length == disabledNodes.length &&
+              !loading.determineRestoreEligibility &&
+              !loading.getClusterStatus
+            "
             kind="info"
             :title="$t('backup.no_node_eligible_for_instance_restoration')"
             :showCloseButton="false"
           />
           <NodeSelector
+            :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"
-            :loading="loading.determineRestoreEligibility"
+            :loading="
+              loading.determineRestoreEligibility || loading.getClusterStatus
+            "
             class="mg-top-xlg"
           >
             <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
               <template :slot="`node-${nodeId}`">
-                {{ nodeInfoMessage }}
+                <template v-if="Array.isArray(nodeInfoMessage)">
+                  {{ nodeInfoMessage.join(", ") }}
+                </template>
+                <template v-else>
+                  {{ nodeInfoMessage }}
+                </template>
               </template>
             </template>
           </NodeSelector>
+        </template>
+        <template v-else-if="step == 'volumes' && selectedNode">
           <NsInlineNotification
-            v-if="error.restoreModule"
+            v-if="error.listMountPoints"
             kind="error"
-            :title="$t('action.restore-module')"
-            :description="error.restoreModule"
+            :title="$t('action.list-mountpoints')"
+            :description="error.listMountPoints"
             :showCloseButton="false"
           />
+          <div>
+            {{
+              $t("software_center.select_node_volume_for_installation", {
+                node: selectedNode.ui_name
+                  ? selectedNode.ui_name +
+                    " (" +
+                    $t("common.node") +
+                    ` ${selectedNode.id})`
+                  : ` ${selectedNode.id}`,
+              })
+            }}
+          </div>
+          <!-- additonal volumes -->
+          <AdditionnalVolumesSelector
+            @selectVolume="onSelectVolume"
+            :volumes="additionnalVolumes"
+            :loading="loading.listMountPoints"
+            :light="true"
+            class="mg-top-lg"
+          />
         </template>
+        <NsInlineNotification
+          v-if="error.restoreModule"
+          kind="error"
+          :title="$t('action.restore-module')"
+          :description="error.restoreModule"
+          :showCloseButton="false"
+        />
       </cv-form>
     </template>
   </NsWizard>
@@ -158,6 +226,7 @@ import NodeSelector from "@/components/nodes/NodeSelector";
 import RestoreSingleInstanceSelector from "@/components/backup/RestoreSingleInstanceSelector";
 import { mapState } from "vuex";
 import RestoreSingleInstanceSnapshotSelector from "./RestoreSingleInstanceSnapshotSelector.vue";
+import AdditionnalVolumesSelector from "@/components/software-center/AdditionnalVolumesSelector.vue";
 
 export default {
   name: "RestoreSingleInstanceModal",
@@ -165,6 +234,7 @@ export default {
     NodeSelector,
     RestoreSingleInstanceSelector,
     RestoreSingleInstanceSnapshotSelector,
+    AdditionnalVolumesSelector,
   },
   mixins: [UtilService, TaskService, IconService],
   props: {
@@ -176,7 +246,7 @@ export default {
   data() {
     return {
       step: "",
-      steps: ["instance", "snapshot", "node"],
+      steps: ["instance", "snapshot", "node", "volumes"],
       instances: [],
       backupSnapshots: [],
       selectedNode: null,
@@ -184,17 +254,28 @@ export default {
       selectedSnapshot: null,
       replaceExistingApp: false,
       installDestinations: [],
+      clusterStatus: [],
+      additionnalVolumes: [],
+      listNodes: [],
+      selectedVolume: {},
+      modules: [],
       loading: {
         readBackupRepositories: true,
         restoreModule: false,
         readBackupSnapshots: false,
         determineRestoreEligibility: false,
+        getClusterStatus: true,
+        listMountPoints: false,
+        listModules: false,
       },
       error: {
         readBackupRepositories: "",
         restoreModule: "",
         readBackupSnapshots: "",
         determineRestoreEligibility: "",
+        getClusterStatus: "",
+        listMountPoints: "",
+        listModules: "",
       },
     };
   },
@@ -217,8 +298,54 @@ export default {
         (this.step == "node" &&
           (this.loading.determineRestoreEligibility ||
             !this.selectedNode ||
-            this.clusterNodes.length == this.disabledNodes.length))
+            this.clusterNodes.length == this.disabledNodes.length)) ||
+        (this.step == "volumes" &&
+          (this.loading.listMountPoints ||
+            !this.selectedNode ||
+            !this.selectedVolume ||
+            Object.keys(this.selectedVolume).length === 0))
       );
+    },
+    isNextButtonLoading() {
+      if (this.step == "instance") {
+        return this.loading.readBackupRepositories;
+      } else if (this.step == "snapshot") {
+        return this.loading.readBackupSnapshots;
+      } else if (this.step == "node") {
+        return (
+          this.loading.determineRestoreEligibility ||
+          this.loading.getClusterStatus
+        );
+      } else if (this.step == "volumes") {
+        return this.loading.listMountPoints;
+      }
+      return this.loading.restoreModule;
+    },
+    selectedModule() {
+      if (
+        !this.selectedInstance ||
+        !this.modules ||
+        this.modules.length === 0
+      ) {
+        return null;
+      }
+      return this.modules.find(
+        (module) => module.id === this.selectedInstance.name,
+      );
+    },
+    appVolumes() {
+      if (
+        this.selectedModule &&
+        this.selectedModule.versions &&
+        this.selectedModule.versions.length &&
+        this.selectedModule.versions[0].labels &&
+        this.selectedModule.versions[0].labels["org.nethserver.volumes"]
+      ) {
+        const volumesString =
+          this.selectedModule.versions[0].labels["org.nethserver.volumes"];
+        return volumesString.split(" ").map((v) => v.trim());
+      }
+      return [];
     },
     instanceToReplace() {
       if (
@@ -240,7 +367,13 @@ export default {
     },
     replaceExistingDisabled() {
       //check if the selected instance is not in an array ['loki']
-      const notAllowed = ["samba", "loki", "mail", "ejabberd", "nethvoice-proxy"];
+      const notAllowed = [
+        "samba",
+        "loki",
+        "mail",
+        "ejabberd",
+        "nethvoice-proxy",
+      ];
       return notAllowed.includes(this.selectedInstance.name) ? true : false;
     },
     nodesInfo() {
@@ -256,12 +389,12 @@ export default {
             nodesInfo[nodeInfo.node_id] = this.$tc(
               `software_center.reason_${rejectReason.message}`,
               numMaxInstances,
-              { param: numMaxInstances }
+              { param: numMaxInstances },
             );
           } else {
             nodesInfo[nodeInfo.node_id] = this.$t(
               `software_center.reason_${rejectReason.message}`,
-              { param: rejectReason.parameter }
+              { param: rejectReason.parameter },
             );
           }
         } else if (nodeInfo.instances) {
@@ -269,16 +402,50 @@ export default {
           nodesInfo[nodeInfo.node_id] = this.$tc(
             "software_center.num_instances_installed",
             nodeInfo.instances,
-            { num: nodeInfo.instances }
+            { num: nodeInfo.instances },
           );
+        }
+      }
+      // Add offline nodes message
+      for (const node of this.clusterStatus) {
+        if (!node.online) {
+          nodesInfo[node.id] = this.$t("software_center.node_offline");
         }
       }
       return nodesInfo;
     },
     disabledNodes() {
-      return this.installDestinations
+      // Get non-eligible nodes from install_destinations
+      const nonEligibleNodeIds = this.installDestinations
         .filter((nodeInfo) => !nodeInfo.eligible)
         .map((nodeInfo) => nodeInfo.node_id);
+      // Get offline nodes from clusterNodes
+      const offlineNodeIds = this.clusterStatus
+        .filter((node) => !node.online)
+        .map((node) => node.id);
+      // Combine and remove duplicates
+      return [...new Set([...nonEligibleNodeIds, ...offlineNodeIds])];
+    },
+    nodesWithAdditionalStorage() {
+      const nodeIds = [];
+      if (this.listNodes && Array.isArray(this.listNodes)) {
+        for (const node of this.listNodes) {
+          if (node.additional_disk_count > 0) {
+            nodeIds.push(node.node_id);
+          }
+        }
+      }
+      return nodeIds;
+    },
+    hasAdditionalStorageAvailable() {
+      return this.nodesWithAdditionalStorage.length > 0;
+    },
+    shouldShowRestoreLabel() {
+      return (
+        this.step == "node" &&
+        this.selectedNode &&
+        !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+      );
     },
   },
   watch: {
@@ -300,6 +467,8 @@ export default {
         this.readBackupSnapshots();
       } else if (this.step == "node") {
         this.determineRestoreEligibility();
+      } else if (this.step == "volumes") {
+        this.listMountPoints();
       }
     },
   },
@@ -310,15 +479,191 @@ export default {
       }
 
       if (this.isLastStep) {
-        this.restoreModule();
+        this.restoreModule(this.selectedVolume);
       } else {
-        this.step = this.steps[this.stepIndex + 1];
+        // Check if we should skip the volumes step
+        if (
+          this.step == "node" &&
+          !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+        ) {
+          // Skip volumes step, go directly to installation
+          this.restoreModule();
+        } else {
+          this.step = this.steps[this.stepIndex + 1];
+        }
       }
     },
     previousStep() {
       if (!this.isFirstStep) {
         this.step = this.steps[this.stepIndex - 1];
       }
+    },
+    onModalShown() {
+      // reset state before showing modal
+      this.clearErrors();
+      this.clusterStatus = [];
+      this.listNodes = [];
+      this.selectedVolume = {};
+      this.instances = [];
+      this.backupSnapshots = [];
+      this.selectedInstance = null;
+      this.selectedSnapshot = null;
+      this.replaceExistingApp = false;
+      this.installDestinations = [];
+      this.additionnalVolumes = [];
+      // Reset loading states
+      this.loading = {
+        readBackupRepositories: true,
+        restoreModule: false,
+        readBackupSnapshots: false,
+        determineRestoreEligibility: false,
+        getClusterStatus: true,
+        listMountPoints: false,
+        listModules: false,
+      };
+      // Force selection to node 1 if only available
+      if (this.clusterNodes.length == 1) {
+        this.selectedNode = this.clusterNodes[0];
+        this.clusterNodes[0].selected = true;
+      } else {
+        this.selectedNode = null;
+      }
+    },
+    async listModules() {
+      this.loading.listModules = true;
+      this.error.listModules = "";
+      this.modules = [];
+      this.selectedNode = null;
+      const taskAction = "list-modules";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listModulesAborted,
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listModulesCompleted,
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        }),
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listModules = this.getErrorMessage(err);
+        this.loading.listModules = false;
+        return;
+      }
+    },
+    listModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listModules = this.$t("error.generic_error");
+      this.loading.listModules = false;
+    },
+    listModulesCompleted(taskContext, taskResult) {
+      this.loading.listModules = false;
+      let modules = taskResult.output;
+      this.modules = modules;
+      this.getClusterStatus();
+    },
+    async fetchListNodes() {
+      this.error.listNodes = "";
+      const taskAction = "list-nodes";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.listNodesAborted);
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(taskAction + "-completed", this.ListNodesCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        }),
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listNodes = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listNodesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listNodes = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    ListNodesCompleted(taskContext, taskResult) {
+      this.listNodes = taskResult.output.nodes;
+      this.listModules();
+    },
+    async listMountPoints() {
+      this.error.listMountPoints = "";
+      this.loading.listMountPoints = true;
+      const taskAction = "list-mountpoints";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.listMountPointsAborted);
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listMountPointsCompleted,
+      );
+      const res = await to(
+        this.createNodeTask(this.selectedNode.id, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        }),
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listNodes = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listMountPointsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listMountPoints = this.$t("error.generic_error");
+      this.loading.listMountPoints = false;
+    },
+    listMountPointsCompleted(taskContext, taskResult) {
+      this.additionnalVolumes = taskResult.output.mountpoints;
+      // Add default disk at the end, push default property
+      if (taskResult.output.default_disk) {
+        this.additionnalVolumes.push({
+          ...taskResult.output.default_disk,
+          default: true, // mark as default disk
+        });
+      }
+      this.loading.listMountPoints = false;
     },
     async readBackupRepositories() {
       this.error.readBackupRepositories = "";
@@ -329,14 +674,14 @@ export default {
       this.$root.$off(taskAction + "-aborted");
       this.$root.$once(
         taskAction + "-aborted",
-        this.readBackupRepositoriesAborted
+        this.readBackupRepositoriesAborted,
       );
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.readBackupRepositoriesCompleted
+        this.readBackupRepositoriesCompleted,
       );
 
       const res = await to(
@@ -346,7 +691,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        })
+        }),
       );
       const err = res[0];
 
@@ -378,14 +723,14 @@ export default {
       this.$root.$off(taskAction + "-aborted");
       this.$root.$once(
         taskAction + "-aborted",
-        this.readBackupSnapshotsAborted
+        this.readBackupSnapshotsAborted,
       );
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.readBackupSnapshotsCompleted
+        this.readBackupSnapshotsCompleted,
       );
 
       const res = await to(
@@ -399,7 +744,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        })
+        }),
       );
       const err = res[0];
 
@@ -414,7 +759,7 @@ export default {
 
       if (taskResult.error.includes("wrong password or no key found")) {
         this.error.readBackupSnapshots = this.$t(
-          "backup.wrong_password_or_no_key_found"
+          "backup.wrong_password_or_no_key_found",
         );
       } else {
         this.error.readBackupSnapshots = this.$t("error.generic_error");
@@ -428,7 +773,7 @@ export default {
       this.backupSnapshots = snapshots;
       this.loading.readBackupSnapshots = false;
     },
-    async restoreModule() {
+    async restoreModule(volumes) {
       this.loading.restoreModule = true;
       this.error.restoreModule = "";
       const taskAction = "restore-module";
@@ -446,16 +791,26 @@ export default {
         this.selectedNode.ui_name ||
         this.$t("common.node") + ` ${this.selectedNode.id}`;
 
+      const data = {
+        repository: this.selectedInstance.repository_id,
+        path: this.selectedInstance.path,
+        snapshot: this.selectedSnapshot.id,
+        node: this.selectedNode.id,
+        replace: this.replaceExistingApp,
+      };
+
+      // Add volumes path if any and if app requires volumes
+      if (volumes?.path && this.appVolumes.length) {
+        data.volumes = {};
+        this.appVolumes.forEach((volume) => {
+          data.volumes[volume] = volumes.path;
+        });
+      }
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
-          data: {
-            repository: this.selectedInstance.repository_id,
-            path: this.selectedInstance.path,
-            snapshot: this.selectedSnapshot.id,
-            node: this.selectedNode.id,
-            replace: this.replaceExistingApp,
-          },
+          data,
           extra: {
             title: this.$t("action." + taskAction),
             description: this.$t("backup.restoring_app_to_node", {
@@ -469,7 +824,7 @@ export default {
               outputTextParams: ["module_id"],
             },
           },
-        })
+        }),
       );
       const err = res[0];
 
@@ -504,6 +859,9 @@ export default {
     onSelectSnapshot(selectedSnapshot) {
       this.selectedSnapshot = selectedSnapshot;
     },
+    onSelectVolume(selectedVolume) {
+      this.selectedVolume = selectedVolume;
+    },
     async determineRestoreEligibility() {
       this.loading.determineRestoreEligibility = true;
       this.error.determineRestoreEligibility = "";
@@ -514,13 +872,13 @@ export default {
       // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        this.determineRestoreEligibilityAborted
+        this.determineRestoreEligibilityAborted,
       );
 
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.determineRestoreEligibilityCompleted
+        this.determineRestoreEligibilityCompleted,
       );
 
       const res = await to(
@@ -536,7 +894,7 @@ export default {
             isNotificationHidden: true,
             eventId,
           },
-        })
+        }),
       );
       const err = res[0];
 
@@ -554,6 +912,48 @@ export default {
     determineRestoreEligibilityCompleted(taskContext, taskResult) {
       this.installDestinations = taskResult.output.install_destinations;
       this.loading.determineRestoreEligibility = false;
+      this.fetchListNodes();
+    },
+    async getClusterStatus() {
+      this.error.getClusterStatus = "";
+      const taskAction = "get-cluster-status";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted,
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        }),
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      this.clusterStatus = taskResult.output.nodes;
+      this.loading.getClusterStatus = false;
     },
   },
 };
