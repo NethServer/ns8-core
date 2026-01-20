@@ -312,6 +312,10 @@ export default {
     },
     nodesWithAdditionalStorage() {
       const nodeIds = [];
+      // If app doesn't require volumes, no nodes have additional storage for it
+      if (this.appVolumes.length === 0) {
+        return nodeIds;
+      }
       if (this.listNodes && Array.isArray(this.listNodes)) {
         for (const node of this.listNodes) {
           if (node.additional_disk_count > 0) {
@@ -358,7 +362,8 @@ export default {
         // Check if we should skip the volumes step
         if (
           this.step == "node" &&
-          !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+          (!this.nodesWithAdditionalStorage.includes(this.selectedNode.id) ||
+            this.appVolumes.length === 0)
         ) {
           // Skip volumes step, go directly to installation
           this.installInstance();
