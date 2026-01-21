@@ -6,7 +6,6 @@
   <NsWizard
     size="default"
     :visible="isShown"
-    @primary-click="cloneOrMove"
     @modal-shown="onModalShown"
     class="no-pad-modal"
     :cancelLabel="$t('common.cancel')"
@@ -22,7 +21,7 @@
     @previousStep="previousStep"
     @nextStep="nextStep"
     @cancel="onModalHidden"
-    :isNextDisabled="isNextButtonDisabled"
+    @modal-hidden="onModalHidden"
     :isNextLoading="loading.getClusterStatus || loading.listMountPoints"
     :isPreviousShown="hasAdditionalStorageAvailable"
   >
@@ -401,7 +400,6 @@ export default {
       this.fetchListNodes();
     },
     onModalHidden() {
-      // reset state
       this.$emit("hide");
       this.clearErrors();
       // reset state
