@@ -24,6 +24,7 @@
     @modal-hidden="onModalHidden"
     :isNextLoading="loading.getClusterStatus || loading.listMountPoints"
     :isPreviousShown="hasAdditionalStorageAvailable"
+    :isNextDisabled="isNextButtonDisabled"
   >
     <template slot="title">{{
       isClone ? $t("software_center.clone_app") : $t("software_center.move_app")
@@ -371,9 +372,9 @@ export default {
       } else {
         // Check if we should skip the volumes step
         if (
-          (this.step == "node" &&
-            !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)) ||
-          this.appVolumes.length === 0
+          this.step == "node" &&
+          (!this.nodesWithAdditionalStorage.includes(this.selectedNode.id) ||
+            this.appVolumes.length === 0)
         ) {
           // Skip volumes step, go directly to installation
           this.cloneOrMove();
