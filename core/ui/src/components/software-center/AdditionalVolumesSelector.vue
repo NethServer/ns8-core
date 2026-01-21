@@ -50,11 +50,11 @@
           {{ $t("software_center.used") }}
           {{ $t("software_center.of") }}
           {{ (volume.size / (1024 * 1024 * 1024)).toFixed(2) }} GB ({{
-            ((volume.used / volume.available) * 100).toFixed(2)
+            ((volume.used / volume.size) * 100).toFixed(2)
           }}% {{ $t("software_center.used") }})
         </div>
         <NsProgressBar
-          :value="loading ? 0 : (volume.used / volume.available) * 100"
+          :value="loading ? 0 : (volume.used / volume.size) * 100"
           :loading="loading"
           :warningThreshold="70"
           :dangerThreshold="90"
