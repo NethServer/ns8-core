@@ -101,13 +101,13 @@ export default {
     };
   },
   computed: {
-    selectedSnapshot() {
+    selectedVolume() {
       return this.additionalVolumes.find((i) => i.selected);
     },
   },
   watch: {
-    selectedSnapshot: function () {
-      this.$emit("selectVolume", this.selectedSnapshot);
+    selectedVolume: function () {
+      this.$emit("selectVolume", this.selectedVolume);
     },
     volumes: function () {
       this.updateInternalVolumes();
