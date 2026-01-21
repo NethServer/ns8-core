@@ -445,7 +445,8 @@ export default {
       return (
         this.step == "node" &&
         this.selectedNode &&
-        !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+        (!this.nodesWithAdditionalStorage.includes(this.selectedNode.id) ||
+          this.appVolumes.length === 0)
       );
     },
   },
@@ -647,6 +648,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.listMountPoints = this.getErrorMessage(err);
+        this.loading.listMountPoints = false;
         return;
       }
     },

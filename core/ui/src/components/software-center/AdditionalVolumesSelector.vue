@@ -126,7 +126,7 @@ export default {
     updateInternalVolumes() {
       // deep copy (needed to avoid reactivity issues)
       let additionalVolumes = _cloneDeep(this.volumes);
-      // select the first additionnal volume by default
+      // select the first additional volume by default
       additionalVolumes.forEach((volume, index) => {
         volume.selected = index === 0;
       });

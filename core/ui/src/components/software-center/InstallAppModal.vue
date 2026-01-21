@@ -211,7 +211,8 @@ export default {
       return (
         this.step == "node" &&
         this.selectedNode &&
-        !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+        (!this.nodesWithAdditionalStorage.includes(this.selectedNode.id) ||
+          this.appVolumes.length === 0)
       );
     },
     isNextButtonDisabled() {
@@ -311,19 +312,16 @@ export default {
       return [...new Set([...nonEligibleNodeIds, ...offlineNodeIds])];
     },
     nodesWithAdditionalStorage() {
-      const nodeIds = [];
       // If app doesn't require volumes, no nodes have additional storage for it
       if (this.appVolumes.length === 0) {
-        return nodeIds;
+        return [];
       }
-      if (this.listNodes && Array.isArray(this.listNodes)) {
-        for (const node of this.listNodes) {
-          if (node.additional_disk_count > 0) {
-            nodeIds.push(node.node_id);
-          }
-        }
+      if (!Array.isArray(this.listNodes)) {
+        return [];
       }
-      return nodeIds;
+      return this.listNodes
+        .filter((node) => node.additional_disk_count > 0)
+        .map((node) => node.node_id);
     },
     hasAdditionalStorageAvailable() {
       return this.nodesWithAdditionalStorage.length > 0;
@@ -386,11 +384,11 @@ export default {
       this.selectedVolume = {};
       // Force selection to node 1 if only available
       if (this.clusterNodes.length == 1 && this.canInstallOnSingleNode) {
-        this.selectedNode = this.clusterNodes[0];
-        this.clusterNodes[0].selected = true;
+        this.selectedNode = { ...this.clusterNodes[0], selected: true };
       } else {
         this.selectedNode = null;
       }
+      
       this.fetchListNodes();
     },
     async getClusterStatus() {
@@ -501,6 +499,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.listMountPoints = this.getErrorMessage(err);
+        this.loading.listMountPoints = false;
         return;
       }
     },

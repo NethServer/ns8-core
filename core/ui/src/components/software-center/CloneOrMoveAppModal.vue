@@ -392,8 +392,8 @@ export default {
       // reset state before showing modal
       // Force selection to node 1 if only available
       if (this.clusterNodes.length == 1) {
-        this.selectedNode = this.clusterNodes[0];
-        this.clusterNodes[0].selected = true;
+        const firstNode = this.clusterNodes[0];
+        this.selectedNode = { ...firstNode, selected: true };
       } else {
         this.selectedNode = null;
       }
@@ -520,6 +520,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.listMountPoints = this.getErrorMessage(err);
+        this.loading.listMountPoints = false;
         return;
       }
     },
