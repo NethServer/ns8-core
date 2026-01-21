@@ -526,8 +526,8 @@ export default {
       };
       // Force selection to node 1 if only available
       if (this.clusterNodes.length == 1) {
-        this.selectedNode = this.clusterNodes[0];
-        this.clusterNodes[0].selected = true;
+        const firstNode = this.clusterNodes[0];
+        this.selectedNode = { ...firstNode, selected: true };
       } else {
         this.selectedNode = null;
       }
