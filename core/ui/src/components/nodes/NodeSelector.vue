@@ -41,13 +41,7 @@
             {{ $t("software_center.additional_storage_available") }}
           </div>
         </div>
-        <cv-skeleton-text
-          v-if="loading"
-          :paragraph="true"
-          :line-count="2"
-          class="mg-top-lg"
-        ></cv-skeleton-text>
-        <div v-else-if="$slots[`node-${node.id}`]" class="mg-top-md">
+        <div v-if="!loading && $slots[`node-${node.id}`]" class="mg-top-md">
           <slot :name="`node-${node.id}`"></slot>
         </div>
       </NsTile>
