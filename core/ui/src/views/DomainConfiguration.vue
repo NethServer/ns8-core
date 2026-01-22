@@ -4,7 +4,7 @@
 -->
 <template>
   <div>
-    <cv-grid fullWidth>
+    <cv-grid fullWidth class="no-padding">
       <cv-row>
         <!-- domain settings -->
         <cv-column>
