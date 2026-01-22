@@ -116,6 +116,7 @@ def node_facts():
             for key in item['output']:
                 ret[key] = item['output'][key]
                 decorate_with_ui_name(ret[key], rdb, 'node/' + key)
+                ret[key]['fqdn'] = agent.facts.pseudo_domain(ret[key]['fqdn'])
     except:
         print(agent.SD_WARNING + f"node/get-facts failed", file=sys.stderr)
 

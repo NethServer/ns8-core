@@ -25,3 +25,11 @@ def pseudo_string(val, maxlen=12):
         return hashed_val[0:maxlen]
     else:
         return val
+
+def pseudo_domain(val):
+    """Calculate a stable pseudonym of the given domain, keeping the TLD in clear text"""
+    try:
+        domain, suffix = val.rsplit(".", 1)
+        return pseudo_string(domain, 8) + '.' + suffix
+    except ValueError:
+        return pseudo_string(val)

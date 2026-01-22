@@ -89,6 +89,10 @@ if facts['ansible_virtualization_role'] == 'guest':
 json.dump(
     {
         os.environ['AGENT_ID'].removeprefix('node/'): {
+            'fqdn': facts['ansible_fqdn'],
+            'kernel_version': facts['ansible_kernel'],
+            'uptime_seconds': facts['ansible_uptime_seconds'],
+            'timezone': facts['ansible_date_time']['tz'],
             'volumesconf_mountpoint_count': len(agent.volumes.get_base_paths()),
             'volumesconf_application_types': agent.volumes.get_application_types(),
             'version': _get_core_version(),
