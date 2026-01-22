@@ -22,7 +22,6 @@
     @nextStep="nextStep"
     @cancel="onModalHidden"
     @modal-hidden="onModalHidden"
-    :isNextLoading="loading.getClusterStatus || loading.listMountPoints"
     :isPreviousShown="hasAdditionalStorageAvailable"
     :isNextDisabled="isNextButtonDisabled"
   >
