@@ -14,8 +14,7 @@
         : $t('common.next')
     "
     :isPreviousDisabled="isFirstStep || loading.restoreModule"
-    :isNextDisabled="isNextButtonDisabled || isNextButtonLoading"
-    :isNextLoading="isNextButtonLoading"
+    :isNextDisabled="isNextButtonDisabled"
     @modal-hidden="$emit('hide')"
     @modal-shown="onModalShown"
     @cancel="$emit('hide')"
@@ -305,21 +304,6 @@ export default {
             !this.selectedVolume ||
             Object.keys(this.selectedVolume).length === 0))
       );
-    },
-    isNextButtonLoading() {
-      if (this.step == "instance") {
-        return this.loading.readBackupRepositories;
-      } else if (this.step == "snapshot") {
-        return this.loading.readBackupSnapshots;
-      } else if (this.step == "node") {
-        return (
-          this.loading.determineRestoreEligibility ||
-          this.loading.getClusterStatus
-        );
-      } else if (this.step == "volumes") {
-        return this.loading.listMountPoints;
-      }
-      return this.loading.restoreModule;
     },
     selectedModule() {
       if (
