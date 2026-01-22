@@ -1012,7 +1012,7 @@
         "source_package": "Application image",
         "app_installation": "Install {app}",
         "choose_node_for_installation": "Select installation node for {app} {version}:",
-        "select_node_volume_for_installation": "Select the volume installation on node {node} for application data:",
+        "select_node_volume_for_installation": "Select the volume installation on {node} for application data:",
         "installing_on_node": "Installing on {node}",
         "instance_installed_on_node": "{module_id} installed on {node}",
         "app_instances": "{app} instances",

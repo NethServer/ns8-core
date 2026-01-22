@@ -187,12 +187,7 @@
           <div>
             {{
               $t("software_center.select_node_volume_for_installation", {
-                node: selectedNode.ui_name
-                  ? selectedNode.ui_name +
-                    " (" +
-                    $t("common.node") +
-                    ` ${selectedNode.id})`
-                  : ` ${selectedNode.id}`,
+                node: this.getNodeLabel(selectedNode) || '',
               })
             }}
           </div>
