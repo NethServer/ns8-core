@@ -49,13 +49,16 @@ def cluster_facts():
 def modules_facts():
     ret = []
     rdb = agent.redis_connect(use_replica=True)
+    module_domains_relation = rdb.hgetall('cluster/module_domains') or {}
     installed_modules = modules.list_installed(rdb, skip_core_modules = False)
     instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
 
     # Collect facts from modules:
     for module in instance_list:
         minfo = {"id": module.get('id'), "version": module.get("version"), "name": module.get("module"), "node": module.get("node") } 
-
+        minfo["user_domains"] = []
+        for v in set(module_domains_relation.get(module.get('id'), '').split()):
+            minfo["user_domains"].append(agent.facts.pseudo_domain(v))
         try:
             list_actions_result = agent.tasks.run(
                 agent_id='module/' + module.get('id'),
@@ -122,6 +125,28 @@ def node_facts():
 
     return ret
 
+def get_user_domains_facts(rdb):
+    list_user_domains_result = agent.tasks.run(
+        agent_id='cluster',
+        action='list-user-domains',
+        extra={ 'isNotificationHidden': True },
+        endpoint="redis://cluster-leader",
+    )
+    if list_user_domains_result['exit_code'] != 0:
+        return []
+    domfacts = []
+    for ldom in list_user_domains_result['output']['domains']:
+        odom = {
+            "name": agent.facts.pseudo_domain(ldom["name"]),
+            "location": ldom["location"],
+            "protocol": ldom["protocol"],
+            "schema": ldom.get("schema"),
+            "providers_count": len(ldom["providers"]),
+        }
+        odom.update(inventory.fact_user_domain_counters(rdb, ldom["name"]))
+        domfacts.append(odom)
+    return domfacts
+
 def main():
     # Init dictionary that returns the data
     rdb = agent.redis_connect(privileged=True)
@@ -129,6 +154,7 @@ def main():
         rdb.set("cluster/anon_seed", str(uuid.uuid4()))
     enforce_privacy = inventory.fact_subscription(rdb) == 'disabled'
     agent.facts.init_pseudonymization(enforce_privacy, rdb)
+    user_domains_facts = get_user_domains_facts(rdb)
     facts = {
         '$schema': 'https://schema.nethserver.org/facts/2022-12.json',
         'uuid': rdb.get('cluster/uuid'),
@@ -136,6 +162,7 @@ def main():
         'facts': {
             'cluster': cluster_facts(),
             'nodes': node_facts(),
+            'user_domains': user_domains_facts,
             'modules': modules_facts()
         }
     }
