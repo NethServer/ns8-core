@@ -9,6 +9,15 @@
             "node": 2
         },
         {
+            "image": "ghcr.io/nethserver/samba:3.4.1",
+            "node": 1,
+            "domain": "ad.example.com",
+            "volumes": {
+                "homes": "/srv/pool0",
+                "shares": "/srv/pool0"
+            }
+        },
+        {
             "image": "ghcr.io/nethserver/samba:v1.0.0",
             "node": 1,
             "domain": "ad.example.com"
@@ -31,6 +40,18 @@
             "description": "Node identifier where the module has to be installed",
             "type": "integer",
             "minimum": 1
+        },
+        "volumes": {
+            "type": "object",
+            "description": "Optional mapping of application volume names to filesystem mount points.",
+            "patternProperties": {
+                "[^/]+": {
+                    "description": "Absolute filesystem directory path under /",
+                    "example": "/srv/pool0",
+                    "type": "string",
+                    "pattern": "^/"
+                }
+            }
         },
         "domain": {
             "title": "Domain",
