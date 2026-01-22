@@ -12508,11 +12508,11 @@ __metadata:
   linkType: hard
 
 "lottie-web-vue@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "lottie-web-vue@npm:1.2.0"
+  version: 1.2.1
+  resolution: "lottie-web-vue@npm:1.2.1"
   dependencies:
     lottie-web: ^5.7.4
-  checksum: 7bb8b2f18e11aa323329e33ea8d7b159f0a4d2f34d2fa796fc7984606e4cf61aa1fea24472aa04a195a4a82b585408fb0e58a3c4aab57d20d130efb248753239
+  checksum: d8f7a7692042c26e28c9b2925cb08677761b6fd92ff11a0e1a5d43661f1fa04dbf993fc365c990ad620f6113235ce39ea355e4177a5f960a69fd67fd6853f003
   languageName: node
   linkType: hard
 
