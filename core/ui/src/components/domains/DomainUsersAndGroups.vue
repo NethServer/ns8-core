@@ -21,33 +21,37 @@
           </cv-breadcrumb>
         </cv-column>
       </cv-row>
-      <div class="flex flex-wrap items-center justify-between">
-        <div class="subpage-title">
-          <h3>
-            {{ domainName }}
-          </h3>
-        </div>
-        <div class="page-toolbar flex gap-4">
-          <NsButton
-            v-if="domain && domain.location == 'internal'"
-            kind="secondary"
-            size="field"
-            :icon="Export20"
-            @click="exportUsersData()"
-            class="subpage-toolbar-item"
-            >{{ $t("domain_users.export_data") }}
-          </NsButton>
-          <NsButton
-            v-if="domain && domain.location == 'internal'"
-            kind="secondary"
-            size="field"
-            :icon="Upload20"
-            @click="showImportUsersModal()"
-            class="subpage-toolbar-item"
-            >{{ $t("domain_users.import_data") }}
-          </NsButton>
-        </div>
-      </div>
+      <cv-row>
+        <cv-column>
+          <div class="flex flex-wrap items-center justify-between">
+            <div class="subpage-title">
+              <h3>
+                {{ domainName }}
+              </h3>
+            </div>
+            <div class="page-toolbar flex gap-4">
+              <NsButton
+                v-if="domain && domain.location == 'internal'"
+                kind="secondary"
+                size="field"
+                :icon="Export20"
+                @click="exportUsersData()"
+                class="subpage-toolbar-item"
+                >{{ $t("domain_users.export_data") }}
+              </NsButton>
+              <NsButton
+                v-if="domain && domain.location == 'internal'"
+                kind="secondary"
+                size="field"
+                :icon="Upload20"
+                @click="showImportUsersModal()"
+                class="subpage-toolbar-item"
+                >{{ $t("domain_users.import_data") }}
+              </NsButton>
+            </div>
+          </div>
+        </cv-column>
+      </cv-row>
       <cv-row v-if="error.listUserDomains">
         <cv-column>
           <NsInlineNotification
