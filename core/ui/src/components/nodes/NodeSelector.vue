@@ -32,7 +32,11 @@
           :line-count="2"
           class="mg-top-lg"
         ></cv-skeleton-text>
-        <div v-else class="mg-top-md">
+        <div v-else class="mg-top-md"></div>
+        <div v-if="!loading && $slots[`node-${node.id}`]" class="mg-top-md">
+          <slot :name="`node-${node.id}`"></slot>
+        </div>
+        <div v-if="!loading" class="mg-top-md">
           <div
             v-if="nodesWithAdditionalStorage.includes(node.id)"
             class="icon-text-container"
@@ -40,9 +44,6 @@
             <VmdkDisk20 class="icon-spacing" />
             {{ $t("software_center.additional_storage_available") }}
           </div>
-        </div>
-        <div v-if="!loading && $slots[`node-${node.id}`]" class="mg-top-md">
-          <slot :name="`node-${node.id}`"></slot>
         </div>
       </NsTile>
     </div>
