@@ -8,14 +8,14 @@
       <!-- skeleton -->
       <div v-if="loading">
         <cv-tile
-          v-for="index in 3"
+          v-for="index in 2"
           :key="index"
           :light="light"
           class="volume-tile"
         >
           <cv-skeleton-text
             :paragraph="true"
-            :line-count="2"
+            :line-count="3"
           ></cv-skeleton-text>
         </cv-tile>
       </div>
@@ -36,7 +36,7 @@
         @click="deselectOtherVolumes(volume)"
         class="volume-tile"
       >
-        <div class="mg-bottom-lg">
+        <div class="mg-bottom-md">
           <strong v-if="volume.default">
             {{ $t("software_center.default_storage") }}
           </strong>
@@ -44,7 +44,7 @@
             {{ volume.label ? volume.label : volume.ui_name }}
           </strong>
         </div>
-        <div>{{ volume.path }}</div>
+        <div class="mg-bottom-xs">{{ volume.path }}</div>
         <div class="mg-bottom-sm">
           {{ (volume.used / (1024 * 1024 * 1024)).toFixed(2) }} GB
           {{ $t("software_center.used") }}
@@ -172,7 +172,7 @@ export default {
 
 .volume-list {
   overflow-y: auto;
-  max-height: 21rem;
+  max-height: 25rem;
 }
 
 .ns-tile.volume-tile,
