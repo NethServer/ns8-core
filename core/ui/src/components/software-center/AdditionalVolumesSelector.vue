@@ -50,7 +50,7 @@
           {{ $t("software_center.used") }}
           {{ $t("software_center.of") }}
           {{ (volume.size / (1024 * 1024 * 1024)).toFixed(2) }} GB ({{
-            ((volume.used / volume.size) * 100).toFixed(2)
+            Math.round((volume.used / volume.size) * 100)
           }}% {{ $t("software_center.used") }})
         </div>
         <NsProgressBar
