@@ -18752,11 +18752,11 @@ __metadata:
   linkType: hard
 
 "vue-date-fns@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "vue-date-fns@npm:2.0.1"
+  version: 2.0.2
+  resolution: "vue-date-fns@npm:2.0.2"
   dependencies:
     date-fns: ^2.0.0
-  checksum: 1f025b7d889f954c8d86e7d80d644612043df7133c801795daa39e7d4cc5896565fcd82418526c7b8a4dd25a1cb02687d0c397d884bf2340390210abdcaba3a8
+  checksum: e87453a18993ad53671c7b095cca0b4f97112666adeb1c65950d9dc9c47a92f92e2bc2db014612c1d3de43d1bc576f1dae88c5ada58dc16eca0c8eca2a5cb5df
   languageName: node
   linkType: hard
 
