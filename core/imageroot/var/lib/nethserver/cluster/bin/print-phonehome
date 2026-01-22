@@ -21,7 +21,7 @@ def decorate_with_ui_name(facts, rdb, base_key):
     if 'ui_name' in facts:
         return # value already present, nothing to do
     ui_name = rdb.get(base_key + '/ui_name') or ""
-    facts['ui_name'] = ui_name
+    facts['ui_name'] = agent.facts.pseudo_string(ui_name)
 
 def cluster_facts():
     try:
@@ -124,6 +124,10 @@ def node_facts():
 def main():
     # Init dictionary that returns the data
     rdb = agent.redis_connect(privileged=True)
+    if not rdb.get("cluster/anon_seed"):
+        rdb.set("cluster/anon_seed", str(uuid.uuid4()))
+    enforce_privacy = inventory.fact_subscription(rdb) == 'disabled'
+    agent.facts.init_pseudonymization(enforce_privacy, rdb)
     facts = {
         '$schema': 'https://schema.nethserver.org/facts/2022-12.json',
         'uuid': rdb.get('cluster/uuid'),
