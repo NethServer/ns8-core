@@ -74,7 +74,7 @@
       </cv-row>
       <cv-row>
         <cv-column>
-          <cv-tile>
+          <cv-tile class="no-padding" >
             <NsTabs
               :container="false"
               :aria-label="$t('common.tab_navigation')"
@@ -435,4 +435,7 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+.cv-tile.no-padding {
+  padding: 0;
+}
 </style>
