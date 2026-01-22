@@ -35,6 +35,7 @@
         value="snapshotValue"
         @click="deselectOtherVolumes(volume)"
         class="volume-tile"
+        :footerIcon="VmdkDisk20"
       >
         <div class="mg-bottom-md">
           <strong v-if="volume.default">
@@ -74,6 +75,7 @@
 <script>
 import { UtilService, DateTimeService } from "@nethserver/ns8-ui-lib";
 import _cloneDeep from "lodash/cloneDeep";
+import VmdkDisk20 from "@carbon/icons-vue/es/vmdk-disk/16";
 
 export default {
   name: "AdditionalVolumesSelector",
@@ -92,6 +94,7 @@ export default {
   },
   data() {
     return {
+      VmdkDisk20,
       additionalVolumes: [],
       // infinite scroll
       additionalVolumesLoaded: [],
@@ -172,7 +175,7 @@ export default {
 
 .volume-list {
   overflow-y: auto;
-  max-height: 25rem;
+  max-height: 30rem;
 }
 
 .ns-tile.volume-tile,
