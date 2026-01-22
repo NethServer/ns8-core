@@ -12,7 +12,16 @@ Helper script that retrieves info for the phonehome server.
 import sys
 import json
 import agent
+import agent.facts
+import uuid
+from cluster import inventory
 from cluster import modules
+
+def decorate_with_ui_name(facts, rdb, base_key):
+    if 'ui_name' in facts:
+        return # value already present, nothing to do
+    ui_name = rdb.get(base_key + '/ui_name') or ""
+    facts['ui_name'] = ui_name
 
 def cluster_facts():
     try:
@@ -28,8 +37,11 @@ def cluster_facts():
         print(agent.SD_WARNING + f"cluster/get-facts failed", file=sys.stderr)
         return None
 
+    rdb = agent.redis_connect(use_replica=True)
     if result['exit_code'] == 0:
-        return result['output']
+        facts = result['output']
+        decorate_with_ui_name(facts, rdb, 'cluster')
+        return facts
     else:
         print(agent.SD_WARNING + f"cluster/get-facts failed", file=sys.stderr)
         return None
@@ -77,6 +89,7 @@ def modules_facts():
         except Exception as ex:
             print(agent.SD_WARNING + "module_facts() exception:", ex, file=sys.stderr)
 
+        decorate_with_ui_name(minfo, rdb, 'module/' + module.get('id'))
         ret.append(minfo)
 
     return ret
@@ -102,11 +115,11 @@ def node_facts():
         for item in results:
             for key in item['output']:
                 ret[key] = item['output'][key]
+                decorate_with_ui_name(ret[key], rdb, 'node/' + key)
     except:
         print(agent.SD_WARNING + f"node/get-facts failed", file=sys.stderr)
 
     return ret
-
 
 def main():
     # Init dictionary that returns the data
