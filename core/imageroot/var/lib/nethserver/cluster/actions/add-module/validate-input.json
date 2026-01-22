@@ -8,6 +8,7 @@
             "image": "samba",
             "node": 2,
             "volumes": {
+                "homes": "/srv/pool0",
                 "shares": "/srv/pool0"
             }
         },
