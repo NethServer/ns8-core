@@ -21,7 +21,6 @@
     @nextStep="nextStep"
     @cancel="onModalHidden"
     :isNextDisabled="isNextButtonDisabled"
-    :isNextLoading="loading.getClusterStatus || loading.listMountPoints"
     :isPreviousShown="hasAdditionalStorageAvailable"
   >
     <template v-if="app" slot="title">{{
@@ -388,7 +387,7 @@ export default {
       } else {
         this.selectedNode = null;
       }
-      
+
       this.fetchListNodes();
     },
     async getClusterStatus() {
