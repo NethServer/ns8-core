@@ -18838,9 +18838,9 @@ __metadata:
   linkType: hard
 
 "vue-i18n@npm:^8.24.4":
-  version: 8.26.7
-  resolution: "vue-i18n@npm:8.26.7"
-  checksum: 731c16910f29b2c91810a05207939ec7339f467b0ca6c617c56ea708b6cfa029c5f6507eec5ff400aea17834fae933f9177a90fea90d0d315af645d7345fc2d8
+  version: 8.28.2
+  resolution: "vue-i18n@npm:8.28.2"
+  checksum: e0721cc79b6539afa821edb9ce1028c7a661d7db9232888fe6beda7c4cd731c0f72875202046535ea7283715414625f456ea2da78676cb8097fdca7b6f4630c1
   languageName: node
   linkType: hard
 
