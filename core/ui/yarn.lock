@@ -18821,12 +18821,12 @@ __metadata:
   linkType: hard
 
 "vue-gallery@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "vue-gallery@npm:2.0.1"
+  version: 2.0.5
+  resolution: "vue-gallery@npm:2.0.5"
   dependencies:
     blueimp-gallery: ^2.33.0
     opencollective-postinstall: ^2.0.2
-  checksum: c6eda7639b14f256be7821db2c8a2dfad82b2d5d5ea2831dda3c6f6a8b3f92873b3667b03aa1a38a3f4d0ca78bdb323315c44435743a6c2798d383d6e0ebc157
+  checksum: 565347b062b56489398cb5108757c9c0d08d0a34cd00e1d0583c4a354af498460e382c91b95cb5bba9004362895b749f5aa947d13ef34553cff7585714215775
   languageName: node
   linkType: hard
 
