@@ -44,6 +44,7 @@ def get_user_domains_facts(rdb):
     return domfacts
 
 facts = {
+    'leader_node_id': rdb.hget("cluster/environment", "NODE_ID"),
     'user_domains': get_user_domains_facts(rdb),
     'subscription': inventory.fact_subscription(rdb),
     'admins': inventory.fact_admins(rdb),
