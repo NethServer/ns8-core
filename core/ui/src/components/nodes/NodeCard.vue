@@ -101,6 +101,7 @@
             <cv-link v-if="applications" @click.prevent="goToApplications">
               {{ applications }}
             </cv-link>
+            <span v-else>-</span>
           </div>
         </div>
       </div>
