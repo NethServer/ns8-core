@@ -18761,11 +18761,11 @@ __metadata:
   linkType: hard
 
 "vue-debounce@npm:^3.0.0":
-  version: 3.0.1
-  resolution: "vue-debounce@npm:3.0.1"
+  version: 3.1.1
+  resolution: "vue-debounce@npm:3.1.1"
   peerDependencies:
     vue: ">= 2.0.0"
-  checksum: 88cced7dd9cce8f0242883361ab0be82f2e6663a3c31e12ff4e6806bb50db5d0ad9486403343dc41e855f3440c89d2063500e492a76b0e26c864fc48c20ed40e
+  checksum: 56dde4daeab8c2e08d62a7a496fe673dd59c3dc5441bfd3e5c0b92d7476ef27c60bb8eae84597b1fe7c6b7ee003ff18f8f5e05668c9a7ca5e67696cbc0848bad
   languageName: node
   linkType: hard
 
