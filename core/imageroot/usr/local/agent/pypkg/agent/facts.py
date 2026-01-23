@@ -5,6 +5,8 @@
 
 # Fact collection helpers
 
+import warnings
+import uuid
 import hashlib
 import ipaddress
 
@@ -14,10 +16,12 @@ PSEUDO_SEED = '0000'
 def init_pseudonymization(enforce, rdb):
     global PSEUDO_ENFORCING, PSEUDO_SEED
     seed = rdb.get('cluster/anon_seed')
-    if not seed:
-        raise Exception("The cluster/anon_seed value is not set")
+    if seed:
+        PSEUDO_SEED = seed
+    elif enforce:
+        warnings.warn("Generating an unstable, temporary seed for pseudonymization")
+        PSEUDO_SEED = str(uuid.uuid4())
     PSEUDO_ENFORCING = enforce
-    PSEUDO_SEED = seed
 
 def has_subscription(rdb):
     provider = rdb.hget('cluster/subscription', 'provider')
@@ -26,13 +30,16 @@ def has_subscription(rdb):
 def pseudo_string(val, maxlen=12):
     """Calculate a stable pseudonym of the given string"""
     if val and PSEUDO_ENFORCING:
-        hashed_val = hashlib.md5((PSEUDO_SEED + val).encode('utf-8')).hexdigest()
+        hashed_val = hashlib.sha256((PSEUDO_SEED + val).encode('utf-8')).hexdigest()
         return hashed_val[0:maxlen]
     else:
         return val
 
 def pseudo_domain(val):
     """Calculate a stable pseudonym of the given domain, keeping the TLD in clear text"""
+    if not val or not PSEUDO_ENFORCING:
+        return val
+
     try:
         domain, suffix = val.rsplit(".", 1)
         return pseudo_string(domain, 8) + '.' + suffix
@@ -51,7 +58,7 @@ def pseudo_ip(val):
     except ValueError:
         return val
 
-    digest = hashlib.md5((PSEUDO_SEED + ip.exploded).encode('utf-8')).digest()
+    digest = hashlib.sha256((PSEUDO_SEED + ip.exploded).encode('utf-8')).digest()
 
     if isinstance(ip, ipaddress.IPv4Address):
         if ip.is_private:
