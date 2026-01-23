@@ -61,6 +61,7 @@ def modules_facts(rdb):
     ret = []
     module_domains_relation = rdb.hgetall('cluster/module_domains') or {}
     instance_list = get_installed_modules(rdb)
+    fqdn_cache = {}
 
     # Collect facts from modules:
     for module in instance_list:
@@ -72,6 +73,7 @@ def modules_facts(rdb):
             "certification_level": module["certification_level"],
             "update_available": module["update_available"],
             "user_domains": [],
+            "fqdns": [],
         }
         for v in set(module_domains_relation.get(module.get('id'), '').split()):
             minfo["user_domains"].append(agent.facts.pseudo_domain(v))
@@ -110,7 +112,18 @@ def modules_facts(rdb):
 
         decorate_with_ui_name(minfo, rdb, 'module/' + module.get('id'))
         ret.append(minfo)
+        # Extract FQDNs used by applications from Traefik facts:
+        if minfo["name"] == "traefik" and "name_module_map" in minfo:
+            for fqdn, mkey in minfo["name_module_map"].items():
+                if mkey in fqdn_cache:
+                    fqdn_cache[mkey].add(fqdn)
+                else:
+                    fqdn_cache[mkey] = {fqdn}
 
+    # Decorate apps with list of FQDNs extracted from Traefik facts:
+    for minfo in ret:
+        if minfo["id"] in fqdn_cache:
+            minfo["fqdns"] = list(fqdn_cache[minfo["id"]])
     return ret
 
 def get_core_update_available_map(rdb):
