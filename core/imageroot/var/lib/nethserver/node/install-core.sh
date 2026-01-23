@@ -54,7 +54,7 @@ elif [[ -x /usr/bin/python3.11 ]]; then
     python3.11 -mvenv ${core_dir} --upgrade-deps --system-site-packages
     ${core_dir}/bin/pip3 install -r /etc/nethserver/pyreq3_11.txt
 else
-    echo "No supported python3 version found (3.11 or 3.13 required)."
+    echo "$(python3 --version || echo Python 3) not supported"
     exit 1
 fi
 
