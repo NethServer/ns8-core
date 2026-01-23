@@ -96,6 +96,8 @@ json.dump(
         os.environ['AGENT_ID'].removeprefix('node/'): {
             'cluster_leader': leader_id == os.getenv("NODE_ID"),
             'fqdn': agent.facts.pseudo_domain(facts['ansible_fqdn']),
+            'default_ipv4': agent.facts.pseudo_ip(facts.get('ansible_default_ipv4', {}).get('address', '')),
+            'default_ipv6': agent.facts.pseudo_ip(facts.get('ansible_default_ipv6', {}).get('address', '')),
             'kernel_version': facts['ansible_kernel'],
             'uptime_seconds': facts['ansible_uptime_seconds'],
             'timezone': facts['ansible_date_time']['tz'],
