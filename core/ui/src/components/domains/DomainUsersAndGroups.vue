@@ -74,44 +74,42 @@
       </cv-row>
       <cv-row>
         <cv-column>
-          <cv-tile class="no-padding" >
-            <NsTabs
-              :container="false"
-              :aria-label="$t('common.tab_navigation')"
-              :noDefaultToFirst="true"
-              @tab-selected="tabSelected"
+          <NsTabs
+            :container="false"
+            :aria-label="$t('common.tab_navigation')"
+            :noDefaultToFirst="true"
+            @tab-selected="tabSelected"
+          >
+            <cv-tab
+              id="tab-1"
+              :label="$t('domain_users.users')"
+              :selected="q.view === 'users'"
             >
-              <cv-tab
-                id="tab-1"
-                :label="$t('domain_users.users')"
-                :selected="q.view === 'users'"
-              >
-                <DomainUsers
-                  :domain="domain"
-                  :groups="groups"
-                  @usersLoaded="onUsersLoaded"
-                />
-              </cv-tab>
-              <cv-tab
-                id="tab-2"
-                :label="$t('domain_users.groups')"
-                :selected="q.view === 'groups'"
-              >
-                <DomainGroups
-                  :domain="domain"
-                  :users="users"
-                  @groupsLoaded="onGroupsLoaded"
-                />
-              </cv-tab>
-              <cv-tab
-                id="tab-3"
-                :label="$t('domain_configuration.configuration')"
-                :selected="q.view === 'configuration'"
-              >
-                <DomainConfiguration :domainName="domainName" />
-              </cv-tab>
-            </NsTabs>
-          </cv-tile>
+              <DomainUsers
+                :domain="domain"
+                :groups="groups"
+                @usersLoaded="onUsersLoaded"
+              />
+            </cv-tab>
+            <cv-tab
+              id="tab-2"
+              :label="$t('domain_users.groups')"
+              :selected="q.view === 'groups'"
+            >
+              <DomainGroups
+                :domain="domain"
+                :users="users"
+                @groupsLoaded="onGroupsLoaded"
+              />
+            </cv-tab>
+            <cv-tab
+              id="tab-3"
+              :label="$t('domain_configuration.configuration')"
+              :selected="q.view === 'configuration'"
+            >
+              <DomainConfiguration :domainName="domainName" />
+            </cv-tab>
+          </NsTabs>
         </cv-column>
       </cv-row>
     </cv-grid>
@@ -435,7 +433,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-.cv-tile.no-padding {
-  padding: 0;
-}
 </style>
