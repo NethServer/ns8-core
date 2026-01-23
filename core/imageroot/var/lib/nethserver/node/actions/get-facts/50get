@@ -14,6 +14,7 @@ import json
 import os
 import sys
 import subprocess
+import agent.volumes
 
 import ansible_runner
 
@@ -31,15 +32,21 @@ def _get_core_version():
                 return line[line.find(':') + 1:].strip()
     raise Exception('Can\'t find core version.')
 
+def _get_facts():
+    r = ansible_runner.run(
+        module='setup',
+        host_pattern='localhost',
+        quiet=True,
+        envvars={'LANG': 'C'}
+    )
+    facts = {}
+    for e in r.events:
+        if e['event'] == 'runner_on_ok' and e['event_data']['host'] == 'localhost':
+            facts = e['event_data']['res'].get('ansible_facts', {})
+            break
+    return facts
 
-facts = ansible_runner.run(
-    module='setup',
-    host_pattern='localhost',
-    quiet=True,
-    envvars={
-        'LANG': 'C'
-    }
-).get_fact_cache('localhost')
+facts = _get_facts()
 
 # map kernel driver to device id
 drivers = {}
@@ -82,6 +89,8 @@ if facts['ansible_virtualization_role'] == 'guest':
 json.dump(
     {
         os.environ['AGENT_ID'].removeprefix('node/'): {
+            'volumesconf_mountpoint_count': len(agent.volumes.get_base_paths()),
+            'volumesconf_application_types': agent.volumes.get_application_types(),
             'version': _get_core_version(),
             'distro': {
                 'name': facts['ansible_distribution'],

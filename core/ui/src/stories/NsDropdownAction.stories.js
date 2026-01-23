@@ -15,7 +15,7 @@ export default {
         "danger--ghost",
         "danger--tertiary",
       ],
-      control: { type: "select" },
+      control: { type: "inline-radio" },
     },
     buttonClick: { action: "clickAction" },
   },

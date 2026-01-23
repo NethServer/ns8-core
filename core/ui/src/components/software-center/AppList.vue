@@ -30,7 +30,7 @@
         class="card-grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
       >
         <cv-tile
-          v-for="(app, index) in appsLoaded"
+          v-for="(app, index) in apps"
           :key="index"
           kind="standard"
           class="app"
@@ -155,7 +155,6 @@
           </div>
         </cv-tile>
       </div>
-      <infinite-loading @infinite="infiniteScrollHandler"></infinite-loading>
     </div>
     <AppInfoModal
       :app="appInfo.app"
@@ -193,23 +192,11 @@ export default {
         isShown: false,
         app: null,
       },
-      // infinite scroll
-      appsLoaded: [],
-      pageNum: 0,
-      pageSize: 50,
-      isShownCoreAppModal: false,
     };
   },
   computed: {
     coreApp() {
       return this.apps.find((app) => app.id == "core");
-    },
-  },
-  watch: {
-    apps: function () {
-      this.appsLoaded = [];
-      this.pageNum = 0;
-      this.infiniteScrollHandler();
     },
   },
   methods: {
@@ -230,25 +217,6 @@ export default {
       setTimeout(() => {
         context.appInfo.isShown = false;
       }, 250);
-    },
-    infiniteScrollHandler($state) {
-      const pageApps = this.apps.slice(
-        this.pageNum * this.pageSize,
-        (this.pageNum + 1) * this.pageSize
-      );
-
-      if (pageApps.length) {
-        this.pageNum++;
-        this.appsLoaded.push(...pageApps);
-
-        if ($state) {
-          $state.loaded();
-        }
-      } else {
-        if ($state) {
-          $state.complete();
-        }
-      }
     },
     getApplicationCategories(app) {
       let categories = [];

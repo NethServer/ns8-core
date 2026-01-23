@@ -34,6 +34,7 @@ rdb = agent.redis_connect()
 cluster_network = rdb.get('cluster/network')
 
 podman_cmd = ['podman', 'run', '--rm', '--privileged', '--network=host', '--workdir=/srv',
+        '--name=clone-module', '--replace',
         '--env=RSYNCD_NETWORK=' + cluster_network,
         '--env=RSYNCD_ADDRESS=cluster-localnode',
         '--env=RSYNCD_PORT=' + str(port),

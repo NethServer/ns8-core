@@ -127,6 +127,17 @@ relabel_rules.append("""
     }
 """)
 
+# Set label category=security on messages from api-server with [auth]
+# prefix:
+relabel_rules.append(r"""
+    rule {
+        source_labels = ["__journal_syslog_identifier", "__journal_message"]
+        regex         = "api-server;.*\\[AUTH\\].*"
+        target_label  = "category"
+        replacement   = "security"
+    }
+""")
+
 # Generate Alloy configuration
 alloy_config = f"""
 discovery.relabel "journal" {{

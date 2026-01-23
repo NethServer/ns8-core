@@ -61,8 +61,10 @@ event handler. Create an executable script with path
 `${AGENT_INSTALL_DIR}/events/user-domain-changed/10handler`. For instance:
 
 ```shell
-read -r domain < <(jq -r .domain)
-if [[ "${domain}" == "mydomain" ]]; then
+mydomain="ad.example.org"
+
+# Check if $mydomain is in the list of changed domains
+if jq -e --arg d "$mydomain" '.domains | index($d)' >/dev/null; then
     systemctl --user reload mymodule.service
 fi
 ```
@@ -174,6 +176,59 @@ if not os.environ["LDAP_USER_DOMAIN"] in event["domains"]:
 # - rewrite some config file
 # - reload some service running in a container
 ```
+
+## Import/Export users APIs
+
+Samba and OpenLDAP core modules implement a uniform API to massively
+import and export users.  To use that API modules must be authorized:
+
+    org.nethserver.authorizations=samba@any:domadm openldap@any:domadm
+
+With `domadm` role, a client module can invoke the following actions and
+user-portal handlers:
+
+- `export-users`
+- `import-users`
+
+This is an example CSV file with 9 fields, that can be used to feed `import-users` input:
+
+    dolores.slughorn3,Dolores Slughorn,Magic!123,dolores.slughorn3@hogwarts.example,aurors|hufflepuff|quidditch,true,false,true
+    cedric.macmillan4,Cedric Macmillan,Magic!123,cedric.macmillan4@hogwarts.example,hufflepuff|ministry|quidditch,false,true,false
+    pansy.dumbledore5,Pansy Dumbledore,Magic!123,pansy.dumbledore5@hogwarts.example,gryffindor|ravenclaw,true,false,false
+
+Run this Bash command to import the CSV (non-existing groups are created on the fly):
+
+    cat file.csv | jq -R -s '
+        split("\n")
+        | map(select(length>0))
+        | map(split(","))
+        | {
+            skip_existing: false,
+            records:
+                map({
+                user: .[0],
+                display_name: .[1],
+                password: .[2],
+                locked: (.[5] | test("(?i)^(1|true|yes)$")),
+                groups: (.[4] | split("|") | map(ascii_downcase)),
+                mail: .[3],
+                must_change_password: (.[6] | test("(?i)^(1|true|yes)$")),
+                no_password_expiration: (.[7] | test("(?i)^(1|true|yes)$"))
+                })
+            }
+        ' | api-cli run module/samba1/import-users --data -
+
+Actions/handlers for single users and groups are also authorized with role `domadm`:
+
+- `add-user`
+- `add-group`
+- `alter-user`
+- `alter-group`
+- `remove-user`
+- `remove-group`
+- `list-users`
+- `list-groups`
+
 
 ## Password expiration warning
 

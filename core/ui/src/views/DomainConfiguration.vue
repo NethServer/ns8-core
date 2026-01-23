@@ -6,49 +6,6 @@
   <div>
     <cv-grid fullWidth>
       <cv-row>
-        <cv-column>
-          <cv-breadcrumb
-            aria-label="breadcrumb"
-            :no-trailing-slash="true"
-            class="breadcrumb"
-          >
-            <cv-breadcrumb-item>
-              <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
-            </cv-breadcrumb-item>
-            <cv-breadcrumb-item>
-              <span>{{
-                $t("domain_configuration.domain_name_configuration", {
-                  domain: domainName,
-                })
-              }}</span>
-            </cv-breadcrumb-item>
-          </cv-breadcrumb>
-        </cv-column>
-      </cv-row>
-      <cv-row>
-        <cv-column :md="4" :xlg="10" class="subpage-title">
-          <h3>
-            {{
-              $t("domain_configuration.domain_name_configuration", {
-                domain: domainName,
-              })
-            }}
-          </h3>
-        </cv-column>
-        <cv-column :md="4" :xlg="6">
-          <div class="page-toolbar">
-            <NsButton
-              kind="tertiary"
-              size="field"
-              :icon="Group20"
-              @click="goToDomainUsersAndGroups()"
-              class="subpage-toolbar-item"
-              >{{ $t("domains.users_and_groups") }}</NsButton
-            >
-          </div>
-        </cv-column>
-      </cv-row>
-      <cv-row>
         <!-- domain settings -->
         <cv-column>
           <div class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
@@ -720,6 +677,9 @@ export default {
     IconService,
     PageTitleService,
   ],
+  props: {
+    domainName: { type: String, required: true },
+  },
   pageTitle() {
     return this.$t("domain_configuration.title");
   },
@@ -734,7 +694,6 @@ export default {
       isShownPasswordPolicyModal: false,
       isShownPasswordWarningModal: false,
       isShownEditExternalDomainModal: false,
-      domainName: "",
       hostnameNode: "",
       domainNode: "",
       policy: {
@@ -1510,12 +1469,6 @@ export default {
     },
     deleteUnconfiguredProviderCompleted() {
       this.listUserDomains();
-    },
-    goToDomainUsersAndGroups() {
-      this.$router.push({
-        name: "DomainUsersAndGroups",
-        params: { domainName: this.domainName },
-      });
     },
     goToUserAdminPage() {
       window.open(

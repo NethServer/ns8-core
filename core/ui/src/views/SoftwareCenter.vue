@@ -7,7 +7,24 @@
     <cv-grid fullWidth>
       <cv-row>
         <cv-column :md="4" :xlg="10" class="page-title">
-          <h2>{{ $t("software_center.title") }}</h2>
+          <h2>
+            {{ $t("software_center.title") }}
+            <cv-interactive-tooltip
+              alignment="start"
+              direction="right"
+              class="info"
+            >
+              <template slot="content">
+                <i18n path="software_center.title_tooltip" tag="p">
+                  <template v-slot:applications>
+                    <cv-link @click="goToApplicationsCenter">
+                      {{ $t("applications.title") }}
+                    </cv-link>
+                  </template>
+                </i18n>
+              </template>
+            </cv-interactive-tooltip>
+          </h2>
         </cv-column>
         <cv-column :md="4" :xlg="6">
           <div class="page-toolbar">
@@ -316,16 +333,11 @@
           <h6 class="search-results-title">
             {{ $t("software_center.search_results") }}
           </h6>
-          <AppList
-            v-if="searchResults.length"
-            :apps="searchResults"
-            :skeleton="loading.listModules || loading.listCoreModules"
-            tab="search"
-            @install="openInstallModal"
-            key="search-app-list"
+          <cv-tile
+            v-if="!searchResults.length && !loading.listModules"
+            kind="standard"
             :light="true"
-          />
-          <cv-tile v-else kind="standard" :light="true">
+          >
             <NsEmptyState
               :title="$t('software_center.no_app_found')"
               :animationData="GhostLottie"
@@ -338,6 +350,15 @@
               </template>
             </NsEmptyState>
           </cv-tile>
+          <AppList
+            v-else
+            :apps="searchResults"
+            :skeleton="loading.listModules || loading.listCoreModules"
+            tab="search"
+            @install="openInstallModal"
+            key="search-app-list"
+            :light="true"
+          />
         </div>
       </div>
     </cv-grid>
@@ -456,9 +477,10 @@ export default {
     },
   },
   watch: {
-    "q.search": function () {
-      if (!this.q.search) {
-        this.q.view = "all";
+    modules() {
+      // perform search again when modules are updated
+      if (this.q.view === "search" && this.q.search) {
+        this.searchApp(this.q.search);
       }
     },
   },
@@ -478,6 +500,9 @@ export default {
   },
   methods: {
     ...mapActions(["setUpdateInProgressInStore"]),
+    goToApplicationsCenter() {
+      this.$router.push("/applications-center");
+    },
     async listModules() {
       this.loading.listModules = true;
       this.error.listModules = "";
@@ -543,11 +568,6 @@ export default {
       }
       this.appUpdates = appUpdates;
       this.modules = modules;
-
-      // perform search on browser history navigation (e.g. going back to software center)
-      if (this.q.search) {
-        this.searchApp(this.q.search);
-      }
       this.listCoreModules();
     },
     async listCoreModules() {
@@ -689,6 +709,7 @@ export default {
       }
     },
     contentSwitcherSelected(value) {
+      this.q.search = "";
       this.q.view = value;
     },
     goToUpdates() {

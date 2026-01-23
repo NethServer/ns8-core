@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import requests
+import json
+import os
+import sys
+import agent
+
+def discover_prom_query_url(base_url):
+    api_path = '/api/v1/query'
+    try:
+        # Check if prefix is not necessary:
+        r = requests.get(base_url + '/-/ready', allow_redirects=False, timeout=2)
+        if r.status_code != 200:
+            # Extend base_url with the API path prefix, obtained from
+            # the Location header:
+            r = requests.get(base_url, allow_redirects=False, timeout=2)
+            if r.status_code == 302 and 'Location' in r.headers:
+                base_url += r.headers['Location']
+    except Exception as ex:
+        print("discover_prom_query_url(): cannot parse Metrics/Prometheus headers. Reason: ", ex, file=sys.stderr)
+    return base_url + api_path
+
+# Calculate the full Prometheus API endpoint
+PROM_QUERY_URL = discover_prom_query_url("http://127.0.0.1:9091")
+
+def main():
+    node_list=[]
+    rdb = agent.redis_connect()
+    local_id = os.environ['NODE_ID']
+    module_node = rdb.hgetall("cluster/module_node")
+    app_count = get_app_count(rdb, module_node)
+    ns7nodes = get_ns7nodes(rdb)
+    for node_id in set(module_node.values()) | ns7nodes:
+        hvpn = rdb.hgetall(f"node/{node_id}/vpn") or {}
+        if node_id in ns7nodes:
+            node_list.append({
+                "role": "ns7migration",
+                "node_id": int(node_id),
+            })
+            continue
+        elif local_id == node_id:
+            node_role = 'leader'
+        else:
+            node_role = 'worker'
+        node_metrics = {
+            "role": node_role,
+            "vpn_endpoint": hvpn.get("endpoint", ""),
+            "vpn_ip_address": hvpn.get("ip_address", ""),
+            "load": get_load(node_id),
+            "cpu": get_cpu(node_id),
+            "memory": get_memory(node_id),
+            "swap": get_swap(node_id),
+            "disks": get_disks(node_id),
+            "additional_disk_count": get_additional_disk_count(node_id),
+            "app_count": app_count.get(node_id, 0),
+            "os_release": get_os_release(node_id),
+            "network_interface_count": get_network_interface_count(node_id),
+        }
+        node_metrics.update(get_identity(node_id))
+        node_metrics["node_id"] = int(node_id)
+        node_metrics["ui_name"] = rdb.get(f"node/{node_id}/ui_name") or ""
+        node_list.append(node_metrics)
+    print(json.dumps({"nodes":node_list}))
+
+def get_ns7nodes(rdb) -> set:
+    ns7nodes = set()
+    for kflag in rdb.keys('node/*/flags'):
+        if rdb.sismember(kflag, 'nomodules'):
+            ns7nodes.add(kflag.removeprefix('node/').removesuffix('/flags'))
+    return ns7nodes
+
+def get_app_count(rdb, module_node):
+    app_count = {}
+    for module_id in module_node:
+        if 'core_module' in rdb.smembers(f'module/{module_id}/flags'):
+            continue
+        node_id = module_node[module_id]
+        app_count.setdefault(node_id, 0)
+        app_count[node_id] += 1
+    return app_count
+
+def get_network_interface_count(node_id):
+    return int(get_scalar(f'count(node_network_info{{node="{node_id}", device!~"lo|docker.*|veth.*|br.*|tap.*"}})') or 0)
+
+def q(expr: str) -> list:
+    """Query Prometheus and return a list of results"""
+    try:
+        r = requests.get(PROM_QUERY_URL, params={"query": expr})
+        r.raise_for_status()
+        return r.json()["data"]["result"]
+    except Exception as ex:
+        print("function q() cannot parse Metrics/Prometheus response. Reason: ", ex, file=sys.stderr)
+        return []
+
+def get_scalar(expr):
+    res = q(expr)
+    try:
+        return float(res[0]["value"][1])
+    except:
+        return 0
+
+def get_load(node_id):
+    return {
+        "1min": get_scalar(f'node_load1{{node="{node_id}"}}'),
+        "5min": get_scalar(f'node_load5{{node="{node_id}"}}'),
+        "15min": get_scalar(f'node_load15{{node="{node_id}"}}')
+    }
+
+def get_cpu(node_id):
+    usage = get_scalar(
+        f'1.0 - (avg by (instance) (irate(node_cpu_seconds_total{{node="{node_id}",mode="idle"}}[121s])))'
+    )
+    count = get_scalar(
+        f'count(node_cpu_seconds_total{{node="{node_id}",mode="idle"}})'
+    )
+    info = next(iter(q(f'node_cpu_info{{node="{node_id}"}}')), {"metric":{}})
+    cpu = {
+        "usage": usage,
+        "count": int(count or "0"),
+        "vendor": info["metric"].get("vendor", ""),
+        "model": info["metric"].get("model", ""),
+        "model_name": info["metric"].get("model_name", ""),
+        "microcode": info["metric"].get("microcode", ""),
+        "family": info["metric"].get("family", ""),
+        "stepping": info["metric"].get("stepping", ""),
+        "package": info["metric"].get("package", ""),
+    }
+    return cpu
+
+def get_memory(node_id):
+    total = get_scalar(f'node_memory_MemTotal_bytes{{node="{node_id}"}}')
+    avail = get_scalar(f'node_memory_MemAvailable_bytes{{node="{node_id}"}}')
+    used = total - avail if total and avail else 0
+    return {"total": total, "used": used, "free": avail}
+
+def get_swap(node_id):
+    total = get_scalar(f'node_memory_SwapTotal_bytes{{node="{node_id}"}}')
+    free = get_scalar(f'node_memory_SwapFree_bytes{{node="{node_id}"}}')
+    used = total - free if total and free else 0
+    return {"total": total, "used": used, "free": free}
+
+def get_disks(node_id):
+    size_metrics = q(f'node_filesystem_size_bytes{{node="{node_id}",fstype!~"tmpfs|overlay"}}')
+    avail_metrics = {info["metric"]["mountpoint"]: float(info["value"][1])
+                     for info in q(f'node_filesystem_avail_bytes{{node="{node_id}",fstype!~"tmpfs|overlay"}}')}
+
+    disks = []
+    for info in size_metrics:
+        total = float(info["value"][1])
+        mount = info["metric"]["mountpoint"]
+        avail = avail_metrics.get(mount, 0)
+        disks.append({
+            "device": info["metric"].get("device", ""),
+            "mountpoint": mount,
+            "fstype": info["metric"].get("fstype", ""),
+            "total": total,
+            "used": total - avail,
+            "free": avail
+        })
+    return disks
+
+def get_additional_disk_count(node_id):
+    return int(get_scalar(f'ns8_additional_disks{{node="{node_id}"}}'))
+
+def get_os_release(node_id):
+    info = next(iter(q(f'node_os_info{{node="{node_id}"}}')), {"metric":{}})
+    os_release = {
+        "name": info["metric"].get("name", ""),
+        "version": info["metric"].get("version_id", ""),
+    }
+    return os_release
+
+def get_identity(node_id):
+    # Query both metrics for this node
+    info = q(f'ns8_node_info{{node="{node_id}"}}')
+    ip_metrics = q(f'ns8_node_main_ip_address{{node="{node_id}"}}')
+
+    # Extract FQDN from ns8_node_info
+    fqdn = info[0]["metric"].get("fqdn", "") if info else ""
+    wg0_port = info[0]["metric"].get("wg0_port", "") if info else ""
+
+    # Select main IP (prefer IPv4, fallback to IPv6)
+    ipv4 = next((info["metric"]["address"] for info in ip_metrics if info["metric"].get("family") == "ipv4"), None)
+    ipv6 = next((info["metric"]["address"] for info in ip_metrics if info["metric"].get("family") == "ipv6"), None)
+    main_ip = ipv4 or ipv6 or "127.0.0.1"
+
+    return {"fqdn": fqdn, "main_ip": main_ip, "vpn_listen_port": wg0_port}
+
+if __name__ == "__main__":
+    main()

@@ -5,10 +5,12 @@
 <template>
   <NsModal
     :visible="state.visible"
-    :primaryButtonDisabled="state.isLoading() || !areFileSelected"
+    :primaryButtonDisabled="
+      state.isLoading() || !areFileSelected || !selectedNodeId
+    "
     :isLoading="state.isLoading()"
     @primary-click="uploadCerts()"
-    v-on:modal-hide-request="state.clear()"
+    v-on:modal-hide-request="clear()"
     autoHideOff
     hasFormContent
   >
@@ -17,68 +19,49 @@
     </template>
     <template slot="content">
       <cv-form @submit.prevent="">
-        <cv-grid class="no-padding">
-          <cv-row>
-            <cv-column
-              v-for="(item, index) in state.traefikInstances"
-              :key="index"
-              :md="4"
-              :max="4"
-            >
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="item.selected"
-                :value="item.ui_name"
-                class="min-height-card"
-                @click="deselectPreviousCard(item)"
-              >
-                <h6>
-                  <span v-if="item.node_ui_name">
-                    {{ item.node_ui_name }} ({{ $t("common.node") }}
-                    {{ item.node_id }})
-                  </span>
-                  <span v-else>
-                    {{ $t("common.node") }} {{ item.node_id }}
-                  </span>
-                </h6>
-                <div class="mg-top-md">
-                  {{ item.ui_name }}
-                </div>
-              </NsTile>
-            </cv-column>
-          </cv-row>
-          <transition name="fade" :duration="{ enter: 500, leave: 50 }">
-            <cv-row v-if="this.isNodeSelected">
-              <cv-column :sm="4" :md="4">
-                <cv-file-uploader
-                  :label="$t('settings_tls_certificates.key_upload_label')"
-                  :helperText="
-                    $t('settings_tls_certificates.key_upload_helptext')
-                  "
-                  :multiple="false"
-                  :clear-on-reselect="true"
-                  :drop-target-label="$t('common.click_here_to_upload')"
-                  :disabled="disabledFilePicker"
-                  v-model="keyFile"
-                ></cv-file-uploader>
-              </cv-column>
-              <cv-column :sm="4" :md="4">
-                <cv-file-uploader
-                  :label="$t('settings_tls_certificates.cert_upload_label')"
-                  :helperText="
-                    $t('settings_tls_certificates.cert_upload_helptext')
-                  "
-                  :multiple="false"
-                  :clear-on-reselect="true"
-                  :drop-target-label="$t('common.click_here_to_upload')"
-                  :disabled="disabledFilePicker"
-                  v-model="certFile"
-                ></cv-file-uploader>
-              </cv-column>
-            </cv-row>
-          </transition>
-        </cv-grid>
+        <p class="mb-6">
+          {{
+            $t(
+              "settings_tls_certificates.upload_custom_certificate_description"
+            )
+          }}
+        </p>
+        <NsComboBox
+          v-model="selectedNodeId"
+          :label="$t('common.choose_a_node')"
+          :title="$t('common.node')"
+          :auto-filter="true"
+          :auto-highlight="true"
+          :options="state.nodes"
+          light
+          ref="node"
+        />
+        <cv-file-uploader
+          :label="$t('settings_tls_certificates.key_upload_label')"
+          :multiple="false"
+          :clear-on-reselect="true"
+          :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
+          v-model="keyFile"
+        ></cv-file-uploader>
+        <cv-file-uploader
+          :label="$t('settings_tls_certificates.cert_upload_label')"
+          :multiple="false"
+          :clear-on-reselect="true"
+          :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
+          v-model="certFile"
+        ></cv-file-uploader>
+        <cv-file-uploader
+          :label="
+            $t('settings_tls_certificates.chain_file') +
+            ' (' +
+            $t('common.optional') +
+            ')'
+          "
+          :multiple="false"
+          :clear-on-reselect="true"
+          :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
+          v-model="chainFile"
+        ></cv-file-uploader>
       </cv-form>
     </template>
     <template slot="primary-button">
@@ -88,7 +71,7 @@
 </template>
 
 <script>
-import { NsModal, NsTile } from "@nethserver/ns8-ui-lib";
+import { NsModal } from "@nethserver/ns8-ui-lib";
 import _isEmpty from "lodash/isEmpty";
 
 export class StateManager {
@@ -98,8 +81,10 @@ export class StateManager {
     this.errors = {
       keyFile: null,
       certFile: null,
+      chainFile: null,
     };
-    this.traefikInstances = [];
+    this.nodes = [];
+    this.selectedNodeId = "";
   }
 
   /**
@@ -145,18 +130,17 @@ export class StateManager {
   }
 
   /**
+   * @argument {string} error Error to show in chainFile file picker.
+   */
+  setChainFileError(error) {
+    this.errors.chainFile = error;
+  }
+
+  /**
    * @argument {array} instances Array listing the instances of Traefik.
    */
-  setTraefikInstances(instances) {
-    this.traefikInstances = [];
-    instances.forEach((instance) => {
-      this.traefikInstances.push({
-        selected: false,
-        ui_name: instance.id,
-        node_id: instance.node_id,
-        node_ui_name: instance.node_ui_name,
-      });
-    });
+  setNodes(nodes) {
+    this.nodes = nodes;
   }
 
   /**
@@ -168,8 +152,8 @@ export class StateManager {
     this.errors = {
       keyFile: null,
       certFile: null,
+      chainFile: null,
     };
-    this.traefikInstances.forEach((item) => (item.selected = false));
   }
 }
 
@@ -177,12 +161,14 @@ function initialData() {
   return {
     keyFile: null,
     certFile: null,
+    chainFile: null,
+    selectedNodeId: "",
   };
 }
 
 export default {
   name: "UploadTLSCertificateModal",
-  components: { NsModal, NsTile },
+  components: { NsModal },
   props: {
     state: {
       type: StateManager,
@@ -197,28 +183,34 @@ export default {
       this.$emit("upload-certificate-submit", {
         keyFile: this.keyFile?.[0]?.file ?? null,
         certFile: this.certFile?.[0]?.file ?? null,
-        targetInstance: this.state.traefikInstances.find((val) => {
-          return val.selected;
-        }).ui_name,
+        chainFile: this.chainFile?.[0]?.file ?? null,
+        targetInstance: this.traefikInstance,
       });
     },
-    deselectPreviousCard(item) {
-      this.state.traefikInstances.forEach((instance) => {
-        if (instance.ui_name !== item.ui_name) {
-          instance.selected = false;
-        }
-      });
+    clear() {
+      this.state.clear();
+      this.clearNodeSelection();
+    },
+    clearNodeSelection() {
+      this.selectedNodeId = "";
+      if (this.$refs.node) {
+        this.$refs.node.clearValue();
+      }
     },
   },
   computed: {
     areFileSelected: function () {
       return !_isEmpty(this.keyFile) && !_isEmpty(this.certFile);
     },
-    isNodeSelected: function () {
-      return this.state.traefikInstances.some((item) => item.selected);
-    },
-    disabledFilePicker: function () {
-      return this.state.isLoading() || !this.isNodeSelected;
+    traefikInstance: function () {
+      const node = this.state.nodes.find((node) => {
+        return node.value === this.selectedNodeId;
+      });
+
+      if (!node) {
+        return null;
+      }
+      return node.traefikInstance;
     },
   },
   watch: {
@@ -226,10 +218,19 @@ export default {
       Object.assign(this.$data, initialData());
     },
     "state.errors.keyFile": function (val) {
-      this.keyFile[0].invalidMessage = val;
+      if (this.keyFile && this.keyFile[0]) {
+        this.keyFile[0].invalidMessage = val;
+      }
     },
     "state.errors.certFile": function (val) {
-      this.certFile[0].invalidMessage = val;
+      if (this.certFile && this.certFile[0]) {
+        this.certFile[0].invalidMessage = val;
+      }
+    },
+    "state.errors.chainFile": function (val) {
+      if (this.chainFile && this.chainFile[0]) {
+        this.chainFile[0].invalidMessage = val;
+      }
     },
   },
 };

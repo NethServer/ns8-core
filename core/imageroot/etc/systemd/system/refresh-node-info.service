@@ -1,0 +1,10 @@
+[Unit]
+Description=node_exporter textfile collector runner
+After=node_exporter.service
+BindsTo=node_exporter.service
+
+[Service]
+Type=simple
+ExecStart=runagent -m node refresh-node-info -l 60
+ExecStopPost=rm -f /run/node_exporter/node-info.prom
+SyslogIdentifier=%N

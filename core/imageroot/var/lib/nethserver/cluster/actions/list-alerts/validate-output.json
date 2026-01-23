@@ -1,0 +1,157 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-alerts output",
+    "$id": "http://schema.nethserver.org/cluster/list-alerts.json",
+    "description": "Output schema of the list-alerts action",
+    "examples": [
+        {
+            "alerts": [],
+            "filter": {}
+        },
+        {
+            "alerts": [
+                {
+                    "annotations": {
+                        "description": "Disk is almost full (< 10% left)\n  VALUE = 0.00014758648184494603\n  LABELS = map[device:/dev/sda fstype:xfs instance:10.5.4.1:9100 job:providers mountpoint:/mnt/xvolume_davidep_cluster0_rl1 node:1 target_type:node]",
+                        "summary": "Host out of disk space (instance 10.5.4.1:9100)"
+                    },
+                    "endsAt": "2025-10-15T09:43:26.180Z",
+                    "fingerprint": "9795fddf80b093e2",
+                    "receivers": [
+                        {
+                            "name": "default-receiver"
+                        }
+                    ],
+                    "startsAt": "2025-10-15T09:33:26.180Z",
+                    "status": {
+                        "inhibitedBy": [],
+                        "mutedBy": [],
+                        "silencedBy": [],
+                        "state": "active"
+                    },
+                    "updatedAt": "2025-10-15T09:39:26.186Z",
+                    "generatorURL": "/graph?g0.expr=%28node_filesystem_avail_bytes%7Bfstype%21~%22%5E%28fuse.%2A%7Ctmpfs%7Ccifs%7Cnfs%29%22%7D+%2F+node_filesystem_size_bytes+%3C+0.1+and+on+%28instance%2C+device%2C+mountpoint%29+node_filesystem_readonly+%3D%3D+0%29&g0.tab=1",
+                    "labels": {
+                        "alertname": "disk_full",
+                        "device": "/dev/sda",
+                        "fstype": "xfs",
+                        "instance": "10.5.4.1:9100",
+                        "job": "providers",
+                        "mountpoint": "/mnt/xvolume_davidep_cluster0_rl1",
+                        "node": "1",
+                        "severity": "warning",
+                        "target_type": "node"
+                    },
+                    "name": "disk_full",
+                    "category": "node",
+                    "node_id": 1
+                }
+            ],
+            "filter": {}
+        }
+    ],
+    "type": "object",
+    "required": [
+        "alerts"
+    ],
+    "properties": {
+        "filter": {
+            "type": "object"
+        },
+        "alerts": {
+            "type": "array",
+            "items": {
+                "allOf": [
+                    {
+                        "$ref": "#/$defs/alertmanager-v2-object"
+                    },
+                    {
+                        "$ref": "#/$defs/base-attrs"
+                    }
+                ]
+            }
+        }
+    },
+    "$defs": {
+        "alertmanager-v2-object": {
+            "type": "object",
+            "properties": {
+                "labels": {
+                    "type": "object"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "endsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "fingerprint": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "object"
+                },
+                "generatorURL": {
+                    "type": "string"
+                },
+                "annotations": {
+                    "type": "object"
+                }
+            }
+        },
+        "base-attrs": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Short alert name"
+                }
+            },
+            "required": [
+                "name",
+                "category"
+            ],
+            "oneOf": [
+                {
+                    "required": [
+                        "module_id"
+                    ],
+                    "properties": {
+                        "category": {
+                            "const": "application"
+                        },
+                        "module_id": {
+                            "type": "string"
+                        }
+                    }
+                },
+                {
+                    "required": [
+                        "node_id"
+                    ],
+                    "properties": {
+                        "category": {
+                            "const": "node"
+                        },
+                        "node_id": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "category": {
+                            "const": "backup"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

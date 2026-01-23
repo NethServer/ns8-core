@@ -24,9 +24,12 @@ import os
 import sys
 import json
 import agent
+import agent.volumes
 import uuid
 import hashlib
 import node.ports_manager
+import pwd
+from pathlib import Path
 
 def save_environment(env):
     with open('state/environment', 'w') as envf:
@@ -112,6 +115,25 @@ else: # rootless
     agent.run_helper('systemctl', 'try-restart', 'promtail.service').check_returncode()
     # Start the module agent
     agent.run_helper('loginctl', 'enable-linger', module_id).check_returncode()
+
+# Create base paths for the module volumes
+volumes = agent.volumes.get_configuration(module_id)
+volumes.update(request.get('volumes', {}))
+if volumes and not is_rootfull:
+    workdir = Path.cwd().resolve() # see os.chdir() above
+    pwent = pwd.getpwnam(module_id)
+    valid_mountpoint_paths = [x["path"] for x in agent.volumes.get_base_paths()]
+    for volbase in set(volumes.values()):
+        if workdir.is_relative_to(volbase):
+            continue # ignore basepaths like / /home /home1 HOME_BASEDIR
+        elif volbase not in valid_mountpoint_paths:
+            print(agent.SD_WARNING + 'Skip creation of unknown mountpoint path:', volbase, file=sys.stderr)
+            continue
+        try:
+            os.mkdir(f"{volbase}/{module_id}", mode=0o700)
+            os.chown(f"{volbase}/{module_id}", pwent[2], pwent[3]) # chown uid:gid
+        except FileExistsError:
+            pass
 
 json.dump({
     "redis_sha256":redis_sha256,

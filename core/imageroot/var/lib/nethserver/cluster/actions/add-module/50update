@@ -35,6 +35,26 @@ request = json.load(sys.stdin)
 node_id = int(request['node'])
 agent.assert_exp(node_id > 0)
 check_idle_time = request.get('check_idle_time')
+volumes = request.get('volumes', {})
+
+if volumes:
+    # Retrieve the list of valid mountpoint paths from the node:
+    list_mountpoints_result = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='list-mountpoints',
+        endpoint="redis://cluster-leader",
+    )
+    if list_mountpoints_result['exit_code'] == 0:
+        valid_paths = [x["path"] for x in list_mountpoints_result['output'].get('mountpoints', [])]
+        valid_paths.append(list_mountpoints_result['output']['default_disk']['path'])
+        for qpath in volumes.values():
+            if qpath not in valid_paths:
+                print(agent.SD_ERR + f'Unknown mountpoint path "{qpath}" in node {node_id}.', file=sys.stderr)
+                agent.set_status('validation-failed')
+                json.dump([{'field':'volumes', 'parameter':'volumes','value': qpath, 'error':'unknown_mountpoint_path'}], fp=sys.stdout)
+                sys.exit(3)
+    else:
+        valid_paths = []
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -147,6 +167,7 @@ add_module_result = agent.tasks.run(
         "environment": module_environment,
         "tcp_ports_demand": tcp_ports_demand,
         "udp_ports_demand": udp_ports_demand,
+        'volumes': volumes,
     },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(34,66),
@@ -188,6 +209,7 @@ create_module_result = agent.tasks.run(
     action="create-module",
     data={
         'images': extra_images,
+        'volumes': volumes,
     },
     endpoint="redis://cluster-leader",
     check_idle_time=0, # disable idle check and wait until the agent is up

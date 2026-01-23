@@ -5,6 +5,16 @@
     "description": "Install a module on the worker node",
     "examples": [
         {
+            "volumes": {
+                "shares": "/srv/pool0"
+            },
+            "module_id": "samba1",
+            "is_rootfull": false,
+            "environment": {
+                "IMAGE_URL": "ghcr.io/nethserver/samba:3.2.0"
+            }
+        },
+        {
             "module_id": "mymodule2",
             "is_rootfull": false,
             "environment": {
@@ -21,6 +31,18 @@
         "udp_ports_demand"
     ],
     "properties": {
+        "volumes": {
+            "type": "object",
+            "description": "Optional mapping of application volume names to filesystem mount points.",
+            "patternProperties": {
+                "[^/]+": {
+                    "description": "Absolute filesystem directory path under /",
+                    "example": "/srv/pool0",
+                    "type": "string",
+                    "pattern": "^/"
+                }
+            }
+        },
         "environment": {
             "type": "object",
             "title": "Initial module environment",

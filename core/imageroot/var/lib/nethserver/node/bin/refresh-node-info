@@ -1,0 +1,60 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+function write_prom_file()
+{
+    outfile="/run/node_exporter/node-info.prom"
+    main4=$(ip -4 -j route get 255.0 2>/dev/null | jq -r '.[0].prefsrc')
+    main6=$(ip -6 -j route get 2000:: 2>/dev/null | jq -r '.[0].prefsrc')
+    fqdn=$(hostname -f)
+    wg0_port=$(wg show wg0 dump | awk 'NR==1 { print $3 }')
+    basepaths_count=$(volumectl list-base-paths | wc -l)
+    {
+        echo "# HELP ns8_node_main_ip_address Main IP address selected by routing table"
+        echo "# TYPE ns8_node_main_ip_address gauge"
+        [ -n "$main4" ] && echo "ns8_node_main_ip_address{family=\"ipv4\",address=\"$main4\"} 1"
+        [ -n "$main6" ] && echo "ns8_node_main_ip_address{family=\"ipv6\",address=\"$main6\"} 1"
+
+        echo "# HELP ns8_node_info Node additional information"
+        echo "# TYPE ns8_node_info gauge"
+        printf 'ns8_node_info{wg0_port="%s",fqdn="%s"} 1\n' "${wg0_port}" "${fqdn}"
+
+        echo "# HELP ns8_additional_disks Number of additional disks on the node for application volume mapping"
+        echo "# TYPE ns8_additional_disks gauge"
+        printf 'ns8_additional_disks %d\n' ${basepaths_count:-0}
+    } >"$outfile.$$"
+    mv "$outfile.$$" "$outfile"
+}
+
+function usage_error()
+{
+    exec 1>&2
+    printf "Usage: %s [-l INTERVAL]\n" "$0"
+    printf "    OPTIONS\n"
+    printf "      -l INTERVAL           Run in a loop every INTERVAL seconds\n"
+    exit 2
+}
+
+while getopts "hl:" optname ; do
+    case ${optname} in
+        l)  interval="${OPTARG}" ;;
+        h)  usage_error ;;
+        *)  usage_error ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if [[ $interval -gt 0 ]] ; then
+    while true ; do
+        write_prom_file
+        sleep "${interval}"
+    done
+else
+    write_prom_file
+fi

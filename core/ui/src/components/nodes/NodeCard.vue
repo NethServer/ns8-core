@@ -19,6 +19,11 @@
     </div>
     <div class="row">
       <cv-tag v-if="isLeader" kind="green" :label="leaderLabel"></cv-tag>
+      <cv-tag
+        v-else-if="role === 'ns7migration'"
+        kind="gray"
+        :label="ns7MigrationLabel"
+      ></cv-tag>
       <cv-tag v-else kind="blue" :label="workerLabel"></cv-tag>
     </div>
     <div v-if="!online" class="row offline">
@@ -35,95 +40,125 @@
         heading
       ></cv-skeleton-text>
     </div>
-    <div v-else class="table-wrapper">
+    <div
+      v-else-if="!loading && online && role !== 'ns7migration'"
+      class="table-wrapper"
+    >
       <div class="table">
         <div v-if="nodeLabel" class="tr">
-          <div class="td label">{{ $t("common.node") }}</div>
+          <div class="td label">{{ $t("nodes.node_id") }}</div>
           <div class="td">
-            {{ nodeId.toString() }}
+            {{ nodeId }}
           </div>
         </div>
-        <div class="tr">
-          <div class="td label">{{ cpuUsageLabel }}</div>
-          <div :class="['td', { warning: cpuUsage >= cpuUsageWarningTh }]">
-            {{ cpuUsage }}%
-          </div>
-        </div>
-        <div class="tr">
-          <div class="td label">
-            {{ cpuLoadLabel }}
+        <div class="tr long-text-row">
+          <div class="td label">{{ fqdnLabel }}</div>
+          <div class="td long-text-cell">
             <cv-interactive-tooltip
+              v-if="isLongFqdn"
               alignment="center"
-              direction="bottom"
-              class="info"
+              direction="top"
             >
-              <template slot="trigger">
-                <Information16 />
-              </template>
               <template slot="content">
-                {{ cpuLoadTooltip }}
+                {{ fqdn }}
+              </template>
+              <template slot="trigger">
+                <span class="long-text-ellipsis long-text-span">{{
+                  fqdn
+                }}</span>
               </template>
             </cv-interactive-tooltip>
+            <span v-else class="long-text-ellipsis long-text-span">{{
+              fqdn
+            }}</span>
           </div>
+        </div>
+        <div class="tr long-text-row">
+          <div class="td label">{{ $t("nodes.ip_address") }}</div>
+          <div class="td long-text-cell">
+            <cv-interactive-tooltip
+              v-if="isLongIpAddress"
+              alignment="center"
+              direction="top"
+            >
+              <template slot="content">
+                {{ ip_address }}
+              </template>
+              <template slot="trigger">
+                <span class="long-text-ellipsis long-text-span">{{
+                  ip_address
+                }}</span>
+              </template>
+            </cv-interactive-tooltip>
+            <span v-else class="long-text-ellipsis long-text-span">{{
+              ip_address
+            }}</span>
+          </div>
+        </div>
+        <div class="tr">
+          <div class="td label">{{ $t("nodes.applications") }}</div>
           <div class="td">
-            <span :class="{ warning: load1Min >= cpuLoadWarningTh }"
-              >{{ load1Min }}%</span
-            >
-            /
-            <span :class="{ warning: load5Min >= cpuLoadWarningTh }"
-              >{{ load5Min }}%</span
-            >
-            /
-            <span :class="{ warning: load15Min >= cpuLoadWarningTh }"
-              >{{ load15Min }}%</span
-            >
+            <cv-link v-if="applications" @click.prevent="goToApplications">
+              {{ applications }}
+            </cv-link>
+            <span v-else>-</span>
           </div>
-        </div>
-        <div class="tr">
-          <div class="td label">{{ memoryUsageLabel }}</div>
-          <div :class="['td', { warning: memoryUsage >= memoryWarningTh }]">
-            {{ memoryUsage }}%
-          </div>
-        </div>
-        <div class="tr">
-          <div class="td label">{{ swapUsageLabel }}</div>
-          <div :class="['td', { warning: swapUsage >= swapWarningTh }]">
-            {{ Number.isNaN(swapUsage) ? "-" : swapUsage + "%" }}
-          </div>
-        </div>
-        <div class="tr" v-for="(disk, index) in disksUsage" :key="index">
-          <template v-if="index < 2 || showAllDisks">
-            <div class="td label">{{ disk.diskId }} {{ diskUsageLabel }}</div>
-            <div :class="['td', { warning: disk.usage >= diskWarningTh }]">
-              {{ disk.usage }}%
-            </div>
-          </template>
         </div>
       </div>
     </div>
-    <!-- show all disks -->
-    <div
-      v-if="!loading && disksUsage.length > 2 && !showAllDisks"
-      class="show-all-disks mg-bottom-xs"
-    >
-      <cv-link @click="showAllDisks = true">
-        {{ $t("nodes.show_all_disks") }}
-      </cv-link>
-    </div>
+    <template v-if="!loading && online && role === 'ns7migration'">
+      <div v-if="nodeLabel" class="tr mg-top-sm">
+        <div class="td label">{{ $t("nodes.node_id") }}</div>
+        <div class="td">
+          {{ nodeId }}
+        </div>
+      </div>
+      <div class="row mg-top-sm simple-field">
+        <div class="mg-top-sm icon-and-text-compact mg-bottom-lg">
+          <cv-interactive-tooltip
+            alignment="center"
+            direction="top"
+            class="icon ns-info"
+          >
+            <template slot="content">
+              {{ $t("nodes.ns7_migration_tooltip") }}
+            </template>
+            <template slot="trigger">
+              <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+            </template>
+          </cv-interactive-tooltip>
+          <span>{{ $t("nodes.ns7_migration_in_progress") }}</span>
+        </div>
+      </div>
+    </template>
+    <!-- alerts -->
+    <template v-if="!loading && online && role !== 'ns7migration'">
+      <div class="card-row icon-and-text mg-top-md">
+        <NsSvg
+          :svg="alertsCount > 0 ? Warning16 : CheckmarkFilled16"
+          :class="alertsCount > 0 ? 'icon ns-warning' : 'icon ns-success'"
+        />
+        <span>
+          <template v-if="alertsCount > 0">
+            {{ alertsCount }} {{ alertsLabel }}
+          </template>
+          <template v-else>
+            {{ $t("nodes.no_alerts") }}
+          </template>
+        </span>
+      </div>
+    </template>
     <div class="row slot">
-      <!-- Extra content -->
       <slot name="content"></slot>
     </div>
   </cv-tile>
 </template>
 
 <script>
-import Information16 from "@carbon/icons-vue/es/information/16";
 import { UtilService, IconService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "NodeCard",
-  components: { Information16 },
   mixins: [UtilService, IconService],
   props: {
     nodeId: {
@@ -135,64 +170,53 @@ export default {
       default: "",
     },
     isLeader: Boolean,
+    role: {
+      type: String,
+      default: "Worker",
+    },
     leaderLabel: {
       type: String,
-      default: "leader",
+      default: "Leader",
     },
     workerLabel: {
       type: String,
-      default: "worker",
+      default: "Worker",
     },
-    cpuUsageLabel: {
+    ns7MigrationLabel: {
       type: String,
-      default: "CPU usage",
+      default: "Migrating",
     },
-    cpuLoadLabel: {
+    fqdn: {
       type: String,
-      default: "CPU load",
+      default: "",
     },
-    cpuLoadTooltip: {
+    fqdnLabel: {
       type: String,
-      default: "CPU average load of last 1 / 5 / 15 minutes",
+      default: "FQDN",
     },
-    memoryUsageLabel: {
+    ip_addressLabel: {
       type: String,
-      default: "Memory usage",
+      default: "IP addresses",
     },
-    swapUsageLabel: {
+    applicationsLabel: {
       type: String,
-      default: "Swap usage",
+      default: "Applications",
     },
-    diskUsageLabel: {
+    ip_address: {
       type: String,
-      default: "usage",
+      default: "",
     },
-    cpuUsage: Number,
-    cpuUsageWarningTh: {
+    applications: {
       type: Number,
-      default: 90,
+      default: 0,
     },
-    load1Min: Number,
-    load5Min: Number,
-    load15Min: Number,
-    cpuLoadWarningTh: {
+    alertsCount: {
       type: Number,
-      default: 90,
+      default: 0,
     },
-    memoryUsage: Number,
-    memoryWarningTh: {
-      type: Number,
-      default: 90,
-    },
-    swapUsage: Number,
-    swapWarningTh: {
-      type: Number,
-      default: 90,
-    },
-    disksUsage: Array,
-    diskWarningTh: {
-      type: Number,
-      default: 90,
+    alertsLabel: {
+      type: String,
+      default: "Alerts",
     },
     online: {
       type: Boolean,
@@ -200,11 +224,31 @@ export default {
     },
     loading: Boolean,
     light: Boolean,
+    longTextThreshold: {
+      type: Number,
+      default: 32,
+    },
   },
   data() {
     return {
       showAllDisks: false,
     };
+  },
+  computed: {
+    isLongFqdn() {
+      return this.fqdn && this.fqdn.length > this.longTextThreshold;
+    },
+    isLongIpAddress() {
+      return this.ip_address && this.ip_address.length > this.longTextThreshold;
+    },
+  },
+  methods: {
+    goToApplications() {
+      this.$router.push({
+        path: "/applications-center",
+        query: { selectedNodeId: this.nodeId },
+      });
+    },
   },
 };
 </script>
@@ -215,8 +259,13 @@ export default {
   flex-direction: column;
   justify-content: center;
   min-height: 7rem;
-  // needed for absolute positioning of overflow menu
+  /* needed for absolute positioning of overflow menu */
   position: relative;
+}
+
+.node-card--ns7 {
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .row {
@@ -247,5 +296,42 @@ export default {
 
 .show-all-disks {
   text-align: center;
+}
+
+.long-text-row {
+  align-items: flex-start;
+}
+
+.long-text-cell {
+  word-break: break-all;
+  white-space: normal; /* allow wrapping */
+  overflow-wrap: anywhere; /* break at any point if needed */
+  max-width: 100%; /* prevent overflow */
+  text-align: left; /* align text to the left for readability */
+  line-height: 1.3;
+}
+
+.long-text-ellipsis,
+.long-text-span {
+  display: inline-block;
+  max-width: 10rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.icon-and-text-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* space between icon and text */
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.icon-and-text-compact .icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
 }
 </style>

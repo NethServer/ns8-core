@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-alerts input",
+    "$id": "http://schema.nethserver.org/cluster/list-alerts-input.json",
+    "description": "Input schema of the list-alerts action",
+    "type": [
+        "object",
+        "null"
+    ],
+    "properties": {
+        "categories": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    }
+}

@@ -29,6 +29,8 @@
           :label="$t('domain_users.username')"
           :invalid-message="error.user"
           :disabled="isEditing || loading.addUser || loading.alterUser"
+          :helper-text="$t('domain_users.username_helper_text')"
+          :placeholder="$t('common.eg_value', { value: 'jane.doe' })"
           data-modal-primary-focus
           autocomplete="off"
           ref="user"
@@ -37,9 +39,23 @@
           v-model.trim="displayName"
           :label="$t('domain_users.display_name')"
           :invalid-message="error.display_name"
+          :helper-text="$t('domain_users.display_name_helper_text')"
           :disabled="loading.addUser || loading.alterUser"
+          :placeholder="$t('common.eg_value', { value: 'Jane Doe' })"
           autocomplete="off"
           ref="display_name"
+        />
+        <NsTextInput
+          v-model.trim="mail"
+          :label="$t('domain_users.mail_field')"
+          :invalid-message="error.mail"
+          :disabled="loading.addUser || loading.alterUser"
+          autocomplete="off"
+          :placeholder="
+            $t('common.eg_value', { value: 'jane.doe@example.com' })
+          "
+          ref="mail"
+          type="email"
         />
         <NsMultiSelect
           v-model="selectedGroups"
@@ -69,7 +85,7 @@
         <NsPasswordInput
           v-if="!isEditing"
           :newPasswordLabel="$t('password.password')"
-          :confirmPasswordLabel="$t('password.re_enter_password')"
+          :confirmPasswordLabel="$t('domain_users.confirm_password')"
           v-model="newPassword"
           @passwordValidation="onPasswordValidation"
           :newPasswordInvalidMessage="$t(error.newPassword)"
@@ -94,15 +110,40 @@
           "
           autocomplete="new-password"
         />
-        <NsTextInput
-          v-model.trim="mail"
-          :label="$t('domain_users.mail_field')"
-          :invalid-message="error.mail"
+        <NsToggle
+          v-if="!isEditing && isActiveDirectory"
+          :label="$t('domain_users.change_password_at_next_login')"
+          value="mustChangePassword"
+          :form-item="true"
+          v-model="mustChangePassword"
           :disabled="loading.addUser || loading.alterUser"
-          autocomplete="off"
-          ref="mail"
-          type="email"
-        />
+          tooltipAlignment="start"
+          tooltipDirection="bottom"
+          ref="mustChangePassword"
+        >
+          <template slot="tooltip">{{
+            $t("domain_users.must_change_password_tooltip")
+          }}</template>
+          <template slot="text-left">{{ $t("common.disabled") }}</template>
+          <template slot="text-right">{{ $t("common.enabled") }}</template>
+        </NsToggle>
+        <NsToggle
+          v-if="isActiveDirectory && policy.expiration.enforced"
+          :label="$t('domain_users.no_password_expiration_policy')"
+          value="noPasswordExpirationPolicy"
+          :form-item="true"
+          v-model="noPasswordExpirationPolicy"
+          :disabled="loading.addUser || loading.alterUser"
+          tooltipAlignment="start"
+          tooltipDirection="bottom"
+          ref="noPasswordExpirationPolicy"
+        >
+          <template slot="tooltip">{{
+            $t("domain_users.no_password_expiration_policy_tooltip")
+          }}</template>
+          <template slot="text-left">{{ $t("common.disabled") }}</template>
+          <template slot="text-right">{{ $t("common.enabled") }}</template>
+        </NsToggle>
         <NsInlineNotification
           v-if="error.addUser"
           kind="error"
@@ -160,11 +201,16 @@ export default {
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
       mail: "",
+      mustChangePassword: false,
+      noPasswordExpirationPolicy: false,
       policy: {
         strength: {
           complexity_check: false,
           enforced: false,
           password_min_length: 8,
+        },
+        expiration: {
+          enforced: false,
         },
       },
       loading: {
@@ -184,6 +230,8 @@ export default {
         groups: "",
         listPasswordPolicy: "",
         mail: "",
+        mustChangePassword: "",
+        noPasswordExpirationPolicy: "",
       },
     };
   },
@@ -209,6 +257,9 @@ export default {
     mainProvider() {
       return this.domain.providers[0].id;
     },
+    isActiveDirectory() {
+      return this.domain && this.domain.schema === "ad";
+    },
     selectGroupsLabel() {
       if (this.loading.getDomainUser) {
         return this.$t("common.loading");
@@ -217,6 +268,13 @@ export default {
       } else {
         return this.$t("domain_users.no_group");
       }
+    },
+    passwordExpirationPolicyEnabled() {
+      return (
+        this.user &&
+        this.user.password_expiration &&
+        this.user.password_expiration.toString() === "-1"
+      );
     },
   },
   watch: {
@@ -231,6 +289,8 @@ export default {
           this.newPassword = "";
           this.clearConfirmPasswordCommand++;
           this.mail = "";
+          this.mustChangePassword = false;
+          this.noPasswordExpirationPolicy = false;
         } else {
           // edit user
           this.username = this.user.user;
@@ -238,6 +298,8 @@ export default {
           this.selectedGroups = [];
           this.getDomainUser();
           this.mail = this.user.mail || "";
+          this.noPasswordExpirationPolicy =
+            this.passwordExpirationPolicyEnabled;
         }
       } else {
         // hiding modal
@@ -279,6 +341,7 @@ export default {
     },
     listPasswordPolicyCompleted(taskContext, taskResult) {
       const config = taskResult.output;
+      this.policy.expiration.enforced = config.expiration.enforced;
       this.policy.strength.enforced = config.strength.enforced;
       this.policy.strength.complexity_check = config.strength.complexity_check;
       this.policy.strength.password_min_length =
@@ -412,6 +475,8 @@ export default {
             locked: false,
             groups: this.selectedGroups,
             mail: this.mail ? this.mail : "",
+            must_change_password: this.mustChangePassword,
+            no_password_expiration: this.noPasswordExpirationPolicy,
           },
           extra: {
             title: this.$t("domain_users.create_user_user", {
@@ -503,6 +568,7 @@ export default {
             display_name: this.displayName,
             groups: this.selectedGroups,
             mail: this.mail ? this.mail : "",
+            no_password_expiration: this.noPasswordExpirationPolicy,
           },
           extra: {
             title: this.$t("domain_users.edit_user_user", {
