@@ -1717,10 +1717,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@carbon/icon-helpers@npm:^10.14.0, @carbon/icon-helpers@npm:^10.25.0":
+"@carbon/icon-helpers@npm:^10.14.0":
   version: 10.25.0
   resolution: "@carbon/icon-helpers@npm:10.25.0"
   checksum: 367c03a1362c02a7a977b94a57277c60e202cebac9de3ff7292911d2a2dbbebedd555cf3e0d1ee9ea4964a496f731316ac9d6532d986be89200134e70c5f1b20
+  languageName: node
+  linkType: hard
+
+"@carbon/icon-helpers@npm:^10.70.0":
+  version: 10.70.0
+  resolution: "@carbon/icon-helpers@npm:10.70.0"
+  dependencies:
+    "@ibm/telemetry-js": ^1.5.0
+  checksum: 869b3e2c8ad37c39f38c7bbae2717f3fd5187dfb530236f75193400fba258abeb184d6c774f1abb07a0ffdc7daa221b8259eccfa20fd63cff3222f99983dfa8e
   languageName: node
   linkType: hard
 
@@ -1734,11 +1743,12 @@ __metadata:
   linkType: hard
 
 "@carbon/icons-vue@npm:^10.37.0":
-  version: 10.44.0
-  resolution: "@carbon/icons-vue@npm:10.44.0"
+  version: 10.122.0
+  resolution: "@carbon/icons-vue@npm:10.122.0"
   dependencies:
-    "@carbon/icon-helpers": ^10.25.0
-  checksum: 5bacf4d4d7d27b69702fb0d3dc314b81d072f4540abac7a01eff24d998811e05c24a5fa5e4f0bd56b4abeddfafc3f30bcd4833ec72c35e51e47fb1adf32acb1e
+    "@carbon/icon-helpers": ^10.70.0
+    "@ibm/telemetry-js": ^1.5.0
+  checksum: 3c30d22cbcdd3f79c6dac185cf4cd07063caf4e73fdf9765af6d2b91953a0f1f08d3e0e40927f88fe8f61211e0a53b465851dfbed6608cbe9ed72e9bae81bb5c
   languageName: node
   linkType: hard
 
@@ -2025,6 +2035,15 @@ __metadata:
   dependencies:
     "@hapi/hoek": ^8.3.0
   checksum: 34278bc13b4023d6d0d7c913605a254b2d728dc6489cd465269eebaa7d8d2d81cda3f2157398dca87d3cb9e1a8aa8a1158ce2564c71a8e289b807c144e3b4c1e
+  languageName: node
+  linkType: hard
+
+"@ibm/telemetry-js@npm:^1.5.0":
+  version: 1.10.2
+  resolution: "@ibm/telemetry-js@npm:1.10.2"
+  bin:
+    ibmtelemetry: dist/collect.js
+  checksum: e83358a315bbd0d0a1b8972812f6a3cd123c97a061a8e859c6589a6f0064b9417430ace1fc7d9179507585d283378b45888b5f7fe5425f1a43fb0c8213a56c58
   languageName: node
   linkType: hard
 
