@@ -15,11 +15,14 @@ from cluster import inventory
 import agent
 import agent.tasks
 import agent.facts
+import cluster.modules
 
 rdb = agent.redis_connect(privileged=True)
 
 anon_enforcing = not agent.facts.has_subscription(rdb)
 agent.facts.init_pseudonymization(anon_enforcing, rdb)
+disabled_updates_reason = cluster.modules.get_disabled_updates_reason(rdb)
+update_schedule_active = rdb.hget('cluster/apply_updates', 'is_active') == "1"
 
 def get_user_domains_facts(rdb):
     list_user_domains_result = agent.tasks.run(
@@ -51,5 +54,8 @@ facts = {
     'repositories': inventory.fact_repositories(rdb),
     'smarthost': inventory.fact_smarthost(rdb),
     "backup": inventory.fact_backup(rdb),
+    'update_disabled': bool(disabled_updates_reason), # True if updates are disabled by some reason
+    'update_disabled_reason': disabled_updates_reason, # For example, update inhibited by ns7_migration
+    'update_schedule_active': update_schedule_active, # True if overnight automatic updates for subscription are enabled
 }
 json.dump(facts, fp=sys.stdout)

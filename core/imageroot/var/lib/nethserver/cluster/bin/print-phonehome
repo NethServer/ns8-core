@@ -14,8 +14,7 @@ import json
 import agent
 import agent.facts
 import uuid
-from cluster import inventory
-from cluster import modules
+import cluster.modules
 
 def decorate_with_ui_name(facts, rdb, base_key):
     if 'ui_name' in facts:
@@ -46,17 +45,34 @@ def cluster_facts():
         print(agent.SD_WARNING + f"cluster/get-facts failed", file=sys.stderr)
         return None
  
-def modules_facts():
+def get_installed_modules(rdb):
+    available = cluster.modules.list_available(rdb, skip_core_modules = False)
+    cluster.modules.decorate_with_installed(rdb, available)
+    cluster.modules.decorate_with_updates(rdb, available)
+    installed_modules = []
+    for srcapp in available:
+        for instapp in srcapp['installed']:
+            instapp['certification_level'] = srcapp['certification_level']
+            instapp['update_available'] = bool(srcapp['updates'])
+            installed_modules.append(instapp)
+    return installed_modules
+
+def modules_facts(rdb):
     ret = []
-    rdb = agent.redis_connect(use_replica=True)
     module_domains_relation = rdb.hgetall('cluster/module_domains') or {}
-    installed_modules = modules.list_installed(rdb, skip_core_modules = False)
-    instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
+    instance_list = get_installed_modules(rdb)
 
     # Collect facts from modules:
     for module in instance_list:
-        minfo = {"id": module.get('id'), "version": module.get("version"), "name": module.get("module"), "node": module.get("node") } 
-        minfo["user_domains"] = []
+        minfo = {
+            "id": module['id'],
+            "version": module["version"],
+            "name": module["module"],
+            "node": module["node"],
+            "certification_level": module["certification_level"],
+            "update_available": module["update_available"],
+            "user_domains": [],
+        }
         for v in set(module_domains_relation.get(module.get('id'), '').split()):
             minfo["user_domains"].append(agent.facts.pseudo_domain(v))
         try:
@@ -97,9 +113,19 @@ def modules_facts():
 
     return ret
 
-def node_facts():
+def get_core_update_available_map(rdb):
+    update_available = {}
+    try:
+        node_info_list = next(filter(lambda m: m["name"] == "core", cluster.modules.list_core_modules(rdb)))["instances"]
+    except (KeyError, StopIteration):
+        node_info_list = []
+    for node_info in node_info_list:
+        update_available[node_info["node_id"]] = bool(node_info["update"])
+    return update_available
+
+def node_facts(rdb):
     ret = {}
-    rdb = agent.redis_connect(privileged=True)
+    update_available = get_core_update_available_map(rdb)
 
     tasks = [{
         'agent_id': 'node/'+rdb.hget(key, 'NODE_ID'),
@@ -119,6 +145,7 @@ def node_facts():
             for key in item['output']:
                 ret[key] = item['output'][key]
                 decorate_with_ui_name(ret[key], rdb, 'node/' + key)
+                ret[key]['update_available'] = update_available.get(key, False)
     except:
         print(agent.SD_WARNING + f"node/get-facts failed", file=sys.stderr)
 
@@ -138,8 +165,8 @@ def main():
         'installation': 'nethserver',
         'facts': {
             'cluster': cluster_facts(),
-            'nodes': node_facts(),
-            'modules': modules_facts()
+            'nodes': node_facts(rdb),
+            'modules': modules_facts(rdb),
         }
     }
     print(json.dumps(facts))
