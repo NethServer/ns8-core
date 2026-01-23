@@ -18,6 +18,10 @@ def init_pseudonymization(enforce, rdb):
     PSEUDO_ENFORCING = enforce
     PSEUDO_SEED = seed
 
+def has_subscription(rdb):
+    provider = rdb.hget('cluster/subscription', 'provider')
+    return provider in ["nscom", "nsent"]
+
 def pseudo_string(val, maxlen=12):
     """Calculate a stable pseudonym of the given string"""
     if val and PSEUDO_ENFORCING:

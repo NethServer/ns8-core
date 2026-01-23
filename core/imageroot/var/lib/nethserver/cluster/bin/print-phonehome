@@ -119,42 +119,19 @@ def node_facts():
             for key in item['output']:
                 ret[key] = item['output'][key]
                 decorate_with_ui_name(ret[key], rdb, 'node/' + key)
-                ret[key]['fqdn'] = agent.facts.pseudo_domain(ret[key]['fqdn'])
     except:
         print(agent.SD_WARNING + f"node/get-facts failed", file=sys.stderr)
 
     return ret
 
-def get_user_domains_facts(rdb):
-    list_user_domains_result = agent.tasks.run(
-        agent_id='cluster',
-        action='list-user-domains',
-        extra={ 'isNotificationHidden': True },
-        endpoint="redis://cluster-leader",
-    )
-    if list_user_domains_result['exit_code'] != 0:
-        return []
-    domfacts = []
-    for ldom in list_user_domains_result['output']['domains']:
-        odom = {
-            "name": agent.facts.pseudo_domain(ldom["name"]),
-            "location": ldom["location"],
-            "protocol": ldom["protocol"],
-            "schema": ldom.get("schema"),
-            "providers_count": len(ldom["providers"]),
-        }
-        odom.update(inventory.fact_user_domain_counters(rdb, ldom["name"]))
-        domfacts.append(odom)
-    return domfacts
-
 def main():
-    # Init dictionary that returns the data
     rdb = agent.redis_connect(privileged=True)
     if not rdb.get("cluster/anon_seed"):
+        # Generate and store a random seed to send anonymous data. Make
+        # sure the Redis key exists before the client library uses it!
         rdb.set("cluster/anon_seed", str(uuid.uuid4()))
-    enforce_privacy = inventory.fact_subscription(rdb) == 'disabled'
-    agent.facts.init_pseudonymization(enforce_privacy, rdb)
-    user_domains_facts = get_user_domains_facts(rdb)
+    anon_enforcing = not agent.facts.has_subscription(rdb)
+    agent.facts.init_pseudonymization(anon_enforcing, rdb)
     facts = {
         '$schema': 'https://schema.nethserver.org/facts/2022-12.json',
         'uuid': rdb.get('cluster/uuid'),
@@ -162,7 +139,6 @@ def main():
         'facts': {
             'cluster': cluster_facts(),
             'nodes': node_facts(),
-            'user_domains': user_domains_facts,
             'modules': modules_facts()
         }
     }

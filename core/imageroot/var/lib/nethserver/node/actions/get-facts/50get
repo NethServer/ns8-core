@@ -15,7 +15,7 @@ import os
 import sys
 import subprocess
 import agent.volumes
-
+import agent.facts
 import ansible_runner
 
 
@@ -86,10 +86,14 @@ virtualization = 'physical'
 if facts['ansible_virtualization_role'] == 'guest':
     virtualization = facts['ansible_virtualization_type']
 
+rdb = agent.redis_connect(use_replica=True)
+anon_enforcing = not agent.facts.has_subscription(rdb)
+agent.facts.init_pseudonymization(anon_enforcing, rdb)
+
 json.dump(
     {
         os.environ['AGENT_ID'].removeprefix('node/'): {
-            'fqdn': facts['ansible_fqdn'],
+            'fqdn': agent.facts.pseudo_domain(facts['ansible_fqdn']),
             'kernel_version': facts['ansible_kernel'],
             'uptime_seconds': facts['ansible_uptime_seconds'],
             'timezone': facts['ansible_date_time']['tz'],
