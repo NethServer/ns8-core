@@ -14,7 +14,7 @@ require (
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/olahol/melody v1.1.5
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 )
 
 require (
