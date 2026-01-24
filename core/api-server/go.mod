@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.33
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
-	github.com/olahol/melody v1.1.4
+	github.com/olahol/melody v1.1.5
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.0
 )
