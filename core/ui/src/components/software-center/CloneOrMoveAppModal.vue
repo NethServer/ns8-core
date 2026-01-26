@@ -17,7 +17,7 @@
           : $t('software_center.move_app')
         : $t('common.next')
     "
-    :isPreviousDisabled="isFirstStep || loading.getClusterStatus"
+    :isPreviousDisabled="isFirstStep || isLoading"
     @previousStep="previousStep"
     @nextStep="nextStep"
     @cancel="onModalHidden"
@@ -56,10 +56,7 @@
           />
           <div>{{ $t("software_center.select_destination_node") }}:</div>
           <NsInlineNotification
-            v-if="
-              clusterNodesCount == disabledNodes.length &&
-              !loading.getClusterStatus
-            "
+            v-if="clusterNodesCount == disabledNodes.length && !isLoading"
             kind="info"
             :title="
               isClone
@@ -72,7 +69,7 @@
             class="mg-top-xlg"
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"
-            :loading="loading.getClusterStatus"
+            :loading="isLoading"
             :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
           >
             <template v-for="(nodeMessages, nodeId) in nodesInfo">
@@ -175,6 +172,7 @@ export default {
         cloneModule: false,
         getClusterStatus: true,
         listMountPoints: false,
+        nodesList: true,
       },
       error: {
         cloneModule: "",
@@ -186,6 +184,9 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    isLoading() {
+      return this.loading.getClusterStatus || this.loading.nodesList;
+    },
     clusterNodesCount() {
       return this.clusterNodes.length;
     },
@@ -385,7 +386,7 @@ export default {
         this.step = this.steps[this.stepIndex - 1];
       }
     },
-    onModalShown() {
+    async onModalShown() {
       // reset state before showing modal
       // Force selection to node 1 if only available
       if (this.clusterNodesCount == 1) {
@@ -395,7 +396,8 @@ export default {
         this.selectedNode = null;
       }
       this.clusterStatus = [];
-      this.fetchListNodes();
+      // start both task concurrently
+      await Promise.all([this.fetchNodesList(), this.getClusterStatus()]);
     },
     onModalHidden() {
       this.$emit("hide");
@@ -409,7 +411,7 @@ export default {
       this.step = this.steps[0];
       this.loading.getClusterStatus = true;
     },
-    async fetchListNodes() {
+    async fetchNodesList() {
       this.error.nodesList = "";
       const taskAction = "list-nodes";
 
@@ -441,11 +443,11 @@ export default {
     listNodesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.nodesList = this.$t("error.generic_error");
-      this.loading.getClusterStatus = false;
+      this.loading.nodesList = false;
     },
     listNodesCompleted(taskContext, taskResult) {
       this.nodesList = taskResult.output.nodes;
-      this.getClusterStatus();
+      this.loading.nodesList = false;
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
