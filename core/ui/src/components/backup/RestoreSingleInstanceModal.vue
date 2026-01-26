@@ -497,15 +497,14 @@ export default {
       this.installDestinations = [];
       this.additionalVolumes = [];
       // Reset loading states
-      this.loading = {
-        readBackupRepositories: true,
-        restoreModule: false,
-        readBackupSnapshots: false,
-        determineRestoreEligibility: false,
-        getClusterStatus: true,
-        listMountPoints: false,
-        listModules: false,
-      };
+      this.loading.BackupRepositories = true;
+      this.loading.restoreModule = false;
+      this.loading.readBackupSnapshots = false;
+      this.loading.determineRestoreEligibility = false;
+      this.loading.getClusterStatus = true;
+      this.loading.listMountPoints = false;
+      this.loading.listModules = false;
+
       // Force selection to node 1 if only available
       if (this.clusterNodesCount == 1) {
         const firstNode = this.clusterNodes[0];
