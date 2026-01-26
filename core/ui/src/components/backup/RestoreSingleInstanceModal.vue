@@ -147,9 +147,7 @@
           />
           <NsInlineNotification
             v-if="
-              clusterNodesCount == disabledNodes.length &&
-              !loading.determineRestoreEligibility &&
-              !loading.getClusterStatus
+              clusterNodesCount == disabledNodes.length && !isLoadingNodeData
             "
             kind="info"
             :title="$t('backup.no_node_eligible_for_instance_restoration')"
@@ -159,9 +157,7 @@
             :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"
-            :loading="
-              loading.determineRestoreEligibility || loading.getClusterStatus
-            "
+            :loading="isLoadingNodeData"
             class="mg-top-xlg"
           >
             <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
@@ -259,7 +255,8 @@ export default {
         determineRestoreEligibility: false,
         getClusterStatus: true,
         listMountPoints: false,
-        listModules: false,
+        listModules: true,
+        nodesList: true,
       },
       error: {
         readBackupRepositories: "",
@@ -274,6 +271,14 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    isLoadingNodeData() {
+      return (
+        this.loading.determineRestoreEligibility ||
+        this.loading.nodesList ||
+        this.loading.listModules ||
+        this.loading.getClusterStatus
+      );
+    },
     clusterNodesCount() {
       return this.clusterNodes.length;
     },
@@ -348,6 +353,7 @@ export default {
       }
     },
     replaceExistingDisabled() {
+      // FIXME: remove hardcoded values due to the static port, the API should give us this info
       //check if the selected instance is not in an array ['loki']
       const notAllowed = [
         "samba",
@@ -451,6 +457,9 @@ export default {
         this.readBackupSnapshots();
       } else if (this.step == "node") {
         this.determineRestoreEligibility();
+        this.fetchNodesList();
+        this.listModules();
+        this.getClusterStatus();
       } else if (this.step == "volumes") {
         this.listMountPoints();
       }
@@ -496,16 +505,6 @@ export default {
       this.replaceExistingApp = false;
       this.installDestinations = [];
       this.additionalVolumes = [];
-      // Reset loading states
-      this.loading.BackupRepositories = true;
-      this.loading.restoreModule = false;
-      this.loading.readBackupSnapshots = false;
-      this.loading.determineRestoreEligibility = false;
-      this.loading.getClusterStatus = true;
-      this.loading.listMountPoints = false;
-      this.loading.listModules = false;
-
-      // Force selection to node 1 if only available
       if (this.clusterNodesCount == 1) {
         const firstNode = this.clusterNodes[0];
         this.selectedNode = { ...firstNode, selected: true };
@@ -560,10 +559,11 @@ export default {
       this.loading.listModules = false;
       let modules = taskResult.output;
       this.modules = modules;
-      this.getClusterStatus();
+      this.loading.listModules = false;
     },
-    async fetchListNodes() {
+    async fetchNodesList() {
       this.error.nodesList = "";
+      this.loading.nodesList = true;
       const taskAction = "list-nodes";
 
       // register to task error
@@ -594,11 +594,11 @@ export default {
     listNodesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.nodesList = this.$t("error.generic_error");
-      this.loading.getClusterStatus = false;
+      this.loading.nodesList = false;
     },
     listNodesCompleted(taskContext, taskResult) {
       this.nodesList = taskResult.output.nodes;
-      this.listModules();
+      this.loading.nodesList = false;
     },
     async listMountPoints() {
       this.error.listMountPoints = "";
@@ -896,10 +896,10 @@ export default {
     determineRestoreEligibilityCompleted(taskContext, taskResult) {
       this.installDestinations = taskResult.output.install_destinations;
       this.loading.determineRestoreEligibility = false;
-      this.fetchListNodes();
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
+      this.loading.getClusterStatus = true;
       const taskAction = "get-cluster-status";
 
       // register to task error
