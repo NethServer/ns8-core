@@ -271,14 +271,14 @@ export default {
                 this.$tc(
                   `software_center.reason_${rejectReason.message}`,
                   numMaxInstances,
-                  { param: numMaxInstances },
-                ),
+                  { param: numMaxInstances }
+                )
               );
             } else {
               nodeMessages.push(
                 this.$t(`software_center.reason_${rejectReason.message}`, {
                   param: rejectReason.parameter,
-                }),
+                })
               );
             }
           } else if (nodeInfo.instances) {
@@ -287,8 +287,8 @@ export default {
               this.$tc(
                 "software_center.num_instances_installed",
                 nodeInfo.instances,
-                { num: nodeInfo.instances },
-              ),
+                { num: nodeInfo.instances }
+              )
             );
           }
           nodesInfo[nodeInfo.node_id] = nodeMessages;
@@ -425,7 +425,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -456,7 +456,7 @@ export default {
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.getClusterStatusCompleted,
+        this.getClusterStatusCompleted
       );
 
       const res = await to(
@@ -466,7 +466,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -498,7 +498,7 @@ export default {
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.listMountPointsCompleted,
+        this.listMountPointsCompleted
       );
       const res = await to(
         this.createNodeTask(this.selectedNode.id, {
@@ -507,7 +507,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -542,13 +542,13 @@ export default {
       // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        this.cloneModuleAborted,
+        this.cloneModuleAborted
       );
 
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.cloneModuleCompleted,
+        this.cloneModuleCompleted
       );
 
       const shortInstanceLabel = this.instanceUiName || this.instanceId;
@@ -617,7 +617,7 @@ export default {
             },
             eventId,
           },
-        }),
+        })
       );
       const err = res[0];
 

@@ -71,7 +71,7 @@
                     >
                       {{
                         $t(
-                          "backup.replace_existing_app_is_not_available_tooltip",
+                          "backup.replace_existing_app_is_not_available_tooltip"
                         )
                       }}
                     </div>
@@ -187,7 +187,7 @@
           <div>
             {{
               $t("software_center.select_node_volume_for_installation", {
-                node: this.getNodeLabel(selectedNode) || '',
+                node: this.getNodeLabel(selectedNode) || "",
               })
             }}
           </div>
@@ -312,7 +312,7 @@ export default {
         return null;
       }
       return this.modules.find(
-        (module) => module.id === this.selectedInstance.name,
+        (module) => module.id === this.selectedInstance.name
       );
     },
     appVolumes() {
@@ -371,12 +371,12 @@ export default {
             nodesInfo[nodeInfo.node_id] = this.$tc(
               `software_center.reason_${rejectReason.message}`,
               numMaxInstances,
-              { param: numMaxInstances },
+              { param: numMaxInstances }
             );
           } else {
             nodesInfo[nodeInfo.node_id] = this.$t(
               `software_center.reason_${rejectReason.message}`,
-              { param: rejectReason.parameter },
+              { param: rejectReason.parameter }
             );
           }
         } else if (nodeInfo.instances) {
@@ -384,7 +384,7 @@ export default {
           nodesInfo[nodeInfo.node_id] = this.$tc(
             "software_center.num_instances_installed",
             nodeInfo.instances,
-            { num: nodeInfo.instances },
+            { num: nodeInfo.instances }
           );
         }
       }
@@ -524,13 +524,13 @@ export default {
       // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        this.listModulesAborted,
+        this.listModulesAborted
       );
 
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.listModulesCompleted,
+        this.listModulesCompleted
       );
 
       const res = await to(
@@ -541,7 +541,7 @@ export default {
             isNotificationHidden: true,
             eventId,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -582,7 +582,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -614,7 +614,7 @@ export default {
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.listMountPointsCompleted,
+        this.listMountPointsCompleted
       );
       const res = await to(
         this.createNodeTask(this.selectedNode.id, {
@@ -623,7 +623,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -659,14 +659,14 @@ export default {
       this.$root.$off(taskAction + "-aborted");
       this.$root.$once(
         taskAction + "-aborted",
-        this.readBackupRepositoriesAborted,
+        this.readBackupRepositoriesAborted
       );
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.readBackupRepositoriesCompleted,
+        this.readBackupRepositoriesCompleted
       );
 
       const res = await to(
@@ -676,7 +676,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -708,14 +708,14 @@ export default {
       this.$root.$off(taskAction + "-aborted");
       this.$root.$once(
         taskAction + "-aborted",
-        this.readBackupSnapshotsAborted,
+        this.readBackupSnapshotsAborted
       );
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.readBackupSnapshotsCompleted,
+        this.readBackupSnapshotsCompleted
       );
 
       const res = await to(
@@ -729,7 +729,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -744,7 +744,7 @@ export default {
 
       if (taskResult.error.includes("wrong password or no key found")) {
         this.error.readBackupSnapshots = this.$t(
-          "backup.wrong_password_or_no_key_found",
+          "backup.wrong_password_or_no_key_found"
         );
       } else {
         this.error.readBackupSnapshots = this.$t("error.generic_error");
@@ -809,7 +809,7 @@ export default {
               outputTextParams: ["module_id"],
             },
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -857,13 +857,13 @@ export default {
       // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        this.determineRestoreEligibilityAborted,
+        this.determineRestoreEligibilityAborted
       );
 
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.determineRestoreEligibilityCompleted,
+        this.determineRestoreEligibilityCompleted
       );
 
       const res = await to(
@@ -879,7 +879,7 @@ export default {
             isNotificationHidden: true,
             eventId,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -911,7 +911,7 @@ export default {
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.getClusterStatusCompleted,
+        this.getClusterStatusCompleted
       );
 
       const res = await to(
@@ -921,7 +921,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 

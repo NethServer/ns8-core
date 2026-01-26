@@ -119,7 +119,7 @@
           <div>
             {{
               $t("software_center.select_node_volume_for_installation", {
-                node: this.getNodeLabel(selectedNode) || '',
+                node: this.getNodeLabel(selectedNode) || "",
               })
             }}
           </div>
@@ -249,7 +249,7 @@ export default {
     },
     canInstallOnSingleNode() {
       const installDestination = this.app.install_destinations.find(
-        (nodeInfo) => nodeInfo.node_id == this.clusterNodes[0].id,
+        (nodeInfo) => nodeInfo.node_id == this.clusterNodes[0].id
       );
       return installDestination?.eligible;
     },
@@ -267,12 +267,12 @@ export default {
               nodesInfo[nodeInfo.node_id] = this.$tc(
                 `software_center.reason_${rejectReason.message}`,
                 numMaxInstances,
-                { param: numMaxInstances },
+                { param: numMaxInstances }
               );
             } else {
               nodesInfo[nodeInfo.node_id] = this.$t(
                 `software_center.reason_${rejectReason.message}`,
-                { param: rejectReason.parameter },
+                { param: rejectReason.parameter }
               );
             }
           } else if (nodeInfo.instances) {
@@ -280,7 +280,7 @@ export default {
             nodesInfo[nodeInfo.node_id] = this.$tc(
               "software_center.num_instances_installed",
               nodeInfo.instances,
-              { num: nodeInfo.instances },
+              { num: nodeInfo.instances }
             );
           }
         }
@@ -397,7 +397,7 @@ export default {
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.getClusterStatusCompleted,
+        this.getClusterStatusCompleted
       );
 
       const res = await to(
@@ -407,7 +407,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -445,7 +445,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -477,7 +477,7 @@ export default {
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.listMountPointsCompleted,
+        this.listMountPointsCompleted
       );
       const res = await to(
         this.createNodeTask(this.selectedNode.id, {
@@ -486,7 +486,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
-        }),
+        })
       );
       const err = res[0];
 
@@ -521,12 +521,12 @@ export default {
       // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        this.addModuleAborted,
+        this.addModuleAborted
       );
 
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.addModuleCompleted,
+        this.addModuleCompleted
       );
 
       const nodeName =
@@ -565,7 +565,7 @@ export default {
               outputTextParams: ["module_id"],
             },
           },
-        }),
+        })
       );
       const err = res[0];
 
