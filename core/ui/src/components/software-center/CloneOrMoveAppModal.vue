@@ -645,13 +645,7 @@ export default {
       const newModuleId = taskResult.output.module_id;
       this.clearErrors();
       // reset state
-      this.selectedNode = null;
-      this.selectedVolume = {};
-      this.clusterStatus = [];
-      this.nodesList = [];
-      this.additionalVolumes = [];
-      this.step = this.steps[0];
-      this.loading.getClusterStatus = true;
+      this.onModalHidden();
 
       // reload instances and highlight cloned/moved instance
       this.$emit("cloneOrMoveCompleted", newModuleId);
