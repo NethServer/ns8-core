@@ -59,10 +59,10 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
-            v-if="error.listNodes"
+            v-if="error.nodesList"
             kind="error"
             :title="$t('action.list-nodes')"
-            :description="error.listNodes"
+            :description="error.nodesList"
             :showCloseButton="false"
           />
           <NsInlineNotification
@@ -179,13 +179,13 @@ export default {
         listMountPoints: false,
       },
       clusterStatus: [],
-      listNodes: [],
+      nodesList: [],
       selectedVolume: {},
       additionalVolumes: [],
       error: {
         addModule: "",
         getClusterStatus: "",
-        listNodes: "",
+        nodesList: "",
         listMountPoints: "",
       },
     };
@@ -313,10 +313,10 @@ export default {
       if (this.appVolumes.length === 0) {
         return [];
       }
-      if (!Array.isArray(this.listNodes)) {
+      if (!Array.isArray(this.nodesList)) {
         return [];
       }
-      return this.listNodes
+      return this.nodesList
         .filter((node) => node.additional_disk_count > 0)
         .map((node) => node.node_id);
     },
@@ -377,7 +377,7 @@ export default {
       // reset state before showing modal
       this.clearErrors();
       this.clusterStatus = [];
-      this.listNodes = [];
+      this.nodesList = [];
       this.selectedVolume = {};
       // Force selection to node 1 if only available
       if (this.clusterNodesCount == 1 && this.canInstallOnSingleNode) {
@@ -430,7 +430,7 @@ export default {
       this.loading.getClusterStatus = false;
     },
     async fetchListNodes() {
-      this.error.listNodes = "";
+      this.error.nodesList = "";
       const taskAction = "list-nodes";
 
       // register to task error
@@ -454,17 +454,17 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.listNodes = this.getErrorMessage(err);
+        this.error.nodesList = this.getErrorMessage(err);
         return;
       }
     },
     listNodesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.listNodes = this.$t("error.generic_error");
+      this.error.nodesList = this.$t("error.generic_error");
       this.loading.getClusterStatus = false;
     },
     listNodesCompleted(taskContext, taskResult) {
-      this.listNodes = taskResult.output.nodes;
+      this.nodesList = taskResult.output.nodes;
       this.getClusterStatus();
     },
     async listMountPoints() {
@@ -617,7 +617,7 @@ export default {
       this.selectedNode = null;
       this.selectedVolume = {};
       this.clusterStatus = [];
-      this.listNodes = [];
+      this.nodesList = [];
       this.additionalVolumes = [];
       this.step = this.steps[0];
       this.loading.getClusterStatus = true;
