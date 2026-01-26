@@ -1121,14 +1121,11 @@
         },
         "migrating_app_title": "This application instance is undergoing migration",
         "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
-        "instance_label_too_long": "Application label must be 24 characters or less",
-        "instance_label_alphanum_only": "Application label can only contain alphanumeric characters and spaces",
         "additional_storage_available": "Additional volumes available",
         "of": "of",
         "used": "used",
-        "available": "available",
         "default_storage": "Default volume",
-        "no_volume_to_restore": "No volume to restore"
+        "no_volumes_to_restore": "No volumes to restore"
     },
     "system_logs": {
         "title": "System logs",

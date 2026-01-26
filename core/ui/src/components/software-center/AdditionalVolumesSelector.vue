@@ -22,7 +22,7 @@
       <!-- no volume to restore -->
       <NsEmptyState
         v-else-if="!additionalVolumes.length"
-        :title="$t('software_center.no_volume_to_restore')"
+        :title="$t('software_center.no_volumes_to_restore')"
       />
       <!-- volume list -->
       <NsTile
