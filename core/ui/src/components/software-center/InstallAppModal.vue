@@ -16,7 +16,7 @@
         ? $t('software_center.install')
         : $t('common.next')
     "
-    :isPreviousDisabled="isFirstStep || loading.getClusterStatus"
+    :isPreviousDisabled="isFirstStep || isLoading"
     @previousStep="previousStep"
     @nextStep="nextStep"
     @cancel="onModalHidden"
@@ -66,10 +66,7 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
-            v-if="
-              clusterNodesCount == disabledNodes.length &&
-              !loading.getClusterStatus
-            "
+            v-if="clusterNodesCount == disabledNodes.length && !isLoading"
             kind="info"
             :title="$t('software_center.no_node_eligible_for_app_installation')"
             :showCloseButton="false"
@@ -78,7 +75,7 @@
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"
             :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
-            :loading="loading.getClusterStatus"
+            :loading="isLoading"
             class="mg-top-lg"
           >
             <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
@@ -177,6 +174,7 @@ export default {
       loading: {
         getClusterStatus: true,
         listMountPoints: false,
+        nodesList: true,
       },
       clusterStatus: [],
       nodesList: [],
@@ -192,6 +190,9 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    isLoading() {
+      return this.loading.getClusterStatus || this.loading.nodesList;
+    },
     clusterNodesCount() {
       return this.clusterNodes.length;
     },
@@ -215,7 +216,7 @@ export default {
     isNextButtonDisabled() {
       if (this.step == "node") {
         return (
-          this.loading.getClusterStatus ||
+          this.isLoading ||
           !this.selectedNode ||
           this.clusterNodesCount == this.disabledNodes.length ||
           (this.app && this.app.docs.terms_url && !this.agreeTerms)
@@ -372,7 +373,7 @@ export default {
         this.step = this.steps[this.stepIndex - 1];
       }
     },
-    onModalShown() {
+    async onModalShown() {
       this.agreeTerms = false;
       // reset state before showing modal
       this.clearErrors();
@@ -386,7 +387,8 @@ export default {
         this.selectedNode = null;
       }
 
-      this.fetchListNodes();
+      // start both task concurrently
+      await Promise.all([this.fetchNodesList(), this.getClusterStatus()]);
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
@@ -429,8 +431,9 @@ export default {
       this.clusterStatus = taskResult.output.nodes;
       this.loading.getClusterStatus = false;
     },
-    async fetchListNodes() {
+    async fetchNodesList() {
       this.error.nodesList = "";
+      this.loading.nodesList = true;
       const taskAction = "list-nodes";
 
       // register to task error
@@ -461,11 +464,11 @@ export default {
     listNodesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.nodesList = this.$t("error.generic_error");
-      this.loading.getClusterStatus = false;
+      this.loading.nodesList = false;
     },
     listNodesCompleted(taskContext, taskResult) {
       this.nodesList = taskResult.output.nodes;
-      this.getClusterStatus();
+      this.loading.nodesList = false;
     },
     async listMountPoints() {
       this.error.listMountPoints = "";
