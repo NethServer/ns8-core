@@ -139,10 +139,10 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
-            v-if="error.listNodes"
+            v-if="error.nodesList"
             kind="error"
             :title="$t('action.list-nodes')"
-            :description="error.listNodes"
+            :description="error.nodesList"
             :showCloseButton="false"
           />
           <NsInlineNotification
@@ -249,7 +249,7 @@ export default {
       installDestinations: [],
       clusterStatus: [],
       additionalVolumes: [],
-      listNodes: [],
+      nodesList: [],
       selectedVolume: {},
       modules: [],
       loading: {
@@ -414,8 +414,8 @@ export default {
       if (this.appVolumes.length === 0) {
         return nodeIds;
       }
-      if (this.listNodes && Array.isArray(this.listNodes)) {
-        for (const node of this.listNodes) {
+      if (this.nodesList && Array.isArray(this.nodesList)) {
+        for (const node of this.nodesList) {
           if (node.additional_disk_count > 0) {
             nodeIds.push(node.node_id);
           }
@@ -487,7 +487,7 @@ export default {
       // reset state before showing modal
       this.clearErrors();
       this.clusterStatus = [];
-      this.listNodes = [];
+      this.nodesList = [];
       this.selectedVolume = {};
       this.instances = [];
       this.backupSnapshots = [];
@@ -564,7 +564,7 @@ export default {
       this.getClusterStatus();
     },
     async fetchListNodes() {
-      this.error.listNodes = "";
+      this.error.nodesList = "";
       const taskAction = "list-nodes";
 
       // register to task error
@@ -588,17 +588,17 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.listNodes = this.getErrorMessage(err);
+        this.error.nodesList = this.getErrorMessage(err);
         return;
       }
     },
     listNodesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.listNodes = this.$t("error.generic_error");
+      this.error.nodesList = this.$t("error.generic_error");
       this.loading.getClusterStatus = false;
     },
     listNodesCompleted(taskContext, taskResult) {
-      this.listNodes = taskResult.output.nodes;
+      this.nodesList = taskResult.output.nodes;
       this.listModules();
     },
     async listMountPoints() {
