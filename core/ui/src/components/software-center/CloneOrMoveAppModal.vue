@@ -57,7 +57,7 @@
           <div>{{ $t("software_center.select_destination_node") }}:</div>
           <NsInlineNotification
             v-if="
-              clusterStatus.length == disabledNodes.length &&
+              clusterNodesCount == disabledNodes.length &&
               !loading.getClusterStatus
             "
             kind="info"
@@ -186,6 +186,9 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    clusterNodesCount() {
+      return this.clusterNodes.length;
+    },
     stepIndex() {
       return this.steps.indexOf(this.step);
     },
@@ -227,7 +230,7 @@ export default {
           (!this.isClone && this.installationNode == this.selectedNode.id) ||
           this.loading.cloneModule ||
           this.loading.getClusterStatus ||
-          this.clusterStatus.length == this.disabledNodes.length
+          this.clusterNodesCount == this.disabledNodes.length
         );
       } else if (this.step == "volumes") {
         return (
@@ -385,7 +388,7 @@ export default {
     onModalShown() {
       // reset state before showing modal
       // Force selection to node 1 if only available
-      if (this.clusterNodes.length == 1) {
+      if (this.clusterNodesCount == 1) {
         const firstNode = this.clusterNodes[0];
         this.selectedNode = { ...firstNode, selected: true };
       } else {
