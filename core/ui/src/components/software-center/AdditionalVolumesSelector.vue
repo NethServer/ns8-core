@@ -47,12 +47,7 @@
         </div>
         <div class="mg-bottom-xs">{{ volume.path }}</div>
         <div class="mg-bottom-sm">
-          {{ (volume.used / (1024 * 1024 * 1024)).toFixed(2) }} GB
-          {{ $t("software_center.used") }}
-          {{ $t("software_center.of") }}
-          {{ (volume.size / (1024 * 1024 * 1024)).toFixed(2) }} GB ({{
-            Math.round((volume.used / volume.size) * 100)
-          }}% {{ $t("software_center.used") }})
+          {{ $t("software_center.volume_usage", getVolumeInfo(volume)) }}
         </div>
         <NsProgressBar
           :value="loading ? 0 : (volume.used / volume.size) * 100"
@@ -126,6 +121,13 @@ export default {
     this.updateInternalVolumes();
   },
   methods: {
+    getVolumeInfo(volume) {
+      return {
+        used: this.$options.filters.byteFormat(volume.used),
+        total: this.$options.filters.byteFormat(volume.size),
+        percentage: Math.round((volume.used / volume.size) * 100),
+      };
+    },
     updateInternalVolumes() {
       // deep copy (needed to avoid reactivity issues)
       let additionalVolumes = _cloneDeep(this.volumes);
