@@ -12,7 +12,15 @@ Helper script that retrieves info for the phonehome server.
 import sys
 import json
 import agent
-from cluster import modules
+import agent.facts
+import uuid
+import cluster.modules
+
+def decorate_with_ui_name(facts, rdb, base_key):
+    if 'ui_name' in facts:
+        return # value already present, nothing to do
+    ui_name = rdb.get(base_key + '/ui_name') or ""
+    facts['ui_name'] = agent.facts.pseudo_string(ui_name)
 
 def cluster_facts():
     try:
@@ -28,22 +36,47 @@ def cluster_facts():
         print(agent.SD_WARNING + f"cluster/get-facts failed", file=sys.stderr)
         return None
 
+    rdb = agent.redis_connect(use_replica=True)
     if result['exit_code'] == 0:
-        return result['output']
+        facts = result['output']
+        decorate_with_ui_name(facts, rdb, 'cluster')
+        return facts
     else:
         print(agent.SD_WARNING + f"cluster/get-facts failed", file=sys.stderr)
         return None
  
-def modules_facts():
+def get_installed_modules(rdb):
+    available = cluster.modules.list_available(rdb, skip_core_modules = False)
+    cluster.modules.decorate_with_installed(rdb, available)
+    cluster.modules.decorate_with_updates(rdb, available)
+    installed_modules = []
+    for srcapp in available:
+        for instapp in srcapp['installed']:
+            instapp['certification_level'] = srcapp['certification_level']
+            instapp['update_available'] = bool(srcapp['updates'])
+            installed_modules.append(instapp)
+    return installed_modules
+
+def modules_facts(rdb):
     ret = []
-    rdb = agent.redis_connect(use_replica=True)
-    installed_modules = modules.list_installed(rdb, skip_core_modules = False)
-    instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
+    module_domains_relation = rdb.hgetall('cluster/module_domains') or {}
+    instance_list = get_installed_modules(rdb)
+    fqdn_cache = {}
 
     # Collect facts from modules:
     for module in instance_list:
-        minfo = {"id": module.get('id'), "version": module.get("version"), "name": module.get("module"), "node": module.get("node") } 
-
+        minfo = {
+            "id": module['id'],
+            "version": module["version"],
+            "name": module["module"],
+            "node": module["node"],
+            "certification_level": module["certification_level"],
+            "update_available": module["update_available"],
+            "user_domains": [],
+            "fqdns": [],
+        }
+        for v in set(module_domains_relation.get(module.get('id'), '').split()):
+            minfo["user_domains"].append(agent.facts.pseudo_domain(v))
         try:
             list_actions_result = agent.tasks.run(
                 agent_id='module/' + module.get('id'),
@@ -77,13 +110,35 @@ def modules_facts():
         except Exception as ex:
             print(agent.SD_WARNING + "module_facts() exception:", ex, file=sys.stderr)
 
+        decorate_with_ui_name(minfo, rdb, 'module/' + module.get('id'))
         ret.append(minfo)
+        # Extract FQDNs used by applications from Traefik facts:
+        if minfo["name"] == "traefik" and "name_module_map" in minfo:
+            for fqdn, mkey in minfo["name_module_map"].items():
+                if mkey in fqdn_cache:
+                    fqdn_cache[mkey].add(fqdn)
+                else:
+                    fqdn_cache[mkey] = {fqdn}
 
+    # Decorate apps with list of FQDNs extracted from Traefik facts:
+    for minfo in ret:
+        if minfo["id"] in fqdn_cache:
+            minfo["fqdns"] = list(fqdn_cache[minfo["id"]])
     return ret
 
-def node_facts():
+def get_core_update_available_map(rdb):
+    update_available = {}
+    try:
+        node_info_list = next(filter(lambda m: m["name"] == "core", cluster.modules.list_core_modules(rdb)))["instances"]
+    except (KeyError, StopIteration):
+        node_info_list = []
+    for node_info in node_info_list:
+        update_available[node_info["node_id"]] = bool(node_info["update"])
+    return update_available
+
+def node_facts(rdb):
     ret = {}
-    rdb = agent.redis_connect(privileged=True)
+    update_available = get_core_update_available_map(rdb)
 
     tasks = [{
         'agent_id': 'node/'+rdb.hget(key, 'NODE_ID'),
@@ -102,23 +157,29 @@ def node_facts():
         for item in results:
             for key in item['output']:
                 ret[key] = item['output'][key]
+                decorate_with_ui_name(ret[key], rdb, 'node/' + key)
+                ret[key]['update_available'] = update_available.get(key, False)
     except:
         print(agent.SD_WARNING + f"node/get-facts failed", file=sys.stderr)
 
     return ret
 
-
 def main():
-    # Init dictionary that returns the data
     rdb = agent.redis_connect(privileged=True)
+    if not rdb.get("cluster/anon_seed"):
+        # Generate and store a random seed to send anonymous data. Make
+        # sure the Redis key exists before the client library uses it!
+        rdb.set("cluster/anon_seed", str(uuid.uuid4()))
+    anon_enforcing = not agent.facts.has_subscription(rdb)
+    agent.facts.init_pseudonymization(anon_enforcing, rdb)
     facts = {
         '$schema': 'https://schema.nethserver.org/facts/2022-12.json',
         'uuid': rdb.get('cluster/uuid'),
         'installation': 'nethserver',
         'facts': {
             'cluster': cluster_facts(),
-            'nodes': node_facts(),
-            'modules': modules_facts()
+            'nodes': node_facts(rdb),
+            'modules': modules_facts(rdb),
         }
     }
     print(json.dumps(facts))

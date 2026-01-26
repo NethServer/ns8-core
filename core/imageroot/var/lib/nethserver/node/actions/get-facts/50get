@@ -15,15 +15,29 @@ import os
 import sys
 import subprocess
 import agent.volumes
-
+import agent.facts
 import ansible_runner
-
+from datetime import datetime, timezone
 
 def _run(cmd):
     proc = subprocess.run(cmd, shell=True, check=True,
                           capture_output=True, text=True)
     return proc.stdout.rstrip().lstrip()
 
+def _node_creation_date():
+    # Read birth dates of files created during NS8 installation.
+    try:
+        output = subprocess.check_output(["stat", r"--printf='%Y\n%W\n'",
+                "/etc/nethserver/wg0.pub",
+                "/var/lib/nethserver/node/state/agent.env"
+            ],
+            text=True,
+        )
+        timestamps = [int(x) for x in filter(str.isnumeric, output.split())]
+        creation_time = min(timestamps) # Consider the older value
+    except subprocess.CalledProcessError:
+        creation_time = 0
+    return datetime.fromtimestamp(creation_time, tz=timezone.utc).isoformat()
 
 def _get_core_version():
     with open('/etc/nethserver/core.env', encoding='utf-8') as file:
@@ -86,9 +100,22 @@ virtualization = 'physical'
 if facts['ansible_virtualization_role'] == 'guest':
     virtualization = facts['ansible_virtualization_type']
 
+rdb = agent.redis_connect(use_replica=True)
+anon_enforcing = not agent.facts.has_subscription(rdb)
+agent.facts.init_pseudonymization(anon_enforcing, rdb)
+leader_id = rdb.hget("cluster/environment", "NODE_ID")
+
 json.dump(
     {
         os.environ['AGENT_ID'].removeprefix('node/'): {
+            'creation_date': _node_creation_date(),
+            'cluster_leader': leader_id == os.getenv("NODE_ID"),
+            'fqdn': agent.facts.pseudo_domain(facts['ansible_fqdn']),
+            'default_ipv4': agent.facts.pseudo_ip(facts.get('ansible_default_ipv4', {}).get('address', '')),
+            'default_ipv6': agent.facts.pseudo_ip(facts.get('ansible_default_ipv6', {}).get('address', '')),
+            'kernel_version': facts['ansible_kernel'],
+            'uptime_seconds': facts['ansible_uptime_seconds'],
+            'timezone': facts['ansible_date_time']['tz'],
             'volumesconf_mountpoint_count': len(agent.volumes.get_base_paths()),
             'volumesconf_application_types': agent.volumes.get_application_types(),
             'version': _get_core_version(),

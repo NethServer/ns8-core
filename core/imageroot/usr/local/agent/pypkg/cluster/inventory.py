@@ -5,6 +5,9 @@
 
 import agent
 import urllib.parse
+import sys
+from agent.ldapproxy import Ldapproxy
+from agent.ldapclient import Ldapclient
 
 def fact_subscription(rdb):
     # Get subscription status
@@ -65,3 +68,20 @@ def fact_backup(rdb):
     # transform set to list, set is not JSON serializable
     ret['destination_providers'] = list(ret['destination_providers'])
     return ret
+
+def fact_user_domain_counters(rdb, kdom):
+    try:
+        domparams = Ldapproxy().get_domain(kdom)
+        # Fetch domain and calculate active users
+        cldap = Ldapclient.factory(**domparams)
+        lusers = cldap.list_users()
+        lgroups = cldap.list_groups()
+    except Exception as ex:
+        print(agent.SD_ERR + f"Failed to count users and groups of LDAP domain {kdom}", str(ex), file=sys.stderr)
+        lusers = []
+        lgroups = []
+    return {
+        "active_users": sum(bool(user.get("locked", False)) == False for user in lusers),
+        "total_users": len(lusers),
+        "total_groups": len(lgroups),
+    }

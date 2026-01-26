@@ -175,6 +175,7 @@ subsections for more information.
 |cluster/environment NODE_ID            |INTEGER    |The node ID of the leader node |
 |cluster/ui_name                        |STRING     |UI label for the cluster|
 |cluster/uuid                           |STRING     |Generated UUID that identifies the cluster|
+|cluster/anon_seed                      |STRING     |A random seed for stable facts pseudonymization |
 |cluster/override/modules               |HASH       |Maps (image name) => (image URL), overriding the standard image name/URL resolution function |
 |cluster/subscription                   |HASH       |[Subscription]({{site.baseurl}}/core/subscription) attributes in key/value pairs|
 |cluster/apply_updates                  |HASH       |[Scheduled updates]({{site.baseurl}}/core/updates) attributes in key/value pairs|
