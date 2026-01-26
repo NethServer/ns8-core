@@ -27,7 +27,7 @@
       <!-- volume list -->
       <NsTile
         v-else
-        v-for="(volume, index) of additionalVolumesLoaded"
+        v-for="(volume, index) of additionalVolumes"
         :key="index"
         :light="light"
         kind="selectable"
@@ -59,10 +59,6 @@
           class="mg-bottom-lg"
         />
       </NsTile>
-      <infinite-loading
-        :identifier="infiniteId"
-        @infinite="infiniteScrollHandler"
-      ></infinite-loading>
     </div>
   </div>
 </template>
@@ -91,11 +87,6 @@ export default {
     return {
       VmdkDisk20,
       additionalVolumes: [],
-      // infinite scroll
-      additionalVolumesLoaded: [],
-      pageNum: 0,
-      pageSize: 20,
-      infiniteId: +new Date(),
     };
   },
   computed: {
@@ -109,12 +100,6 @@ export default {
     },
     volumes: function () {
       this.updateInternalVolumes();
-    },
-    additionalVolumes: function () {
-      this.additionalVolumesLoaded = [];
-      this.pageNum = 0;
-      this.infiniteId += 1;
-      this.infiniteScrollHandler();
     },
   },
   created() {
@@ -141,25 +126,6 @@ export default {
       for (let s of this.additionalVolumes) {
         if (s.path !== volume.path) {
           s.selected = false;
-        }
-      }
-    },
-    infiniteScrollHandler($state) {
-      const pageItems = this.additionalVolumes.slice(
-        this.pageNum * this.pageSize,
-        (this.pageNum + 1) * this.pageSize
-      );
-
-      if (pageItems.length) {
-        this.pageNum++;
-        this.additionalVolumesLoaded.push(...pageItems);
-
-        if ($state) {
-          $state.loaded();
-        }
-      } else {
-        if ($state) {
-          $state.complete();
         }
       }
     },
