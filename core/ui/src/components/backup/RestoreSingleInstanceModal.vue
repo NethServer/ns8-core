@@ -297,7 +297,7 @@ export default {
         (this.step == "instance" && !this.selectedInstance) ||
         (this.step == "snapshot" && !this.selectedSnapshot) ||
         (this.step == "node" &&
-          (this.loading.determineRestoreEligibility ||
+          (this.isLoadingNodeData ||
             !this.selectedNode ||
             (this.clusterNodesCount == this.disabledNodes.length &&
               !this.shouldShowRestoreLabel))) ||
