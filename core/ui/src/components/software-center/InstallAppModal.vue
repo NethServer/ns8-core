@@ -67,7 +67,7 @@
           />
           <NsInlineNotification
             v-if="
-              clusterStatus.length == disabledNodes.length &&
+              clusterNodesCount == disabledNodes.length &&
               !loading.getClusterStatus
             "
             kind="info"
@@ -192,6 +192,9 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    clusterNodesCount() {
+      return this.clusterNodes.length;
+    },
     stepIndex() {
       return this.steps.indexOf(this.step);
     },
@@ -214,7 +217,7 @@ export default {
         return (
           this.loading.getClusterStatus ||
           !this.selectedNode ||
-          this.clusterStatus.length == this.disabledNodes.length ||
+          this.clusterNodesCount == this.disabledNodes.length ||
           (this.app && this.app.docs.terms_url && !this.agreeTerms)
         );
       } else if (this.step == "volumes") {
@@ -228,7 +231,7 @@ export default {
       return false;
     },
     firstNodeLabel() {
-      if (this.clusterNodes.length && this.clusterNodes[0]) {
+      if (this.clusterNodesCount && this.clusterNodes[0]) {
         if (this.clusterNodes[0].ui_name) {
           return `${this.clusterNodes[0].ui_name} (${this.$t("common.node")} ${
             this.clusterNodes[0].id
@@ -377,7 +380,7 @@ export default {
       this.listNodes = [];
       this.selectedVolume = {};
       // Force selection to node 1 if only available
-      if (this.clusterNodes.length == 1 && this.canInstallOnSingleNode) {
+      if (this.clusterNodesCount == 1 && this.canInstallOnSingleNode) {
         this.selectedNode = { ...this.clusterNodes[0], selected: true };
       } else {
         this.selectedNode = null;
