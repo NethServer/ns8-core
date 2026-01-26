@@ -386,7 +386,7 @@ export default {
         this.step = this.steps[this.stepIndex - 1];
       }
     },
-    async onModalShown() {
+    onModalShown() {
       // reset state before showing modal
       // Force selection to node 1 if only available
       if (this.clusterNodesCount == 1) {
@@ -397,7 +397,8 @@ export default {
       }
       this.clusterStatus = [];
       // start both task concurrently
-      await Promise.all([this.fetchNodesList(), this.getClusterStatus()]);
+      this.fetchNodesList();
+      this.getClusterStatus();
     },
     onModalHidden() {
       this.$emit("hide");

@@ -373,7 +373,7 @@ export default {
         this.step = this.steps[this.stepIndex - 1];
       }
     },
-    async onModalShown() {
+    onModalShown() {
       this.agreeTerms = false;
       // reset state before showing modal
       this.clearErrors();
@@ -388,7 +388,8 @@ export default {
       }
 
       // start both task concurrently
-      await Promise.all([this.fetchNodesList(), this.getClusterStatus()]);
+      this.fetchNodesList();
+      this.getClusterStatus();
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
