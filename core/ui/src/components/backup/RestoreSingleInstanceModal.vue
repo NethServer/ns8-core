@@ -147,7 +147,7 @@
           />
           <NsInlineNotification
             v-if="
-              clusterStatus.length == disabledNodes.length &&
+              clusterNodesCount == disabledNodes.length &&
               !loading.determineRestoreEligibility &&
               !loading.getClusterStatus
             "
@@ -274,6 +274,9 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    clusterNodesCount() {
+      return this.clusterNodes.length;
+    },
     stepIndex() {
       return this.steps.indexOf(this.step);
     },
@@ -291,7 +294,7 @@ export default {
         (this.step == "node" &&
           (this.loading.determineRestoreEligibility ||
             !this.selectedNode ||
-            (this.clusterNodes.length == this.disabledNodes.length &&
+            (this.clusterNodesCount == this.disabledNodes.length &&
               !this.shouldShowRestoreLabel))) ||
         (this.step == "volumes" &&
           (this.loading.listMountPoints ||
@@ -504,7 +507,7 @@ export default {
         listModules: false,
       };
       // Force selection to node 1 if only available
-      if (this.clusterNodes.length == 1) {
+      if (this.clusterNodesCount == 1) {
         const firstNode = this.clusterNodes[0];
         this.selectedNode = { ...firstNode, selected: true };
       } else {
