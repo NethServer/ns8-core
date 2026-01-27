@@ -388,7 +388,7 @@ export default {
       }
 
       // start both task concurrently
-      this.fetchNodesList();
+      this.ListNodes();
       this.getClusterStatus();
     },
     async getClusterStatus() {
@@ -432,7 +432,7 @@ export default {
       this.clusterStatus = taskResult.output.nodes;
       this.loading.getClusterStatus = false;
     },
-    async fetchNodesList() {
+    async ListNodes() {
       this.error.nodesList = "";
       this.loading.nodesList = true;
       const taskAction = "list-nodes";

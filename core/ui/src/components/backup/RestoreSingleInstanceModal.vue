@@ -457,7 +457,7 @@ export default {
         this.readBackupSnapshots();
       } else if (this.step == "node") {
         this.determineRestoreEligibility();
-        this.fetchNodesList();
+        this.ListNodes();
         this.listModules();
         this.getClusterStatus();
       } else if (this.step == "volumes") {
@@ -561,7 +561,7 @@ export default {
       this.modules = modules;
       this.loading.listModules = false;
     },
-    async fetchNodesList() {
+    async ListNodes() {
       this.error.nodesList = "";
       this.loading.nodesList = true;
       const taskAction = "list-nodes";
