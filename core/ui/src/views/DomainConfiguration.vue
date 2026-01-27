@@ -4,7 +4,7 @@
 -->
 <template>
   <div>
-    <cv-grid fullWidth>
+    <cv-grid fullWidth class="no-padding">
       <cv-row>
         <!-- domain settings -->
         <cv-column>
@@ -230,7 +230,7 @@
                 <NsButton
                   v-show="!loading.getFqdn"
                   kind="ghost"
-                  :icon="Password20"
+                  :icon="Launch20"
                   @click="goToUserAdminPage()"
                 >
                   {{ $t("domains.open_users_admin_portal") }}

@@ -21,33 +21,37 @@
           </cv-breadcrumb>
         </cv-column>
       </cv-row>
-      <div class="flex flex-wrap items-center justify-between">
-        <div class="subpage-title">
-          <h3>
-            {{ domainName }}
-          </h3>
-        </div>
-        <div class="page-toolbar flex gap-4">
-          <NsButton
-            v-if="domain && domain.location == 'internal'"
-            kind="secondary"
-            size="field"
-            :icon="Export20"
-            @click="exportUsersData()"
-            class="subpage-toolbar-item"
-            >{{ $t("domain_users.export_data") }}
-          </NsButton>
-          <NsButton
-            v-if="domain && domain.location == 'internal'"
-            kind="secondary"
-            size="field"
-            :icon="Upload20"
-            @click="showImportUsersModal()"
-            class="subpage-toolbar-item"
-            >{{ $t("domain_users.import_data") }}
-          </NsButton>
-        </div>
-      </div>
+      <cv-row>
+        <cv-column>
+          <div class="flex flex-wrap items-center justify-between">
+            <div class="subpage-title">
+              <h3>
+                {{ domainName }}
+              </h3>
+            </div>
+            <div class="page-toolbar flex gap-4">
+              <NsButton
+                v-if="domain && domain.location == 'internal'"
+                kind="secondary"
+                size="field"
+                :icon="Export20"
+                @click="exportUsersData()"
+                class="subpage-toolbar-item"
+                >{{ $t("domain_users.export_data") }}
+              </NsButton>
+              <NsButton
+                v-if="domain && domain.location == 'internal'"
+                kind="secondary"
+                size="field"
+                :icon="Upload20"
+                @click="showImportUsersModal()"
+                class="subpage-toolbar-item"
+                >{{ $t("domain_users.import_data") }}
+              </NsButton>
+            </div>
+          </div>
+        </cv-column>
+      </cv-row>
       <cv-row v-if="error.listUserDomains">
         <cv-column>
           <NsInlineNotification
@@ -70,44 +74,42 @@
       </cv-row>
       <cv-row>
         <cv-column>
-          <cv-tile>
-            <NsTabs
-              :container="false"
-              :aria-label="$t('common.tab_navigation')"
-              :noDefaultToFirst="true"
-              @tab-selected="tabSelected"
+          <NsTabs
+            :container="false"
+            :aria-label="$t('common.tab_navigation')"
+            :noDefaultToFirst="true"
+            @tab-selected="tabSelected"
+          >
+            <cv-tab
+              id="tab-1"
+              :label="$t('domain_users.users')"
+              :selected="q.view === 'users'"
             >
-              <cv-tab
-                id="tab-1"
-                :label="$t('domain_users.users')"
-                :selected="q.view === 'users'"
-              >
-                <DomainUsers
-                  :domain="domain"
-                  :groups="groups"
-                  @usersLoaded="onUsersLoaded"
-                />
-              </cv-tab>
-              <cv-tab
-                id="tab-2"
-                :label="$t('domain_users.groups')"
-                :selected="q.view === 'groups'"
-              >
-                <DomainGroups
-                  :domain="domain"
-                  :users="users"
-                  @groupsLoaded="onGroupsLoaded"
-                />
-              </cv-tab>
-              <cv-tab
-                id="tab-3"
-                :label="$t('domain_configuration.configuration')"
-                :selected="q.view === 'configuration'"
-              >
-                <DomainConfiguration :domainName="domainName" />
-              </cv-tab>
-            </NsTabs>
-          </cv-tile>
+              <DomainUsers
+                :domain="domain"
+                :groups="groups"
+                @usersLoaded="onUsersLoaded"
+              />
+            </cv-tab>
+            <cv-tab
+              id="tab-2"
+              :label="$t('domain_users.groups')"
+              :selected="q.view === 'groups'"
+            >
+              <DomainGroups
+                :domain="domain"
+                :users="users"
+                @groupsLoaded="onGroupsLoaded"
+              />
+            </cv-tab>
+            <cv-tab
+              id="tab-3"
+              :label="$t('domain_configuration.configuration')"
+              :selected="q.view === 'configuration'"
+            >
+              <DomainConfiguration :domainName="domainName" />
+            </cv-tab>
+          </NsTabs>
         </cv-column>
       </cv-row>
     </cv-grid>
