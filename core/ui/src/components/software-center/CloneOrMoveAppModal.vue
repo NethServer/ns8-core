@@ -410,7 +410,6 @@ export default {
       this.nodesList = [];
       this.additionalVolumes = [];
       this.step = this.steps[0];
-      this.loading.getClusterStatus = true;
     },
     async ListNodes() {
       this.error.nodesList = "";
@@ -451,6 +450,7 @@ export default {
       this.loading.nodesList = false;
     },
     async getClusterStatus() {
+      this.loading.getClusterStatus = true;
       this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 

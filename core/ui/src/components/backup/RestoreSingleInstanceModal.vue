@@ -898,8 +898,8 @@ export default {
       this.loading.determineRestoreEligibility = false;
     },
     async getClusterStatus() {
-      this.error.getClusterStatus = "";
       this.loading.getClusterStatus = true;
+      this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 
       // register to task error

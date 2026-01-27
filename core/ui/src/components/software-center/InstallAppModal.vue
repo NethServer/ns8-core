@@ -392,6 +392,7 @@ export default {
       this.getClusterStatus();
     },
     async getClusterStatus() {
+      this.loading.getClusterStatus = true;
       this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 
@@ -624,7 +625,6 @@ export default {
       this.nodesList = [];
       this.additionalVolumes = [];
       this.step = this.steps[0];
-      this.loading.getClusterStatus = true;
     },
     onSelectNode(selectedNode) {
       this.selectedNode = selectedNode;
