@@ -3,6 +3,14 @@
   "extends": [
     "local>NethServer/.github:ns8-automerge"
   ],
+  "packageRules": [
+    {
+      "description": "Suppress PRs for major and minor updates",
+      "matchDatasources": ["docker", "github-tags"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
