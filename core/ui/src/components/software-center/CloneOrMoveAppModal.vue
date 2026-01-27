@@ -397,7 +397,7 @@ export default {
       }
       this.clusterStatus = [];
       // start both task concurrently
-      this.ListNodes();
+      this.listNodes();
       this.getClusterStatus();
     },
     onModalHidden() {
@@ -411,7 +411,7 @@ export default {
       this.additionalVolumes = [];
       this.step = this.steps[0];
     },
-    async ListNodes() {
+    async listNodes() {
       this.error.nodesList = "";
       const taskAction = "list-nodes";
 
