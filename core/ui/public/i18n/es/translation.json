@@ -636,7 +636,8 @@
         "set-note": "Set note",
         "import-users": "Import users",
         "export-users": "Export users",
-        "get-password-warning": "Get password warning"
+        "get-password-warning": "Get password warning",
+        "list-mountpoints": "List mountpoints"
     },
     "settings_cluster_admins": {
         "user_already_exists": "El administrador ya existe",
@@ -756,7 +757,6 @@
         "cluster_up_to_date": "Tu clúster está actualizado",
         "updating_to_version": "Actualizando a la versión {version}",
         "n_instances_will_be_updated_c": "La actualización de la instancia {num} comenzará en un momento... | La actualización de las instancias {num} comenzará en un momento...",
-        "about_to_install_app": "<strong>{app} {version}</strong> se instalará en <strong>{node}</strong>",
         "update_core": "Actualizar núcleo",
         "uninstall_app": "¿Desinstalar <strong>{name}</strong>? Los datos de la aplicación también se eliminarán. Esta acción <strong>NO</strong> es reversible",
         "uninstall": "Desinstalar",
@@ -789,7 +789,6 @@
         "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
         "num_instances_installed": "{num} instance installed | {num} instances installed",
         "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks.",
-        "cannot_install_app_on_node": "Cannot install {app} {version} on {node}",
         "updates_disabled_ns7_migration_description": "There is an ongoing NS7 migration. Updates will resume once the migration is complete.",
         "updates_disabled_ns7_migration_title": "Updates are suspended",
         "no_node_eligible_for_instance_cloning": "No node is eligible for instance cloning",
@@ -810,7 +809,13 @@
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
         "restart_instance": "Restart instance",
         "title_tooltip": "Discover, install and update applications in your cluster. To manage installed applications, go to {applications} page",
-        "go_to_applications_center": "Go to applications center"
+        "go_to_applications_center": "Go to applications center",
+        "no_volumes_to_restore": "No volumes to restore",
+        "volume_usage": "{used} used of {total} ({percentage}% used)",
+        "default_storage": "Default volume",
+        "node_offline": "Node is offline",
+        "additional_storage_available": "Additional volumes available",
+        "select_node_volume_for_installation": "Select the volume installation on {node} for application data"
     },
     "system_logs": {
         "context_module": "Aplicación",

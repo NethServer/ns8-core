@@ -84,7 +84,6 @@
         "open_app": "Apri applicazione",
         "update": "Aggiorna",
         "choose_node_for_installation": "Seleziona il nodo di installazione per {app} {version}",
-        "about_to_install_app": "{app} {version} verrà installata su {node}.",
         "instance_uninstallation": "Disinstalla {istanza}",
         "no_instance_installed": "Nessuna istanza installata",
         "instance": "Istanza",
@@ -142,7 +141,6 @@
         "reason_max_per_node_limit": "Limite di una istanza raggiunto | Limite di {param} istanze raggiunto",
         "num_instances_installed": "Una istanza installata | {num} istanze installate",
         "rootfull_app_warning_description": "Dopo l'installazione {appName} avrà pieno accesso al cluster: questo può comportare rischi di sicurezza significativi.",
-        "cannot_install_app_on_node": "Non è possibile installare {app} {version} su {node}",
         "updates_disabled_ns7_migration_description": "È in corso una migrazione da NS7. Gli aggiornamenti riprenderanno una volta completata la migrazione.",
         "updates_disabled_ns7_migration_title": "Gli aggiornamenti sono sospesi",
         "no_node_eligible_for_instance_cloning": "Nessun nodo è idoneo alla clonazione dell'istanza",
@@ -163,7 +161,13 @@
         "restart_module_warning": "Procedere solo se è necessario e dopo aver informato gli utenti.",
         "restart_instance": "Riavvia istanza",
         "title_tooltip": "Scopri, installa e aggiorna le applicazioni nel tuo cluster. Per gestire le applicazioni installate, vai alla pagina {applications}",
-        "go_to_applications_center": "Vai ad Applicazioni"
+        "go_to_applications_center": "Vai ad Applicazioni",
+        "no_volumes_to_restore": "Nessun volume da ripristinare",
+        "volume_usage": "{used} in uso di {total} ({percentage}% in uso)",
+        "default_storage": "Volume predefinito",
+        "node_offline": "Il nodo è offline",
+        "additional_storage_available": "Volumi aggiuntivi disponibili",
+        "select_node_volume_for_installation": "Selezionare il volume su {node} per memorizzare i dati dell'applicazione"
     },
     "nodes": {
         "title": "Nodi",
@@ -611,7 +615,7 @@
         "users_admin_page_title": "Portale utente",
         "users_admin_page_description": "Portale self-service di amministrazione utente",
         "host_format": "Deve essere un nome di dominio o un indirizzo IP valido",
-        "users_admin_page_tooltips": "Il portale utente consente agli utenti di dominio di modificare la propria password. Il portale è accessibile agli utenti anche su qualsiasi nodo con una replica dell'domain provider. L'URL generico è https://{node_fqdn_or_ip}/users-admin/{domain}/",
+        "users_admin_page_tooltips": "Il portale utenti consente agli utenti del dominio di gestire il proprio account, per esempio cambiando la password. Il portale è accessibile anche agli utenti senza privilegi amministrativi",
         "provider_already_installed": "Provider già installato",
         "no_node_eligible_for_provider_installation": "Nessun nodo è idoneo per l'installazione del provider",
         "edit_external_domain": "Modifica dominio esterno",
@@ -746,7 +750,8 @@
         "set-note": "Imposta nota",
         "import-users": "Importa utenti",
         "export-users": "Esporta utenti",
-        "get-password-warning": "Ottieni avviso password"
+        "get-password-warning": "Ottieni avviso password",
+        "list-mountpoints": "Elenca mountpoint"
     },
     "backup": {
         "configure": "Configura",
