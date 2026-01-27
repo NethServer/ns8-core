@@ -14,9 +14,9 @@ jobs:
       is_stable: ${{ steps.check.outputs.is_stable }}
     steps:
       - id: python-dep
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-          python-version: 3.9
+          python-version: '3.14'
       - id: check
         run: |
           pip install semver
@@ -41,16 +41,16 @@ jobs:
       - core-version
     if: needs.core-version.outputs.is_stable == 'true'
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.14'
       - name: Setup s3cmd
         run: |
           pip install s3cmd
           s3cmd --version
       - name: Setup `packer`
         uses: hashicorp/setup-packer@main
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: NethServer/ns8-images
       - name: Run `packer init`
