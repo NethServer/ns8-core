@@ -32,8 +32,18 @@
           :line-count="2"
           class="mg-top-lg"
         ></cv-skeleton-text>
-        <div v-else-if="$slots[`node-${node.id}`]" class="mg-top-md">
+        <div v-else class="mg-top-md"></div>
+        <div v-if="!loading && $slots[`node-${node.id}`]" class="mg-top-md">
           <slot :name="`node-${node.id}`"></slot>
+        </div>
+        <div v-if="!loading" class="mg-top-md">
+          <div
+            v-if="nodesWithAdditionalStorage.includes(node.id)"
+            class="icon-text-container"
+          >
+            <VmdkDisk20 class="icon-spacing" />
+            {{ $t("software_center.additional_storage_available") }}
+          </div>
         </div>
       </NsTile>
     </div>
@@ -44,12 +54,20 @@
 import { UtilService, IconService } from "@nethserver/ns8-ui-lib";
 import _cloneDeep from "lodash/cloneDeep";
 import { mapState } from "vuex";
+import VmdkDisk20 from "@carbon/icons-vue/es/vmdk-disk/20";
 
 export default {
   name: "NodeSelector",
+  components: {
+    VmdkDisk20,
+  },
   mixins: [UtilService, IconService],
   props: {
     disabledNodes: {
+      type: Array,
+      default: () => [],
+    },
+    nodesWithAdditionalStorage: {
       type: Array,
       default: () => [],
     },
@@ -107,4 +125,15 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+.icon-text-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1;
+}
+
+.icon-spacing {
+  flex-shrink: 0;
+}
 </style>

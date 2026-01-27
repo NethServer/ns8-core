@@ -621,9 +621,8 @@ export default {
       }
     },
   },
-  methods:{
-    ...mapActions(["setNotificationDrawerShownInStore"]
-    ),
+  methods: {
+    ...mapActions(["setNotificationDrawerShownInStore"]),
     goToNotificationDrawer() {
       this.$emit("hide");
       this.setNotificationDrawerShownInStore(true);
