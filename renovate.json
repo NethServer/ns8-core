@@ -3,6 +3,14 @@
   "extends": [
     "local>NethServer/.github:ns8-automerge"
   ],
+  "packageRules": [
+    {
+      "description": "Limit Alpine updates to 3.22.x (supported until May 1, 2027)",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["alpine"],
+      "allowedVersions": "3.22"
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
