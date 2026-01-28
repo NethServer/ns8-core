@@ -16,3 +16,6 @@ if [[ -e "${pyreqfile}" ]]; then
     echo "Installing Python virtual environment deps from ${pyreqfile}"
     /usr/local/agent/pyenv/bin/pip3 install -r "${pyreqfile}"
 fi
+
+# Refresh Python venv cache for NS8 libraries
+/usr/local/agent/pyenv/bin/python3 -mcompileall -q /usr/local/agent/pypkg

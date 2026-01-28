@@ -61,6 +61,9 @@ fi
 # ensure the agent python packages are in the default python path
 echo "/usr/local/agent/pypkg" >$(${core_dir}/bin/python3 -c "import sys; print(sys.path[-1] + '/pypkg.pth')")
 
+# Build Python venv cache for NS8 libraries
+${core_dir}/bin/python3 -mcompileall -q /usr/local/agent/pypkg
+
 echo "Setup registry:"
 if [[ ! -f /etc/nethserver/registry.json ]] ; then
     echo '{"auths":{}}' > /etc/nethserver/registry.json
