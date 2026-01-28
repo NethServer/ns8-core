@@ -18,7 +18,8 @@ be authorized to use it, by adding `node:tunadm` to the module image label
 
        org.nethserver.authorizations=node:tunadm
 
-Please note that the _tunadm_ authorization includes also the [_fwadm_](../firewall) one.
+Please note that for backward compatibility with core 3.16 the _tunadm_
+authorization includes also the [_fwadm_](../firewall) one.
 
 Then the module actions must use the `agent`
 Python package to add/remove the tun device needed by the
