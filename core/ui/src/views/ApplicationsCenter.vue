@@ -755,7 +755,7 @@ export default {
             id: source.id || "",
             // Use module logo URL if available, else fallback to instance logo later in the template
             logo: obj.logo && obj.logo.startsWith("http") ? obj.logo : "",
-            module: source.module || "",
+            module: obj.name || "", // we want a humanized module name
             node: source.node || "",
             node_ui_name: source.node_ui_name || "",
             ui_name: source.ui_name || "",
