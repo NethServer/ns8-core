@@ -52,6 +52,7 @@ def get_installed_modules(rdb):
     installed_modules = []
     for srcapp in available:
         for instapp in srcapp['installed']:
+            instapp['name'] = srcapp['name'] # Human-readable repo application name
             instapp['certification_level'] = srcapp['certification_level']
             instapp['update_available'] = bool(srcapp['updates'])
             installed_modules.append(instapp)
@@ -68,7 +69,9 @@ def modules_facts(rdb):
         minfo = {
             "id": module['id'],
             "version": module["version"],
-            "name": module["module"],
+            "module": module["module"], # Repo application identifier
+            "name": module["name"], # Human-readable repo application name
+            "source": module["source"], # Image registry URL without tag
             "node": module["node"],
             "certification_level": module["certification_level"],
             "update_available": module["update_available"],
