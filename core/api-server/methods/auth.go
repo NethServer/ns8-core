@@ -115,25 +115,33 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 		pathScan = "module/" + c.Param("module_id") + "/roles/"
 	}
 
-	// get roles of current user: HGET roles/<username>.<entity> -> <role>
-	role, errRedisRoleGet := redisConnection.HGet(ctx, "roles/"+username, pathGet).Result()
+	// get roles of current user: HGET roles/<username> -> <role(s)>
+	roles, errRedisRoleGet := redisConnection.HGet(ctx, "roles/"+username, pathGet).Result()
 
 	// handle redis error
 	if errRedisRoleGet != nil {
 		return userAuthorizationsRedis, errRedisRoleGet
 	}
 
-	// get action for current role and entity: SMEMBERS <entity>/<reference>/roles/<role>
-	actions, errRedisRoleScan := redisConnection.SMembers(ctx, pathScan+role).Result()
-
-	// handle redis error
-	if errRedisRoleScan != nil {
-		return userAuthorizationsRedis, errRedisRoleScan
+	// get actions for each role and entity: SMEMBERS <entity>/<reference>/roles/<role>
+	var actions []string
+	roleList := strings.Split(roles, ",")
+	for _, r := range roleList {
+		r = strings.TrimSpace(r)
+		if r == "" {
+			continue
+		}
+		a, errRedisRoleScan := redisConnection.SMembers(ctx, pathScan+r).Result()
+		if errRedisRoleScan != nil {
+			return userAuthorizationsRedis, errRedisRoleScan
+		}
+		// duplicated values are allowed, since Authorizator checks only existence
+		actions = append(actions, a...)
 	}
 
 	// compose user authorizations
 	userAuthorizationsRedis.Username = username
-	userAuthorizationsRedis.Role = role
+	userAuthorizationsRedis.Role = roles  // keep original string of raw role list
 	userAuthorizationsRedis.Actions = actions
 
 	// close redis connection
