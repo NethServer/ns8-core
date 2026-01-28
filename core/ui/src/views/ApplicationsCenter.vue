@@ -744,25 +744,25 @@ export default {
 
       // extract installed modules
       const extractedModules = [];
-      for (const obj of modules) {
-        const updates = obj.updates;
-        for (const item of obj.installed) {
+      for (const moduleData of modules) {
+        const updates = moduleData.updates;
+        for (const item of moduleData.installed) {
           // look for updates for this item
           const updateEntry = updates.find((u) => u.id === item.id);
           // if found, merge data from updateEntry into item
-          const source = updateEntry || item;
+          const installedData = updateEntry || item;
           extractedModules.push({
-            id: source.id || "",
+            id: installedData.id || "",
             // Use module logo URL if available, else fallback to instance logo later in the template
-            logo: obj.logo && obj.logo.startsWith("http") ? obj.logo : "",
-            module: obj.name || "", // we want a humanized module name
-            node: source.node || "",
-            node_ui_name: source.node_ui_name || "",
-            ui_name: source.ui_name || "",
-            ui_note: source.ui_note || "",
-            version: source.version || "",
-            update: source.update || "",
-            appInfoData: obj, // needed for clone/move/info modals
+            logo: moduleData.logo && moduleData.logo.startsWith("http") ? moduleData.logo : "",
+            module: moduleData.name || "", // we want a humanized module name
+            node: installedData.node || "",
+            node_ui_name: installedData.node_ui_name || "",
+            ui_name: installedData.ui_name || "",
+            ui_note: installedData.ui_note || "",
+            version: installedData.version || "",
+            update: installedData.update || "",
+            appInfoData: moduleData, // needed for clone/move/info modals
           });
         }
       }
