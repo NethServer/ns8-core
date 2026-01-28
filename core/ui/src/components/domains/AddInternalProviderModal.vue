@@ -32,6 +32,20 @@
           :showCloseButton="false"
         />
         <NsInlineNotification
+          v-if="error.getClusterStatus"
+          kind="error"
+          :title="$t('action.get-cluster-status')"
+          :description="error.getClusterStatus"
+          :showCloseButton="false"
+        />
+        <NsInlineNotification
+          v-if="error.nodesList"
+          kind="error"
+          :title="$t('action.list-nodes')"
+          :description="error.nodesList"
+          :showCloseButton="false"
+        />
+        <NsInlineNotification
           v-if="error.listModules"
           kind="error"
           :title="$t('action.list-modules')"
@@ -403,6 +417,10 @@ export default {
     },
     nodesWithAdditionalStorage() {
       const nodeIds = [];
+      // Volumes are only for Samba, not for OpenLDAP
+      if (!this.isSamba) {
+        return nodeIds;
+      }
       // If app doesn't require volumes, no nodes have additional storage for it
       if (this.sambaVolumes.length === 0) {
         return nodeIds;
@@ -480,21 +498,22 @@ export default {
       }
     },
     disabledNodes() {
+      // Get offline nodes from clusterStatus for both providers
+      const offlineNodeIds = this.clusterStatus
+        .filter((node) => !node.online)
+        .map((node) => node.id);
+
       if (this.isOpenLdap) {
         // openldap supports multiple instances on the same node
-        return [];
+        // but still disable offline nodes
+        return offlineNodeIds;
       } else {
         // samba - only one samba module per node
 
         if (!this.sambaModule) {
           // list-modules task not completed yet
-          return [];
+          return offlineNodeIds;
         }
-
-        // Get offline nodes from clusterStatus
-        const offlineNodeIds = this.clusterStatus
-          .filter((node) => !node.online)
-          .map((node) => node.id);
 
         // Get nodes where samba is not eligible (already has a samba module)
         const ineligibleNodeIds = this.sambaModule.install_destinations
@@ -508,42 +527,34 @@ export default {
     nodesInfo() {
       const info = {};
 
-      if (this.isOpenLdap) {
-        // openldap supports multiple instances on the same node
-        return info;
-      }
-
-      if (!this.sambaModule) {
-        // list-modules task not completed yet
-        return info;
-      }
-
-      // Get offline nodes from clusterStatus
+      // Get offline nodes from clusterStatus for both providers
       const offlineNodeIds = this.clusterStatus
         .filter((node) => !node.online)
         .map((node) => node.id);
 
-      // Get nodes where samba is not eligible (already has a samba module)
-      const ineligibleNodeIds = this.sambaModule.install_destinations
-        .filter((nodeInfo) => !nodeInfo.eligible)
-        .map((nodeInfo) => nodeInfo.node_id);
-
-      // Add offline nodes info
+      // Add offline nodes info for both providers
       offlineNodeIds.forEach((nodeId) => {
         info[nodeId] = {
           message: "software_center.node_offline",
         };
       });
 
-      // Add nodes with existing samba module info
-      ineligibleNodeIds.forEach((nodeId) => {
-        // If node is already offline, don't override the message
-        if (!info[nodeId]) {
-          info[nodeId] = {
-            message: "domains.provider_already_installed",
-          };
-        }
-      });
+      // For Samba, also add nodes where samba is not eligible
+      if (this.isSamba && this.sambaModule) {
+        const ineligibleNodeIds = this.sambaModule.install_destinations
+          .filter((nodeInfo) => !nodeInfo.eligible)
+          .map((nodeInfo) => nodeInfo.node_id);
+
+        // Add nodes with existing samba module info
+        ineligibleNodeIds.forEach((nodeId) => {
+          // If node is already offline, don't override the message
+          if (!info[nodeId]) {
+            info[nodeId] = {
+              message: "domains.provider_already_installed",
+            };
+          }
+        });
+      }
 
       return info;
     },
@@ -560,11 +571,13 @@ export default {
           // start wizard from first step
           this.step = "node";
 
+          // load cluster status for both providers
+          this.getClusterStatus();
+
           if (!this.isOpenLdap) {
-            // load eligible nodes
+            // load eligible nodes (volumes only for samba)
             this.listModules();
             this.listNodes();
-            this.getClusterStatus();
           }
         } else {
           // resume configuration
@@ -582,11 +595,13 @@ export default {
       this.newProviderId = this.providerId;
     },
     step: function () {
-      if (this.step == "node" && !this.isOpenLdap) {
-        // load eligible nodes
-        this.listModules(); // retrieve modules to get versions.labels.org.nethserver.volumes
-        this.listNodes(); // to get additional volumes info about nodes
+      if (this.step == "node") {
+        // load eligible nodes for both providers
         this.getClusterStatus(); // retrieve cluster nodes online status
+        if (!this.isOpenLdap) {
+          this.listModules(); // retrieve modules to get versions.labels.org.nethserver.volumes
+          this.listNodes(); // to get additional volumes info about nodes
+        }
       } else if (this.step == "volumes" && !this.isOpenLdap) {
         this.listMountPoints(); // retrieve additional volumes for selected node
       }
@@ -599,8 +614,9 @@ export default {
     nextStep() {
       switch (this.step) {
         case "node":
-          // Check if selected node has additional storage
+          // Check if selected node has additional storage and provider is Samba
           if (
+            this.isSamba &&
             this.selectedNode &&
             this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
           ) {
