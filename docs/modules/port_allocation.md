@@ -40,9 +40,6 @@ with other existing node-related roles:
 - `org.nethserver.authorizations = node:fwadm,portsadm`
 - `org.nethserver.authorizations = node:tunadm,portsadm`
 
-Note that the value must be exactly one of the above. Other combinations
-like `node:portsadm,fwadm` are not valid.
-
 The module will be granted execution permissions for the following actions
 on the local node:
 - `allocate-ports`
