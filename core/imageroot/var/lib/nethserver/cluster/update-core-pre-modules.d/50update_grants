@@ -19,15 +19,15 @@ cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="account
 cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountprovider", on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="list-modules",  to_clause="accountprovider", on_clause='cluster')
 
-#
-# Reuse and reallocate TCP/UDP port range #6974
-# Fix rich rules management #7836
-#
 for node_id in set(rdb.hvals('cluster/module_node')):
+    # Reuse and reallocate TCP/UDP port range #6974:
     cluster.grants.grant(rdb, "allocate-ports", f'node/{node_id}', "portsadm")
     cluster.grants.grant(rdb, "deallocate-ports", f'node/{node_id}', "portsadm")
+    # Fix rich rules management #7836:
     cluster.grants.grant(rdb, "add-rich-rules",  f'node/{node_id}', "fwadm")
     cluster.grants.grant(rdb, "remove-rich-rules", f'node/{node_id}', "fwadm")
+    cluster.grants.grant(rdb, "add-rich-rules",  f'node/{node_id}', "tunadm")
+    cluster.grants.grant(rdb, "remove-rich-rules", f'node/{node_id}', "tunadm")
     rdb.delete(
         f'node/{node_id}/roles/fwadm,portsadm',
         f'node/{node_id}/roles/tunadm,portsadm',
