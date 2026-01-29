@@ -1122,7 +1122,7 @@
         "migrating_app_title": "This application instance is undergoing migration",
         "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
         "additional_storage_available": "Additional volumes available",
-        "volume_usage": "{used} used of {total} ({percentage}% used)",
+        "volume_usage": "{available} free of {total} ({percentage}% used)",
         "default_storage": "Default volume",
         "no_volumes_to_restore": "No volumes to restore"
     },

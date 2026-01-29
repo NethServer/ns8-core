@@ -108,6 +108,7 @@ export default {
   methods: {
     getVolumeInfo(volume) {
       return {
+        available: this.$options.filters.byteFormat(volume.available),
         used: this.$options.filters.byteFormat(volume.used),
         total: this.$options.filters.byteFormat(volume.size),
         percentage: Math.round((volume.used / volume.size) * 100),
