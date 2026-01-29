@@ -349,6 +349,7 @@ export default {
       clusterStatus: [],
       additionalVolumes: [],
       selectedVolume: {},
+      waitingForModulesToProgressToVolumes: false,
       openldap: {
         admuser: "",
         admpass: "",
@@ -615,7 +616,8 @@ export default {
           ) {
             // Ensure modules are loaded before moving to volumes step
             if (!this.sambaModule) {
-              // Modules not loaded yet, wait for them
+              // Modules not loaded yet, set flag and wait for them
+              this.waitingForModulesToProgressToVolumes = true;
               this.listModules();
               return;
             }
@@ -1371,6 +1373,7 @@ export default {
         console.error(`error creating task ${taskAction}`, err);
         this.error.listModules = this.getErrorMessage(err);
         this.loading.listModules = false;
+        this.waitingForModulesToProgressToVolumes = false;
         return;
       }
     },
@@ -1378,11 +1381,18 @@ export default {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.listModules = this.$t("error.generic_error");
       this.loading.listModules = false;
+      this.waitingForModulesToProgressToVolumes = false;
     },
     listModulesCompleted(taskContext, taskResult) {
       this.loading.listModules = false;
       let modules = taskResult.output;
       this.modules = modules;
+
+      // If we were waiting for modules to progress to volumes step, do it now
+      if (this.waitingForModulesToProgressToVolumes) {
+        this.waitingForModulesToProgressToVolumes = false;
+        this.step = "volumes";
+      }
     },
   },
 };
