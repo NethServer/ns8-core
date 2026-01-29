@@ -560,6 +560,7 @@ export default {
     isShown: function () {
       if (this.isShown) {
         this.clearErrors();
+        this.waitingForModulesToProgressToVolumes = false;
 
         if (!this.isResumeConfiguration) {
           // start wizard from first step
@@ -1341,7 +1342,10 @@ export default {
       this.loading.listModules = true;
       this.error.listModules = "";
       this.modules = [];
-      this.selectedNode = null;
+      // Only clear selected node if not waiting to progress to volumes
+      if (!this.waitingForModulesToProgressToVolumes) {
+        this.selectedNode = null;
+      }
       const taskAction = "list-modules";
       const eventId = this.getUuid();
 
