@@ -32,29 +32,40 @@
           :showCloseButton="false"
         />
         <NsInlineNotification
+          v-if="error.getClusterStatus"
+          kind="error"
+          :title="$t('action.get-cluster-status')"
+          :description="error.getClusterStatus"
+          :showCloseButton="false"
+        />
+        <NsInlineNotification
+          v-if="error.nodesList"
+          kind="error"
+          :title="$t('action.list-nodes')"
+          :description="error.nodesList"
+          :showCloseButton="false"
+        />
+        <NsInlineNotification
           v-if="error.listModules"
           kind="error"
           :title="$t('action.list-modules')"
           :description="error.listModules"
           :showCloseButton="false"
         />
-        <cv-skeleton-text
-          v-else-if="loading.listModules"
-          :paragraph="true"
-          :line-count="5"
-          heading
-          class="mg-top-xlg"
-        ></cv-skeleton-text>
         <NodeSelector
           v-else
           :disabledNodes="disabledNodes"
+          :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
           @selectNode="onSelectNode"
+          :loading="
+            loading.listModules || loading.nodesList || loading.getClusterStatus
+          "
           class="mg-top-xlg"
         >
           <template v-for="node in clusterNodes">
             <template :slot="`node-${node.id}`">
-              <span v-if="disabledNodes.includes(node.id)" :key="node.id">
-                {{ $t("domains.provider_already_installed") }}
+              <span v-if="nodesInfo[node.id]" :key="node.id">
+                {{ $t(nodesInfo[node.id].message) }}
               </span>
             </template>
           </template>
@@ -78,6 +89,30 @@
           :value="installProviderProgress"
           :indeterminate="!installProviderProgress"
           class="mg-bottom-md"
+        />
+      </template>
+      <template v-if="step == 'volumes' && selectedNode">
+        <NsInlineNotification
+          v-if="error.listMountPoints"
+          kind="error"
+          :title="$t('action.list-mountpoints')"
+          :description="error.listMountPoints"
+          :showCloseButton="false"
+        />
+        <div>
+          {{
+            $t("software_center.select_node_volume_for_installation", {
+              node: this.getNodeLabel(selectedNode) || "",
+            })
+          }}
+        </div>
+        <!-- additional volumes -->
+        <AdditionalVolumesSelector
+          @selectVolume="onSelectVolume"
+          :volumes="additionalVolumes"
+          :loading="loading.listMountPoints"
+          :light="true"
+          class="mg-top-lg"
         />
       </template>
       <template v-if="step == 'internalConfig'">
@@ -274,11 +309,12 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NodeSelector from "@/components/nodes/NodeSelector";
+import AdditionalVolumesSelector from "@/components/software-center/AdditionalVolumesSelector.vue";
 import { mapState } from "vuex";
 
 export default {
   name: "AddInternalProviderModal",
-  components: { NodeSelector },
+  components: { NodeSelector, AdditionalVolumesSelector },
   mixins: [UtilService, TaskService, IconService, LottieService],
   props: {
     isShown: {
@@ -309,6 +345,10 @@ export default {
       configureProviderProgress: 0,
       selectedNode: null,
       modules: [],
+      nodesList: [],
+      clusterStatus: [],
+      additionalVolumes: [],
+      selectedVolume: {},
       openldap: {
         admuser: "",
         admpass: "",
@@ -324,6 +364,9 @@ export default {
       },
       loading: {
         listModules: false,
+        nodesList: false,
+        getClusterStatus: false,
+        listMountPoints: false,
         openldap: {
           getDefaults: false,
           configureModule: false,
@@ -336,6 +379,9 @@ export default {
       error: {
         addInternalProvider: "",
         listModules: "",
+        nodesList: "",
+        getClusterStatus: "",
+        listMountPoints: "",
         openldap: {
           admuser: "",
           admpass: "",
@@ -362,9 +408,52 @@ export default {
     isSamba() {
       return this.domain.schema == "ad";
     },
+    nodesWithAdditionalStorage() {
+      const nodeIds = [];
+      // Volumes are only for Samba, not for OpenLDAP
+      if (!this.isSamba) {
+        return nodeIds;
+      }
+      // If Samba module is not loaded or app doesn't require volumes, no nodes have additional storage for it
+      if (!this.sambaModule || this.sambaVolumes.length === 0) {
+        return nodeIds;
+      }
+      if (this.nodesList && Array.isArray(this.nodesList)) {
+        for (const node of this.nodesList) {
+          if (node.additional_disk_count > 0) {
+            nodeIds.push(node.node_id);
+          }
+        }
+      }
+      return nodeIds;
+    },
+    sambaVolumes() {
+      if (
+        this.sambaModule &&
+        this.sambaModule.versions &&
+        this.sambaModule.versions.length &&
+        this.sambaModule.versions[0].labels &&
+        this.sambaModule.versions[0].labels["org.nethserver.volumes"]
+      ) {
+        const volumesString =
+          this.sambaModule.versions[0].labels["org.nethserver.volumes"];
+        return volumesString.split(" ").map((v) => v.trim());
+      }
+      return [];
+    },
     nextButtonLabel() {
-      if (this.step == "node") {
+      if (this.step == "volumes") {
         return this.$t("domains.install_provider");
+      } else if (this.step == "node") {
+        // If selected node has additional storage, show next, otherwise show install_provider
+        if (
+          this.selectedNode &&
+          this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+        ) {
+          return this.$t("common.next");
+        } else {
+          return this.$t("domains.install_provider");
+        }
       } else if (this.step == "internalConfig") {
         return this.$t("domains.configure_provider");
       } else {
@@ -376,6 +465,7 @@ export default {
         this.step == "installingProvider" ||
         this.step == "configuringProvider" ||
         (this.step == "node" && !this.selectedNode) ||
+        (this.step == "volumes" && !this.selectedVolume?.path) ||
         this.loading.samba.configureModule ||
         this.loading.openldap.configureModule
       );
@@ -401,21 +491,65 @@ export default {
       }
     },
     disabledNodes() {
+      // Get offline nodes from clusterStatus for both providers
+      const offlineNodeIds = this.clusterStatus
+        .filter((node) => !node.online)
+        .map((node) => node.id);
+
       if (this.isOpenLdap) {
         // openldap supports multiple instances on the same node
-        return [];
+        // but still disable offline nodes
+        return offlineNodeIds;
       } else {
-        // samba
+        // samba - only one samba module per node
 
         if (!this.sambaModule) {
           // list-modules task not completed yet
-          return [];
+          return offlineNodeIds;
         }
 
-        return this.sambaModule.install_destinations
+        // Get nodes where samba is not eligible (already has a samba module)
+        const ineligibleNodeIds = this.sambaModule.install_destinations
           .filter((nodeInfo) => !nodeInfo.eligible)
           .map((nodeInfo) => nodeInfo.node_id);
+
+        // Merge both arrays to disable offline nodes and nodes with existing samba modules
+        return [...new Set([...offlineNodeIds, ...ineligibleNodeIds])];
       }
+    },
+    nodesInfo() {
+      const info = {};
+
+      // Get offline nodes from clusterStatus for both providers
+      const offlineNodeIds = this.clusterStatus
+        .filter((node) => !node.online)
+        .map((node) => node.id);
+
+      // Add offline nodes info for both providers
+      offlineNodeIds.forEach((nodeId) => {
+        info[nodeId] = {
+          message: "software_center.node_offline",
+        };
+      });
+
+      // For Samba, also add nodes where samba is not eligible
+      if (this.isSamba && this.sambaModule) {
+        const ineligibleNodeIds = this.sambaModule.install_destinations
+          .filter((nodeInfo) => !nodeInfo.eligible)
+          .map((nodeInfo) => nodeInfo.node_id);
+
+        // Add nodes with existing samba module info
+        ineligibleNodeIds.forEach((nodeId) => {
+          // If node is already offline, don't override the message
+          if (!info[nodeId]) {
+            info[nodeId] = {
+              message: "domains.provider_already_installed",
+            };
+          }
+        });
+      }
+
+      return info;
     },
     sambaModule() {
       return this.modules.find((module) => module.id === "samba");
@@ -430,9 +564,13 @@ export default {
           // start wizard from first step
           this.step = "node";
 
+          // load cluster status for both providers
+          this.getClusterStatus();
+
           if (!this.isOpenLdap) {
-            // load eligible nodes
+            // load eligible nodes (volumes only for samba)
             this.listModules();
+            this.listNodes();
           }
         } else {
           // resume configuration
@@ -449,6 +587,18 @@ export default {
     providerId: function () {
       this.newProviderId = this.providerId;
     },
+    step: function () {
+      if (this.step == "node") {
+        // load eligible nodes for both providers
+        this.getClusterStatus(); // retrieve cluster nodes online status
+        if (!this.isOpenLdap) {
+          this.listModules(); // retrieve modules to get versions.labels.org.nethserver.volumes
+          this.listNodes(); // to get additional volumes info about nodes
+        }
+      } else if (this.step == "volumes" && !this.isOpenLdap) {
+        this.listMountPoints(); // retrieve additional volumes for selected node
+      }
+    },
   },
   created() {
     this.newProviderId = this.providerId;
@@ -457,8 +607,27 @@ export default {
     nextStep() {
       switch (this.step) {
         case "node":
+          // Check if selected node has additional storage and provider is Samba
+          if (
+            this.isSamba &&
+            this.selectedNode &&
+            this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
+          ) {
+            // Ensure modules are loaded before moving to volumes step
+            if (!this.sambaModule) {
+              // Modules not loaded yet, wait for them
+              this.listModules();
+              return;
+            }
+            this.step = "volumes";
+          } else {
+            this.step = "installingProvider";
+            this.installProvider();
+          }
+          break;
+        case "volumes":
           this.step = "installingProvider";
-          this.installProvider();
+          this.installProvider(this.selectedVolume);
           break;
         case "internalConfig":
           if (this.isSamba) {
@@ -469,10 +638,134 @@ export default {
           break;
       }
     },
+    onSelectVolume(selectedVolume) {
+      this.selectedVolume = selectedVolume;
+    },
     onSelectNode(selectedNode) {
       this.selectedNode = selectedNode;
     },
-    async installProvider() {
+    async getClusterStatus() {
+      this.loading.getClusterStatus = true;
+      this.error.getClusterStatus = "";
+      const taskAction = "get-cluster-status";
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted
+      );
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
+        this.loading.getClusterStatus = false;
+        return;
+      }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      this.clusterStatus = taskResult.output.nodes;
+      this.loading.getClusterStatus = false;
+    },
+    async listNodes() {
+      this.error.nodesList = "";
+      this.loading.nodesList = true;
+      const taskAction = "list-nodes";
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.listNodesAborted);
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(taskAction + "-completed", this.listNodesCompleted);
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.nodesList = this.getErrorMessage(err);
+        this.loading.nodesList = false;
+        return;
+      }
+    },
+    listNodesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.nodesList = this.$t("error.generic_error");
+      this.loading.nodesList = false;
+    },
+    listNodesCompleted(taskContext, taskResult) {
+      this.nodesList = taskResult.output.nodes;
+      this.loading.nodesList = false;
+    },
+    async listMountPoints() {
+      this.error.listMountPoints = "";
+      this.loading.listMountPoints = true;
+      const taskAction = "list-mountpoints";
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.listMountPointsAborted);
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listMountPointsCompleted
+      );
+      const res = await to(
+        this.createNodeTask(this.selectedNode.id, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listMountPoints = this.getErrorMessage(err);
+        this.loading.listMountPoints = false;
+        return;
+      }
+    },
+    listMountPointsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listMountPoints = this.$t("error.generic_error");
+      this.loading.listMountPoints = false;
+    },
+    listMountPointsCompleted(taskContext, taskResult) {
+      this.additionalVolumes = taskResult.output.mountpoints;
+      // Add default disk at the end, push default property
+      if (taskResult.output.default_disk) {
+        this.additionalVolumes.push({
+          ...taskResult.output.default_disk,
+          default: true, // mark as default disk
+        });
+      }
+      this.loading.listMountPoints = false;
+    },
+    async installProvider(volumes) {
       this.error.addInternalProvider = "";
       const taskAction = "add-internal-provider";
       const eventId = this.getUuid();
@@ -498,14 +791,24 @@ export default {
 
       const providerImage = this.isOpenLdap ? "openldap" : "samba";
 
+      // prepare data for task
+      const data = {
+        image: providerImage,
+        node: parseInt(this.selectedNode.id),
+        domain: this.domain.name,
+      };
+      // Add volumes path if any and if app requires volumes
+      if (volumes?.path && this.sambaVolumes.length) {
+        data.volumes = {};
+        this.sambaVolumes.forEach((volume) => {
+          data.volumes[volume] = volumes.path;
+        });
+      }
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
-          data: {
-            image: providerImage,
-            node: parseInt(this.selectedNode.id),
-            domain: this.domain.name,
-          },
+          data,
           extra: {
             title: this.$t("action." + taskAction),
             node: this.selectedNode.id,
