@@ -414,6 +414,10 @@ export default {
       if (!this.isSamba) {
         return nodeIds;
       }
+      // Check if sambaModule is loaded before accessing sambaVolumes
+      if (!this.sambaModule) {
+        return nodeIds;
+      }
       // If app doesn't require volumes, no nodes have additional storage for it
       if (this.sambaVolumes.length === 0) {
         return nodeIds;
