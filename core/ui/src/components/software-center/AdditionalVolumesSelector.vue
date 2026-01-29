@@ -54,7 +54,7 @@
           :loading="loading"
           :warningThreshold="70"
           :dangerThreshold="90"
-          :height="'10px'"
+          :height="'5px'"
           :useHealthyColor="false"
           class="mg-bottom-lg"
         />
