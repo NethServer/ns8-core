@@ -677,6 +677,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.getClusterStatus = this.getErrorMessage(err);
+        this.loading.getClusterStatus = false;
         return;
       }
     },
@@ -712,6 +713,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.nodesList = this.getErrorMessage(err);
+        this.loading.nodesList = false;
         return;
       }
     },

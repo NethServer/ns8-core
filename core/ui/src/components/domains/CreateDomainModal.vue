@@ -680,8 +680,8 @@ export default {
       if (!this.isSambaSelected) {
         return nodeIds;
       }
-      // If app doesn't require volumes, no nodes have additional storage for it
-      if (this.sambaVolumes.length === 0) {
+      // If Samba module is not loaded or app doesn't require volumes, no nodes have additional storage for it
+      if (!this.sambaModule || this.sambaVolumes.length === 0) {
         return nodeIds;
       }
       if (this.nodesList && Array.isArray(this.nodesList)) {
@@ -929,6 +929,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.getClusterStatus = this.getErrorMessage(err);
+        this.loading.getClusterStatus = false;
         return;
       }
     },
@@ -965,6 +966,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.nodesList = this.getErrorMessage(err);
+        this.loading.nodesList = false;
         return;
       }
     },
