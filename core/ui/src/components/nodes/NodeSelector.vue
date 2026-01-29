@@ -128,7 +128,7 @@ export default {
 
 .icon-text-container {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: 0.2rem;
   line-height: 1.5;
   white-space: nowrap;
@@ -136,7 +136,6 @@ export default {
 
 .icon-spacing {
   flex-shrink: 0;
-  margin-top: 0.125rem;
-  margin-left: -0.1rem;
+  margin-bottom: 0.25rem;
 }
 </style>
