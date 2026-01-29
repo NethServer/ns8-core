@@ -562,16 +562,8 @@ export default {
 
         if (!this.isResumeConfiguration) {
           // start wizard from first step
+          // Setting step to "node" will trigger the step watcher which loads the necessary data
           this.step = "node";
-
-          // load cluster status for both providers
-          this.getClusterStatus();
-
-          if (!this.isOpenLdap) {
-            // load eligible nodes (volumes only for samba)
-            this.listModules();
-            this.listNodes();
-          }
         } else {
           // resume configuration
           this.step = "internalConfig";
