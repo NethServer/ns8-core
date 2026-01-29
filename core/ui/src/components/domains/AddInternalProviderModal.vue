@@ -52,13 +52,6 @@
           :description="error.listModules"
           :showCloseButton="false"
         />
-        <cv-skeleton-text
-          v-else-if="loading.listModules"
-          :paragraph="true"
-          :line-count="5"
-          heading
-          class="mg-top-xlg"
-        ></cv-skeleton-text>
         <NodeSelector
           v-else
           :disabledNodes="disabledNodes"
