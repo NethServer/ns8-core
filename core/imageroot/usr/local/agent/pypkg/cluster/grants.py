@@ -84,19 +84,29 @@ def alter_user(rdb, user, revoke, role, on_clause):
     """
     Grant/Revoke the ROLE ON some module to USER
 
-    The module can be cluster, node/X, module/modY etc.
-    The ROLE must be already defined in the given module.
+    The module matcher, specified by ON_CLAUSE, can be cluster, node/X,
+    module/modY etc. Wildcard match is allowed.
+
+    ROLE is a comma-separated list of role names without spaces. Each role
+    name must be already defined in the matching module(s).
     """
 
+    targets = set()
+    for xrole in role.split(","):
+        # Make sure there is no white space around the role name:
+        xrole = xrole.strip()
+        if not xrole:
+            continue
+        for key in rdb.scan_iter(f'{on_clause}/roles/{xrole}'):
+            agent_id = key.removesuffix(f'/roles/{xrole}')
+            targets.add(agent_id)
+
     pipe = rdb.pipeline()
-    for key in rdb.scan_iter(f'{on_clause}/roles/{role}'):
-        pos = key.find(f'/roles/{role}')
-        agent_id = key[:pos]
+    for agent_id in targets:
         if revoke:
-            pipe.hdel(f'roles/{user}', agent_id, role)
+            pipe.hdel(f'roles/{user}', agent_id)
         else:
             pipe.hset(f'roles/{user}', agent_id, role)
-
     pipe.execute()
 
 def refresh_permissions(rdb):
@@ -110,7 +120,8 @@ def refresh_permissions(rdb):
 def add_module_permissions(rdb, module_id, authorizations, node_id):
     """Parse authorizations and grant permissions to module_id"""
     for authz in authorizations:
-        xagent, xrole = authz.split(':') # e.g. traefik@node:routeadm
+        # authz examples: "traefik@node:routeadm", "node:fwadm,portsadm"
+        xagent, xrole = authz.split(':')
 
         if xagent.endswith("@any"):
             agent_selector = 'module/' + xagent.removesuffix("@any") + '*' # wildcard allowed in on_clause
@@ -119,6 +130,10 @@ def add_module_permissions(rdb, module_id, authorizations, node_id):
         else:
             agent_selector = agent.resolve_agent_id(xagent, node_id=node_id)
 
+        # If the agent_selector resolves multiple times to the same value,
+        # the last alter_user() call wins: roles are not accumulated or
+        # merged across calls. Still it is allowed to pass a
+        # comma-separated list of roles as xrole value.
         alter_user(rdb,
             user=f'module/{module_id}',
             revoke=False,
