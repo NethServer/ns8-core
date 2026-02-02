@@ -42,7 +42,7 @@ for moduleid in $(awk -F: '$1 ~ /^.+[0-9]+$/ && $2 ~ /.+/ { print $1 }' </etc/pa
     loginctl disable-linger "${moduleid}"
     systemctl stop user@$(id -u $moduleid)
     loginctl terminate-user "${moduleid}" &>/dev/null
-    userdel -r "${moduleid}"
+    userdel -f -r "${moduleid}"
 done
 
 echo "Clean up firewalld core rules"
@@ -84,7 +84,7 @@ systemctl disable --now \
   password-warning.timer
   # end of unit list
 rm -vf /etc/wireguard/wg0.conf
-userdel -r api-server
+userdel -f -r api-server
 ip link delete wg0 # force removal of wg0 interface
 
 echo "Wipe Redis DB"
