@@ -89,6 +89,18 @@ else:
                 },
             })
 
+# If restore-module receives a SIGTERM, remove the half-restored module:
+remove_module_on_sigterm = {
+    "agent_id": "cluster",
+    "action": "remove-module",
+    "data": {
+        "module_id": module_id,
+        "force": True,
+        "preserve_data": False,
+    },
+    "extra": {'isNotificationHidden': True},
+}
+
 restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
     data={
         "repository": repository,
@@ -99,10 +111,12 @@ restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
         "replace": replace_requested or len(remove_tasks) == 0
     },
     endpoint="redis://cluster-leader",
+    on_sigterm_tasks=[remove_module_on_sigterm],
     progress_callback=agent.get_progress_callback(16, 99 if len(remove_tasks) == 0 else 94),
 )
 
-agent.assert_exp(restore_task_result['exit_code'] == 0)
+if restore_task_result['exit_code'] != 0:
+    sys.exit(1)
 
 if len(remove_tasks) > 0 and replace_requested:
     # Remove existing modules with the same MODULE_UUID:
