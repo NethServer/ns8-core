@@ -414,6 +414,10 @@ export default {
       if (!this.isSamba) {
         return nodeIds;
       }
+      // If a file server provider already exists, don't show volumes additional storage in node selection
+      if (this.hasFileServerProvider) {
+        return nodeIds;
+      }
       // If Samba module is not loaded or app doesn't require volumes, no nodes have additional storage for it
       if (!this.sambaModule || this.sambaVolumes.length === 0) {
         return nodeIds;
@@ -553,6 +557,15 @@ export default {
     },
     sambaModule() {
       return this.modules.find((module) => module.id === "samba");
+    },
+    hasFileServerProvider() {
+      // Check if any provider in the domain has file_server: true
+      // it is needed to skip volumes selection step
+      return (
+        this.domain.providers &&
+        Array.isArray(this.domain.providers) &&
+        this.domain.providers.some((provider) => provider.file_server === true)
+      );
     },
   },
   watch: {
