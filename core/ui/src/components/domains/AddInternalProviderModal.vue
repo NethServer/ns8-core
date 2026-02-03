@@ -99,21 +99,38 @@
           :description="error.listMountPoints"
           :showCloseButton="false"
         />
-        <div>
-          {{
-            $t("software_center.select_node_volume_for_installation", {
-              node: this.getNodeLabel(selectedNode) || "",
-            })
-          }}
+        <cv-skeleton-text
+          v-if="loading.listMountPoints"
+          :paragraph="true"
+          :line-count="5"
+          heading
+          class="mg-top-xlg"
+        ></cv-skeleton-text>
+        <div v-else>
+          <NsInlineNotification
+            kind="info"
+            :title="$t('domains.nodes_with_additional_storage_info')"
+            :description="
+              $t('domains.nodes_with_additional_storage_info_description')
+            "
+            :showCloseButton="false"
+          />
+          <div>
+            {{
+              $t("domains.select_node_volume_for_installation", {
+                node: this.getNodeLabel(selectedNode) || "",
+              })
+            }}
+          </div>
+          <!-- additional volumes -->
+          <AdditionalVolumesSelector
+            @selectVolume="onSelectVolume"
+            :volumes="additionalVolumes"
+            :loading="loading.listMountPoints"
+            :light="true"
+            class="mg-top-lg"
+          />
         </div>
-        <!-- additional volumes -->
-        <AdditionalVolumesSelector
-          @selectVolume="onSelectVolume"
-          :volumes="additionalVolumes"
-          :loading="loading.listMountPoints"
-          :light="true"
-          class="mg-top-lg"
-        />
       </template>
       <template v-if="step == 'internalConfig'">
         <!-- openldap -->
