@@ -1362,8 +1362,8 @@
         "must_change_password_on_next_login": "Required password change",
         "password_does_not_expire": "Password never expires",
         "nodes_with_additional_storage_info": "Additional storage for shared folders",
-        "nodes_with_additional_storage_info_description": "Shared folders can be enabled in the next step. Only one domain controller per domain can host them",
-        "select_node_volume_for_installation": "Select the volume for shared folder data on {node}"
+        "nodes_with_additional_storage_info_description": "File shares can be enabled in the next step. Only one provider per domain can host them.",
+        "select_node_volume_for_installation": "Select the volume for file shares data on {node}"
     },
     "samba": {
         "adminuser": "Samba admin username",
