@@ -775,14 +775,15 @@ export default {
       this.loading.listMountPoints = false;
     },
     listMountPointsCompleted(taskContext, taskResult) {
-      this.additionalVolumes = taskResult.output.mountpoints;
+      const additionalVolumes = taskResult.output.mountpoints;
       // Add default disk at the end, push default property
       if (taskResult.output.default_disk) {
-        this.additionalVolumes.push({
+        additionalVolumes.push({
           ...taskResult.output.default_disk,
           default: true, // mark as default disk
         });
       }
+      this.additionalVolumes = additionalVolumes;
       this.loading.listMountPoints = false;
     },
     async installProvider(volumes) {
