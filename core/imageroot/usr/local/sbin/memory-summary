@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Compute memory usage on a working system and suggest a minimal
+# recommendation given the current memory load.
+#
+
+import subprocess
+import re
+from pathlib import Path
+
+def run(cmd):
+    return subprocess.check_output(cmd, shell=True, text=True)
+
+def parse_mem(s):
+    s = s.strip().upper()
+    if s[-1] in ("G", "M", "K"):
+        unit = s[-1]
+        value = float(s[:-1])
+    elif s[-2:] in ("GB", "MB", "KB"):
+        unit = s[-2]
+        value = float(s[:-2])
+    else:
+        return 0.0
+
+    if unit == "G":
+        return value * 1024
+    if unit == "M":
+        return value
+    if unit == "K":
+        return value / 1024
+    return 0.0
+
+def get_rootful_podman():
+    out = run('podman stats --no-stream --format "{{.Name}} {{.MemUsage}}"')
+    mem = 0.0
+    for line in out.splitlines():
+        if "/" not in line:
+            continue
+        usage = line.split()[1]
+        mem += parse_mem(usage)
+    return mem
+
+def get_apps():
+    apps = []
+    out = run("runagent -l")
+    for line in out.splitlines():
+        if line.strip():
+            apps.append(line.strip())
+    return apps
+
+def get_rootless_podman(app):
+    out = run(
+        f'runagent -m {app} podman stats --no-stream --format "{{{{.Name}}}} {{{{.MemUsage}}}}"'
+    )
+    mem = 0.0
+    for line in out.splitlines():
+        if "/" not in line:
+            continue
+        usage = line.split()[1]
+        mem += parse_mem(usage)
+    return mem
+
+def get_passwd_map():
+    users = {}
+    for line in Path("/etc/passwd").read_text().splitlines():
+        name, _, uid, *_ = line.split(":")
+        users[int(uid)] = name
+    return users
+
+def get_user_slices():
+    out = run("systemd-cgtop -b -1 -m --depth=2 -P")
+    slices = {}
+    for line in out.splitlines():
+        if "user-" not in line:
+            continue
+        m = re.search(r"user-(\d+)\.slice.*?([\d\.]+[MGK])", line)
+        if not m:
+            continue
+        uid = int(m.group(1))
+        mem = parse_mem(m.group(2))
+        slices[uid] = mem
+    return slices
+
+def get_free():
+    out = run("free -m")
+    mtotal = "0"
+    mused = "0"
+    mavail = "0"
+    stotal = "0"
+    sused = "0"
+    savail = "0"
+    for line in out.splitlines():
+        if line.startswith("Mem:"):
+            _, mtotal, mused, mfree, mshared, mbuff, mavail = line.split()
+        if line.startswith("Swap:"):
+            _, stotal, sused, sfree = line.split()
+    return int(mtotal), int(mused), int(mavail), int(stotal), int(sused), int(savail)
+
+def main():
+    print("Collecting rootful container memory...")
+    rootful_mem = get_rootful_podman()
+
+    print("Collecting rootless container memory...")
+    rootless_mem = 0.0
+    for app in get_apps():
+        try:
+            rootless_mem += get_rootless_podman(app)
+        except subprocess.CalledProcessError:
+            pass
+
+    print("Collecting systemd cgroup memory...")
+    passwd = get_passwd_map()
+    slices = get_user_slices()
+    user_slice_total = sum(slices.values())
+
+    total_mem, used_mem, avail_mem, total_swap, used_swap, avail_swap = get_free()
+
+    container_ws = rootful_mem + rootless_mem
+
+    # Sizing rules
+    ram_from_ws = container_ws * 1.25
+    ram_from_pressure = user_slice_total + 1536  # 1.5 GB OS margin
+    recommended_ram = max(ram_from_ws, ram_from_pressure)
+
+    recommended_swap = min(recommended_ram * 0.25, 8192)
+
+    print("\n=== MEMORY SUMMARY (MB) ===")
+    print(f"Rootful containers:   {rootful_mem:.0f}")
+    print(f"Rootless containers: {rootless_mem:.0f}")
+    print(f"Container working set: {container_ws:.0f}")
+    print(f"user.slice pressure:  {user_slice_total:.0f}")
+    print(f"System RAM total:     {total_mem}")
+    print(f"Swap total: {total_swap}")
+
+    print("\n=== RECOMMENDATION ===")
+    print(f"Suggested RAM:  {int((recommended_ram + 1023) // 1024)} GB")
+    print(f"Suggested swap: {int((recommended_swap + 1023) // 1024)} GB")
+
+if __name__ == "__main__":
+    main()
