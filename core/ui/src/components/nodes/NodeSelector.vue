@@ -5,9 +5,7 @@
 <template>
   <div class="node-selector">
     <!-- card grid -->
-    <div
-      class="card-grid grid-cols-1 sm:grid-cols-2 3xl:grid-cols-3"
-    >
+    <div class="card-grid grid-cols-1 sm:grid-cols-2 3xl:grid-cols-3">
       <NsTile
         v-for="node in internalNodes"
         :key="node.id"
