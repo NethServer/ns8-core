@@ -621,10 +621,6 @@ export default {
       if (this.step == "node") {
         // load eligible nodes for both providers
         this.getClusterStatus(); // retrieve cluster nodes online status
-        if (!this.isOpenLdap) {
-          this.listModules(); // retrieve modules to get versions.labels.org.nethserver.volumes
-          this.listNodes(); // to get additional volumes info about nodes
-        }
       } else if (this.step == "volumes" && !this.isOpenLdap) {
         this.listMountPoints(); // retrieve additional volumes for selected node
       }
@@ -643,12 +639,6 @@ export default {
             this.selectedNode &&
             this.nodesWithAdditionalStorage.includes(this.selectedNode.id)
           ) {
-            // Ensure modules are loaded before moving to volumes step
-            if (!this.sambaModule) {
-              // Modules not loaded yet, wait for them
-              this.listModules();
-              return;
-            }
             this.step = "volumes";
           } else {
             this.step = "installingProvider";
