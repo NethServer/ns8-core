@@ -91,7 +91,7 @@ export default {
     selectedNode: function () {
       this.$emit("selectNode", this.selectedNode);
     },
-    nodes: function () {
+    disabledNodes: function () {
       this.updateNodes();
     },
   },
