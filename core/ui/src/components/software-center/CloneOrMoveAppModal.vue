@@ -414,14 +414,19 @@ export default {
     async listNodes() {
       this.error.nodesList = "";
       const taskAction = "list-nodes";
+      const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.listNodesAborted);
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listNodesAborted
+      );
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.listNodesCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listNodesCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -429,6 +434,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -453,15 +459,17 @@ export default {
       this.loading.getClusterStatus = true;
       this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
+      const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getClusterStatusAborted
+      );
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.getClusterStatusCompleted
       );
 
@@ -471,6 +479,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -495,23 +504,27 @@ export default {
       this.error.listMountPoints = "";
       this.loading.listMountPoints = true;
       const taskAction = "list-mountpoints";
+      const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.listMountPointsAborted);
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listMountPointsAborted
+      );
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.listMountPointsCompleted
       );
+
       const res = await to(
         this.createNodeTask(this.selectedNode.id, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -530,14 +543,15 @@ export default {
       this.loading.listMountPoints = false;
     },
     listMountPointsCompleted(taskContext, taskResult) {
-      this.additionalVolumes = taskResult.output.mountpoints;
+      const additionalVolumes = taskResult.output.mountpoints;
       // Add default disk at the end, push default property
       if (taskResult.output.default_disk) {
-        this.additionalVolumes.push({
+        additionalVolumes.push({
           ...taskResult.output.default_disk,
           default: true, // mark as default disk
         });
       }
+      this.additionalVolumes = additionalVolumes;
       this.loading.listMountPoints = false;
     },
     async cloneOrMove(volumes) {
