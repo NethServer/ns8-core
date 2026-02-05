@@ -198,6 +198,15 @@ export default {
       return this.stepIndex == 0;
     },
     isLastStep() {
+      if (this.step == "node" && this.selectedNode) {
+        // If volumes step will be skipped, current step is the last step
+        if (
+          !this.nodesWithAdditionalStorage.includes(this.selectedNode.id) ||
+          this.appVolumes.length === 0
+        ) {
+          return true;
+        }
+      }
       return this.stepIndex == this.steps.length - 1;
     },
     shouldShowCloneOrMoveLabel() {
