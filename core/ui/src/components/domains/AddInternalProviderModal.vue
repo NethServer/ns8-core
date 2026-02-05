@@ -16,7 +16,7 @@
     @modal-hidden="$emit('hide')"
     @cancel="$emit('hide')"
     @nextStep="nextStep"
-    :isLastStep="step === 'configuringProvider'"
+    :isLastStep="hideButtonIcon"
   >
     <template slot="title">{{
       $t("domain_configuration.add_provider")
@@ -420,6 +420,15 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    hideButtonIcon() {
+      return (
+        this.step === "volumes" ||
+        (this.step === "node" &&
+          this.selectedNode &&
+          !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)) ||
+        this.step === "internalConfig"
+      );
+    },
     isOpenLdap() {
       return this.domain.schema == "rfc2307";
     },
