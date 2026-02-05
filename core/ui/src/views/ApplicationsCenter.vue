@@ -202,9 +202,7 @@
                         :alt="row.name + ' logo'"
                         class="module-logo"
                       />
-                      <span class="app-name">{{
-                        row.module.charAt(0).toUpperCase() + row.module.slice(1)
-                      }}</span>
+                      <span class="app-name">{{ row.module }}</span>
                     </a>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
@@ -754,7 +752,10 @@ export default {
           extractedModules.push({
             id: installedData.id || "",
             // Use module logo URL if available, else fallback to instance logo later in the template
-            logo: moduleData.logo && moduleData.logo.startsWith("http") ? moduleData.logo : "",
+            logo:
+              moduleData.logo && moduleData.logo.startsWith("http")
+                ? moduleData.logo
+                : "",
             module: moduleData.name || "", // we want a humanized module name
             node: installedData.node || "",
             node_ui_name: installedData.node_ui_name || "",
