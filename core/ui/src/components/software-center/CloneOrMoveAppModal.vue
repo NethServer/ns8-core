@@ -393,19 +393,20 @@ export default {
     },
     previousStep() {
       if (!this.isFirstStep) {
+        this.selectedVolume = {}; // reset selected volume when going back to node selection
         this.step = this.steps[this.stepIndex - 1];
       }
     },
     onModalShown() {
       // reset state before showing modal
+      this.selectedNode = null;
+      this.selectedVolume = {};
+      this.clusterStatus = [];
       // Force selection to node 1 if only available
       if (this.clusterNodesCount == 1) {
         const firstNode = this.clusterNodes[0];
         this.selectedNode = { ...firstNode, selected: true };
-      } else {
-        this.selectedNode = null;
       }
-      this.clusterStatus = [];
       // start both task concurrently
       this.listNodes();
       this.getClusterStatus();
