@@ -5,9 +5,7 @@
 <template>
   <div class="node-selector">
     <!-- card grid -->
-    <div
-      class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
-    >
+    <div class="card-grid grid-cols-1 sm:grid-cols-2 3xl:grid-cols-3">
       <NsTile
         v-for="node in internalNodes"
         :key="node.id"
@@ -128,12 +126,13 @@ export default {
 
 .icon-text-container {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  line-height: 1;
+  align-items: flex-start;
+  gap: 0.2rem;
+  line-height: 1.5;
 }
 
 .icon-spacing {
   flex-shrink: 0;
+  margin-bottom: 0.25rem;
 }
 </style>

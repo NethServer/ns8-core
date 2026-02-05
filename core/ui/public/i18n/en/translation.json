@@ -1011,7 +1011,8 @@
         "authors": "Author | Authors",
         "source_package": "Application image",
         "app_installation": "Install {app}",
-        "choose_node_for_installation": "Select installation node for {app} {version}:",
+        "choose_node_for_installation": "Select installation node for {app} {version}",
+        "installation_node_for_app": "Installation node for {app} {version}",
         "select_node_volume_for_installation": "Select the volume on {node} to store application data",
         "installing_on_node": "Installing on {node}",
         "instance_installed_on_node": "{module_id} installed on {node}",
@@ -1122,7 +1123,7 @@
         "migrating_app_title": "This application instance is undergoing migration",
         "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
         "additional_storage_available": "Additional volumes available",
-        "volume_usage": "{used} used of {total} ({percentage}% used)",
+        "volume_usage": "{available} free of {total} ({percentage}% used)",
         "default_storage": "Default volume",
         "no_volumes_to_restore": "No volumes to restore"
     },

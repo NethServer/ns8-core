@@ -43,9 +43,17 @@
             :showCloseButton="false"
           />
           <!-- node selection -->
-          <div>
+          <div v-if="clusterNodesCount > 1">
             {{
               $t("software_center.choose_node_for_installation", {
+                app: app.name,
+                version: appVersion,
+              })
+            }}
+          </div>
+          <div v-else>
+            {{
+              $t("software_center.installation_node_for_app", {
                 app: app.name,
                 version: appVersion,
               })

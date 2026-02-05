@@ -54,7 +54,7 @@
           :loading="loading"
           :warningThreshold="70"
           :dangerThreshold="90"
-          :height="'10px'"
+          :height="'5px'"
           :useHealthyColor="false"
           class="mg-bottom-lg"
         />
@@ -108,6 +108,7 @@ export default {
   methods: {
     getVolumeInfo(volume) {
       return {
+        available: this.$options.filters.byteFormat(volume.available),
         used: this.$options.filters.byteFormat(volume.used),
         total: this.$options.filters.byteFormat(volume.size),
         percentage: Math.round((volume.used / volume.size) * 100),
