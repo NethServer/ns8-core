@@ -880,7 +880,7 @@
         "cannot_load_chain_file": "Cannot load chain file",
         "name_route_conflict": "One or more names conflict with the HTTP routes of applications",
         "expiring_warning": "This certificate is about to expire",
-        "invalid_key": "Invalid private key",
+        "invalid_key": "Invalid or passphrase-encrypted private key",
         "names_format": "Invalid FQDN format",
         "invalid_format": "Invalid format",
         "cert_verification_failed_selfsigned": "Self-signed certificates are not allowed",
