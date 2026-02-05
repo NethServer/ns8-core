@@ -17,7 +17,7 @@
     @cancel="$emit('hide')"
     @previousStep="previousStep"
     @nextStep="nextStep"
-    :isLastStep="step === 'configuringProvider'"
+    :isLastStep="hideButtonIcon"
   >
     <template slot="title">{{ $t("domains.create_domain") }}</template>
     <template slot="content">
@@ -862,6 +862,15 @@ export default {
 
       return info;
     },
+    hideButtonIcon() {
+      return (
+        this.step === "volumes" ||
+        (this.step === "node" &&
+          this.selectedNode &&
+          !this.nodesWithAdditionalStorage.includes(this.selectedNode.id)) ||
+        this.step === "internalConfig"
+      );
+    },
   },
   watch: {
     isShown: function () {
@@ -1112,6 +1121,7 @@ export default {
           this.step = "instance";
           break;
         case "volumes":
+          this.selectedVolume = {}; // reset selected volume when going back to node selection
           this.step = "node";
           break;
       }
