@@ -1361,7 +1361,10 @@
         "go_to_smtp_settings": "Go to Email notifications",
         "password_expired": "Password expired",
         "must_change_password_on_next_login": "Required password change",
-        "password_does_not_expire": "Password never expires"
+        "password_does_not_expire": "Password never expires",
+        "nodes_with_additional_storage_info": "Additional storage for shared folders",
+        "nodes_with_additional_storage_info_description": "Shared folders can be enabled in the next step. Only one provider per domain can host them.",
+        "select_node_volume_for_installation": "Select the volume for shared folders data on {node}"
     },
     "samba": {
         "adminuser": "Samba admin username",
@@ -1380,9 +1383,9 @@
         "enter_samba_admin_username": "Login as Samba admin",
         "enter_samba_admin_password": "Enter Samba admin password",
         "samba_configuration": "Samba configuration",
-        "enable_file_server_label": "Provide file shares and authentication to Windows clients",
+        "enable_file_server_label": "Provide shared folders and authentication to Windows clients",
         "enable_file_server_tooltip": "Enable this switch and select the desired IP address to provide Active Directory services to clients in the local private network",
-        "enable_file_server_disabled_info": "File shares and authentication to Windows clients cannot be enabled because they are already configured on another provider of this domain",
+        "enable_file_server_disabled_info": "Shared folders and authentication to Windows clients cannot be enabled because they are already configured on another provider of this domain",
         "provider_on_vpn_address_message": "The new provider will be configured on the VPN IP address {vpnIpAddress}",
         "choose_ip_address_warning": "Make sure to select an IP address reachable by Windows clients. This choice is NOT reversible",
         "file_server": "File server",

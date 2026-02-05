@@ -24,6 +24,7 @@
     @modal-hidden="onModalHidden"
     :isPreviousShown="hasAdditionalStorageAvailable"
     :isNextDisabled="isNextButtonDisabled"
+    :isLastStep="isLastStep"
   >
     <template slot="title">{{
       isClone ? $t("software_center.clone_app") : $t("software_center.move_app")
@@ -197,6 +198,15 @@ export default {
       return this.stepIndex == 0;
     },
     isLastStep() {
+      if (this.step == "node" && this.selectedNode) {
+        // If volumes step will be skipped, current step is the last step
+        if (
+          !this.nodesWithAdditionalStorage.includes(this.selectedNode.id) ||
+          this.appVolumes.length === 0
+        ) {
+          return true;
+        }
+      }
       return this.stepIndex == this.steps.length - 1;
     },
     shouldShowCloneOrMoveLabel() {
@@ -383,19 +393,20 @@ export default {
     },
     previousStep() {
       if (!this.isFirstStep) {
+        this.selectedVolume = {}; // reset selected volume when going back to node selection
         this.step = this.steps[this.stepIndex - 1];
       }
     },
     onModalShown() {
       // reset state before showing modal
+      this.selectedNode = null;
+      this.selectedVolume = {};
+      this.clusterStatus = [];
       // Force selection to node 1 if only available
       if (this.clusterNodesCount == 1) {
         const firstNode = this.clusterNodes[0];
         this.selectedNode = { ...firstNode, selected: true };
-      } else {
-        this.selectedNode = null;
       }
-      this.clusterStatus = [];
       // start both task concurrently
       this.listNodes();
       this.getClusterStatus();
