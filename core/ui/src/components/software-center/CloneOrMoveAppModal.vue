@@ -24,6 +24,7 @@
     @modal-hidden="onModalHidden"
     :isPreviousShown="hasAdditionalStorageAvailable"
     :isNextDisabled="isNextButtonDisabled"
+    :isLastStep="isLastStep"
   >
     <template slot="title">{{
       isClone ? $t("software_center.clone_app") : $t("software_center.move_app")

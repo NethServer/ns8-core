@@ -17,6 +17,7 @@
     @cancel="$emit('hide')"
     @previousStep="previousStep"
     @nextStep="nextStep"
+    :isLastStep="step === 'configuringProvider'"
   >
     <template slot="title">{{ $t("domains.create_domain") }}</template>
     <template slot="content">

@@ -16,6 +16,7 @@
     @modal-hidden="$emit('hide')"
     @cancel="$emit('hide')"
     @nextStep="nextStep"
+    :isLastStep="step === 'configuringProvider'"
   >
     <template slot="title">{{
       $t("domain_configuration.add_provider")

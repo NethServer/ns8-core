@@ -22,6 +22,7 @@
     @cancel="onModalHidden"
     :isNextDisabled="isNextButtonDisabled"
     :isPreviousShown="hasAdditionalStorageAvailable"
+    :isLastStep="isLastStep"
   >
     <template v-if="app" slot="title">{{
       $t("software_center.app_installation", { app: app.name })

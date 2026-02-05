@@ -20,6 +20,7 @@
     @cancel="$emit('hide')"
     @previousStep="previousStep"
     @nextStep="nextStep"
+    :isLastStep="isLastStep"
   >
     <template slot="title">{{ $t("backup.restore_app") }}</template>
     <template slot="content">
