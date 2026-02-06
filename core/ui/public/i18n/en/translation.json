@@ -1362,7 +1362,7 @@
         "password_expired": "Password expired",
         "must_change_password_on_next_login": "Required password change",
         "password_does_not_expire": "Password never expires",
-        "nodes_with_additional_storage_info": "Additional storage for shared folders",
+        "nodes_with_additional_storage_info": "Additional volume for shared folders",
         "nodes_with_additional_storage_info_description": "Shared folders can be enabled in the next step. Only one provider per domain can host them.",
         "select_node_volume_for_installation": "Select the volume for shared folders data on {node}"
     },

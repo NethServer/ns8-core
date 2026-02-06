@@ -599,7 +599,8 @@
         "default_storage": "Default volume",
         "node_offline": "Node is offline",
         "additional_storage_available": "Additional volumes available",
-        "select_node_volume_for_installation": "Select the volume installation on {node} for application data"
+        "select_node_volume_for_installation": "Select the volume installation on {node} for application data",
+        "installation_node_for_app": "Installation node for {app} {version}"
     },
     "domains": {
         "domain_summary": "Samenvatting",
@@ -721,7 +722,10 @@
         "users_admin_page_description": "Selfserviceportaal voor gebruikersbeheer",
         "warning_disabled_description": "Schakel het leeftijdsbeleid in om een waarschuwing voor het verlopen van wachtwoorden te configureren",
         "samba": "Samba",
-        "must_change_password_on_next_login": "Vereiste wachtwoordwijziging"
+        "must_change_password_on_next_login": "Vereiste wachtwoordwijziging",
+        "select_node_volume_for_installation": "Select the volume for shared folders data on {node}",
+        "nodes_with_additional_storage_info": "Additional storage for shared folders",
+        "nodes_with_additional_storage_info_description": "Shared folders can be enabled in the next step. Only one provider per domain can host them."
     },
     "samba": {
         "realm": "Domein",
