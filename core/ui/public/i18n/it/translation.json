@@ -163,11 +163,12 @@
         "title_tooltip": "Scopri, installa e aggiorna le applicazioni nel tuo cluster. Per gestire le applicazioni installate, vai alla pagina {applications}",
         "go_to_applications_center": "Vai ad Applicazioni",
         "no_volumes_to_restore": "Nessun volume da ripristinare",
-        "volume_usage": "{used} in uso di {total} ({percentage}% in uso)",
+        "volume_usage": "{available} liberi di {total} ({percentage}% in uso)",
         "default_storage": "Volume predefinito",
         "node_offline": "Il nodo è offline",
         "additional_storage_available": "Volumi aggiuntivi disponibili",
-        "select_node_volume_for_installation": "Selezionare il volume su {node} per memorizzare i dati dell'applicazione"
+        "select_node_volume_for_installation": "Selezionare il volume su {node} per memorizzare i dati dell'applicazione",
+        "installation_node_for_app": "Nodo di installazione per {app} {version}"
     },
     "nodes": {
         "title": "Nodi",
@@ -469,7 +470,7 @@
         "cannot_load_chain_file": "Impossibile caricare il file della chain",
         "name_route_conflict": "Uno o più nomi sono in conflitto con le rotte HTTP delle applicazioni",
         "expiring_warning": "Questo certificato sta per scadere",
-        "invalid_key": "Chiave privata non valida",
+        "invalid_key": "Chiave privata non valida o criptata",
         "invalid_format": "Formato non valido",
         "names_format": "Formato FQDN non valido",
         "cert_verification_failed_selfsigned": "I certificati autofirmati non sono consentiti",
@@ -641,7 +642,10 @@
         "warning_disabled_description": "Abilitare la durata password prima di configurare il preavviso di scadenza",
         "password_does_not_expire": "Password senza scadenza",
         "password_expired": "Password scaduta",
-        "must_change_password_on_next_login": "Richiesto cambio password"
+        "must_change_password_on_next_login": "Richiesto cambio password",
+        "select_node_volume_for_installation": "Selezionare il volume per i dati delle cartelle condivise su {node}",
+        "nodes_with_additional_storage_info": "Volume aggiuntivo per le cartelle condivise",
+        "nodes_with_additional_storage_info_description": "Le cartelle condivise possono essere abilitate al passo successivo. Solo un provider per dominio può ospitarli."
     },
     "action": {
         "configure-module": "Configura applicazione",
@@ -1526,9 +1530,9 @@
         "samba_admin_username_tooltip_1": "Se scegli un nome utente diverso da 'administrator':",
         "samba_admin_username_tooltip_2": "L'utente specificato verrà aggiunto al gruppo 'Domain Admins'",
         "samba_admin_username_tooltip_3": "L'utente 'administrator' sarà disabilitato e gli verrà assegnata una password casuale",
-        "enable_file_server_label": "Fornire condivisioni di file e autenticazione per i client Windows",
+        "enable_file_server_label": "Fornisci cartelle condivise e autenticazione per i client Windows",
         "enable_file_server_tooltip": "Abilitare questa opzione e selezionare l'indirizzo IP desiderato per fornire i servizi Active Directory ai client nella rete privata locale",
-        "enable_file_server_disabled_info": "La condivisione file e l'autenticazione per i client Windows non possono essere abilitate perché sono già configurate su un altro provider di questo dominio",
+        "enable_file_server_disabled_info": "Le cartelle condivise e l'autenticazione per client Windows non possono essere abilitate perché sono già configurate su un altro provider di questo dominio",
         "provider_on_vpn_address_message": "Il nuovo provider sarà configurato sull'indirizzo IP VPN {vpnIpAddress}",
         "choose_ip_address_warning": "Assicurati di selezionare un indirizzo IP raggiungibile dai client Windows. Questa scelta NON è reversibile",
         "file_server": "File server",
