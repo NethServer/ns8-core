@@ -38,6 +38,7 @@ Default.args = {
   cancelLabel: "Cancel",
   previousLabel: "Previous",
   nextLabel: "Next",
+  isLastStep: false,
   isPreviousDisabled: false,
   isNextDisabled: false,
   isNextLoading: false,
