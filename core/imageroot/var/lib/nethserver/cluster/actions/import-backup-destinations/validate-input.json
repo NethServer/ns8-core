@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "import-backup-destinations input",
+    "$id": "http://schema.nethserver.org/cluster/import-backup-destinations-input.json",
+    "description": "Import backup destination configurations from raw cluster backup data",
+    "examples": [
+        {
+            "backup_password": "mypassword",
+            "backup_data": "jA0ECQMC2c...94FL/8y2KV"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "backup_password",
+        "backup_data"
+    ],
+    "properties": {
+        "backup_password": {
+            "description": "GPG passphrase to decrypt backup_data field",
+            "type": "string",
+            "maxLength": 4096
+        },
+        "backup_data": {
+            "description": "base64-encoded string of GPG-encrypted, gzip-compressed backup data",
+            "type": "string",
+            "contentEncoding": "base64",
+            "contentMediaType": "application/octet-stream"
+        }
+    }
+}
