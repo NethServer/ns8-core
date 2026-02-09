@@ -30,7 +30,7 @@
       </div>
       <div class="setting instances key-value-setting">
         <span class="label">{{
-          $tc("backup.Instances", instances.length)
+          $tc("backup.applications", instances.length)
         }}</span>
         <div class="instance-list">
           <div v-if="instances.length === 0">-</div>
@@ -41,13 +41,6 @@
               class="tooltip-with-text-trigger"
             >
               <template slot="trigger">
-                <span>
-                  {{
-                    instance.ui_name
-                      ? instance.ui_name + " (" + instance.module_id + ")"
-                      : instance.module_id
-                  }}
-                </span>
                 <NsSvg
                   v-if="instance.status && instance.status.success == true"
                   :svg="CheckmarkFilled16"
@@ -65,6 +58,13 @@
                   :svg="Warning16"
                   class="ns-warning backup-status-icon"
                 />
+                <span>
+                  {{
+                    instance.ui_name
+                      ? instance.ui_name + " (" + instance.module_id + ")"
+                      : instance.module_id
+                  }}
+                </span>
               </template>
               <template slot="content">
                 <h5 class="last-backup">{{ $t("backup.last_backup") }}</h5>
@@ -195,13 +195,18 @@ export default {
 
 .instance-list {
   display: flex;
-  flex-wrap: wrap;
-  column-gap: $spacing-06;
+  flex-direction: column;
   row-gap: $spacing-04;
 }
 
+.instance-list div {
+  display: flex;
+  align-items: center;
+}
+
 .backup-status-icon {
-  margin-left: $spacing-02;
+  margin-right: $spacing-02;
+  flex-shrink: 0;
 }
 
 .last-backup {
