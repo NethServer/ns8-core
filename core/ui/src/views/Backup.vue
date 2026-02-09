@@ -132,7 +132,9 @@
                 >
                   <div class="mg-bottom-lg">
                     {{
-                      $t("backup.configure_manage_backups_for_your_applications")
+                      $t(
+                        "backup.configure_manage_backups_for_your_applications"
+                      )
                     }}
                   </div>
                   <NsButton
@@ -285,29 +287,6 @@
                           }
                         )
                       "
-                      :showCloseButton="false"
-                    />
-                  </cv-column>
-                </cv-row>
-                <!-- unconfigured instances warning -->
-                <cv-row
-                  v-if="!loading.listBackups && unconfiguredInstances.length"
-                >
-                  <cv-column>
-                    <NsInlineNotification
-                      kind="warning"
-                      :title="$t('backup.app_instances_not_backed_up')"
-                      :description="
-                        $tc(
-                          'backup.app_instances_not_backed_up_description',
-                          unconfiguredInstances.length,
-                          {
-                            numInstances: unconfiguredInstances.length,
-                          }
-                        )
-                      "
-                      :actionLabel="$t('backup.schedule_backup')"
-                      @action="showCreateOrEditBackupModal('notBackedUp')"
                       :showCloseButton="false"
                     />
                   </cv-column>
@@ -473,6 +452,31 @@
                 <!-- empty state backups -->
                 <cv-row v-if="!backups.length">
                   <cv-column>
+                    <!-- unconfigured instances warning -->
+                    <cv-row
+                      v-if="
+                        !loading.listBackups && unconfiguredInstances.length
+                      "
+                    >
+                      <cv-column>
+                        <NsInlineNotification
+                          kind="warning"
+                          :title="$t('backup.app_instances_not_backed_up')"
+                          :description="
+                            $tc(
+                              'backup.app_instances_not_backed_up_description',
+                              unconfiguredInstances.length,
+                              {
+                                numInstances: unconfiguredInstances.length,
+                              }
+                            )
+                          "
+                          :actionLabel="$t('backup.schedule_backup_now')"
+                          @action="showCreateOrEditBackupModal('notBackedUp')"
+                          :showCloseButton="false"
+                        />
+                      </cv-column>
+                    </cv-row>
                     <cv-tile light>
                       <NsEmptyState :title="$t('backup.no_backup_scheduled')">
                         <template #description>
@@ -495,8 +499,31 @@
                         kind="secondary"
                         :icon="Add20"
                         @click="showCreateOrEditBackupModal('')"
-                        >{{ $t("backup.schedule_backup") }}
+                        >{{ $t("backup.schedule_backup_now") }}
                       </NsButton>
+                    </cv-column>
+                  </cv-row>
+                  <!-- unconfigured instances warning -->
+                  <cv-row
+                    v-if="!loading.listBackups && unconfiguredInstances.length"
+                  >
+                    <cv-column>
+                      <NsInlineNotification
+                        kind="warning"
+                        :title="$t('backup.app_instances_not_backed_up')"
+                        :description="
+                          $tc(
+                            'backup.app_instances_not_backed_up_description',
+                            unconfiguredInstances.length,
+                            {
+                              numInstances: unconfiguredInstances.length,
+                            }
+                          )
+                        "
+                        :actionLabel="$t('backup.schedule_backup_now')"
+                        @action="showCreateOrEditBackupModal('notBackedUp')"
+                        :showCloseButton="false"
+                      />
                     </cv-column>
                   </cv-row>
                   <cv-row>
@@ -579,7 +606,7 @@
                                       backup.instances.length +
                                       " " +
                                       $tc(
-                                        "backup.instances",
+                                        "backup.applications",
                                         backup.instances.length
                                       )
                                     }}
