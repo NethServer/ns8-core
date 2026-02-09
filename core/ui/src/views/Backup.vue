@@ -471,8 +471,6 @@
                               }
                             )
                           "
-                          :actionLabel="$t('backup.schedule_backup_now')"
-                          @action="showCreateOrEditBackupModal('notBackedUp')"
                           :showCloseButton="false"
                         />
                       </cv-column>
@@ -520,8 +518,6 @@
                             }
                           )
                         "
-                        :actionLabel="$t('backup.schedule_backup_now')"
-                        @action="showCreateOrEditBackupModal('notBackedUp')"
                         :showCloseButton="false"
                       />
                     </cv-column>
