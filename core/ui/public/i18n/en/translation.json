@@ -448,6 +448,7 @@
         "repositories": "Destinations",
         "schedules": "Schedules",
         "no_backup_repository": "No backup destination",
+        "configure_a_destination_to_restore_applications": "Configure a destination to restore applications from existing backups.",
         "empty_state_repository_description": "Add or import a destination to enable scheduled backups.",
         "no_backup_scheduled": "No backup scheduled",
         "add_repository": "Add destination",

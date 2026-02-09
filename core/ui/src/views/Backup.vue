@@ -715,6 +715,21 @@
               </cv-row>
               <cv-row>
                 <cv-column>
+                  <template v-if="!repositories.length">
+                    <NsInlineNotification
+                      kind="warning"
+                      class="mg-bottom-lg"
+                      :title="$t('backup.no_backup_repository')"
+                      :description="
+                        $t(
+                          'backup.configure_a_destination_to_restore_applications'
+                        )
+                      "
+                      :actionLabel="$t('backup.add_repository')"
+                      @action="showAddRepoModal()"
+                      :showCloseButton="false"
+                    />
+                  </template>
                   <NsButton
                     kind="secondary"
                     :icon="Reset20"
