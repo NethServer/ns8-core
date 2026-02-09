@@ -731,7 +731,7 @@
                     />
                   </template>
                   <NsButton
-                    kind="secondary"
+                    kind="primary"
                     :icon="Reset20"
                     @click="showRestoreModal()"
                     :disabled="!repositories.length"
