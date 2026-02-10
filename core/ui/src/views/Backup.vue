@@ -9,64 +9,12 @@
         <cv-column class="page-title">
           <h2>
             {{ $t("backup.title") }}
-            <!-- <cv-interactive-tooltip
-              alignment="start"
-              direction="right"
-              class="info"
-            >
-              <template slot="trigger">
-                <Information16 />
-              </template>
-              <template slot="content">
-                <div class="mg-bottom-sm">
-                  {{ $t("backup.backup_page_tooltip_1") }}
-                </div>
-                <div class="mg-bottom-sm">
-                  {{ $t("backup.backup_page_tooltip_2") }}
-                </div>
-                <div class="mg-bottom-sm">
-                  {{
-                    $t("backup.backup_page_tooltip_8", {
-                      productName: $root.config.PRODUCT_NAME,
-                    })
-                  }}
-                </div>
-                <i18n path="backup.backup_page_tooltip_manual" tag="p">
-                  <template v-slot:manualLink>
-                    <cv-link
-                      href="https://docs.nethserver.org/projects/ns8/en/latest/backup.html"
-                      target="_blank"
-                      rel="noreferrer"
-                      class="inline"
-                    >
-                      {{ $t("backup.go_to_backup_manual_page") }}
-                    </cv-link>
-                  </template>
-                </i18n>
-              </template>
-            </cv-interactive-tooltip> -->
           </h2>
         </cv-column>
       </cv-row>
       <!-- cluster configuration -->
       <cv-row>
-        <cv-column>
-          <!-- <h4 class="mg-bottom-md">
-            {{ $t("backup.cluster_configuration") }}
-            <cv-interactive-tooltip
-              alignment="start"
-              direction="right"
-              class="info"
-            >
-              <template slot="trigger">
-                <Information16 />
-              </template>
-              <template slot="content">
-                {{ $t("backup.cluster_configuration_tooltip") }}
-              </template>
-            </cv-interactive-tooltip>
-          </h4> -->
-        </cv-column>
+        <cv-column> </cv-column>
       </cv-row>
       <cv-row>
         <cv-column>
@@ -159,18 +107,6 @@
                 <cv-column>
                   <h4 class="mg-bottom-md">
                     {{ $t("backup.backup_destinations") }}
-                    <!-- <cv-interactive-tooltip
-              alignment="start"
-              direction="right"
-              class="info"
-            >
-              <template slot="trigger">
-                <Information16 />
-              </template>
-              <template slot="content">
-                {{ $t("backup.apps_configuration_tooltip") }}
-              </template>
-            </cv-interactive-tooltip> -->
                   </h4>
                   <div class="mg-bottom-lg">
                     {{
@@ -250,7 +186,7 @@
                           <NsButton
                             kind="ghost"
                             :icon="Upload20"
-                            @click="showAddRepoModal()"
+                            @click="showImportBackupDestinationModal()"
                             class="empty-state-button"
                             >{{ $t("backup.import_repository") }}
                           </NsButton>
@@ -292,25 +228,6 @@
                   </cv-column>
                 </cv-row>
                 <!-- repositories -->
-                <cv-row>
-                  <cv-column>
-                    <h6 class="mg-bottom-md">
-                      {{ $t("backup.repositories") }}
-                      <cv-interactive-tooltip
-                        alignment="start"
-                        direction="right"
-                        class="info"
-                      >
-                        <template slot="trigger">
-                          <Information16 />
-                        </template>
-                        <template slot="content">
-                          {{ $t("backup.repositories_tooltip") }}
-                        </template>
-                      </cv-interactive-tooltip>
-                    </h6>
-                  </cv-column>
-                </cv-row>
                 <cv-row v-if="error.listBackupRepositories">
                   <cv-column>
                     <NsInlineNotification
@@ -338,6 +255,13 @@
                       :icon="Add20"
                       @click="showAddRepoModal()"
                       >{{ $t("backup.add_repository") }}
+                    </NsButton>
+                    <NsButton
+                      kind="tertiary"
+                      :icon="Upload20"
+                      @click="showImportBackupDestinationModal()"
+                      class="mg-left-md"
+                      >{{ $t("backup.import_repository") }}
                     </NsButton>
                   </cv-column>
                 </cv-row>
@@ -680,21 +604,6 @@
             >
               <cv-row>
                 <cv-column>
-                  <!-- <h6 class="mg-bottom-md">
-                    {{ $t("backup.restore") }}
-                    <cv-interactive-tooltip
-                      alignment="start"
-                      direction="right"
-                      class="info"
-                    >
-                      <template slot="trigger">
-                        <Information16 />
-                      </template>
-                      <template slot="content">
-                        {{ $t("backup.restore_tooltip") }}
-                      </template>
-                    </cv-interactive-tooltip>
-                  </h6> -->
                   <div class="mg-bottom-sm">
                     {{
                       $t("backup.restore_applications_from_existing_backups")
@@ -845,6 +754,12 @@
       @hide="hideBackupPasswordModal"
       @password-set.once="reloadBackupRepositories"
     />
+    <!-- import backup destination modal -->
+    <ImportBackupDestinationModal
+      :state="importBackupDestinationModalState"
+      @import-backup-submit="onImportBackupSubmit"
+      @hide="hideImportBackupDestinationModal"
+    />
   </div>
 </template>
 
@@ -864,8 +779,10 @@ import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
 import RestoreSingleInstanceModal from "@/components/backup/RestoreSingleInstanceModal";
 import BackupPasswordModal from "@/components/backup/BackupPasswordModal";
+import ImportBackupDestinationModal, {
+  StateManager as ImportBackupStateManager,
+} from "@/components/backup/ImportBackupDestinationModal";
 import to from "await-to-js";
-import Information16 from "@carbon/icons-vue/es/information/16";
 import Upload20 from "@carbon/icons-vue/es/upload/20";
 
 export default {
@@ -878,7 +795,7 @@ export default {
     EditRepositoryModal,
     RestoreSingleInstanceModal,
     BackupPasswordModal,
-    Information16,
+    ImportBackupDestinationModal,
   },
   mixins: [
     TaskService,
@@ -906,6 +823,7 @@ export default {
       isShownBackupDetailsModal: false,
       isShownRestoreModal: false,
       isShownBackupPasswordModal: false,
+      importBackupDestinationModalState: new ImportBackupStateManager(),
       repositories: [],
       backups: [],
       unconfiguredInstances: [],
@@ -1120,6 +1038,72 @@ export default {
     },
     hideBackupPasswordModal() {
       this.isShownBackupPasswordModal = false;
+    },
+    showImportBackupDestinationModal() {
+      this.importBackupDestinationModalState.setVisible(true);
+    },
+    hideImportBackupDestinationModal() {
+      this.importBackupDestinationModalState.setVisible(false);
+    },
+    onImportBackupSubmit(data) {
+      if (data.backupFile) {
+        this.importBackupDestination(data.backupFile);
+      }
+    },
+    async importBackupDestination(backupFile) {
+      this.importBackupDestinationModalState.setLoading(true);
+      this.importBackupDestinationModalState.setBackupFileError("");
+      const taskAction = "import-backup-destination";
+
+      // Create FormData to send the file
+      const formData = new FormData();
+      formData.append("file", backupFile);
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.importBackupDestinationCompleted
+      );
+
+      // register to task error
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.importBackupDestinationAborted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: formData,
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.importBackupDestinationModalState.setBackupFileError(
+          this.getErrorMessage(err)
+        );
+        this.importBackupDestinationModalState.setLoading(false);
+        return;
+      }
+    },
+    importBackupDestinationCompleted() {
+      this.importBackupDestinationModalState.setLoading(false);
+      this.importBackupDestinationModalState.clear();
+      this.importBackupDestinationModalState.setVisible(false);
+      // Reload repositories after successful import
+      this.listBackupRepositories();
+    },
+    importBackupDestinationAborted(taskResult) {
+      this.importBackupDestinationModalState.setLoading(false);
+      this.importBackupDestinationModalState.setBackupFileError(
+        taskResult.error || this.$t("backup.import_failed")
+      );
     },
     async deleteRepo(repo) {
       this.error.removeBackupRepository = "";

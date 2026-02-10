@@ -446,7 +446,6 @@
     },
     "backup": {
         "title": "Backup and restore",
-        "repositories": "Destinations",
         "schedules": "Schedules",
         "no_backup_repository": "No backup destination",
         "configure_a_destination_to_restore_applications": "Configure a destination to restore applications from existing backups.",
