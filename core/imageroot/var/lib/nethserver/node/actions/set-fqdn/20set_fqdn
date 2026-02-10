@@ -19,8 +19,9 @@ hostnamectl set-hostname "${hostname}"
 
 # For localhost lines (127.0.0.1 or ::1), remove old hostname instead of commenting the line
 sed -i -E "/^(127\.0\.0\.1|::1)\s+.*\s(localhost|localhost4|localhost6)(\s|$)/{
-    s/\s${old_hostname}\s/ /g
-    s/\s${old_hostname}$//
+    s/\s+${old_hostname}\s+/ /g
+    s/\s+${old_hostname}$//
+    s/\s+/ /g
 }" /etc/hosts
 
 # Comment old hostname records in /etc/hosts (except localhost lines already handled above)
