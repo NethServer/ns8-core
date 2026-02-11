@@ -40,6 +40,14 @@ function send_inventory_nsent ()
         --header "Accept: application/json"  \
         --data @- \
         https://my.nethesis.it/api/systems/info >>/dev/null || :
+
+    # Temporary send data to new endpoint
+    # To be removed when the migration to new my.nethesis.it will be completed
+    print-phonehome | \
+    curl -m 180 --retry 3 -L -s \
+        --user "${system_id:?}:${auth_token:?}" \
+        -H "Content-Type: application/json" \
+        --data-binary @- https://my.nethesis.it/proxy/inventory >/dev/null || :
 }
 
 function send_inventory_nscom ()
