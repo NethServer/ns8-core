@@ -921,10 +921,11 @@ export default {
       this.loading.listBackupRepositories = true;
       this.error.listBackupRepositories = "";
       const taskAction = "list-backup-repositories";
+      const eventId = this.getUuid();
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.listBackupRepositoriesCompleted
       );
 
@@ -934,6 +935,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -958,9 +960,13 @@ export default {
       this.loading.listBackups = true;
       this.error.listBackups = "";
       const taskAction = "list-backups";
+      const eventId = this.getUuid();
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.listBackupsCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listBackupsCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -968,6 +974,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -1085,6 +1092,7 @@ export default {
       this.importBackupDestinationModalState.setLoading(true);
       this.importBackupDestinationModalState.setBackupFileError("");
       const taskAction = "import-backup-destinations";
+      const eventId = this.getUuid();
 
       try {
         // Convert file to base64
@@ -1092,16 +1100,14 @@ export default {
 
         // register to task completion
         this.$root.$once(
-          taskAction + "-completed",
+          `${taskAction}-completed-${eventId}`,
           this.importBackupDestinationCompleted
         );
-
         // register to task error
         this.$root.$once(
-          taskAction + "-aborted",
+          `${taskAction}-aborted-${eventId}`,
           this.importBackupDestinationAborted
         );
-
         const res = await to(
           this.createClusterTask({
             action: taskAction,
@@ -1112,6 +1118,7 @@ export default {
             extra: {
               title: this.$t("action." + taskAction),
               description: this.$t("common.processing"),
+              eventId,
             },
           })
         );
@@ -1164,10 +1171,11 @@ export default {
     async deleteRepo(repo) {
       this.error.removeBackupRepository = "";
       const taskAction = "remove-backup-repository";
+      const eventId = this.getUuid();
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.removeBackupRepositoryCompleted
       );
 
@@ -1180,6 +1188,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             description: this.$t("common.processing"),
+            eventId,
           },
         })
       );
@@ -1200,9 +1209,13 @@ export default {
     async deleteBackup(backup) {
       this.error.removeBackup = "";
       const taskAction = "remove-backup";
+      const eventId = this.getUuid();
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.removeBackupCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.removeBackupCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -1213,6 +1226,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             description: this.$t("common.processing"),
+            eventId,
           },
         })
       );
@@ -1233,10 +1247,10 @@ export default {
     async runBackup(backup) {
       this.error.runBackup = "";
       const taskAction = "run-backup";
-
+      const eventId = this.getUuid();
       // register to task completion
       this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", (taskContext) => {
+      this.$root.$once(`${taskAction}-completed-${eventId}`, (taskContext) => {
         // Store the actual task ID for cancellation
         if (taskContext && taskContext.id) {
           this.runningBackupTasks[backup.id] = taskContext.id;
@@ -1245,8 +1259,8 @@ export default {
       });
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", (taskContext) => {
+      // this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, (taskContext) => {
         this.runBackupAborted(taskContext, backup);
       });
 
@@ -1260,6 +1274,7 @@ export default {
             id: backup.id,
           },
           extra: {
+            eventId,
             title: this.$t("action." + taskAction),
             description: this.$t("backup.running_backup_name", {
               backupName: backup.name,
@@ -1331,15 +1346,13 @@ export default {
       const taskId = this.runningBackupTasks[backup.id];
 
       // register to task completion
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        () => this.cancelBackupTaskCompleted(backup)
+      this.$root.$once(`${taskAction}-completed-${eventId}`, () =>
+        this.cancelBackupTaskCompleted(backup)
       );
 
       // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        (taskResult) => this.cancelBackupTaskAborted(taskResult, backup)
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, (taskResult) =>
+        this.cancelBackupTaskAborted(taskResult, backup)
       );
 
       const res = await to(
@@ -1403,10 +1416,12 @@ export default {
       const taskDescription = backup.enabled
         ? this.$t("backup.disabling_backup", { backupName: backup.name })
         : this.$t("backup.enabling_backup", { backupName: backup.name });
-
+      const eventId = this.getUuid();
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.alterBackupCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.alterBackupCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -1423,6 +1438,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             description: taskDescription,
+            eventId,
           },
         })
       );
@@ -1441,18 +1457,17 @@ export default {
     async downloadClusterConfigurationBackup() {
       this.loading.downloadClusterBackup = true;
       const taskAction = "download-cluster-backup";
+      const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
       this.$root.$once(
-        taskAction + "-aborted",
+        `${taskAction}-aborted-${eventId}`,
         this.downloadClusterBackupAborted
       );
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.downloadClusterBackupCompleted
       );
 
@@ -1463,6 +1478,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
