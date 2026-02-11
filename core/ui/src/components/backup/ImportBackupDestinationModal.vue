@@ -133,7 +133,7 @@ export default {
     importBackupFile() {
       this.$emit("import-backup-submit", {
         backupFile: this.backupFile?.[0]?.file ?? null,
-        password: this.password,
+        backupPassword: this.password,
       });
     },
     cancelModal() {
