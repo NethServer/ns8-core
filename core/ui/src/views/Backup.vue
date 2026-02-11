@@ -1054,41 +1054,67 @@ export default {
       this.importBackupDestinationModalState.setLoading(true);
       this.importBackupDestinationModalState.setBackupFileError("");
       const taskAction = "import-backup-destinations";
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.importBackupDestinationCompleted
-      );
 
-      // register to task error
-      this.$root.$once(
-        taskAction + "-aborted",
-        this.importBackupDestinationAborted
-      );
+      try {
+        // Convert file to base64
+        const fileContent = await this.fileToBase64(data.backupFile);
 
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            backup_data: data.backupFile,
-            backup_password: data.backupPassword,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            description: this.$t("common.processing"),
-          },
-        })
-      );
-      const err = res[0];
+        // register to task completion
+        this.$root.$once(
+          taskAction + "-completed",
+          this.importBackupDestinationCompleted
+        );
 
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
+        // register to task error
+        this.$root.$once(
+          taskAction + "-aborted",
+          this.importBackupDestinationAborted
+        );
+
+        const res = await to(
+          this.createClusterTask({
+            action: taskAction,
+            data: {
+              backup_data: fileContent,
+              backup_password: data.backupPassword,
+            },
+            extra: {
+              title: this.$t("action." + taskAction),
+              description: this.$t("common.processing"),
+            },
+          })
+        );
+        const err = res[0];
+
+        if (err) {
+          console.error(`error creating task ${taskAction}`, err);
+          this.importBackupDestinationModalState.setBackupFileError(
+            this.getErrorMessage(err)
+          );
+          this.importBackupDestinationModalState.setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Error reading backup file", error);
         this.importBackupDestinationModalState.setBackupFileError(
-          this.getErrorMessage(err)
+          this.$t("backup.error_reading_backup_file") || "Error reading backup file"
         );
         this.importBackupDestinationModalState.setLoading(false);
-        return;
       }
+    },
+    fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onload = () => {
+          const binary = String.fromCharCode(...new Uint8Array(reader.result));
+          const base64 = btoa(binary);
+          resolve(base64);
+        };
+        reader.onerror = (error) => {
+          reject(error);
+        };
+      });
     },
     importBackupDestinationCompleted() {
       this.importBackupDestinationModalState.setLoading(false);

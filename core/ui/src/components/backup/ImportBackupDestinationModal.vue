@@ -22,6 +22,7 @@
           {{ $t("backup.import_destinations_description") }}
         </p>
         <cv-file-uploader
+          :key="componentKey"
           :label="$t('backup.cluster_backup_file')"
           :multiple="false"
           :clear-on-reselect="true"
@@ -100,6 +101,7 @@ export class StateManager {
 
   /**
    * Clear the state of the component.
+   * Only clears loading and errors, not visibility.
    */
   clear() {
     this.visible = false;
@@ -114,6 +116,7 @@ function initialData() {
   return {
     backupFile: null,
     password: "",
+    componentKey: Date.now(),
   };
 }
 
@@ -138,6 +141,7 @@ export default {
     },
     cancelModal() {
       this.clear();
+      this.state.setVisible(false);
     },
     clear() {
       this.state.clear();
@@ -151,8 +155,12 @@ export default {
     },
   },
   watch: {
-    "state.visible": function () {
-      Object.assign(this.$data, initialData());
+    "state.visible": function (newVal) {
+      if (newVal) {
+        // Reset form data when modal opens
+        // Use a new key to force file uploader recreation
+        Object.assign(this.$data, initialData());
+      }
     },
     "state.errors.backupFile": function (val) {
       if (this.backupFile && this.backupFile[0]) {
