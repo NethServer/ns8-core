@@ -639,7 +639,13 @@
         "replace_existing_app_is_not_available_tooltip": "Cannot replace the existing application. The application must be removed before the restoration",
         "replace_existing_app_tooltip": "Replace the existing application. The previous application will be removed and the new one will be restored",
         "replace_existing_app_select_an_app_tooltip": "Select an application to replace",
-        "wrong_password_or_no_key_found": "Wrong data encryption key or no key found"
+        "wrong_password_or_no_key_found": "Wrong data encryption key or no key found",
+        "import_destinations": "Import destinations",
+        "import_destinations_description":"Import backup destinations from a cluster backup file.",
+        "cluster_backup_file": "Cluster backup file",
+        "backup_password": "Backup password",
+        "enter_backup_password": "Enter backup password",
+        "import": "Import"
     },
     "calendar": {
         "days": "Days",
