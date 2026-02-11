@@ -5,7 +5,7 @@
 <template>
   <NsModal
     :visible="state.visible"
-    :primaryButtonDisabled="state.isLoading() || !isFileSelected"
+    :primaryButtonDisabled="state.isLoading() || !isFileSelected || !password"
     :isLoading="state.isLoading()"
     @primary-click="importBackupFile()"
     @secondary-click="cancelModal()"

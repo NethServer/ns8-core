@@ -1046,19 +1046,14 @@ export default {
       this.importBackupDestinationModalState.setVisible(false);
     },
     onImportBackupSubmit(data) {
-      if (data.backupFile) {
-        this.importBackupDestination(data.backupFile);
+      if (data.backupFile && data.backupPassword) {
+        this.importBackupDestination(data);
       }
     },
-    async importBackupDestination(backupFile) {
+    async importBackupDestination(data) {
       this.importBackupDestinationModalState.setLoading(true);
       this.importBackupDestinationModalState.setBackupFileError("");
-      const taskAction = "import-backup-destination";
-
-      // Create FormData to send the file
-      const formData = new FormData();
-      formData.append("file", backupFile);
-
+      const taskAction = "import-backup-destinations";
       // register to task completion
       this.$root.$once(
         taskAction + "-completed",
@@ -1074,7 +1069,10 @@ export default {
       const res = await to(
         this.createClusterTask({
           action: taskAction,
-          data: formData,
+          data: {
+            backup_data: data.backupFile,
+            backup_password: data.backupPassword,
+          },
           extra: {
             title: this.$t("action." + taskAction),
             description: this.$t("common.processing"),
