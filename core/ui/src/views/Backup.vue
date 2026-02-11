@@ -373,6 +373,16 @@
                     />
                   </cv-column>
                 </cv-row>
+                <cv-row v-if="error.cancelBackup">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="error"
+                      :title="$t('backup.cancel_backup')"
+                      :description="error.cancelBackup"
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
                 <!-- empty state backups -->
                 <cv-row v-if="!backups.length">
                   <cv-column>
@@ -467,45 +477,57 @@
                               class="top-right-overflow-menu"
                             >
                               <cv-overflow-menu-item
-                                @click="runBackup(backup)"
-                                :disabled="!backup.enabled"
-                              >
-                                <NsMenuItem
-                                  :icon="Save20"
-                                  :label="$t('backup.run_backup_now')"
-                                />
-                              </cv-overflow-menu-item>
-                              <cv-overflow-menu-item
-                                @click="toggleBackupStatus(backup)"
-                                :disabled="loading.alterBackup"
-                              >
-                                <NsMenuItem
-                                  :icon="Power20"
-                                  :label="
-                                    backup.enabled
-                                      ? $t('common.disable')
-                                      : $t('common.enable')
-                                  "
-                                />
-                              </cv-overflow-menu-item>
-                              <cv-overflow-menu-item
-                                @click="showEditBackupModal(backup)"
-                              >
-                                <NsMenuItem
-                                  :icon="Edit20"
-                                  :label="$t('common.edit')"
-                                />
-                              </cv-overflow-menu-item>
-                              <NsMenuDivider />
-                              <cv-overflow-menu-item
+                                v-if="isBackupRunning(backup.id)"
                                 danger
-                                @click="showDeleteBackupModal(backup)"
+                                @click="cancelBackupTask(backup)"
                               >
                                 <NsMenuItem
-                                  :icon="TrashCan20"
-                                  :label="$t('common.delete')"
+                                  :icon="StopFilled20"
+                                  :label="$t('backup.cancel_backup')"
                                 />
                               </cv-overflow-menu-item>
+                              <template v-else>
+                                <cv-overflow-menu-item
+                                  @click="runBackup(backup)"
+                                  :disabled="!backup.enabled"
+                                >
+                                  <NsMenuItem
+                                    :icon="Save20"
+                                    :label="$t('backup.run_backup_now')"
+                                  />
+                                </cv-overflow-menu-item>
+                                <cv-overflow-menu-item
+                                  @click="toggleBackupStatus(backup)"
+                                  :disabled="loading.alterBackup"
+                                >
+                                  <NsMenuItem
+                                    :icon="Power20"
+                                    :label="
+                                      backup.enabled
+                                        ? $t('common.disable')
+                                        : $t('common.enable')
+                                    "
+                                  />
+                                </cv-overflow-menu-item>
+                                <cv-overflow-menu-item
+                                  @click="showEditBackupModal(backup)"
+                                >
+                                  <NsMenuItem
+                                    :icon="Edit20"
+                                    :label="$t('common.edit')"
+                                  />
+                                </cv-overflow-menu-item>
+                                <NsMenuDivider />
+                                <cv-overflow-menu-item
+                                  danger
+                                  @click="showDeleteBackupModal(backup)"
+                                >
+                                  <NsMenuItem
+                                    :icon="TrashCan20"
+                                    :label="$t('common.delete')"
+                                  />
+                                </cv-overflow-menu-item>
+                              </template>
                             </cv-overflow-menu>
                           </template>
                           <template #content>
@@ -784,6 +806,7 @@ import ImportBackupDestinationModal, {
 } from "@/components/backup/ImportBackupDestinationModal";
 import to from "await-to-js";
 import Upload20 from "@carbon/icons-vue/es/upload/20";
+import StopFilled20 from "@carbon/icons-vue/es/stop--filled/20";
 
 export default {
   name: "Backup",
@@ -815,6 +838,7 @@ export default {
         view: "backup",
       },
       Upload20,
+      StopFilled20,
       isShownCreateOrEditBackupModal: false,
       isShownDeleteRepoModal: false,
       isShownRepoDetailsModal: false,
@@ -854,7 +878,9 @@ export default {
         alterBackup: "",
         downloadClusterBackup: "",
         passwordClusterBackup: "",
+        cancelBackup: "",
       },
+      runningBackupTasks: {},
     };
   },
   computed: {
@@ -863,6 +889,11 @@ export default {
     },
     erroredBackups() {
       return this.backups.filter((b) => b.errorInstances.length);
+    },
+    isBackupRunning() {
+      return (backupId) => {
+        return !!this.runningBackupTasks[backupId];
+      };
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -1097,7 +1128,8 @@ export default {
       } catch (error) {
         console.error("Error reading backup file", error);
         this.importBackupDestinationModalState.setBackupFileError(
-          this.$t("backup.error_reading_backup_file") || "Error reading backup file"
+          this.$t("backup.error_reading_backup_file") ||
+            "Error reading backup file"
         );
         this.importBackupDestinationModalState.setLoading(false);
       }
@@ -1204,11 +1236,22 @@ export default {
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.runBackupCompleted);
+      this.$root.$once(taskAction + "-completed", (taskContext) => {
+        // Store the actual task ID for cancellation
+        if (taskContext && taskContext.id) {
+          this.runningBackupTasks[backup.id] = taskContext.id;
+        }
+        this.runBackupCompleted(taskContext, backup);
+      });
 
       // register to task error
       this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.runBackupAborted);
+      this.$root.$once(taskAction + "-aborted", (taskContext) => {
+        this.runBackupAborted(taskContext, backup);
+      });
+
+      // Mark backup as running immediately
+      this.$set(this.runningBackupTasks, backup.id, true);
 
       const res = await to(
         this.createClusterTask({
@@ -1230,17 +1273,111 @@ export default {
         })
       );
       const err = res[0];
+      const taskResult = res[1];
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.runBackup = this.getErrorMessage(err);
+        // Clear the running status on error
+        delete this.runningBackupTasks[backup.id];
+        return;
+      }
+
+      // Try to capture task ID from the created task if available
+      // The response might be the task object itself or contain it in different ways
+      let capturedTaskId = null;
+      if (taskResult) {
+        // Try different possible paths to find the task ID
+        capturedTaskId =
+          taskResult.data?.data?.id ||
+          taskResult.data?.id ||
+          taskResult.id ||
+          taskResult.task?.id ||
+          (Array.isArray(taskResult) && taskResult[0]?.id) ||
+          null;
+
+        if (capturedTaskId) {
+          this.runningBackupTasks[backup.id] = capturedTaskId;
+          console.log(
+            `Captured task ID for backup ${backup.id}:`,
+            capturedTaskId
+          );
+        } else {
+          console.log(
+            `Could not extract task ID from response for backup ${backup.id}:`,
+            taskResult
+          );
+        }
+      }
+    },
+    runBackupCompleted(taskContext, backup) {
+      // Clear the running task tracking
+      if (backup && backup.id) {
+        delete this.runningBackupTasks[backup.id];
+      }
+      this.listBackups();
+    },
+    runBackupAborted(taskContext, backup) {
+      // Clear the running task tracking
+      if (backup && backup.id) {
+        delete this.runningBackupTasks[backup.id];
+      }
+      this.listBackups();
+    },
+    async cancelBackupTask(backup) {
+      this.error.cancelBackup = "";
+      const taskAction = "cancel-task";
+      const eventId = this.getUuid();
+      const taskId = this.runningBackupTasks[backup.id];
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        () => this.cancelBackupTaskCompleted(backup)
+      );
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        (taskResult) => this.cancelBackupTaskAborted(taskResult, backup)
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            task: taskId,
+          },
+          extra: {
+            title: this.$t("common.cancel"),
+            description: this.$t("backup.canceling_backup", {
+              backupName: backup.name,
+            }),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.cancelBackup = this.getErrorMessage(err);
         return;
       }
     },
-    runBackupCompleted() {
+    cancelBackupTaskCompleted(backup) {
+      // Clear the running task tracking
+      if (backup && backup.id) {
+        delete this.runningBackupTasks[backup.id];
+      }
+      // Reload backups
       this.listBackups();
     },
-    runBackupAborted() {
+    cancelBackupTaskAborted(taskResult, backup) {
+      if (backup && backup.id) {
+        delete this.runningBackupTasks[backup.id];
+      }
+      // Reload backups
       this.listBackups();
     },
     onBackupCreated(runBackupOnFinish, createdBackup) {

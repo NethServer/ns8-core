@@ -646,7 +646,11 @@
         "cluster_backup_file": "Cluster backup file",
         "backup_password": "Backup password",
         "enter_backup_password": "Enter backup password",
-        "import": "Import"
+        "import": "Import",
+        "cancel_backup": "Cancel backup",
+        "canceling_backup": "Canceling {backupName}...",
+        "backup_cancelled": "Backup cancelled",
+        "cancel_backup_failed": "Failed to cancel backup"
     },
     "calendar": {
         "days": "Days",
