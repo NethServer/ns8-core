@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import sys
+import os
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--htpasswd", required=False, help="Write credentials into HTPASSWD file")
+    parser.add_argument("--config", required=False, help="Write configuration into CONFIG file")
+    parser.add_argument("--gid", type=int, required=False, help="Change the group of written files")
+    args = parser.parse_args()
+    os.umask(0o137)
+    if args.config:
+        target_file = args.config
+        with agent.safe_open(target_file, "w") as fd:
+            write_config(fd)
+        if args.gid:
+            os.chown(target_file, -1, args.gid)
+    if args.htpasswd:
+        target_file = args.htpasswd
+        with agent.safe_open(target_file, "w") as fd:
+            write_htpasswd(fd)
+        if args.gid:
+            os.chown(target_file, -1, args.gid)
+    if not args.config and not args.htpasswd:
+        write_config(sys.stdout)
+
+def write_htpasswd(fileo):
+    rdb = agent.redis_connect(privileged=True)
+    for node_id in set(rdb.hvals("cluster/module_node")):
+        key = "node/" + node_id
+        try:
+            secret = rdb.get(f'private/node/{node_id}/rclone_webdav_pass')
+        except Exception:
+            secret = None
+        if key and secret:
+            print(f"{key}:{secret}", file=fileo)
+    try:
+        htpasswd_map = rdb.hgetall('private/nodes/rclone_webdav_htpasswd')
+    except Exception:
+        htpasswd_map = dict()
+    for key, secret in htpasswd_map.items():
+        if key and secret:
+            print(f"{key}:{secret}", file=fileo)
+
+def write_config(fileo):
+    rdb = agent.redis_connect(privileged=True)
+    destinations = []
+    print(";\n; generated automatically from Redis DB contents\n;\n", file=fileo)
+    try:
+        rclone_conf_map = rdb.hgetall('private/nodes/backup_destination/rclone_conf')
+    except Exception:
+        rclone_conf_map = dict()
+    for key, conf in rclone_conf_map.items():
+        conf = conf.strip() + "\n"
+        if conf:
+            try:
+                basepath = rdb.hget('private/nodes/backup_destination/parameters/' + key, 'basepath') or ""
+            except Exception:
+                continue
+            destinations.append(f"{key}={key}:{basepath}")
+            print(conf, file=fileo)
+    # The "combined" remote merges all other destinations in a unique
+    # logical tree, where root-level elements correspond to destination
+    # UUIDs.
+    if destinations:
+        print((
+            "[combined]\n"
+            "type = combine\n"
+            "upstreams = " + ' '.join(destinations) + "\n"
+        ), file=fileo)
+
+if __name__ == '__main__':
+    main()

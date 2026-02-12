@@ -1,15 +1,24 @@
 [Unit]
-Description=Rclone WebDAV server
+Description=Rclone WebDAV + Rest server
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
-Environment=OPTIONS=
 Environment=BACKUP_VOLUME=rclone-webdav
+Environment=RCLONE_CONFIG=/etc/rclone/rclone.conf
+Environment=RCLONE_CACHE_DIR=/var/cache/rclone
+Environment=RCLONE_UNIX_SOCKET=/run/rclone/rc.sock
 EnvironmentFile=/etc/nethserver/core.env
 EnvironmentFile=-/var/lib/nethserver/node/state/rclone-webdav.env
 Restart=always
 TimeoutStopSec=120
 ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
+ExecStartPre=mkdir -vp rclone
+ExecStartPre=runagent -m node \
+    generate-rclone-config \
+    --gid=101 \
+    --config=rclone/rclone.conf \
+    --htpasswd=rclone/agents.htpasswd \
+
 ExecStart=/usr/bin/podman run \
     --conmon-pidfile=%t/%N.pid \
     --cidfile=%t/%N.cid \
@@ -18,12 +27,35 @@ ExecStart=/usr/bin/podman run \
     --log-opt=tag=%N \
     --replace --name=%N \
     --network=host \
-    --user=restic:restic \
-    --volume=${BACKUP_VOLUME}:/srv/repo:z \
+    --user=rclone:rclone \
+    --env=RCLONE_* \
+    --volume=./rclone:/etc/rclone:z \
+    --volume=rclone-cache:/var/cache/rclone \
+    --volume=${BACKUP_VOLUME}:/srv/repo \
     --entrypoint=[] \
-    ${RESTIC_IMAGE} rclone serve webdav /srv/repo --addr :4694 $OPTIONS
+    ${RESTIC_IMAGE} rclone --metrics-addr :4693 \
+        rcd \
+        --rc-no-auth \
+        --rc-addr=${RCLONE_UNIX_SOCKET} \
 
-ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 90
+ExecStartPost=sleep 1
+
+ExecStartPost=podman exec %N rclone rc serve/start \
+    type=webdav \
+    fs=combined: \
+    addr=:4694 \
+    vfs_cache_mode=full \
+    htpasswd=/etc/rclone/agents.htpasswd \
+
+ExecStartPost=podman exec %N rclone rc serve/start \
+    type=restic \
+    fs=combined: \
+    addr=:4695 \
+    htpasswd=/etc/rclone/agents.htpasswd \
+
+WorkingDirectory=/var/lib/nethserver/node/state
+ExecReload=runagent -m node generate-rclone-config --gid=101 --htpasswd=rclone/agents.htpasswd
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 115
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
 PIDFile=%t/%N.pid
 Type=forking
