@@ -1,0 +1,53 @@
+[Unit]
+Description=Rclone Gateway server
+After=redis.service
+Wants=redis.service
+StartLimitIntervalSec=10s
+StartLimitBurst=3
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Environment=BACKUP_VOLUME=rclone-webdav
+EnvironmentFile=/etc/nethserver/core.env
+EnvironmentFile=-/var/lib/nethserver/node/state/rclone-webdav.env
+Restart=always
+TimeoutStopSec=120
+TimeoutStartSec=120
+ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
+ExecStartPre=mkdir -vp rclone haproxy
+ExecStartPre=-runagent -m node generate-rclone-config \
+    --rclonedir=rclone \
+    --haproxydir=haproxy
+ExecStart=/usr/bin/podman run \
+    --conmon-pidfile=%t/%N.pid \
+    --cidfile=%t/%N.cid \
+    --cgroups=no-conmon \
+    --detach \
+    --log-opt=tag=%N \
+    --replace --name=%N \
+    --network=host \
+    --volume=./rclone:/etc/rclone:ro,Z \
+    --volume=./haproxy:/etc/haproxy:ro,Z \
+    --volume=${BACKUP_VOLUME}:/srv/repo:z \
+    --mount=type=tmpfs,tmpfs-size=10M,destination=/var/lib/rclone,chown=true \
+    --volume=rclone-cache:/var/cache/rclone:Z \
+    --entrypoint=rclone-gateway-entrypoint.sh \
+    --env-file=haproxy/config.env \
+    ${RCLONE_IMAGE}
+
+WorkingDirectory=/var/lib/nethserver/node/state
+ExecReload=runagent -m node generate-rclone-config \
+    --rclonedir=rclone \
+    --haproxydir=haproxy
+ExecReload=runagent -m node podman kill --signal HUP %N
+ExecReload=runagent -m node generate-rclone-config \
+    --rclonedir=rclone \
+    --retry=10
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 115
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
+PIDFile=%t/%N.pid
+Type=forking
+
+[Install]
+WantedBy=default.target
+Alias=rclone-webdav.service
