@@ -579,6 +579,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/parser@npm:^7.23.5":
+  version: 7.29.0
+  resolution: "@babel/parser@npm:7.29.0"
+  dependencies:
+    "@babel/types": ^7.29.0
+  bin:
+    parser: ./bin/babel-parser.js
+  checksum: b4a1bd3cf46712e439286db9a4105dfa741b5a7720fa1f38f33719cf4f1da9df9fc5b6686128890bd6a62debba287d8d472af153dd629fd4a0a44fe55413cd68
+  languageName: node
+  linkType: hard
+
 "@babel/parser@npm:^7.24.7, @babel/parser@npm:^7.28.6":
   version: 7.28.6
   resolution: "@babel/parser@npm:7.28.6"
@@ -1794,6 +1805,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/types@npm:^7.29.0":
+  version: 7.29.0
+  resolution: "@babel/types@npm:7.29.0"
+  dependencies:
+    "@babel/helper-string-parser": ^7.27.1
+    "@babel/helper-validator-identifier": ^7.28.5
+  checksum: 83f190438e94c22b2574aaeef7501830311ef266eaabfb06523409f64e2fe855e522951607085d71cad286719adef14e1ba37b671f334a7cd25b0f8506a01e0b
+  languageName: node
+  linkType: hard
+
 "@carbon/colors@npm:^10.37.5":
   version: 10.37.5
   resolution: "@carbon/colors@npm:10.37.5"
@@ -1814,14 +1835,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@carbon/icon-helpers@npm:^10.14.0":
-  version: 10.25.0
-  resolution: "@carbon/icon-helpers@npm:10.25.0"
-  checksum: 367c03a1362c02a7a977b94a57277c60e202cebac9de3ff7292911d2a2dbbebedd555cf3e0d1ee9ea4964a496f731316ac9d6532d986be89200134e70c5f1b20
-  languageName: node
-  linkType: hard
-
-"@carbon/icon-helpers@npm:^10.72.0":
+"@carbon/icon-helpers@npm:^10.37.0, @carbon/icon-helpers@npm:^10.72.0":
   version: 10.72.0
   resolution: "@carbon/icon-helpers@npm:10.72.0"
   dependencies:
@@ -1830,12 +1844,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@carbon/icons-vue@npm:10.27.0":
-  version: 10.27.0
-  resolution: "@carbon/icons-vue@npm:10.27.0"
+"@carbon/icons-vue@npm:10.63.0":
+  version: 10.63.0
+  resolution: "@carbon/icons-vue@npm:10.63.0"
   dependencies:
-    "@carbon/icon-helpers": ^10.14.0
-  checksum: 9bdbd58db21f8c68f09ceca806c0ee5e5248489c5c8bcddfc99c202889c91519872f059fbec6f9f65782d25b54e95f0ec37f9e4cecf9af63cedd9ea51b56d8a9
+    "@carbon/icon-helpers": ^10.37.0
+  checksum: cdaaf5755d0bcdc1f253d640d9e0baf5e1ad46dd14867fab182c7defa8ad11edd91c8ad2257de03320d7672f5ca3660c8cdb0cea2ff4cf2a9b8b068b2c63fe3b
   languageName: node
   linkType: hard
 
@@ -1867,7 +1881,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@carbon/telemetry@npm:0.0.0-alpha.6, @carbon/telemetry@npm:^0.0.0-alpha.6":
+"@carbon/telemetry@npm:0.0.0-alpha.6":
   version: 0.0.0-alpha.6
   resolution: "@carbon/telemetry@npm:0.0.0-alpha.6"
   dependencies:
@@ -1884,6 +1898,15 @@ __metadata:
   bin:
     carbon-telemetry: bin/carbon-telemetry.js
   checksum: 2f3cb8c0b6c8513cd3d9c1c0024108145474ad472800133732f382e007e75d926d274f5fca0e557b651616d065f28b7a149fe0f5f132cd6e018f714056a39f76
+  languageName: node
+  linkType: hard
+
+"@carbon/telemetry@npm:0.1.0, @carbon/telemetry@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@carbon/telemetry@npm:0.1.0"
+  bin:
+    carbon-telemetry: bin/carbon-telemetry.js
+  checksum: e93039763ed40b612a1cb5c70001d5e7e92ff034f1559676d47ce9a98e6285ba2856f6a59146b03e6349702eb96d61f2fe91349e981ca858e45c4527a3c1e876
   languageName: node
   linkType: hard
 
@@ -1912,15 +1935,15 @@ __metadata:
   linkType: hard
 
 "@carbon/vue@npm:^2.40.0":
-  version: 2.40.0
-  resolution: "@carbon/vue@npm:2.40.0"
+  version: 2.45.1
+  resolution: "@carbon/vue@npm:2.45.1"
   dependencies:
-    "@carbon/icons-vue": 10.27.0
-    "@carbon/telemetry": ^0.0.0-alpha.6
-    carbon-components: 10.30.0
-    flatpickr: 4.6.9
-    vue: ^2.6.12
-  checksum: 1040947b6cf217d34976a3bee83a8cbf59af0ae290a9ca290b59750db5194e98c0c60696ce49f4f2613f4d841218f1b21f84156d4552041611c9421463f45a59
+    "@carbon/icons-vue": 10.63.0
+    "@carbon/telemetry": ^0.1.0
+    carbon-components: 10.58.5
+    flatpickr: 4.6.13
+    vue: ^2.7.10
+  checksum: 5d5a0cdbcb8fc6423610085462c94aeaf512abe82e8fc15758c3f7a3fc8926ca9409ca62c9185eb4e4b7bd1769ed7b9fe69f809f09d19a357966b16064dc1687
   languageName: node
   linkType: hard
 
@@ -4235,6 +4258,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vue/compiler-sfc@npm:2.7.16":
+  version: 2.7.16
+  resolution: "@vue/compiler-sfc@npm:2.7.16"
+  dependencies:
+    "@babel/parser": ^7.23.5
+    postcss: ^8.4.14
+    prettier: ^1.18.2 || ^2.0.0
+    source-map: ^0.6.1
+  dependenciesMeta:
+    prettier:
+      optional: true
+  checksum: cf3e498ff01f0876769fa0ec2fc679f18238c42b96ee19744cca94b0b0d0c25c274e7fcad536dab3efb4aad48558219dba861c3937d06d9d91d55be368747097
+  languageName: node
+  linkType: hard
+
 "@vue/compiler-sfc@npm:^3.2.0":
   version: 3.2.24
   resolution: "@vue/compiler-sfc@npm:3.2.24"
@@ -6253,15 +6291,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"carbon-components@npm:10.30.0":
-  version: 10.30.0
-  resolution: "carbon-components@npm:10.30.0"
+"carbon-components@npm:10.58.5":
+  version: 10.58.5
+  resolution: "carbon-components@npm:10.58.5"
   dependencies:
-    "@carbon/telemetry": 0.0.0-alpha.6
+    "@carbon/telemetry": 0.1.0
     flatpickr: 4.6.1
     lodash.debounce: ^4.0.8
     warning: ^3.0.0
-  checksum: fd17389dd42115515935756946f96a3dca784255bf3df3d48b963894e7e17d66966ddc36921d4170c0a4c8a44ca95590da1c368596b0fdbfd109f4083d5732fe
+  checksum: 120de6f43908a90310230dedde194ab2a8751da257c4258306aa35900df6c0e97cda2d73e7455be9a49ca529d4a579c3b721a41ed6665d0c4abc98efb38488ca
   languageName: node
   linkType: hard
 
@@ -7460,6 +7498,13 @@ __metadata:
   dependencies:
     css-tree: ^1.1.2
   checksum: 380ba9663da3bcea58dee358a0d8c4468bb6539be3c439dc266ac41c047217f52fd698fb7e4b6b6ccdfb8cf53ef4ceed8cc8ceccb8dfca2aa628319826b5b998
+  languageName: node
+  linkType: hard
+
+"csstype@npm:^3.1.0":
+  version: 3.2.3
+  resolution: "csstype@npm:3.2.3"
+  checksum: cb882521b3398958a1ce6ca98c011aec0bde1c77ecaf8a1dd4db3b112a189939beae3b1308243b2fe50fc27eb3edeb0f73a5a4d91d928765dc6d5ecc7bda92ee
   languageName: node
   linkType: hard
 
@@ -9490,10 +9535,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatpickr@npm:4.6.9":
-  version: 4.6.9
-  resolution: "flatpickr@npm:4.6.9"
-  checksum: 4702ad182531af0524b2fc74a70e06d276ff91918449092b3a11c464cb5a5e010df6c7cc9ff92e8b8373f81b238ea85d911ce9b3b883ee8df5085180cc3aea13
+"flatpickr@npm:4.6.13":
+  version: 4.6.13
+  resolution: "flatpickr@npm:4.6.13"
+  checksum: 2cca1b8dc974e7673b51174ee3f0679ae3a6b79525a0c53bf49b87455ef358354e64acfd60b312e44cef208aab9750a1a48df32a0914046a53de6d9403742304
   languageName: node
   linkType: hard
 
@@ -13342,7 +13387,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.1":
+"nanoid@npm:^3.3.1, nanoid@npm:^3.3.11":
   version: 3.3.11
   resolution: "nanoid@npm:3.3.11"
   bin:
@@ -15136,6 +15181,17 @@ __metadata:
     picocolors: ^1.0.0
     source-map-js: ^1.0.1
   checksum: 6cf3fe0ecdf5a0d2aeb5e8404938c7eab968704e2e29dc5421e90b4014eb1975c1c0ad828425f2428807ef6e3fcfadd71f988ab55cb06c28ac2866f22403255b
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^8.4.14":
+  version: 8.5.6
+  resolution: "postcss@npm:8.5.6"
+  dependencies:
+    nanoid: ^3.3.11
+    picocolors: ^1.1.1
+    source-map-js: ^1.2.1
+  checksum: 20f3b5d673ffeec2b28d65436756d31ee33f65b0a8bedb3d32f556fbd5973be38c3a7fb5b959a5236c60a5db7b91b0a6b14ffaac0d717dce1b903b964ee1c1bb
   languageName: node
   linkType: hard
 
@@ -16964,6 +17020,13 @@ __metadata:
   version: 1.0.1
   resolution: "source-map-js@npm:1.0.1"
   checksum: 22606113d62bbd468712b0cb0c46e9a8629de7eb081049c62a04d977a211abafd7d61455617f8b78daba0b6c0c7e7c88f8c6b5aaeacffac0a6676ecf5caac5ce
+  languageName: node
+  linkType: hard
+
+"source-map-js@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "source-map-js@npm:1.2.1"
+  checksum: 4eb0cd997cdf228bc253bcaff9340afeb706176e64868ecd20efbe6efea931465f43955612346d6b7318789e5265bdc419bc7669c1cebe3db0eb255f57efa76b
   languageName: node
   linkType: hard
 
@@ -18950,10 +19013,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue@npm:^2.6.11, vue@npm:^2.6.12":
+"vue@npm:^2.6.11":
   version: 2.6.14
   resolution: "vue@npm:2.6.14"
   checksum: 23524a1bdca094d62cb3491a46317eed75184b5d61d28fa846ea5d2b241c1cc7084fc67ee259d47a50a6d0bbc33ecaceb7bb52bff81312fe7da07263f3419942
+  languageName: node
+  linkType: hard
+
+"vue@npm:^2.7.10":
+  version: 2.7.16
+  resolution: "vue@npm:2.7.16"
+  dependencies:
+    "@vue/compiler-sfc": 2.7.16
+    csstype: ^3.1.0
+  checksum: 42eb129edbd2b647b7a5e0655d69fb2dfcba55009bd4cc6a80da5006ba19054bcbf56554599d9b4379f4aa3bfabc0b4e68c0d7fb47d92b5e41d56b38791553eb
   languageName: node
   linkType: hard
 
