@@ -6,7 +6,13 @@
 #
 
 exec 1>&2
-set -e
 
-# Restart the local backup destination WebDAV server:
-systemctl restart rclone-webdav.service
+if [[ ! -d rclone ]] ; then
+    # Replace rclone-webdav with the gateway service:
+    systemctl disable --now rclone-webdav.service
+    rm -vf /etc/systemd/system/rclone-webdav.service \
+        /etc/systemd/system/default.target.wants/rclone-webdav.service
+    systemctl enable rclone-gateway.service
+fi
+
+systemctl restart rclone-gateway.service

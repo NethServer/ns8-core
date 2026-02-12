@@ -76,6 +76,7 @@ printf "CORE_IMAGE=${repobase}/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_f
 printf "REDIS_IMAGE=${repobase}/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RSYNC_IMAGE=${repobase}/rsync:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RESTIC_IMAGE=${repobase}/restic:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
+printf "RCLONE_IMAGE=${repobase}/rclone:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "SUPPORT_IMAGE=${repobase}/support:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "PROMTAIL_IMAGE=docker.io/grafana/alloy:v1.11.3\n" >> "${core_env_file}"
 printf "NODE_EXPORTER_IMAGE=quay.io/prometheus/node-exporter:v1.10.2\n" >> "${core_env_file}"
@@ -83,7 +84,7 @@ chmod -c 644 "${core_env_file}"
 source "${core_env_file}"
 buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
 buildah config \
-    --label="org.nethserver.images=${REDIS_IMAGE} ${RSYNC_IMAGE} ${RESTIC_IMAGE} ${PROMTAIL_IMAGE} ${SUPPORT_IMAGE} ${NODE_EXPORTER_IMAGE}" \
+    --label="org.nethserver.images=${REDIS_IMAGE} ${RSYNC_IMAGE} ${RESTIC_IMAGE} ${RCLONE_IMAGE} ${PROMTAIL_IMAGE} ${SUPPORT_IMAGE} ${NODE_EXPORTER_IMAGE}" \
     --label="org.nethserver.flags=core_module" \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
@@ -124,22 +125,35 @@ buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
-echo "Building the restic/rclone image..."
+echo "Building the restic image..."
 container=$(buildah from docker.io/library/alpine:3.23.4)
 reponame="restic"
-buildah add "${container}" restic/ /
 buildah run ${container} sh <<'EOF'
-apk add --no-cache restic rclone
-addgroup -S restic
-adduser -S -D -H -h /dev/null -s /sbin/nologin -G restic restic
-mkdir -v -p -m 0750 /srv/repo
-chown -c restic:restic /srv/repo
+apk add --no-cache restic
 EOF
 buildah config \
     --cmd='[]' \
     --entrypoint='["/usr/bin/restic"]' \
-    --env='RCLONE_CONFIG=/dev/null' \
-    --volume=/srv/repo \
+    ${container}
+buildah commit "${container}" "${repobase}/${reponame}"
+buildah rm "${container}"
+images+=("${repobase}/${reponame}")
+
+echo "Building the rclone image..."
+container=$(buildah from docker.io/library/alpine:3.23.4)
+reponame="rclone"
+buildah add "${container}" rclone/ /
+buildah run ${container} sh <<'EOF'
+addgroup -S rclone -g 101
+adduser -u 100 -S -D -h /var/lib/rclone -s /sbin/nologin -G rclone rclone
+apk add --no-cache rclone haproxy bash
+EOF
+buildah config \
+    --user=rclone:rclone \
+    --cmd='[]' \
+    --entrypoint='["/usr/bin/rclone"]' \
+    --env=RCLONE_CACHE_DIR=/var/cache/rclone \
+    --env=RCLONE_CONFIG=/etc/rclone/rclone.conf \
     ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"

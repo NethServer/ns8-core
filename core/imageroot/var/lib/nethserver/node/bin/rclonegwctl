@@ -1,0 +1,241 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import sys
+import os
+import argparse
+import cluster.backup
+import configparser
+import time
+
+
+def main():
+    rootp = argparse.ArgumentParser()
+    subp = rootp.add_subparsers(dest="cmd", required=True)
+    cfgp = subp.add_parser('write-configuration', help="Write configuration files")
+    cfgp.add_argument("--rclonedir", required=True, help="Write rclone configuration file to given directory")
+    cfgp.add_argument("--haproxydir", required=True, help="Write HAProxy configuration files to given directory")
+    waitp = subp.add_parser('wait-webdav', help="Check if WebDAV service is up")
+    waitp.add_argument("--attempts", required=False, type=int, default=5)
+    args = rootp.parse_args()
+    rdb = agent.redis_connect(privileged=True, use_replica=True)
+    if args.cmd == 'write-configuration':
+        write_config_env("rclone-webdav.env", rdb)
+        if args.rclonedir:
+            rclone_conf = args.rclonedir + '/rclone.conf'
+            write_rclonecfg(rclone_conf, rdb)
+        if args.haproxydir:
+            write_haproxy_cfg(args.haproxydir + '/haproxy.cfg', rdb)
+            write_auth_map(args.haproxydir + '/auth.map', rdb)
+            write_modrepomap(args.haproxydir + "/modrepo.map", rdb)
+    elif args.cmd == 'wait-webdav':
+        retry_webdav_startup(args.attempts)
+
+def retry_webdav_startup(attempts):
+    check_url = cluster.backup.GATEWAY_URL
+    with cluster.backup.TimeoutSession(timeout=(3, 10)) as rses:
+        for attempt in range(1, attempts):
+            req = rses.options(check_url)
+            if req.status_code == 200:
+                break
+            time.sleep(1)
+        else:
+            print("[ERROR] Retry attempts exhausted!", file=sys.stderr)
+            sys.exit(1)
+
+def write_haproxy_cfg(file_path, rdb):
+    with open(os.environ['AGENT_INSTALL_DIR'] + '/etc/haproxy/haproxy.cfg', 'r') as fp:
+        cfg_template = fp.read()
+
+    frontend_data = "\n"
+    backends_data = "\n"
+
+    try:
+        rclone_conf_map = rdb.hgetall('private/nodes/backup_destination/rclone_conf')
+    except Exception as ex:
+        rclone_conf_map = {}
+
+    mnode_addr = {}
+    for node_id in set(rdb.hvals("cluster/module_node")):
+        node_addr = rdb.hget(f"node/{node_id}/vpn", "ip_address")
+        mnode_addr[node_id] = node_addr
+
+    for dest_uuid, rclone_conf in rclone_conf_map.items():
+        try:
+            oconf = cluster.backup.parse_rclone_params(rclone_conf)
+            backup_conf = rdb.hgetall('cluster/backup_repository/' + dest_uuid)
+        except Exception as ex:
+            print(f"[WARNING] Failed to obtain configuration of {dest_uuid}!", ex, file=sys.stderr)
+            continue
+
+        dtype = oconf.get('type', 'ty')
+        durl = backup_conf.get('url', '')
+
+        if backup_conf['provider'] == 'cluster':
+            dest_fe_cfg, dest_be_cfg = generate_haproxy_internal_cfg(dtype, dest_uuid, oconf, durl, mnode_addr)
+        else:
+            dest_fe_cfg, dest_be_cfg = generate_haproxy_remote_cfg(dtype, dest_uuid, mnode_addr)
+
+        frontend_data += dest_fe_cfg
+        backends_data += dest_be_cfg
+
+    with agent.safe_open(file_path, "w") as fileo:
+        cfg = cfg_template
+        cfg = cfg.replace(r"#{{INCLUDE-FRONTEND-SECTION}}#", frontend_data)
+        cfg = cfg.replace(r"#{{INCLUDE-BACKENDS-SECTION}}#", backends_data)
+        fileo.write(cfg)
+
+def generate_haproxy_internal_cfg(dtype, dest_uuid, oconf, durl, mnode_addr):
+    suuid = dest_uuid[0:8]
+
+    for node_id, node_addr in mnode_addr.items():
+        if durl == f"webdav:http://{node_addr}:4694":
+            serve_on_node = node_id
+            break
+    else:
+        serve_on_node = ''
+
+    if serve_on_node == os.environ["NODE_ID"]:
+        frontend_data = f"    # {dest_uuid} is served by local rclone\n"
+        backends_data = ""
+    else:
+        frontend_data = (
+            f"    acl route_{suuid} path_beg /{dest_uuid}/\n"
+            f"    use_backend gw_{dtype}_{suuid} if is_loopback route_{suuid}\n\n"
+        )
+        backends_data = (
+            f"backend gw_{dtype}_{suuid}\n"
+            f"    option httpchk\n"
+            f"    http-check send meth GET uri /{dest_uuid}/_probe_rest_404 hdr Accept application/vnd.x.restic.rest.v2\n"
+            f"    http-check expect status 404\n"
+            f"    server gw{node_id} {node_addr}:4694 check observe layer7 on-error mark-down\n\n"
+        )
+    return frontend_data, backends_data
+
+def generate_haproxy_remote_cfg(dtype, dest_uuid, mnode_addr):
+    suuid = dest_uuid[0:8]
+    frontend_data = (
+        f"    acl route_{suuid} path_beg /{dest_uuid}/\n"
+        f"    acl forward_{suuid} nbsrv(rest_{dtype}_{suuid}) eq 0\n"
+        f"    use_backend gw_{dtype}_{suuid} if is_loopback route_{suuid} forward_{suuid}\n\n"
+    )
+
+    backends_data = (
+        f"backend rest_{dtype}_{suuid}\n"
+        f"    option httpchk GET /{dest_uuid}/_probe_rest_404\n"
+        f"    http-check expect status 404\n"
+        f"    server rest0 unix@/var/lib/rclone/backend-rest.sock check observe layer7 on-error mark-down\n"
+        "\n"
+        f"backend gw_{dtype}_{suuid}\n"
+        f"    option httpchk\n"
+        f"    http-check send meth GET uri /{dest_uuid}/_probe_rest_404 hdr Accept application/vnd.x.restic.rest.v2\n"
+        f"    http-check expect status 404\n"
+    )
+
+    for node_id, node_addr in mnode_addr.items():
+        if node_id == os.environ["NODE_ID"]:
+            continue # skip local node
+        backends_data += "    "
+        backends_data += f"server gw{node_id} {node_addr}:4694 "
+        backends_data += "check observe layer7 on-error mark-down\n"
+    else:
+        backends_data += "\n"
+
+    return frontend_data, backends_data
+
+def write_config_env(file_path, rdb):
+    with agent.safe_open(file_path, "w") as fileo:
+        cluster_network = rdb.get("cluster/network") or "0.0.0.0/32"
+        print("CLUSTER_NETWORK=" + cluster_network, file=fileo)
+        print("NODE_ID=" + os.environ["NODE_ID"], file=fileo)
+
+def write_auth_map(file_path, rdb):
+    with agent.safe_open(file_path, "w") as fileo:
+        try:
+            redis_acl_list = rdb.smembers('cluster/acls')
+        except Exception as ex:
+            print(ex, file=sys.stderr)
+            redis_acl_list = set()
+        for acl_entry in redis_acl_list:
+            acl_fields = acl_entry.split()
+            user = acl_fields[1]
+            if user.startswith('node/'):
+                group = "nodes"
+            elif user.startswith('module/'):
+                group = "modules"
+            else:
+                continue # skip
+            secret = next(filter(lambda x: x.startswith("#"), acl_fields))
+            secret = secret.lstrip("#").lower()
+            if user and secret:
+                creds = user + ':' + secret
+                print(f"{creds:<88} {group}", file=fileo)
+
+def write_modrepomap(file_path, rdb):
+    with agent.safe_open(file_path, "w") as fileo:
+        try:
+            module_uuid_map = rdb.hgetall('cluster/module_uuid')
+        except Exception:
+            module_uuid_map = dict()
+        try:
+            restore_map = rdb.hgetall('private/nodes/restore_uuid')
+        except Exception:
+            restore_map = dict()
+        for mid, muuid in module_uuid_map.items():
+            # Strip trailing digits to derive the app type
+            app_type = mid.rstrip("0123456789")
+            repopath = f"{app_type}/{muuid}"
+            print(f"module/{mid:<16} {repopath}", file=fileo)
+            if muuid in restore_map:
+                # Enable access to source app's repository for restoration
+                source_uuid = restore_map[muuid]
+                print(f"    {repopath} {app_type}/{source_uuid}", file=fileo)
+
+def write_rclonecfg(file_path, rdb):
+    with agent.safe_open(file_path, "w") as fileo:
+        destinations = []
+        print(";\n; generated automatically from Redis DB contents\n;\n", file=fileo)
+        try:
+            rclone_conf_map = rdb.hgetall('private/nodes/backup_destination/rclone_conf')
+            node_vpn_ip = rdb.hget(f"node/{os.environ['NODE_ID']}/vpn", "ip_address")
+            node_url = f"webdav:http://{node_vpn_ip}:4694"
+        except Exception as ex:
+            rclone_conf_map = dict()
+        for key, conf in rclone_conf_map.items():
+            conf = conf.strip() + "\n"
+            if conf:
+                try:
+                    backup_conf = rdb.hgetall('cluster/backup_repository/' + key)
+                    if backup_conf['provider'] == 'rclone':
+                        destination_basepath = backup_conf['basepath']
+                    else:
+                        destination_basepath = cluster.backup.extract_rclone_basepath(backup_conf['url'])
+                except Exception as ex:
+                    print(agent.SD_WARNING + f"Backup destination {key} config parse failed:", ex, file=sys.stderr)
+                    continue
+                # Override configuration for the local node repository:
+                if backup_conf['provider'] == 'cluster':
+                    if backup_conf['url'] == node_url:
+                        conf = f"[{key}]\ntype = local\n"
+                        destination_basepath = "/srv/repo"
+                    else:
+                        continue
+                destinations.append(f"{key}={key}:{destination_basepath.rstrip('/')}")
+                print(conf, file=fileo)
+        # The "combined" remote merges all other destinations in a unique
+        # logical tree, where root-level elements correspond to destination
+        # UUIDs.
+        if destinations:
+            print((
+                "[combined]\n"
+                "type = combine\n"
+                "upstreams = " + ' '.join(destinations) + "\n"
+            ), file=fileo)
+
+if __name__ == '__main__':
+    main()
