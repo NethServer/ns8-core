@@ -1802,12 +1802,13 @@ __metadata:
   linkType: hard
 
 "@carbon/grid@npm:^10.26.0":
-  version: 10.39.0
-  resolution: "@carbon/grid@npm:10.39.0"
+  version: 10.43.5
+  resolution: "@carbon/grid@npm:10.43.5"
   dependencies:
-    "@carbon/import-once": ^10.6.0
-    "@carbon/layout": ^10.34.0
-  checksum: 5846e281c014b5419df17fa28bebfd4449371d59b47b641bcf790fa3d3dfa52b5b498707333111f6719daa4d70f9a768b4211fbc3e1f3077282f4b5cf01a7a0f
+    "@carbon/import-once": ^10.7.3
+    "@carbon/layout": ^10.37.5
+    "@ibm/telemetry-js": ^1.5.0
+  checksum: f66cdcb8e0ecec31e39ea2aa8a6fcb2c92f94fadecee61d6462d1da2412df610975ab3f5cf67836710c6a74e4435f090bb59626bed4f383813fd950ba022934e
   languageName: node
   linkType: hard
 
@@ -1843,10 +1844,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@carbon/import-once@npm:^10.7.3":
+  version: 10.7.3
+  resolution: "@carbon/import-once@npm:10.7.3"
+  dependencies:
+    "@ibm/telemetry-js": ^1.5.0
+  checksum: be2e86f0116c6f0ea3e55dbe4f7bda35c8890f573e7d996de4fa60e9279673c3f0134111a6eca281e1b14748f1d8c9f97d480682022c3872463462db881dc5ee
+  languageName: node
+  linkType: hard
+
 "@carbon/layout@npm:^10.34.0":
   version: 10.34.0
   resolution: "@carbon/layout@npm:10.34.0"
   checksum: 431fb3e7f4591acb36d5d1be488722d671212f89e902f0977f60e12c3f12aef2c12ee71471e82f10c90c415a5246bc6079c729fdd2fc63bc914bae64299af944
+  languageName: node
+  linkType: hard
+
+"@carbon/layout@npm:^10.37.5":
+  version: 10.37.5
+  resolution: "@carbon/layout@npm:10.37.5"
+  dependencies:
+    "@ibm/telemetry-js": ^1.5.0
+  checksum: a939515538e80a18b26dba2243d5fb818a654674a4682b8e94f42e9ea118b15efcdeacd848a23684d15d854122eaf2247d258825d69cfdc96a862d8af3a08ab8
   languageName: node
   linkType: hard
 
@@ -1988,6 +2007,15 @@ __metadata:
   dependencies:
     "@hapi/hoek": ^8.3.0
   checksum: 34278bc13b4023d6d0d7c913605a254b2d728dc6489cd465269eebaa7d8d2d81cda3f2157398dca87d3cb9e1a8aa8a1158ce2564c71a8e289b807c144e3b4c1e
+  languageName: node
+  linkType: hard
+
+"@ibm/telemetry-js@npm:^1.5.0":
+  version: 1.11.0
+  resolution: "@ibm/telemetry-js@npm:1.11.0"
+  bin:
+    ibmtelemetry: dist/collect.js
+  checksum: 864b0cedd7d5c1fa0992519a5948c68dadee8358e10b3b570014039c45527a78b3db9913e292b70a27d328d0694a0928abe94e469cde5885df0222794c810fa6
   languageName: node
   linkType: hard
 
