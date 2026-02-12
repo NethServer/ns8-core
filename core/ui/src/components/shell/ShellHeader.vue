@@ -44,7 +44,7 @@
         tipPosition="bottom"
         tipAlignment="end"
       >
-        <app-switcher-20 />
+        <Switcher20 />
       </cv-header-global-action>
       <HeaderGlobalMenu
         flip-menu
@@ -79,7 +79,7 @@
 <script>
 import Notification20 from "@carbon/icons-vue/es/notification/20";
 import UserAvatar20 from "@carbon/icons-vue/es/user--avatar/20";
-import AppSwitcher20 from "@carbon/icons-vue/es/app-switcher/20";
+import Switcher20 from "@carbon/icons-vue/es/switcher/20";
 import Search20 from "@carbon/icons-vue/es/search/20";
 import Logout20 from "@carbon/icons-vue/es/logout/20";
 import { mapState, mapActions, mapGetters } from "vuex";
@@ -97,7 +97,7 @@ export default {
   components: {
     Notification20,
     UserAvatar20,
-    AppSwitcher20,
+    Switcher20,
     Search20,
     Logout20,
     GlobalSearch,
