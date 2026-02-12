@@ -1,0 +1,47 @@
+[Unit]
+Description=Rclone Gateway server
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Environment=RCLONE_CONFIG=/etc/rclone/rclone.conf
+Environment=RCLONE_CACHE_DIR=/var/cache/rclone
+EnvironmentFile=/etc/nethserver/core.env
+Restart=always
+TimeoutStopSec=120
+ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
+ExecStartPre=mkdir -vp rclone haproxy
+ExecStartPre=runagent -m node \
+    generate-rclone-config \
+    --gid=101 \
+    --rclonedir=rclone \
+    --haproxydir=haproxy \
+
+ExecStart=/usr/bin/podman run \
+    --conmon-pidfile=%t/%N.pid \
+    --cidfile=%t/%N.cid \
+    --cgroups=no-conmon \
+    --detach \
+    --log-opt=tag=%N \
+    --replace --name=%N \
+    --network=host \
+    --user=rclone:rclone \
+    --env=RCLONE_* \
+    --volume=./rclone:/etc/rclone:ro \
+    --volume=./haproxy:/etc/haproxy:ro \
+    --volume=rclone-cache:/var/cache/rclone \
+    --init --entrypoint=rclone-gateway-entrypoint.sh \
+    ${RESTIC_IMAGE}
+
+WorkingDirectory=/var/lib/nethserver/node/state
+ExecReload=runagent -m node generate-rclone-config \
+    --gid=101 \
+    --rclonedir=rclone \
+    --haproxydir=haproxy \
+ExecReload=runagent -m node podman kill --signal HUP %N
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 115
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
+PIDFile=%t/%N.pid
+Type=forking
+
+[Install]
+WantedBy=default.target

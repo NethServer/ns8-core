@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import sys
+import os
+import argparse
+
+HAPROXY_HEADER = """\
+global
+    daemon
+    maxconn 2048
+
+defaults
+    mode http
+    option httplog
+
+    timeout connect 5s
+    timeout client  5m
+    timeout server  5m
+
+"""
+
+HAPROXY_FRONTENDS_BACKENDS = """\
+
+# ==========================================================
+# REST FRONTEND (Port 4695)
+# ==========================================================
+
+frontend rest_frontend
+
+    bind :4695
+
+    acl is_node http_auth(ns8_nodes)
+    acl is_app  http_auth(ns8_apps)
+
+    http-request auth realm ns8-rest unless is_node or is_app
+
+    # Map username to allowed appType/appUUID
+    http-request set-var(txn.allowed) \\
+        http_auth_user,map(/etc/haproxy/rest-acl.map)
+
+    # Extract appType/appUUID from path
+    # Path format: /remoteUUID/appType/appUUID/...
+    http-request set-var(txn.repo) \\
+        path,field(3,/),concat(/),path,field(4,/)
+
+    # Deny if application tries accessing another repo
+    http-request deny if is_app \\
+        !{ var(txn.repo) -m str var(txn.allowed) }
+
+    # Append-only enforcement for applications
+    acl delete_method method DELETE
+    http-request deny if is_app delete_method
+
+    default_backend rclone_rest
+
+
+# ==========================================================
+# WEBDAV FRONTEND (Port 4694)
+# ==========================================================
+
+frontend webdav_frontend
+
+    bind :4694
+
+    http-request auth realm ns8-webdav \\
+        unless { http_auth(ns8_nodes) }
+
+    default_backend rclone_webdav
+
+
+# ==========================================================
+# BACKEND: RESTIC
+# ==========================================================
+
+backend rclone_rest
+
+    server rest unix@/run/rclone/rest.sock
+
+
+# ==========================================================
+# BACKEND: WEBDAV
+# ==========================================================
+
+backend rclone_webdav
+
+    server webdav unix@/run/rclone/webdav.sock
+"""
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--rclonedir", required=False, help="Write rclone configuration file to given directory")
+    parser.add_argument("--haproxydir", required=False, help="Write HAProxy configuration files to given directory")
+    parser.add_argument("--gid", type=int, required=False, help="Change the group of written files")
+    args = parser.parse_args()
+    os.umask(0o137)
+    if args.rclonedir:
+        rclone_conf = args.rclonedir + '/rclone.conf'
+        with agent.safe_open(rclone_conf, "w") as fd:
+            write_rclonecfg(fd)
+        if args.gid:
+            os.chown(rclone_conf, -1, args.gid)
+    if args.haproxydir:
+        haproxy_cfg = args.haproxydir  + '/haproxy.cfg'
+        rdb = agent.redis_connect(privileged=True)
+        with agent.safe_open(haproxy_cfg, "w") as fd:
+            write_haproxycfg(fd, rdb)
+        if args.gid:
+            os.chown(haproxy_cfg, -1, args.gid)
+        acl_map_file =  args.haproxydir + "/rest-acl.map"
+        with agent.safe_open(acl_map_file, "w") as fd:
+            write_restaclmap(fd, rdb)
+        if args.gid:
+            os.chown(acl_map_file, -1, args.gid)
+    if not args.rclonecfg and not args.haproxycfg:
+        parser.error("No argument found")
+
+def write_haproxycfg(fileo, rdb):
+    fileo.write(HAPROXY_HEADER)
+    node_entries = []
+    app_entries = []
+    for acl_entry in rdb.acl_list():
+        acl_fields = acl_entry.split()
+        user = acl_fields[1]
+        secret = next(filter(lambda x: x.startswith("#") for x in acl_fields))
+        if acl_entry.startswith("user node/"):
+            node_entries.append(f"    {user} password {secret}")
+        elif acl_entry.startswith("user module/"):
+            app_entries.append(f"    {user} password {secret}")
+    print("userlist ns8_apps", file=fileo)
+    for entry in app_entries:
+        print(entry, file=fileo)
+    print("\nuserlist ns8_nodes", file=fileo)
+    for entry in node_entries:
+        print(entry, file=fileo)
+    fileo.write(HAPROXY_FRONTENDS_BACKENDS)
+
+def write_restaclmap(fileo, rdb):
+    try:
+        module_uuid_map = rdb.hgetall('cluster/module_uuid')
+    except Exception:
+        module_uuid_map = dict()
+    for mid, muuid in module_uuid_map.items():
+        # Strip trailing digits to derive the app type
+        app_type = mid.rstrip("0123456789")
+        if app_type:
+            print(f"module/{mid} {app_type}/{muuid}", file=fileo)
+
+def write_rclonecfg(fileo):
+    rdb = agent.redis_connect(privileged=True)
+    destinations = []
+    print(";\n; generated automatically from Redis DB contents\n;\n", file=fileo)
+    try:
+        rclone_conf_map = rdb.hgetall('private/nodes/backup_destination/rclone_conf')
+    except Exception:
+        rclone_conf_map = dict()
+    for key, conf in rclone_conf_map.items():
+        conf = conf.strip() + "\n"
+        if conf:
+            try:
+                basepath = rdb.hget('private/nodes/backup_destination/parameters/' + key, 'basepath') or ""
+            except Exception:
+                continue
+            destinations.append(f"{key}={key}:{basepath}")
+            print(conf, file=fileo)
+    # The "combined" remote merges all other destinations in a unique
+    # logical tree, where root-level elements correspond to destination
+    # UUIDs.
+    if destinations:
+        print((
+            "[combined]\n"
+            "type = combine\n"
+            "upstreams = " + ' '.join(destinations) + "\n"
+        ), file=fileo)
+
+if __name__ == '__main__':
+    main()

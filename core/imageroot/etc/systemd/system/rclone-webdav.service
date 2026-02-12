@@ -10,6 +10,7 @@ EnvironmentFile=-/var/lib/nethserver/node/state/rclone-webdav.env
 Restart=always
 TimeoutStopSec=120
 ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
+ExecStartPre=mkdir -vp rclone
 ExecStart=/usr/bin/podman run \
     --conmon-pidfile=%t/%N.pid \
     --cidfile=%t/%N.cid \
@@ -20,8 +21,9 @@ ExecStart=/usr/bin/podman run \
     --network=host \
     --user=restic:restic \
     --volume=${BACKUP_VOLUME}:/srv/repo:z \
+    --volume=./rclone:/etc/rclone:ro \
     --entrypoint=[] \
-    ${RESTIC_IMAGE} rclone serve webdav /srv/repo --addr :4694 $OPTIONS
+    ${RESTIC_IMAGE} rclone serve webdav /srv/repo --addr /etc/rclone/rclone-local.sock $OPTIONS
 
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 90
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
