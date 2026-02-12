@@ -478,11 +478,10 @@
                             >
                               <cv-overflow-menu-item
                                 v-if="isBackupRunning(backup.id)"
-                                danger
                                 @click="cancelBackupTask(backup)"
                               >
                                 <NsMenuItem
-                                  :icon="StopFilled20"
+                                  :icon="Close20"
                                   :label="$t('backup.cancel_backup')"
                                 />
                               </cv-overflow-menu-item>
@@ -806,7 +805,6 @@ import ImportBackupDestinationModal, {
 } from "@/components/backup/ImportBackupDestinationModal";
 import to from "await-to-js";
 import Upload20 from "@carbon/icons-vue/es/upload/20";
-import StopFilled20 from "@carbon/icons-vue/es/stop--filled/20";
 
 export default {
   name: "Backup",
@@ -838,7 +836,6 @@ export default {
         view: "backup",
       },
       Upload20,
-      StopFilled20,
       isShownCreateOrEditBackupModal: false,
       isShownDeleteRepoModal: false,
       isShownRepoDetailsModal: false,
