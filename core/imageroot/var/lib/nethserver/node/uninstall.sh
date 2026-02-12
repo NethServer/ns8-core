@@ -76,6 +76,7 @@ systemctl disable --now \
   wg-quick@wg0.service \
   phonehome.timer \
   rclone-webdav.service \
+  rclone-gateway.service \
   promtail.service \
   node_exporter.service \
   send-heartbeat.service \
