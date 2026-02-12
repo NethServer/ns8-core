@@ -97,7 +97,11 @@ EOF
 ) | redis-cli
 
 echo "Start API server and core agents:"
-systemctl enable --now api-server.service agent@cluster.service agent@node.service rclone-webdav.service
+systemctl enable --now \
+    api-server.service \
+    agent@cluster.service \
+    agent@node.service \
+    rclone-gateway.service \
 
 echo "Start node timers"
 systemctl enable --now password-warning.timer

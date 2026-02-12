@@ -26,6 +26,7 @@ import os
 import agent.tasks
 import json
 import tempfile
+import uuid
 
 request = json.load(sys.stdin)
 
@@ -66,27 +67,40 @@ if image_name == 'traefik':
     #   merge-like strategy, implemented by the module as wanted.
     # - Build fake add-module result to maintain consistent action output format.
     # - Never schedule Traefik for removal to avoid breaking cluster connectivity.
+    # - Authorize access to source module's repository.
     module_id = agent.resolve_agent_id("traefik@node", node_id=str(node_id)).removeprefix("module/")
+    new_module_uuid = rdb.hget("cluster/module_uuid", module_id)
+    agent.assert_exp(new_module_uuid) # Cannot restore without destination UUID
     add_module_result = {
         "output": {
             "module_id": module_id,
             "image_name": image_name,
             "image_url": image_url,
-            "module_uuid": rdb.hget("cluster/module_uuid", module_id),
+            "module_uuid": new_module_uuid,
         },
         "error": "",
         "exit_code": 0,
     }
     remove_modules = set()
+    trx = rdb.pipeline()
+    trx.hset('private/nodes/restore_uuid', new_module_uuid, source_module_uuid)
+    trx.publish('cluster/event/backup-destination-changed', json.dumps({"destination_ids":[repository]}))
+    trx.execute()
 else:
-    force_uuid = source_module_uuid and (replace_requested or len(remove_modules) == 0)
+    if source_module_uuid and (replace_requested or len(remove_modules) == 0):
+        # Force assignment of UUID from the restored environment:
+        new_module_uuid = source_module_uuid
+    else:
+        # Generate a new random UUID:
+        new_module_uuid = str(uuid.uuid4())
+        # Grant access to source module's repository for restoration:
+        rdb.hset('private/nodes/restore_uuid', new_module_uuid, source_module_uuid)
     add_module_result = agent.tasks.run("cluster", "add-module",
         data={
             "image": image_url,
             "node": node_id,
             **({"volumes": mvolumes} if mvolumes else {}),
-            # Force assignment of UUID from the restored environment:
-            **({"module_uuid": source_module_uuid} if force_uuid else {}),
+            "module_uuid": new_module_uuid,
         },
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(2, 15)

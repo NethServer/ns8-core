@@ -384,3 +384,23 @@ For instance
   "data": ["cancel-task", "list-actions"]
 }
 ```
+
+### private/agents/
+
+Access to keys under the `private/agents/` prefix is restricted to cluster
+agent (read + write) and other authenticated agents (read-only).
+
+|key|type|description|
+|---|----|-----------|
+|private/agents/backup_destination/restic_password | HASH | Maps a backup destination ID to its restic password |
+
+
+### private/nodes/
+
+Access to keys under the `private/nodes/` prefix is restricted to cluster
+agent (read + write) and node agents (read-only).
+
+|key|type|description|
+|---|----|-----------|
+|private/nodes/backup_destination/rclone_conf | HASH | Maps a backup destination ID to its raw rclone configuration, that typically contains secret credentials |
+|private/nodes/restore_uuid | HASH | Maps a destination module UUID to a source module UUID. During module restoration the destination module must read the source module backup repository and this map establish the required trust between them, which is enforced by rclone-gateway.|
