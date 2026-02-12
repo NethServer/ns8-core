@@ -130,16 +130,18 @@ reponame="restic"
 buildah add "${container}" restic/ /
 buildah run ${container} sh <<'EOF'
 apk add --no-cache restic rclone
-addgroup -S restic
-adduser -S -D -H -h /dev/null -s /sbin/nologin -G restic restic
-mkdir -v -p -m 0750 /srv/repo
-chown -c restic:restic /srv/repo
+addgroup -S rclone -g 101
+adduser -u 100 -S -D -H -h /dev/null -s /sbin/nologin -G rclone rclone
+mkdir -v -p -m 0750 /srv/repo /var/cache/rclone /etc/rclone
+mkdir -v -p -m 0700 /run/rclone
+chown -c rclone:rclone /srv/repo /var/cache/rclone /run/rclone
 EOF
 buildah config \
     --cmd='[]' \
     --entrypoint='["/usr/bin/restic"]' \
     --env='RCLONE_CONFIG=/dev/null' \
     --volume=/srv/repo \
+    --volume=/var/cache/rclone \
     ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"

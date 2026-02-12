@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import sys
+import os
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--htpasswd", required=False, help="Write credentials into HTPASSWD file")
+    parser.add_argument("--config", required=False, help="Write configuration into CONFIG file")
+    parser.add_argument("--gid", type=int, required=False, help="Change the group of written files")
+    args = parser.parse_args()
+    os.umask(0o137)
+    if args.config:
+        target_file = args.config
+        tmp_file = target_file + '.tmp-' + str(os.getpid())
+        with open(tmp_file, "w") as fd:
+            write_config(fd)
+        if args.gid:
+            os.chown(tmp_file, -1, args.gid)
+        os.rename(tmp_file, target_file)
+    if args.htpasswd:
+        target_file = args.htpasswd
+        tmp_file = target_file + '.tmp-' + str(os.getpid())
+        with open(tmp_file, "w") as fd:
+            write_htpasswd(fd)
+        if args.gid:
+            os.chown(tmp_file, -1, args.gid)
+        os.rename(tmp_file, target_file)
+    if not args.config and not args.htpasswd:
+        write_config(sys.stdout)
+
+def write_htpasswd(fileo):
+    rdb = agent.redis_connect(privileged=True)
+    for key, secret in rdb.hgetall('private/nodes/backup_destination/agent_secret').items():
+        if key and secret:
+            print(f"{key}:{secret}", file=fileo)
+
+def write_config(fileo):
+    rdb = agent.redis_connect(privileged=True)
+    destinations = []
+    print(";\n; generated automatically from Redis DB contents\n;\n", file=fileo)
+    for key, conf in rdb.hgetall('private/nodes/backup_destination/rclone_conf').items():
+        conf = conf.strip() + "\n"
+        if conf:
+            basepath = rdb.hget('private/nodes/backup_destination/parameters/' + key, 'basepath') or ""
+            destinations.append(f"{key}={key}:{basepath}")
+            print(conf, file=fileo)
+
+    # The "combined" remote merges all other destinations in a unique
+    # logical tree, where root-level elements correspond to destination
+    # UUIDs.
+    if destinations:
+        print((
+            "[combined]\n"
+            "type = combine\n"
+            "upstreams = " + ' '.join(destinations) + "\n"
+        ), file=fileo)
+
+if __name__ == '__main__':
+    main()
