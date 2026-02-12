@@ -20,6 +20,20 @@
     <template slot="title">{{ $t("backup.add_repository") }}</template>
     <template slot="content">
       <cv-form>
+        <NsInlineNotification
+          v-if="error.getClusterStatus"
+          kind="error"
+          :title="$t('action.get-cluster-status')"
+          :description="error.getClusterStatus"
+          :showCloseButton="false"
+        />
+        <NsInlineNotification
+          v-if="error.listBackupEndpoints"
+          kind="error"
+          :title="$t('action.list-cluster-backup-endpoints')"
+          :description="error.listBackupEndpoints"
+          :showCloseButton="false"
+        />
         <template v-if="step == 'provider'">
           <div class="mg-bottom-md">
             {{ $t("backup.select_backup_provider") }}
@@ -187,21 +201,33 @@
             :actionLabel="$t('backup.go_to_notification_drawer')"
           />
           <template v-if="isClusterSelected">
-            <NsComboBox
-              :options="endpoints"
-              v-model.trim="url"
-              :autoFilter="true"
-              :autoHighlight="true"
-              :title="$t('backup.node')"
-              :label="$t('backup.cluster_placeholder')"
-              :acceptUserInput="false"
-              :showItemType="true"
-              :invalid-message="$t(error.url)"
-              tooltipAlignment="start"
-              tooltipDirection="top"
-              ref="url"
+            <div class="mg-bottom-sm">{{ $t("backup.node") }}</div>
+            <NodeSelector
+              class="mg-top-xlg"
+              @selectNode="onSelectNode"
+              :disabledNodes="disabledNodes"
+              :loading="loading.getClusterStatus"
             >
-            </NsComboBox>
+              <template v-for="(nodeMessages, nodeId) in nodesInfo">
+                <template :slot="`node-${nodeId}`">
+                  <div
+                    v-for="(nodeMessage, index) in nodeMessages"
+                    :key="index"
+                    class="node-message"
+                  >
+                    {{ nodeMessage }}
+                  </div>
+                </template>
+              </template>
+            </NodeSelector>
+            <NsInlineNotification
+              v-if="error.url"
+              kind="error"
+              :title="$t('common.error')"
+              :description="$t(error.url)"
+              :showCloseButton="false"
+              class="mg-top-lg"
+            />
           </template>
           <!-- backblaze -->
           <template v-if="isBackblazeSelected">
@@ -443,10 +469,12 @@
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import last from "lodash/last";
+import NodeSelector from "@/components/nodes/NodeSelector";
 import { mapActions } from "vuex";
 
 export default {
   name: "AddRepositoryModal",
+  components: { NodeSelector },
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: {
@@ -472,6 +500,7 @@ export default {
       isSambaSelected: false,
       isClusterSelected: false,
       endpoints: [],
+      selectedNode: null,
       name: "",
       url: "",
       password: "",
@@ -506,15 +535,20 @@ export default {
       cluster: {
         repoPrefix: "",
       },
+      clusterStatus: [],
       //// handle all providers
       loading: {
         addBackupRepository: false,
+        listBackupEndpoints: false,
+        getClusterStatus: false,
       },
       error: {
+        getClusterStatus: "",
         name: "",
         url: "",
         addBackupRepository: "",
         repoConnection: "",
+        listBackupEndpoints: "",
         backblaze: {
           b2_account_id: "",
           b2_account_key: "",
@@ -576,6 +610,72 @@ export default {
     selectedProviderPrefix() {
       return this[this.selectedProvider].repoPrefix;
     },
+    disabledNodes() {
+      // Get offline nodes and nodes with already used endpoints
+      const disabledNodeIds = [];
+
+      for (const node of this.clusterStatus) {
+        // Check if node is offline
+        if (!node.online) {
+          disabledNodeIds.push(node.id);
+          continue;
+        }
+
+        // Check if node's endpoint is already used in repositories
+        const endpointLabel = this.getEndpointLabelForNode(node);
+        const endpoint = this.endpoints.find(
+          (item) => item.label === endpointLabel || item.name === endpointLabel
+        );
+
+        if (endpoint) {
+          // Check if this endpoint URL is already used in repositories
+          const isEndpointUsed = this.repositories.some(
+            (repo) => repo.url === endpoint.value
+          );
+
+          if (isEndpointUsed) {
+            disabledNodeIds.push(node.id);
+          }
+        }
+      }
+
+      return disabledNodeIds;
+    },
+    nodesInfo() {
+      const nodesInfo = {};
+
+      for (const node of this.clusterStatus) {
+        const nodeMessages = [];
+
+        // Check if node is offline
+        if (!node.online) {
+          nodeMessages.push(this.$t("software_center.node_offline"));
+        } else {
+          // Check if node's endpoint is already used in repositories
+          const endpointLabel = this.getEndpointLabelForNode(node);
+          const endpoint = this.endpoints.find(
+            (item) =>
+              item.label === endpointLabel || item.name === endpointLabel
+          );
+
+          if (endpoint) {
+            const isEndpointUsed = this.repositories.some(
+              (repo) => repo.url === endpoint.value
+            );
+
+            if (isEndpointUsed) {
+              nodeMessages.push(this.$t("backup.repository_already_used"));
+            }
+          }
+        }
+
+        if (nodeMessages.length > 0) {
+          nodesInfo[node.id] = nodeMessages;
+        }
+      }
+
+      return nodesInfo;
+    },
   },
   watch: {
     isShown: function () {
@@ -585,6 +685,7 @@ export default {
         this.clearFields();
         this.clearErrors();
         this.listBackupEndpoints();
+        this.getClusterStatus();
       }
     },
     step: function () {
@@ -615,7 +716,7 @@ export default {
         this.name = repoName;
         if (this.selectedProvider == "smb") {
           this.focusElement("smb_host");
-        } else {
+        } else if (this.selectedProvider != "cluster") {
           this.focusElement("url");
         }
       }
@@ -623,6 +724,51 @@ export default {
   },
   methods: {
     ...mapActions(["setNotificationDrawerShownInStore"]),
+    async getClusterStatus() {
+      this.loading.getClusterStatus = true;
+      this.error.getClusterStatus = "";
+      const taskAction = "get-cluster-status";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getClusterStatusAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getClusterStatusCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      this.clusterStatus = taskResult.output.nodes;
+      this.loading.getClusterStatus = false;
+    },
     goToNotificationDrawer() {
       this.$emit("hide");
       this.setNotificationDrawerShownInStore(true);
@@ -635,6 +781,7 @@ export default {
       this.isClusterSelected = false;
       this.name = "";
       this.url = "";
+      this.selectedNode = null;
 
       this.backblaze.b2_account_id = "";
       this.backblaze.b2_account_key = "";
@@ -1253,7 +1400,28 @@ export default {
 
       // Iterate through the array and create new objects
       this.endpoints = endpoints.map(convertToObject);
+      this.setUrlFromSelectedNode();
       this.loading.listBackupEndpoints = false;
+    },
+    onSelectNode(node) {
+      this.selectedNode = node;
+      this.setUrlFromSelectedNode();
+      this.error.url = "";
+    },
+    getEndpointLabelForNode(node) {
+      return node.ui_name ? node.ui_name : `Node ${node.id}`;
+    },
+    setUrlFromSelectedNode() {
+      if (!this.selectedNode) {
+        this.url = "";
+        return;
+      }
+
+      const endpointLabel = this.getEndpointLabelForNode(this.selectedNode);
+      const endpoint = this.endpoints.find(
+        (item) => item.label === endpointLabel || item.name === endpointLabel
+      );
+      this.url = endpoint ? endpoint.value : "";
     },
   },
 };

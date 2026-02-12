@@ -437,7 +437,8 @@
         "export-users": "Export users",
         "get-password-warning": "Get password warning",
         "list-mountpoints": "List mountpoints",
-        "import-backup-destinations": "Import backup destinations"
+        "import-backup-destinations": "Import backup destinations",
+        "list-cluster-backup-endpoints": "List cluster backup endpoints"
     },
     "network": {
         "title": "Network"
@@ -650,7 +651,8 @@
         "cancel_backup": "Cancel backup",
         "canceling_backup": "Canceling {backupName}...",
         "backup_cancelled": "Backup cancelled",
-        "cancel_backup_failed": "Failed to cancel backup"
+        "cancel_backup_failed": "Failed to cancel backup",
+        "repository_already_used": "This destination is already used"
     },
     "calendar": {
         "days": "Days",
