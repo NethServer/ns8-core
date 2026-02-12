@@ -1248,8 +1248,8 @@ export default {
       this.error.runBackup = "";
       const taskAction = "run-backup";
       const eventId = this.getUuid();
+
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
       this.$root.$once(`${taskAction}-completed-${eventId}`, (taskContext) => {
         // Store the actual task ID for cancellation
         if (taskContext && taskContext.id) {
@@ -1259,7 +1259,6 @@ export default {
       });
 
       // register to task error
-      // this.$root.$off(taskAction + "-aborted");
       this.$root.$once(`${taskAction}-aborted-${eventId}`, (taskContext) => {
         this.runBackupAborted(taskContext, backup);
       });
@@ -1351,8 +1350,8 @@ export default {
       );
 
       // register to task error
-      this.$root.$once(`${taskAction}-aborted-${eventId}`, (taskResult) =>
-        this.cancelBackupTaskAborted(taskResult, backup)
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, () =>
+        this.cancelBackupTaskAborted(backup)
       );
 
       const res = await to(
@@ -1386,7 +1385,7 @@ export default {
       // Reload backups
       this.listBackups();
     },
-    cancelBackupTaskAborted(taskResult, backup) {
+    cancelBackupTaskAborted(backup) {
       if (backup && backup.id) {
         delete this.runningBackupTasks[backup.id];
       }
