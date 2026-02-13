@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import cluster.backup
+import subprocess
+
+def main():
+    request = json.load(sys.stdin)
+    try:
+        run_validation(request)
+    except subprocess.CalledProcessError as ex:
+        if 'lsd' in ex.cmd:
+            reason = "no_read_permission"
+        elif 'mkdir' in ex.cmd:
+            reason = "no_write_permission"
+        elif 'rmdir' in ex.cmd:
+            reason = "no_delete_permission"
+        else:
+            reason = 'unknown'
+        print(f"node {os.environ['NODE_ID']}: {reason} on destination {request['id']}", file=sys.stderr)
+        sys.exit(ex.returncode)
+
+def run_validation(request):
+    rclone_args = [
+        '--retries=1',
+        '--low-level-retries=1',
+        '--retries-sleep=100ms',
+    ]
+    rpath = request['id'] + ':' + request['basepath']
+    # Test if connection and read-access is successfull
+    cluster.backup.run_rclone(['lsd', rpath] + rclone_args, temp_config=request['rclone_conf'], stdout=subprocess.DEVNULL, check=True)
+
+    # Test write access, by creating and deleting a directory
+    remote_test_dir = rpath + '/' + os.environ["AGENT_TASK_ID"] + '.tmp'
+    cluster.backup.run_rclone(['mkdir', remote_test_dir] + rclone_args, temp_config=request['rclone_conf'], stdout=subprocess.DEVNULL, check=True)
+    cluster.backup.run_rclone(['rmdir', remote_test_dir] + rclone_args, temp_config=request['rclone_conf'], stdout=subprocess.DEVNULL, check=True)
+    json.dump({"node_id":int(os.environ["NODE_ID"]),"id": request["id"]}, fp=sys.stdout)
+
+if __name__ == "__main__":
+    main()
