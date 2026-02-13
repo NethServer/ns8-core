@@ -16,6 +16,7 @@
     @cancel="$emit('hide')"
     @previousStep="previousStep"
     @nextStep="nextStep"
+    :isLastStep="isLastStep"
   >
     <template slot="title">{{ $t("backup.add_repository") }}</template>
     <template slot="content">
@@ -587,7 +588,16 @@ export default {
       return this.stepIndex == this.steps.length - 1;
     },
     isNextButtonDisabled() {
-      return this.loading.addBackupRepository || !this.selectedProvider;
+      const isLoading = this.loading.addBackupRepository;
+      const isNoProvider = !this.selectedProvider;
+
+      // Only check for node selection on the settings step when cluster is selected
+      const isClusterWithoutNode =
+        this.step === "settings" &&
+        this.isClusterSelected &&
+        !this.selectedNode;
+
+      return isLoading || isNoProvider || isClusterWithoutNode;
     },
     selectedProvider() {
       if (this.isBackblazeSelected) {
@@ -685,13 +695,16 @@ export default {
         this.clearFields();
         this.clearErrors();
         this.listBackupEndpoints();
-        this.getClusterStatus();
       }
     },
     step: function () {
       if (this.step == "settings") {
-        // prefill repository name
+        // trigger cluster status if cluster is selected
+        if (this.isClusterSelected) {
+          this.getClusterStatus();
+        }
 
+        // prefill repository name
         let repoName = this.$t("backup.default_repository_name", {
           provider: this.getProviderShortName(),
         });
