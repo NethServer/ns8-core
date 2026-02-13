@@ -377,7 +377,7 @@
                   <cv-column>
                     <NsInlineNotification
                       kind="error"
-                      :title="$t('backup.cancel_backup')"
+                      :title="$t('backup.cancel_backup_failed')"
                       :description="error.cancelBackup"
                       :showCloseButton="false"
                     />
