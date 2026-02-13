@@ -17,6 +17,7 @@
       @cancel="$emit('hide')"
       @previousStep="previousStep"
       @nextStep="nextStep"
+      :isLastStep="isLastStep"
     >
       <template slot="title">{{
         isEditing ? $t("backup.edit_backup") : $t("backup.schedule_backup")
