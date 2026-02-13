@@ -1,23 +1,8 @@
 #!/usr/bin/env python3
 
 #
-# Copyright (C) 2021 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
-#
-# This script is part of NethServer.
-#
-# NethServer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License,
-# or any later version.
-#
-# NethServer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with NethServer.  If not, see COPYING.
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
 import os
@@ -27,35 +12,79 @@ import uuid
 import agent
 import hashlib
 import cluster.backup
+import agent.tasks
 
-request = json.load(sys.stdin)
-rdb = agent.redis_connect(privileged=True)
+def main():
+    request = json.load(sys.stdin)
+    rdb = agent.redis_connect(privileged=True)
+    # Calculate the repository (destination) UUID from a reduced version
+    # of the full request payload. This is a small protection against
+    # request replay: we want to avoid multiple repos with different
+    # Restic passwords.
+    reduced_request = request.copy()
+    reduced_request['password'] = ""
+    reduced_request['name'] = ""
+    destination_uuid = cluster.backup.stable_uuid_v5(reduced_request)
+    if rdb.exists(f'cluster/backup_repository/{destination_uuid}') \
+        or rdb.hexists('private/nodes/backup_destination/rclone_conf', destination_uuid):
+        # This backup repository (destination) already exists.
+        agent.set_status('validation-failed')
+        json.dump([{'field':'','parameter':'','value':'','error':'backup_repository_exists'}], fp=sys.stdout)
+        sys.exit(2)
+    url = request['url']
+    provider = request['provider']
+    if request['password']:
+        password = request['password']
+    else:
+        # Generate random password for backup encryption
+        m = hashlib.sha256()
+        m.update(uuid.uuid4().bytes)
+        password = m.hexdigest()
+    if request['name']:
+        name = request['name']
+    else:
+        name = cluster.backup.get_default_backup_repository_name(provider, url, destination_uuid)
+    public_data = {'url': url, 'name': name, 'provider': provider}
+    rclone_conf, destination_basepath = cluster.backup.generate_rclone_conf(destination_uuid, url, provider, request['parameters'])
+    # Prepare a list of tasks, one for each node, to run in parallel:
+    node_add_backup_repository_tasks = []
+    for node_id in set(rdb.hvals('cluster/module_node')):
+        node_add_backup_repository_tasks.append({
+            "action": "validate-backup-destination",
+            "agent": f"node/{node_id}",
+            "extra": {'isNotificationHidden': True},
+            "data": {
+                "id": destination_uuid,
+                "basepath": destination_basepath,
+                "rclone_conf": rclone_conf,
+            },
+        })
+    node_task_results = agent.tasks.runp(
+        node_add_backup_repository_tasks,
+        endpoint="redis://cluster-leader",
+    )
+    # Fail if all nodes cannot reach the backup repository:
+    if all(ntr["exit_code"] != 0 for ntr in node_task_results):
+        print(*(ntr['error'] for ntr in node_task_results), file=sys.stderr, sep='\n')
+        agent.set_status('validation-failed')
+        json.dump([{'field':'parameters','parameter':'parameters','value':{},'error':'backup_repository_not_accessible'}], fp=sys.stdout)
+        sys.exit(2)
+    # Save backup destinations in Redis keys with access limited to node
+    # agents:
+    trx = rdb.pipeline()
+    trx.hdel('private/nodes/backup_destination/rclone_conf', destination_uuid)
+    trx.hset('private/nodes/backup_destination/rclone_conf', destination_uuid, rclone_conf)
+    trx.delete('private/nodes/backup_destination/parameters/' + destination_uuid)
+    trx.hset('private/nodes/backup_destination/parameters/' + destination_uuid, mapping={
+        'restic_password': password,
+        'basepath': destination_basepath,
+    })
+    trx.delete('cluster/backup_repository/' + destination_uuid)
+    trx.hset('cluster/backup_repository/' + destination_uuid, mapping=public_data)
+    # XXX: publish event
+    if not trx.execute():
+        sys.exit(1)
+    json.dump({'password': password, 'id': destination_uuid}, fp=sys.stdout)
 
-url = request['url']
-provider = request['provider']
-rid = str(uuid.uuid5(uuid.NAMESPACE_URL, url))
-
-if request['password']:
-    password = request['password']
-else:
-    # Generate random password for backup encryption
-    m = hashlib.sha256()
-    m.update(uuid.uuid4().bytes)
-    password = m.hexdigest()
-
-if request['name']:
-    name = request['name']
-else:
-    name = cluster.backup.get_default_backup_repository_name(provider, url, rid)
-
-data = {'url': url, 'password': password, 'name': name, 'provider': provider}
-
-# Setup extra parameters for repository access
-for k in request['parameters']:
-    data[k] = request['parameters'][k]
-
-# Add the repository key
-if not rdb.hset(f'cluster/backup_repository/{rid}', mapping=data):
-    sys.exit(1)
-
-json.dump({'password': password, 'id': rid}, fp=sys.stdout)
+if __name__ == "__main__":
+    main()
