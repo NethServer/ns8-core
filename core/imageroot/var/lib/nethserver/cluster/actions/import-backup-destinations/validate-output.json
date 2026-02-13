@@ -1,0 +1,29 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "import-backup-destinations output",
+    "$id": "http://schema.nethserver.org/cluster/import-backup-destinations-output.json",
+    "description": "Import backup destination configurations from raw cluster backup data",
+    "examples": [
+        {
+            "imported_destinations": 2,
+            "skipped_destinations": 1
+        }
+    ],
+    "type": "object",
+    "required": [
+        "imported_destinations",
+        "skipped_destinations"
+    ],
+    "properties": {
+        "imported_destinations": {
+            "description": "Number of backup destinations successfully imported",
+            "type": "integer",
+            "minimum": 0
+        },
+        "skipped_destinations": {
+            "description": "Number of backup destinations not imported because already configured in the cluster DB",
+            "type": "integer",
+            "minimum": 0
+        }
+    }
+}
