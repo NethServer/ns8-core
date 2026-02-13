@@ -24,21 +24,23 @@ import os
 import json
 import sys
 import agent
+import cluster.backup
 
-rdb = agent.redis_connect()
+rdb = agent.redis_connect(privileged=True)
 
 brepos = []
 password_exists = os.path.isfile('backup/passphrase') and os.stat('backup/passphrase').st_size != 0
 
-for krepo in rdb.scan_iter('cluster/backup_repository/*'):
-    parameters = rdb.hgetall(krepo)
+for repoid, rclone_conf in rdb.hgetall('private/nodes/backup_destination/rclone_conf').items():
+    parameters = rdb.hgetall(f'cluster/backup_repository/{repoid}')
+    restic_password = rdb.hget(f'private/agents/backup_destination/restic_password', repoid) or ""
     orepo = {
-        "id": krepo.removeprefix('cluster/backup_repository/'),
+        "id": repoid,
         "provider": parameters.pop('provider'),
         "name": parameters.pop('name', ''),
         "url": parameters.pop('url'),
-        "password": parameters.pop('password'),
-        "parameters": parameters
+        "password": restic_password,
+        "parameters": cluster.backup.parse_rclone_params(rclone_conf),
     }
     brepos.append(orepo)
 
