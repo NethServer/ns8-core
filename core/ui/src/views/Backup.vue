@@ -1105,6 +1105,11 @@ export default {
           `${taskAction}-aborted-${eventId}`,
           this.importBackupDestinationAborted
         );
+        // register to task validation failed
+        this.$root.$once(
+          `${taskAction}-validation-failed-${eventId}`,
+          this.importBackupDestinationValidationFailed
+        );
         const res = await to(
           this.createClusterTask({
             action: taskAction,
@@ -1123,10 +1128,10 @@ export default {
 
         if (err) {
           console.error(`error creating task ${taskAction}`, err);
+          this.importBackupDestinationModalState.setLoading(false);
           this.importBackupDestinationModalState.setBackupFileError(
             this.getErrorMessage(err)
           );
-          this.importBackupDestinationModalState.setLoading(false);
           return;
         }
       } catch (error) {
@@ -1159,10 +1164,18 @@ export default {
       // Reload repositories after successful import
       this.listBackupRepositories();
     },
-    importBackupDestinationAborted(taskResult) {
+    importBackupDestinationAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
       this.importBackupDestinationModalState.setLoading(false);
       this.importBackupDestinationModalState.setBackupFileError(
-        taskResult.error || this.$t("backup.import_failed")
+        this.$t("error.generic_error")
+      );
+    },
+    importBackupDestinationValidationFailed(validationErrors) {
+      this.importBackupDestinationModalState.setLoading(false);
+      const errorKey = validationErrors?.[0]?.error || "import_failed";
+      this.importBackupDestinationModalState.setBackupFileError(
+        this.$t("backup." + errorKey)
       );
     },
     async deleteRepo(repo) {

@@ -652,7 +652,9 @@
         "canceling_backup": "Canceling {backupName}...",
         "backup_cancelled": "Backup cancelled",
         "cancel_backup_failed": "Failed to cancel backup",
-        "repository_already_used": "This destination is already used"
+        "repository_already_used": "This destination is already used",
+        "invalid_passphrase": "Invalid password.",
+        "import_failed": "Failed to import backup destinations"
     },
     "calendar": {
         "days": "Days",

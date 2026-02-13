@@ -28,17 +28,15 @@
           :clear-on-reselect="true"
           :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
           v-model="backupFile"
-          accept=".json,.json.gz,.json.gz.gpg"
+          accept=".json.gz.gpg"
         ></cv-file-uploader>
-        <div v-if="state.errors.backupFile" class="error-message">
-          {{ state.errors.backupFile }}
-        </div>
         <cv-text-input
           v-model="password"
           :label="$t('backup.backup_password')"
           :placeholder="$t('backup.enter_backup_password')"
           type="password"
           class="mg-top-lg"
+          ref="backup_password"
         ></cv-text-input>
       </cv-form>
     </template>
@@ -170,11 +168,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.error-message {
-  color: #da1e28;
-  font-size: 12px;
-  margin-top: 4px;
-}
-</style>
