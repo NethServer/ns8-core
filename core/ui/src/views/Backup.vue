@@ -1363,6 +1363,7 @@ export default {
               backupName: backup.name,
             }),
             eventId,
+            isNotificationHidden: true,
           },
         })
       );
@@ -1379,15 +1380,12 @@ export default {
       if (backup && backup.id) {
         delete this.runningBackupTasks[backup.id];
       }
-      // Reload backups
-      this.listBackups();
     },
     cancelBackupTaskAborted(backup) {
+      // Clear the running task tracking
       if (backup && backup.id) {
         delete this.runningBackupTasks[backup.id];
       }
-      // Reload backups
-      this.listBackups();
     },
     onBackupCreated(runBackupOnFinish, createdBackup) {
       this.listBackupRepositories();
