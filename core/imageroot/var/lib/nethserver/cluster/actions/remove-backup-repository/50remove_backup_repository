@@ -43,25 +43,17 @@ trx = rdb.pipeline()
 # Drop related backup objects
 #
 ptasks = []
+# XXX use an index instead of scan
 for kbid in rdb.scan_iter('cluster/backup/*'):
     repo_id = rdb.hget(kbid, 'repository')
     if repo_id != rid:
         continue # backup not related, skip
-
     trx.delete(kbid)
-    for kbackups in rdb.scan_iter('module/*/backups'):
-        mbid = kbid.removeprefix('cluster/backup/')
-        if rdb.srem(kbackups, mbid) > 0:
-            ptasks.append({
-                "agent_id": kbackups.removesuffix('/backups'),
-                "action": "configure-backup",
-                "data": {
-                    "id": int(mbid),
-                    "optype": "remove",
-                }
-            })
 
 trx.delete(f"cluster/backup_repository/{rid}")
+trx.hdel('private/nodes/backup_destination/rclone_conf', rid)
+trx.delete('private/nodes/backup_destination/parameters/' + rid)
+# XXX: publish event
 trx.execute()
 
 terrors = agent.tasks.runp_brief(ptasks,

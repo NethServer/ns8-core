@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import cluster.backup
+import subprocess
+
+def main():
+    request = json.load(sys.stdin)
+    rpath = request['id'] + ':' + request['basepath']
+    # Test if connection and read-access is successfull
+    cluster.backup.run_rclone(['lsd', rpath], temp_config=request['rclone_conf'], stdout=subprocess.DEVNULL)
+
+    # Test write access, by creating and deleting a directory
+    test_dir = rpath + '/' + os.environ["AGENT_TASK_ID"] + '.tmp'
+    cluster.backup.run_rclone(['mkdir', test_dir], temp_config=request['rclone_conf'], stdout=subprocess.DEVNULL, check=True)
+    cluster.backup.run_rclone(['rmdir', test_dir], temp_config=request['rclone_conf'], stdout=subprocess.DEVNULL, check=True)
+    json.dump({"node_id":int(os.environ["NODE_ID"]),"id": request["id"]}, fp=sys.stdout)
+
+if __name__ == "__main__":
+    main()
