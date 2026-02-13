@@ -28,7 +28,7 @@
           :clear-on-reselect="true"
           :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
           v-model="backupFile"
-          accept=".json.gz.gpg"
+          accept=".json.gz.gpg,.bin,.gpg"
         ></cv-file-uploader>
         <cv-text-input
           v-model="password"
