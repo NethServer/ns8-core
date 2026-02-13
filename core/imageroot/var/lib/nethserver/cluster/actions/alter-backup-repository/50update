@@ -27,43 +27,70 @@ import agent
 import cluster.backup
 import subprocess
 
-request = json.load(sys.stdin)
-rdb = agent.redis_connect(privileged=True)
+def main():
+    request = json.load(sys.stdin)
+    rdb = agent.redis_connect(privileged=True)
 
-rprovider = request['provider']
-rid = request['id']
-rparameters = request.get('parameters', {})
+    provider = request['provider']
+    destination_uuid = request['id']
+    parameters = request.get('parameters', {})
 
-url = rdb.hget(f'cluster/backup_repository/{rid}', 'url')
-if not url:
-    agent.set_status('validation-failed')
-    json.dump([{'field':'id','parameter':'id','value': rid,'error':'backup_repository_not_found'}], fp=sys.stdout)
-    sys.exit(2)
+    if not rdb.hget(f'private/nodes/backup_destination/rclone_conf', destination_uuid):
+        agent.set_status('validation-failed')
+        json.dump([{'field':'id','parameter':'id','value': destination_uuid,'error':'backup_repository_not_found'}], fp=sys.stdout)
+        sys.exit(2)
 
-if rprovider != rdb.hget(f'cluster/backup_repository/{rid}', 'provider'):
-    agent.set_status('validation-failed')
-    json.dump([{'field':'provider','parameter':'provider','value': rprovider,'error':'backup_provider_mismatch'}], fp=sys.stdout)
-    sys.exit(3)
+    if provider != rdb.hget(f'cluster/backup_repository/{destination_uuid}', 'provider'):
+        agent.set_status('validation-failed')
+        json.dump([{'field':'provider','parameter':'provider','value': provider,'error':'backup_provider_mismatch'}], fp=sys.stdout)
+        sys.exit(3)
 
-# validate repository credentials
-renv = dict(os.environ) # copy the environment
-renv.update(request['parameters']) # merge parameters
-renv['url'] = url # add url
-renv['provider'] = request['provider'] # add provider
-pvalidate = subprocess.run(['rclone-wrapper', '0', '--low-level-retries', '1', '--contimeout', '10s', 'size', '-q', '--json', 'REMOTE_PATH'], text=True, capture_output=True, env=renv)
-if pvalidate.returncode != 0:
-    agent.set_status('validation-failed')
-    json.dump([{'field':'parameters','parameter':'parameters','value':pvalidate.stderr,'error':'backup_repository_not_accessible'}], fp=sys.stdout)
-    sys.exit(4)
+    url = rdb.hget(f'cluster/backup_repository/{destination_uuid}', 'url')
+    rclone_conf, destination_basepath = cluster.backup.generate_rclone_conf(destination_uuid, url, provider, parameters)
 
-if 'name' in request:
-    rname = request['name']
-else:
-    rname = rdb.hget(f'cluster/backup_repository/{rid}', 'name') or ""
+    # Prepare a list of tasks, one for each node, to run in parallel:
+    node_add_backup_repository_tasks = []
+    for node_id in set(rdb.hvals('cluster/module_node')):
+        node_add_backup_repository_tasks.append({
+            "action": "validate-backup-destination",
+            "agent": f"node/{node_id}",
+            "extra": {'isNotificationHidden': True},
+            "data": {
+                "id": destination_uuid,
+                "basepath": destination_basepath,
+                "rclone_conf": rclone_conf,
+            },
+        })
+    node_task_results = agent.tasks.runp(
+        node_add_backup_repository_tasks,
+        endpoint="redis://cluster-leader",
+    )
+    # Fail if all nodes cannot reach the backup repository:
+    if all(ntr["exit_code"] != 0 for ntr in node_task_results):
+        agent.set_status('validation-failed')
+        json.dump([{'field':'parameters','parameter':'parameters','value':'','error':'backup_repository_not_accessible'}], fp=sys.stdout)
+        sys.exit(4)
 
-if not rname:
-    rname = cluster.backup.get_default_backup_repository_name(rprovider, url, rid)
+    if 'name' in request:
+        rname = request['name']
+    else:
+        rname = rdb.hget(f'cluster/backup_repository/{destination_uuid}', 'name') or ""
 
-data = dict(rparameters, name=rname) # add the name field to rparameters
+    if not rname:
+        rname = cluster.backup.get_default_backup_repository_name(provider, url, destination_uuid)
 
-rdb.hset(f'cluster/backup_repository/{rid}', mapping=data)
+    public_data = {'url': url, 'name': rname, 'provider': request['provider']}
+    trx = rdb.pipeline()
+    trx.hdel('private/nodes/backup_destination/rclone_conf', destination_uuid)
+    trx.hset('private/nodes/backup_destination/rclone_conf', destination_uuid, rclone_conf)
+    trx.hset('private/nodes/backup_destination/parameters/' + destination_uuid, mapping={
+        'basepath': destination_basepath,
+    })
+    trx.delete(f'cluster/backup_repository/{destination_uuid}')
+    trx.hset(f'cluster/backup_repository/{destination_uuid}', mapping=public_data)
+    # XXX: publish event
+    if not trx.execute():
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
