@@ -641,7 +641,7 @@
               </cv-row>
               <cv-row>
                 <cv-column>
-                  <template v-if="!repositories.length">
+                  <template v-if="!repositories.length && isSetClusterBackupPassword">
                     <NsInlineNotification
                       kind="warning"
                       class="mg-bottom-lg"
@@ -653,6 +653,21 @@
                       "
                       :actionLabel="$t('backup.add_repository')"
                       @action="showAddRepoModal()"
+                      :showCloseButton="false"
+                    />
+                  </template>
+                  <template v-if="!isSetClusterBackupPassword">
+                    <NsInlineNotification
+                      kind="warning"
+                      class="mg-bottom-lg"
+                      :title="$t('backup.no_cluster_backup_password')"
+                      :description="
+                        $t(
+                          'backup.set_cluster_backup_password_to_restore_applications'
+                        )
+                      "
+                      :actionLabel="$t('backup.set_cluster_backup_password')"
+                      @action="showBackupPasswordModal()"
                       :showCloseButton="false"
                     />
                   </template>

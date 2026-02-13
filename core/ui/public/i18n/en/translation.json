@@ -655,7 +655,10 @@
         "cancel_backup_failed": "Failed to cancel backup",
         "repository_already_used": "This destination is already used",
         "invalid_passphrase": "Invalid password.",
-        "import_failed": "Failed to import backup destinations"
+        "import_failed": "Failed to import backup destinations",
+        "set_cluster_backup_password": "Set cluster backup password",
+        "set_cluster_backup_password_to_restore_applications": "Set the cluster backup password to restore applications",
+        "no_cluster_backup_password": "No cluster backup password"
     },
     "calendar": {
         "days": "Days",
