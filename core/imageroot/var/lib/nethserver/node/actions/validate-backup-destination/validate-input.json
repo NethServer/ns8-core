@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-rclone-destination input",
+    "$id": "http://schema.nethserver.org/node/add-rclone-destination-input.json",
+    "description": "Input schema of the add-rclone-destination action",
+    "examples": [
+        {
+            "id": "8d3a9df9-f20a-4d4c-9280-718126191d8f",
+            "basepath": "mybucket",
+            "rclone_conf": "[8d3a9df9-f20a-4d4c-9280-718126191d8f]\n..."
+        }
+    ],
+    "type": "object",
+    "required": [
+        "id",
+        "basepath",
+        "rclone_conf"
+    ],
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "basepath": {
+            "type": "string"
+        },
+        "rclone_conf": {
+            "type": "string"
+        }
+    }
+}
