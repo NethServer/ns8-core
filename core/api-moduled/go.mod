@@ -2,7 +2,7 @@ module github.com/NethServer/ns8-core/core/api-moduled
 
 go 1.24.0
 
-toolchain go1.24.12
+toolchain go1.24.13
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.9.2
