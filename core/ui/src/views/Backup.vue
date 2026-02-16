@@ -1121,8 +1121,10 @@ export default {
       const eventId = this.getUuid();
 
       try {
-        // Convert file to base64
-        const fileContent = await this.fileToBase64(data.backupFile);
+        // Convert file to base64 with fileToBase64 from util.js
+        const fileDataUri = await this.fileToBase64(data.backupFile);
+        // Extract only the base64 part (remove "data:...;base64," prefix)
+        const fileContent = fileDataUri.split(";base64,")[1];
 
         // register to task completion
         this.$root.$once(
@@ -1171,20 +1173,6 @@ export default {
         );
         this.importBackupDestinationModalState.setLoading(false);
       }
-    },
-    fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(file);
-        reader.onload = () => {
-          const binary = String.fromCharCode(...new Uint8Array(reader.result));
-          const base64 = btoa(binary);
-          resolve(base64);
-        };
-        reader.onerror = (error) => {
-          reject(error);
-        };
-      });
     },
     importBackupDestinationCompleted() {
       this.importBackupDestinationModalState.setLoading(false);
