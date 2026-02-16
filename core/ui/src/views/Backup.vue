@@ -529,7 +529,7 @@
                                 <div class="row instance-to-repo">
                                   <div class="backup-source">
                                     <NsSvg :svg="Application20" class="icon" />
-                                    <span v-if="backup.instances.length == 1">
+                                    <span v-if="backup.instances.length === 1">
                                       {{
                                         backup.instances[0].ui_name
                                           ? backup.instances[0].ui_name
