@@ -808,6 +808,7 @@ import {
   DateTimeService,
   PageTitleService,
 } from "@nethserver/ns8-ui-lib";
+import { mapGetters } from "vuex";
 import AddRepositoryModal from "@/components/backup/AddRepositoryModal";
 import CreateOrEditBackupModal from "@/components/backup/CreateOrEditBackupModal";
 import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
@@ -892,19 +893,36 @@ export default {
         passwordClusterBackup: "",
         cancelBackup: "",
       },
-      runningBackupTasks: {},
     };
   },
   computed: {
+    ...mapGetters(["ongoingNotifications"]),
     disabledBackups() {
       return this.backups.filter((b) => !b.enabled);
     },
     erroredBackups() {
       return this.backups.filter((b) => b.errorInstances.length);
     },
+    runningBackupTasksFromStore() {
+      // Compute running backup tasks from Vuex store (persists across page reloads)
+      const runningTasks = {};
+      this.ongoingNotifications.forEach((notification) => {
+        if (
+          notification.task &&
+          notification.task.context &&
+          notification.task.context.action === "run-backup" &&
+          notification.task.context.extra &&
+          notification.task.context.extra.backupId
+        ) {
+          const backupId = notification.task.context.extra.backupId;
+          runningTasks[backupId] = notification.task.context.id; // Use actual task ID from context
+        }
+      });
+      return runningTasks;
+    },
     isBackupRunning() {
       return (backupId) => {
-        return !!this.runningBackupTasks[backupId];
+        return !!this.runningBackupTasksFromStore[backupId];
       };
     },
   },
@@ -1275,17 +1293,16 @@ export default {
       const eventId = this.getUuid();
 
       // register to task completion
-      this.$root.$once(`${taskAction}-completed-${eventId}`, () => {
-        this.runBackupCompleted(backup);
-      });
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.runBackupCompleted
+      );
 
       // register to task error
-      this.$root.$once(`${taskAction}-aborted-${eventId}`, () => {
-        this.runBackupAborted(backup);
-      });
-
-      // Mark backup as running immediately
-      this.$set(this.runningBackupTasks, backup.id, true);
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.runBackupAborted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -1295,6 +1312,7 @@ export default {
           },
           extra: {
             eventId,
+            backupId: backup.id,
             title: this.$t("action." + taskAction),
             description: this.$t("backup.running_backup_name", {
               backupName: backup.name,
@@ -1308,58 +1326,29 @@ export default {
         })
       );
       const err = res[0];
-      const taskResult = res[1];
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.runBackup = this.getErrorMessage(err);
-        // Clear the running status on error
-        delete this.runningBackupTasks[backup.id];
         return;
       }
-
-      // Try to capture task ID from the created task if available
-      // The response structure: taskResult.data.data.id contains the task ID
-      let capturedTaskId = null;
-      if (taskResult) {
-        // API returns task ID at taskResult.data.data.id
-        capturedTaskId = taskResult.data?.data?.id || null;
-
-        if (capturedTaskId) {
-          this.runningBackupTasks[backup.id] = capturedTaskId;
-          console.log(
-            `Captured task ID for backup ${backup.id}:`,
-            capturedTaskId
-          );
-        } else {
-          console.log(
-            `Could not extract task ID from response for backup ${backup.id}:`,
-            taskResult
-          );
-        }
-      }
     },
-    runBackupCompleted(backup) {
-      // Clear the running task tracking
-      if (backup && backup.id) {
-        delete this.runningBackupTasks[backup.id];
-      }
+    runBackupCompleted() {
       this.listBackups();
     },
-    runBackupAborted(backup) {
-      // Clear the running task tracking
-      if (backup && backup.id) {
-        delete this.runningBackupTasks[backup.id];
-      }
+    runBackupAborted() {
       this.listBackups();
     },
     async cancelBackupTask(backup) {
       this.error.cancelBackup = "";
       const taskAction = "cancel-task";
       const eventId = this.getUuid();
-      const taskId = this.runningBackupTasks[backup.id];
+      
+      // Get task ID from store
+      let taskId = this.runningBackupTasksFromStore[backup.id];
 
       // Ensure we have a valid task ID before attempting to cancel
+      // (protects against race conditions if task completes between button render and click)
       if (typeof taskId !== "string" || !taskId) {
         console.warn("Cannot cancel backup: task ID not yet available", {
           backupId: backup && backup.id,
@@ -1367,15 +1356,6 @@ export default {
         });
         return;
       }
-      // register to task completion
-      this.$root.$once(`${taskAction}-completed-${eventId}`, () =>
-        this.cancelBackupTaskCompleted(backup)
-      );
-
-      // register to task error
-      this.$root.$once(`${taskAction}-aborted-${eventId}`, () =>
-        this.cancelBackupTaskAborted(backup)
-      );
 
       const res = await to(
         this.createClusterTask({
@@ -1399,18 +1379,6 @@ export default {
         console.error(`error creating task ${taskAction}`, err);
         this.error.cancelBackup = this.getErrorMessage(err);
         return;
-      }
-    },
-    cancelBackupTaskCompleted(backup) {
-      // Clear the running task tracking
-      if (backup && backup.id) {
-        delete this.runningBackupTasks[backup.id];
-      }
-    },
-    cancelBackupTaskAborted(backup) {
-      // Clear the running task tracking
-      if (backup && backup.id) {
-        delete this.runningBackupTasks[backup.id];
       }
     },
     onBackupCreated(runBackupOnFinish, createdBackup) {
