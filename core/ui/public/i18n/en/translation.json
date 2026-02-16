@@ -658,7 +658,8 @@
         "import_failed": "Failed to import backup destinations",
         "set_cluster_backup_password_to_restore_applications": "Set the cluster backup password to restore applications",
         "no_cluster_backup_password": "No cluster backup password",
-        "error_reading_backup_file": "Error reading backup file"
+        "error_reading_backup_file": "Error reading backup file",
+        "invalid_base64": "Invalid base64 file format"
     },
     "calendar": {
         "days": "Days",
