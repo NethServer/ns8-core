@@ -583,6 +583,7 @@
         "restore": "Restore",
         "select_instance_to_restore": "Select an application to restore from the available backups",
         "select_restore_node": "Select the node where the application will be restored",
+        "select_backup_node": "Select a node",
         "restoring_app_to_node": "Restoring {app} to {node}",
         "instance_restored_to_node": "{module_id} restored to {node}",
         "open_app": "Open application",
