@@ -14,9 +14,6 @@
       </cv-row>
       <!-- cluster configuration -->
       <cv-row>
-        <cv-column> </cv-column>
-      </cv-row>
-      <cv-row>
         <cv-column>
           <NsTabs
             :container="false"
