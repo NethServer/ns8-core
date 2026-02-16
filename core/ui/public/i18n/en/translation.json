@@ -644,7 +644,7 @@
         "replace_existing_app_select_an_app_tooltip": "Select an application to replace",
         "wrong_password_or_no_key_found": "Wrong data encryption key or no key found",
         "import_destinations": "Import destinations",
-        "import_destinations_description":"Import backup destinations from a cluster backup file.",
+        "import_destinations_description": "Import backup destinations from a cluster backup file.",
         "cluster_backup_file": "Cluster backup file",
         "backup_password": "Backup password",
         "enter_backup_password": "Enter backup password",
@@ -656,9 +656,9 @@
         "repository_already_used": "This destination is already used",
         "invalid_passphrase": "Invalid password.",
         "import_failed": "Failed to import backup destinations",
-        "set_cluster_backup_password": "Set cluster backup password",
         "set_cluster_backup_password_to_restore_applications": "Set the cluster backup password to restore applications",
-        "no_cluster_backup_password": "No cluster backup password"
+        "no_cluster_backup_password": "No cluster backup password",
+        "error_reading_backup_file": "Error reading backup file"
     },
     "calendar": {
         "days": "Days",
