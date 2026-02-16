@@ -1369,6 +1369,14 @@ export default {
       const eventId = this.getUuid();
       const taskId = this.runningBackupTasks[backup.id];
 
+      // Ensure we have a valid task ID before attempting to cancel
+      if (typeof taskId !== "string" || !taskId) {
+        console.warn("Cannot cancel backup: task ID not yet available", {
+          backupId: backup && backup.id,
+          taskId: taskId,
+        });
+        return;
+      }
       // register to task completion
       this.$root.$once(`${taskAction}-completed-${eventId}`, () =>
         this.cancelBackupTaskCompleted(backup)
