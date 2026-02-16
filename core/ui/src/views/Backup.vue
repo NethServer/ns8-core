@@ -342,6 +342,7 @@
                     <NsButton
                       kind="secondary"
                       :icon="Add20"
+                      class="mg-bottom-lg"
                       @click="showCreateOrEditBackupModal('')"
                       :disabled="!repositories.length"
                       >{{ $t("backup.schedule_backup") }}
