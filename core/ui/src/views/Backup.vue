@@ -794,7 +794,6 @@
     <ImportBackupDestinationModal
       :state="importBackupDestinationModalState"
       @import-backup-submit="onImportBackupSubmit"
-      @hide="hideImportBackupDestinationModal"
     />
   </div>
 </template>
@@ -1110,9 +1109,6 @@ export default {
     showImportBackupDestinationModal() {
       this.importBackupDestinationModalState.setVisible(true);
     },
-    hideImportBackupDestinationModal() {
-      this.importBackupDestinationModalState.setVisible(false);
-    },
     onImportBackupSubmit(data) {
       if (data.backupFile && data.backupPassword) {
         this.importBackupDestination(data);
@@ -1343,7 +1339,7 @@ export default {
       this.error.cancelBackup = "";
       const taskAction = "cancel-task";
       const eventId = this.getUuid();
-      
+
       // Get task ID from store
       let taskId = this.runningBackupTasksFromStore[backup.id];
 
