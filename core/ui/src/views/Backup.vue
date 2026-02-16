@@ -920,12 +920,9 @@ export default {
   },
   methods: {
     tabSelected(tabNum) {
-      if (tabNum == 0) {
+      if (tabNum === 0) {
         this.q.view = "backup";
-      } else if (tabNum == 1) {
-        this.q.view = "restore";
-      }
-    },
+      } else if (tabNum === 1) {
     async listBackupRepositories() {
       this.loading.listBackupRepositories = true;
       this.error.listBackupRepositories = "";
