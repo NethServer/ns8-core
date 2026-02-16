@@ -1275,17 +1275,13 @@ export default {
       const eventId = this.getUuid();
 
       // register to task completion
-      this.$root.$once(`${taskAction}-completed-${eventId}`, (taskContext) => {
-        // Store the actual task ID for cancellation
-        if (taskContext && taskContext.id) {
-          this.runningBackupTasks[backup.id] = taskContext.id;
-        }
-        this.runBackupCompleted(taskContext, backup);
+      this.$root.$once(`${taskAction}-completed-${eventId}`, () => {
+        this.runBackupCompleted(backup);
       });
 
       // register to task error
-      this.$root.$once(`${taskAction}-aborted-${eventId}`, (taskContext) => {
-        this.runBackupAborted(taskContext, backup);
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, () => {
+        this.runBackupAborted(backup);
       });
 
       // Mark backup as running immediately
@@ -1323,17 +1319,11 @@ export default {
       }
 
       // Try to capture task ID from the created task if available
-      // The response might be the task object itself or contain it in different ways
+      // The response structure: taskResult.data.data.id contains the task ID
       let capturedTaskId = null;
       if (taskResult) {
-        // Try different possible paths to find the task ID
-        capturedTaskId =
-          taskResult.data?.data?.id ||
-          taskResult.data?.id ||
-          taskResult.id ||
-          taskResult.task?.id ||
-          (Array.isArray(taskResult) && taskResult[0]?.id) ||
-          null;
+        // API returns task ID at taskResult.data.data.id
+        capturedTaskId = taskResult.data?.data?.id || null;
 
         if (capturedTaskId) {
           this.runningBackupTasks[backup.id] = capturedTaskId;
@@ -1349,14 +1339,14 @@ export default {
         }
       }
     },
-    runBackupCompleted(taskContext, backup) {
+    runBackupCompleted(backup) {
       // Clear the running task tracking
       if (backup && backup.id) {
         delete this.runningBackupTasks[backup.id];
       }
       this.listBackups();
     },
-    runBackupAborted(taskContext, backup) {
+    runBackupAborted(backup) {
       // Clear the running task tracking
       if (backup && backup.id) {
         delete this.runningBackupTasks[backup.id];
