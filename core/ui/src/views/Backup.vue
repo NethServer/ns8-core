@@ -638,7 +638,9 @@
               </cv-row>
               <cv-row>
                 <cv-column>
-                  <template v-if="!repositories.length && isSetClusterBackupPassword">
+                  <template
+                    v-if="!repositories.length && isSetClusterBackupPassword"
+                  >
                     <NsInlineNotification
                       kind="warning"
                       class="mg-bottom-lg"
