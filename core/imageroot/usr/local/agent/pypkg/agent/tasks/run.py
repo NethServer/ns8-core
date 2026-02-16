@@ -72,10 +72,9 @@ def runp_brief(tasks, **kwargs):
 
 async def _runp(tasks, **kwargs):
 
-    if 'progress_callback' in kwargs and not kwargs['progress_callback'] is None:
+    parent_cbk = kwargs.pop('progress_callback', None)
+    if parent_cbk:
         # Equally distribute the progress weight of each task
-        parent_cbk = kwargs['progress_callback']
-        del kwargs['progress_callback']
         runp_progress = [0] * len(tasks)
         last_value = -1
         def create_task_cbk(idx):
@@ -87,11 +86,11 @@ async def _runp(tasks, **kwargs):
             if curr_value > last_value:
                 last_value = curr_value
                 parent_cbk(curr_value)
-    else:
-        parent_cbk = None
 
     nowait = kwargs.pop('nowait', False)
     kwargs.setdefault('check_idle_time', 0 if nowait else 8) # Check the client connection is alive
+    task_extra_arg = kwargs.pop('extra', {})
+    on_sigterm_tasks = kwargs.pop('on_sigterm_tasks', [])
 
     with AsyncSignalHandler(asyncio.get_running_loop(), signal.SIGTERM) as cancel_handler:
         runners = []
@@ -102,8 +101,8 @@ async def _runp(tasks, **kwargs):
             if not 'parent' in taskrq:
                 taskrq['parent'] = os.getenv("AGENT_TASK_ID", "")
 
-            if 'extra' in kwargs:
-                taskrq['extra'] = kwargs['extra']
+            if task_extra_arg:
+                taskrq['extra'] = task_extra_arg
 
             if parent_cbk:
                 task_cbk = create_task_cbk(idx)
@@ -117,8 +116,19 @@ async def _runp(tasks, **kwargs):
 
             runners.append(asyncio.create_task(tcoro, name=taskrq['agent_id'] + '/' + taskrq['action']))
 
-        return await asyncio.gather(*runners, return_exceptions=(len(tasks) > 1))
+        # Register a list of callback non-blocking tasks,
+        # triggered if the process receives SIGTERM.
+        for st in on_sigterm_tasks:
+            sigterm_task = st.copy() # avoid mutating caller dict
+            sigterm_task.setdefault('parent', os.getenv("AGENT_TASK_ID", ""))
+            sigterm_task.setdefault('data', {})
+            def generate_sigterm_task_handler(taskhd=sigterm_task): # bind current task into closure
+                kwargs_copy = kwargs.copy()
+                kwargs_copy["check_idle_time"] = 0
+                return _run_with_protocol_nowait(taskhd, **kwargs_copy)
+            cancel_handler.add_callback(generate_sigterm_task_handler)
 
+        return await asyncio.gather(*runners, return_exceptions=(len(tasks) > 1))
 
 async def _run_with_protocol(taskrq, **pconn):
     pconn.setdefault('progress_callback', None)

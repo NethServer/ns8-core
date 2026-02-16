@@ -5,6 +5,7 @@
   "description": "Output schema of the get-defaults action",
   "examples": [
     {
+      "has_additional_disks": false,
       "vpn": {
         "host": "server.nethserver.org",
         "port": 55820,
@@ -14,6 +15,10 @@
   ],
   "type": "object",
   "properties": {
+    "has_additional_disks": {
+      "description": "True if the OS has additional disks for application data",
+      "type": "boolean"
+    },
     "vpn": {
       "type": "object",
       "description": "WireGuard VPN defaults",

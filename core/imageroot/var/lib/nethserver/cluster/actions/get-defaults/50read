@@ -24,15 +24,15 @@ import os
 import sys
 import json
 import agent
-import subprocess
+import agent.volumes
 
-request = json.load(sys.stdin)
-rdb = agent.redis_connect(privileged=False)
-
-try:
-    host = subprocess.run(['hostname', '-f'], text=True, capture_output=True, check=True).stdout.strip()
-except:
-    host = "myserver.example.org"
-ret = { "vpn": {"host": host, "port": 55820, "network": "10.5.4.0/24"} }
+ret = {
+    "has_additional_disks": len(agent.volumes.get_base_paths()) > 0,
+    "vpn": {
+        "host": agent.get_hostname(),
+        "port": 55820,
+        "network": "10.5.4.0/24"
+    },
+}
 
 json.dump(ret, fp=sys.stdout)
