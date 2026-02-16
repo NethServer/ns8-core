@@ -923,6 +923,9 @@ export default {
       if (tabNum === 0) {
         this.q.view = "backup";
       } else if (tabNum === 1) {
+        this.q.view = "restore";
+      }
+    },
     async listBackupRepositories() {
       this.loading.listBackupRepositories = true;
       this.error.listBackupRepositories = "";
