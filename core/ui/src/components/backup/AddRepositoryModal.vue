@@ -222,10 +222,10 @@
               </template>
             </NodeSelector>
             <NsInlineNotification
-              v-if="error.url"
+              v-if="error.node"
               kind="error"
               :title="$t('common.error')"
-              :description="$t(error.url)"
+              :description="$t(error.node)"
               :showCloseButton="false"
               class="mg-top-lg"
             />
@@ -547,6 +547,7 @@ export default {
         getClusterStatus: "",
         name: "",
         url: "",
+        node: "",
         addBackupRepository: "",
         repoConnection: "",
         listBackupEndpoints: "",
@@ -816,6 +817,29 @@ export default {
       this.smb.smb_domain = "";
 
       //// handle ALL providers
+    },
+    clearErrors() {
+      this.error.getClusterStatus = "";
+      this.error.name = "";
+      this.error.url = "";
+      this.error.node = "";
+      this.error.addBackupRepository = "";
+      this.error.repoConnection = "";
+      this.error.listBackupEndpoints = "";
+      this.error.backblaze.b2_account_id = "";
+      this.error.backblaze.b2_account_key = "";
+      this.error.aws.aws_access_key_id = "";
+      this.error.aws.aws_default_region = "";
+      this.error.aws.aws_secret_access_key = "";
+      this.error.smb.smb_host = "";
+      this.error.smb.smb_user = "";
+      this.error.smb.smb_pass = "";
+      this.error.smb.smb_domain = "";
+      this.error.genericS3.aws_access_key_id = "";
+      this.error.genericS3.aws_default_region = "";
+      this.error.genericS3.aws_secret_access_key = "";
+      this.error.azure.azure_account_key = "";
+      this.error.azure.azure_account_name = "";
     },
     nextStep() {
       if (this.isNextButtonDisabled) {
@@ -1230,26 +1254,14 @@ export default {
     validateAddClusterRepository() {
       // clear errors
       this.error.name = "";
-      this.error.url = "";
+      this.error.node = "";
       this.error.repoConnection = "";
 
       let isValidationOk = true;
 
-      if (!this.url) {
-        this.error.url = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("url");
-          isValidationOk = false;
-        }
-      } else if (this.url.includes(" ")) {
-        // wrong url protocol
-        this.error.url = this.$t("backup.invalid_url");
-
-        if (isValidationOk) {
-          this.focusElement("url");
-          isValidationOk = false;
-        }
+      if (!this.selectedNode) {
+        this.error.node = this.$t("backup.select_backup_node");
+        isValidationOk = false;
       }
 
       if (!this.name) {
@@ -1420,7 +1432,7 @@ export default {
     onSelectNode(node) {
       this.selectedNode = node;
       this.setUrlFromSelectedNode();
-      this.error.url = "";
+      this.error.node = "";
     },
     getEndpointLabelForNode(node) {
       return node.ui_name ? node.ui_name : `Node ${node.id}`;
