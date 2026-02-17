@@ -9,607 +9,682 @@
         <cv-column class="page-title">
           <h2>
             {{ $t("backup.title") }}
-            <cv-interactive-tooltip
-              alignment="start"
-              direction="right"
-              class="info"
-            >
-              <template slot="trigger">
-                <Information16 />
-              </template>
-              <template slot="content">
-                <div class="mg-bottom-sm">
-                  {{ $t("backup.backup_page_tooltip_1") }}
-                </div>
-                <div class="mg-bottom-sm">
-                  {{ $t("backup.backup_page_tooltip_2") }}
-                </div>
-                <div class="mg-bottom-sm">
-                  {{
-                    $t("backup.backup_page_tooltip_8", {
-                      productName: $root.config.PRODUCT_NAME,
-                    })
-                  }}
-                </div>
-                <i18n path="backup.backup_page_tooltip_manual" tag="p">
-                  <template v-slot:manualLink>
-                    <cv-link
-                      href="https://docs.nethserver.org/projects/ns8/en/latest/backup.html"
-                      target="_blank"
-                      rel="noreferrer"
-                      class="inline"
-                    >
-                      {{ $t("backup.go_to_backup_manual_page") }}
-                    </cv-link>
-                  </template>
-                </i18n>
-              </template>
-            </cv-interactive-tooltip>
           </h2>
         </cv-column>
       </cv-row>
       <!-- cluster configuration -->
       <cv-row>
         <cv-column>
-          <h4 class="mg-bottom-md">
-            {{ $t("backup.cluster_configuration") }}
-            <cv-interactive-tooltip
-              alignment="start"
-              direction="right"
-              class="info"
+          <NsTabs
+            :container="false"
+            :aria-label="$t('common.tab_navigation')"
+            :noDefaultToFirst="true"
+            @tab-selected="tabSelected"
+          >
+            <cv-tab
+              id="tab-1"
+              :label="$t('backup.backup')"
+              :selected="q.view === 'backup'"
             >
-              <template slot="trigger">
-                <Information16 />
-              </template>
-              <template slot="content">
-                {{ $t("backup.cluster_configuration_tooltip") }}
-              </template>
-            </cv-interactive-tooltip>
-          </h4>
-        </cv-column>
-      </cv-row>
-      <cv-row class="mg-bottom-lg">
-        <cv-column
-          v-if="!isSetClusterBackupPassword && !loading.listBackupRepositories"
-        >
-          <cv-tile kind="standard" :light="true">
-            <NsEmptyState :title="$t('backup.cluster_backup_password_warning')">
-              <template #pictogram>
-                <ExclamationMarkPictogram />
-              </template>
-              <template #description>
-                <div class="mg-bottom-lg">
-                  <p>
+              <cv-row class="mg-bottom-lg">
+                <cv-column
+                  v-if="
+                    !isSetClusterBackupPassword &&
+                    !loading.listBackupRepositories
+                  "
+                >
+                  <cv-tile kind="standard" :light="true">
+                    <NsEmptyState
+                      :title="$t('backup.cluster_backup_password_warning')"
+                    >
+                      <template #pictogram>
+                        <ExclamationMarkPictogram />
+                      </template>
+                      <template #description>
+                        <div class="mg-bottom-lg">
+                          <p>
+                            {{
+                              $t(
+                                "backup.cluster_backup_password_warning_description_1"
+                              )
+                            }}
+                          </p>
+                          <p>
+                            {{
+                              $t(
+                                "backup.cluster_backup_password_warning_description_2"
+                              )
+                            }}
+                          </p>
+                        </div>
+                        <div>
+                          <NsButton
+                            kind="primary"
+                            :icon="Password20"
+                            @click="showBackupPasswordModal()"
+                            >{{ $t("backup.set_cluster_backup_password") }}
+                          </NsButton>
+                        </div>
+                      </template>
+                    </NsEmptyState>
+                  </cv-tile>
+                </cv-column>
+                <cv-column
+                  v-if="
+                    isSetClusterBackupPassword &&
+                    !loading.listBackupRepositories
+                  "
+                >
+                  <div class="mg-bottom-md">
                     {{
-                      $t("backup.cluster_backup_password_warning_description_1")
+                      $t(
+                        "backup.configure_manage_backups_for_your_applications"
+                      )
                     }}
-                  </p>
-                  <p>
-                    {{
-                      $t("backup.cluster_backup_password_warning_description_2")
-                    }}
-                  </p>
-                </div>
-                <div>
+                  </div>
                   <NsButton
                     kind="primary"
+                    :icon="Download20"
+                    @click="downloadClusterConfigurationBackup()"
+                    :disabled="loading.downloadClusterBackup"
+                    :loading="loading.downloadClusterBackup"
+                    >{{ $t("backup.download_cluster_configuration_backup") }}
+                  </NsButton>
+                  <NsButton
+                    kind="tertiary"
                     :icon="Password20"
                     @click="showBackupPasswordModal()"
-                    >{{ $t("backup.set_cluster_backup_password") }}
+                    class="mg-left-md"
+                    :disabled="loading.downloadClusterBackup"
+                    >{{ $t("backup.change_cluster_backup_password") }}
                   </NsButton>
-                </div>
-              </template>
-            </NsEmptyState>
-          </cv-tile>
-        </cv-column>
-        <cv-column
-          v-if="isSetClusterBackupPassword && !loading.listBackupRepositories"
-        >
-          <NsButton
-            kind="secondary"
-            :icon="Download20"
-            @click="downloadClusterConfigurationBackup()"
-            :disabled="loading.downloadClusterBackup"
-            :loading="loading.downloadClusterBackup"
-            >{{ $t("backup.download_cluster_configuration_backup") }}
-          </NsButton>
-          <NsButton
-            kind="tertiary"
-            :icon="Password20"
-            @click="showBackupPasswordModal()"
-            class="mg-left-md"
-            :disabled="loading.downloadClusterBackup"
-            >{{ $t("backup.change_cluster_backup_password") }}
-          </NsButton>
-        </cv-column>
-      </cv-row>
-      <cv-row v-if="isSetClusterBackupPassword">
-        <cv-column>
-          <h4 class="mg-bottom-md">
-            {{ $t("backup.apps") }}
-            <cv-interactive-tooltip
-              alignment="start"
-              direction="right"
-              class="info"
-            >
-              <template slot="trigger">
-                <Information16 />
-              </template>
-              <template slot="content">
-                {{ $t("backup.apps_configuration_tooltip") }}
-              </template>
-            </cv-interactive-tooltip>
-          </h4>
-        </cv-column>
-      </cv-row>
-      <template v-if="loading.listBackupRepositories || loading.listBackups">
-        <!-- repositories skeleton -->
-        <cv-row>
-          <cv-column>
-            <cv-skeleton-text heading width="40%"></cv-skeleton-text>
-          </cv-column>
-        </cv-row>
-        <cv-row>
-          <cv-column>
-            <!-- skeleton card grid -->
-            <div
-              class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
-            >
-              <cv-tile v-for="index in 2" :key="index" light>
-                <cv-skeleton-text
-                  :paragraph="true"
-                  :line-count="8"
-                ></cv-skeleton-text>
-              </cv-tile>
-            </div>
-          </cv-column>
-        </cv-row>
-        <!-- backups skeleton -->
-        <cv-row>
-          <cv-column>
-            <cv-skeleton-text heading width="40%"></cv-skeleton-text>
-          </cv-column>
-        </cv-row>
-        <cv-row>
-          <cv-column>
-            <!-- skeleton card grid -->
-            <div
-              class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
-            >
-              <cv-tile v-for="index in 2" :key="index" light>
-                <cv-skeleton-text
-                  :paragraph="true"
-                  :line-count="8"
-                ></cv-skeleton-text>
-              </cv-tile>
-            </div>
-          </cv-column>
-        </cv-row>
-      </template>
-      <!-- empty state repositories -->
-      <cv-row v-else-if="isSetClusterBackupPassword && !repositories.length">
-        <cv-column>
-          <cv-tile kind="standard" :light="true">
-            <NsEmptyState :title="$t('backup.no_backup_repository')">
-              <template #pictogram>
-                <HardDrivePictogram />
-              </template>
-              <template #description>
-                <div>{{ $t("backup.empty_state_repository_description") }}</div>
-                <NsButton
-                  kind="primary"
-                  :icon="Add20"
-                  @click="showAddRepoModal()"
-                  class="empty-state-button"
-                  >{{ $t("backup.add_repository") }}
-                </NsButton>
-              </template>
-            </NsEmptyState>
-          </cv-tile>
-        </cv-column>
-      </cv-row>
-      <template v-else-if="isSetClusterBackupPassword">
-        <!-- errored backups -->
-        <cv-row v-if="!loading.listBackups && erroredBackups.length">
-          <cv-column>
-            <NsInlineNotification
-              kind="error"
-              :title="$t('backup.some_backups_failed')"
-              :description="$t('backup.errored_backups_description')"
-              :showCloseButton="false"
-            />
-          </cv-column>
-        </cv-row>
-        <!-- disabled backups warning -->
-        <cv-row v-if="!loading.listBackups && disabledBackups.length">
-          <cv-column>
-            <NsInlineNotification
-              kind="warning"
-              :title="$t('backup.disabled_backups')"
-              :description="
-                $tc(
-                  'backup.disabled_backups_description',
-                  disabledBackups.length,
-                  {
-                    num: disabledBackups.length,
-                  }
-                )
-              "
-              :showCloseButton="false"
-            />
-          </cv-column>
-        </cv-row>
-        <!-- unconfigured instances warning -->
-        <cv-row v-if="!loading.listBackups && unconfiguredInstances.length">
-          <cv-column>
-            <NsInlineNotification
-              kind="warning"
-              :title="$t('backup.app_instances_not_backed_up')"
-              :description="
-                $tc(
-                  'backup.app_instances_not_backed_up_description',
-                  unconfiguredInstances.length,
-                  {
-                    numInstances: unconfiguredInstances.length,
-                  }
-                )
-              "
-              :actionLabel="$t('backup.schedule_backup')"
-              @action="showCreateOrEditBackupModal('notBackedUp')"
-              :showCloseButton="false"
-            />
-          </cv-column>
-        </cv-row>
-        <!-- repositories -->
-        <cv-row>
-          <cv-column>
-            <h6 class="mg-bottom-md">
-              {{ $t("backup.repositories") }}
-              <cv-interactive-tooltip
-                alignment="start"
-                direction="right"
-                class="info"
-              >
-                <template slot="trigger">
-                  <Information16 />
-                </template>
-                <template slot="content">
-                  {{ $t("backup.repositories_tooltip") }}
-                </template>
-              </cv-interactive-tooltip>
-            </h6>
-          </cv-column>
-        </cv-row>
-        <cv-row v-if="error.listBackupRepositories">
-          <cv-column>
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.list-backup-repositories')"
-              :description="error.listBackupRepositories"
-              :showCloseButton="false"
-            />
-          </cv-column>
-        </cv-row>
-        <cv-row v-if="error.removeBackupRepository">
-          <cv-column>
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.remove-backup-repository')"
-              :description="error.removeBackupRepository"
-              :showCloseButton="false"
-            />
-          </cv-column>
-        </cv-row>
-        <cv-row class="toolbar">
-          <cv-column>
-            <NsButton kind="secondary" :icon="Add20" @click="showAddRepoModal()"
-              >{{ $t("backup.add_repository") }}
-            </NsButton>
-          </cv-column>
-        </cv-row>
-        <cv-row>
-          <cv-column>
-            <!-- card grid -->
-            <div
-              class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
-            >
-              <NsInfoCard
-                v-for="repo in repositories"
-                :key="repo.id"
-                light
-                :title="repo.name"
-                :icon="DataBase32"
-              >
-                <template #menu>
-                  <cv-overflow-menu
-                    :flip-menu="true"
-                    tip-position="top"
-                    tip-alignment="end"
-                    class="top-right-overflow-menu"
-                  >
-                    <cv-overflow-menu-item @click="showEditRepoModal(repo)">
-                      <NsMenuItem :icon="Edit20" :label="$t('common.edit')" />
-                    </cv-overflow-menu-item>
-                    <NsMenuDivider />
-                    <cv-overflow-menu-item
-                      danger
-                      @click="showDeleteRepoModal(repo)"
-                    >
-                      <NsMenuItem
-                        :icon="TrashCan20"
-                        :label="$t('common.delete')"
-                      />
-                    </cv-overflow-menu-item>
-                  </cv-overflow-menu>
-                </template>
-                <template #content>
-                  <div class="card-content-backup">
-                    <div class="row">
-                      {{ $t("backup." + repo.provider) }}
-                    </div>
-                    <div class="row">
-                      {{ repo.url }}
-                    </div>
-                    <div class="row actions">
-                      <NsButton
-                        kind="ghost"
-                        :icon="ArrowRight20"
-                        @click="showRepoDetailsModal(repo)"
-                        >{{ $t("common.see_details") }}
-                      </NsButton>
-                    </div>
+                </cv-column>
+              </cv-row>
+              <cv-row v-if="isSetClusterBackupPassword">
+                <cv-column>
+                  <h4 class="mg-bottom-lg">
+                    {{ $t("backup.backup_destinations") }}
+                  </h4>
+                  <div class="mg-bottom-md">
+                    {{
+                      $t("backup.backup_destinations_stored_local_or_remote")
+                    }}
                   </div>
-                </template>
-              </NsInfoCard>
-            </div>
-          </cv-column>
-        </cv-row>
-        <!-- backups -->
-        <cv-row>
-          <cv-column>
-            <h6 class="mg-bottom-md">{{ $t("backup.schedules") }}</h6>
-          </cv-column>
-        </cv-row>
-        <cv-row v-if="error.listBackups">
-          <cv-column>
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.list-backups')"
-              :description="error.listBackups"
-              :showCloseButton="false"
-            />
-          </cv-column>
-        </cv-row>
-        <cv-row v-if="error.removeBackup">
-          <cv-column>
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.remove-backup')"
-              :description="error.removeBackup"
-              :showCloseButton="false"
-            />
-          </cv-column>
-        </cv-row>
-        <cv-row v-if="error.runBackup">
-          <cv-column>
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.run-backup')"
-              :description="error.runBackup"
-              :showCloseButton="false"
-            />
-          </cv-column>
-        </cv-row>
-        <cv-row v-if="error.alterBackup">
-          <cv-column>
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.alter-backup')"
-              :description="error.alterBackup"
-              :showCloseButton="false"
-            />
-          </cv-column>
-        </cv-row>
-        <!-- empty state backups -->
-        <cv-row v-if="!backups.length">
-          <cv-column>
-            <cv-tile light>
-              <NsEmptyState :title="$t('backup.no_backup_scheduled')">
-                <template #description>
-                  <NsButton
-                    kind="primary"
-                    :icon="Add20"
-                    @click="showCreateOrEditBackupModal('')"
-                    class="empty-state-button-no-description"
-                    >{{ $t("backup.schedule_backup") }}
-                  </NsButton>
-                </template>
-              </NsEmptyState>
-            </cv-tile>
-          </cv-column>
-        </cv-row>
-        <template v-else>
-          <cv-row class="toolbar">
-            <cv-column>
-              <NsButton
-                kind="secondary"
-                :icon="Add20"
-                @click="showCreateOrEditBackupModal('')"
-                >{{ $t("backup.schedule_backup") }}
-              </NsButton>
-            </cv-column>
-          </cv-row>
-          <cv-row>
-            <cv-column>
-              <!-- card grid -->
-              <div
-                class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
+                </cv-column>
+              </cv-row>
+              <template
+                v-if="loading.listBackupRepositories || loading.listBackups"
               >
-                <NsInfoCard
-                  v-for="backup in backups"
-                  :key="backup.id"
-                  light
-                  :title="backup.name"
-                  :icon="Save32"
-                >
-                  <template #menu>
-                    <cv-overflow-menu
-                      :flip-menu="true"
-                      tip-position="top"
-                      tip-alignment="end"
-                      class="top-right-overflow-menu"
+                <!-- repositories skeleton -->
+                <cv-row>
+                  <cv-column>
+                    <cv-skeleton-text heading width="40%"></cv-skeleton-text>
+                  </cv-column>
+                </cv-row>
+                <cv-row>
+                  <cv-column>
+                    <!-- skeleton card grid -->
+                    <div
+                      class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
                     >
-                      <cv-overflow-menu-item
-                        @click="runBackup(backup)"
-                        :disabled="!backup.enabled"
-                      >
-                        <NsMenuItem
-                          :icon="Save20"
-                          :label="$t('backup.run_backup_now')"
-                        />
-                      </cv-overflow-menu-item>
-                      <cv-overflow-menu-item
-                        @click="toggleBackupStatus(backup)"
-                        :disabled="loading.alterBackup"
-                      >
-                        <NsMenuItem
-                          :icon="Power20"
-                          :label="
-                            backup.enabled
-                              ? $t('common.disable')
-                              : $t('common.enable')
-                          "
-                        />
-                      </cv-overflow-menu-item>
-                      <cv-overflow-menu-item
-                        @click="showEditBackupModal(backup)"
-                      >
-                        <NsMenuItem :icon="Edit20" :label="$t('common.edit')" />
-                      </cv-overflow-menu-item>
-                      <NsMenuDivider />
-                      <cv-overflow-menu-item
-                        danger
-                        @click="showDeleteBackupModal(backup)"
-                      >
-                        <NsMenuItem
-                          :icon="TrashCan20"
-                          :label="$t('common.delete')"
-                        />
-                      </cv-overflow-menu-item>
-                    </cv-overflow-menu>
-                  </template>
-                  <template #content>
-                    <div class="card-content-backup">
-                      <div class="row instance-to-repo">
-                        <div class="backup-source">
-                          <NsSvg :svg="Application20" class="icon" />
-                          <span v-if="backup.instances.length == 1">
-                            {{
-                              backup.instances[0].ui_name
-                                ? backup.instances[0].ui_name
-                                : backup.instances[0].module_id
-                            }}
-                          </span>
-                          <span v-else>
-                            <!-- multiple instances -->
-                            {{
-                              backup.instances.length +
-                              " " +
-                              $tc("backup.instances", backup.instances.length)
-                            }}
-                          </span>
+                      <cv-tile v-for="index in 2" :key="index" light>
+                        <cv-skeleton-text
+                          :paragraph="true"
+                          :line-count="8"
+                        ></cv-skeleton-text>
+                      </cv-tile>
+                    </div>
+                  </cv-column>
+                </cv-row>
+                <!-- backups skeleton -->
+                <cv-row>
+                  <cv-column>
+                    <cv-skeleton-text heading width="40%"></cv-skeleton-text>
+                  </cv-column>
+                </cv-row>
+                <cv-row>
+                  <cv-column>
+                    <!-- skeleton card grid -->
+                    <div
+                      class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
+                    >
+                      <cv-tile v-for="index in 2" :key="index" light>
+                        <cv-skeleton-text
+                          :paragraph="true"
+                          :line-count="8"
+                        ></cv-skeleton-text>
+                      </cv-tile>
+                    </div>
+                  </cv-column>
+                </cv-row>
+              </template>
+              <!-- empty state repositories -->
+              <cv-row
+                v-else-if="isSetClusterBackupPassword && !repositories.length"
+              >
+                <cv-column>
+                  <cv-tile kind="standard" :light="true">
+                    <NsEmptyState :title="$t('backup.no_backup_repository')">
+                      <template #pictogram>
+                        <HardDrivePictogram />
+                      </template>
+                      <template #description>
+                        <div>
+                          {{ $t("backup.empty_state_repository_description") }}
                         </div>
-                        <div class="arrow-right">
-                          <NsSvg :svg="ArrowRight20" />
+                        <NsButton
+                          kind="secondary"
+                          :icon="Add20"
+                          @click="showAddRepoModal()"
+                          class="empty-state-button"
+                          >{{ $t("backup.add_repository") }}
+                        </NsButton>
+                        <div>
+                          <NsButton
+                            kind="ghost"
+                            :icon="Upload20"
+                            @click="showImportBackupDestinationModal()"
+                            class="empty-state-button"
+                            >{{ $t("backup.import_repository") }}
+                          </NsButton>
                         </div>
-                        <div class="backup-destination">
-                          <NsSvg :svg="DataBase20" class="icon" />
-                          <span :title="$t('backup.repository')">{{
-                            backup.repoName
-                          }}</span>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <cv-tag
-                          v-if="backup.enabled"
-                          kind="green"
-                          :label="$t('common.enabled')"
-                          :title="$t('backup.backup_enabled')"
-                        ></cv-tag>
-                        <cv-tag
-                          v-else
-                          kind="high-contrast"
-                          :label="$t('common.disabled')"
-                          :title="$t('backup.backup_disabled')"
-                        ></cv-tag>
-                      </div>
-                      <div
-                        v-if="backup.errorInstances.length"
-                        class="row icon-and-text"
+                      </template>
+                    </NsEmptyState>
+                  </cv-tile>
+                </cv-column>
+              </cv-row>
+              <template v-if="isSetClusterBackupPassword">
+                <!-- errored backups -->
+                <cv-row v-if="!loading.listBackups && erroredBackups.length">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="error"
+                      :title="$t('backup.some_backups_failed')"
+                      :description="$t('backup.errored_backups_description')"
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
+                <!-- disabled backups warning -->
+                <cv-row v-if="!loading.listBackups && disabledBackups.length">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="warning"
+                      :title="$t('backup.disabled_backups')"
+                      :description="
+                        $tc(
+                          'backup.disabled_backups_description',
+                          disabledBackups.length,
+                          {
+                            num: disabledBackups.length,
+                          }
+                        )
+                      "
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
+                <!-- repositories -->
+                <cv-row v-if="error.listBackupRepositories">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="error"
+                      :title="$t('action.list-backup-repositories')"
+                      :description="error.listBackupRepositories"
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
+                <cv-row v-if="error.removeBackupRepository">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="error"
+                      :title="$t('action.remove-backup-repository')"
+                      :description="error.removeBackupRepository"
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
+                <cv-row v-if="repositories.length" class="toolbar">
+                  <cv-column>
+                    <NsButton
+                      kind="secondary"
+                      :icon="Add20"
+                      @click="showAddRepoModal()"
+                      >{{ $t("backup.add_repository") }}
+                    </NsButton>
+                    <NsButton
+                      kind="tertiary"
+                      :icon="Upload20"
+                      @click="showImportBackupDestinationModal()"
+                      class="mg-left-md"
+                      >{{ $t("backup.import_repository") }}
+                    </NsButton>
+                  </cv-column>
+                </cv-row>
+                <cv-row>
+                  <cv-column>
+                    <!-- card grid -->
+                    <div
+                      class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
+                    >
+                      <NsInfoCard
+                        v-for="repo in repositories"
+                        :key="repo.id"
+                        light
+                        :title="repo.name"
+                        :icon="DataBase32"
                       >
-                        <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
-                        <span>
-                          {{
+                        <template #menu>
+                          <cv-overflow-menu
+                            :flip-menu="true"
+                            tip-position="top"
+                            tip-alignment="end"
+                            class="top-right-overflow-menu"
+                          >
+                            <cv-overflow-menu-item
+                              @click="showEditRepoModal(repo)"
+                            >
+                              <NsMenuItem
+                                :icon="Edit20"
+                                :label="$t('common.edit')"
+                              />
+                            </cv-overflow-menu-item>
+                            <NsMenuDivider />
+                            <cv-overflow-menu-item
+                              danger
+                              @click="showDeleteRepoModal(repo)"
+                            >
+                              <NsMenuItem
+                                :icon="TrashCan20"
+                                :label="$t('common.delete')"
+                              />
+                            </cv-overflow-menu-item>
+                          </cv-overflow-menu>
+                        </template>
+                        <template #content>
+                          <div class="card-content-backup">
+                            <div class="row">
+                              {{ $t("backup." + repo.provider) }}
+                            </div>
+                            <div class="row">
+                              {{ repo.url }}
+                            </div>
+                            <div class="row actions">
+                              <NsButton
+                                kind="ghost"
+                                :icon="ArrowRight20"
+                                @click="showRepoDetailsModal(repo)"
+                                >{{ $t("common.see_details") }}
+                              </NsButton>
+                            </div>
+                          </div>
+                        </template>
+                      </NsInfoCard>
+                    </div>
+                  </cv-column>
+                </cv-row>
+                <!-- backups -->
+                <cv-row>
+                  <cv-column>
+                    <h4 class="mg-bottom-lg">{{ $t("backup.schedules") }}</h4>
+                    <div class="mg-bottom-md">
+                      {{
+                        $t(
+                          "backup.schedule_regular_backups_and_select_the_applications_to_include"
+                        )
+                      }}
+                    </div>
+                  </cv-column>
+                </cv-row>
+                <cv-row>
+                  <cv-column>
+                    <NsButton
+                      kind="secondary"
+                      :icon="Add20"
+                      class="mg-bottom-md"
+                      @click="showCreateOrEditBackupModal('')"
+                      :disabled="!repositories.length"
+                      >{{ $t("backup.schedule_backup") }}
+                    </NsButton>
+                  </cv-column>
+                </cv-row>
+                <cv-row v-if="error.listBackups">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="error"
+                      :title="$t('action.list-backups')"
+                      :description="error.listBackups"
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
+                <cv-row v-if="error.removeBackup">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="error"
+                      :title="$t('action.remove-backup')"
+                      :description="error.removeBackup"
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
+                <cv-row v-if="error.runBackup">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="error"
+                      :title="$t('action.run-backup')"
+                      :description="error.runBackup"
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
+                <cv-row v-if="error.alterBackup">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="error"
+                      :title="$t('action.alter-backup')"
+                      :description="error.alterBackup"
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
+                <cv-row v-if="error.cancelBackup">
+                  <cv-column>
+                    <NsInlineNotification
+                      kind="error"
+                      :title="$t('backup.cancel_backup_failed')"
+                      :description="error.cancelBackup"
+                      :showCloseButton="false"
+                    />
+                  </cv-column>
+                </cv-row>
+                <!-- empty state backups -->
+                <template v-if="repositories.length">
+                  <cv-row v-if="!backups.length">
+                    <cv-column>
+                      <!-- unconfigured instances warning -->
+                      <cv-row
+                        v-if="
+                          !loading.listBackups && unconfiguredInstances.length
+                        "
+                      >
+                        <cv-column>
+                          <NsInlineNotification
+                            kind="warning"
+                            :title="$t('backup.app_instances_not_backed_up')"
+                            :description="
+                              $tc(
+                                'backup.app_instances_not_backed_up_description',
+                                unconfiguredInstances.length,
+                                {
+                                  numInstances: unconfiguredInstances.length,
+                                }
+                              )
+                            "
+                            :showCloseButton="false"
+                          />
+                        </cv-column>
+                      </cv-row>
+                    </cv-column>
+                  </cv-row>
+                  <template v-else>
+                    <!-- unconfigured instances warning -->
+                    <cv-row
+                      v-if="
+                        !loading.listBackups && unconfiguredInstances.length
+                      "
+                    >
+                      <cv-column>
+                        <NsInlineNotification
+                          kind="warning"
+                          :title="$t('backup.app_instances_not_backed_up')"
+                          :description="
                             $tc(
-                              "backup.backup_of_instances_failed_c",
-                              backup.errorInstances.length,
+                              'backup.app_instances_not_backed_up_description',
+                              unconfiguredInstances.length,
                               {
-                                instance: backup.errorInstances[0].ui_name
-                                  ? backup.errorInstances[0].ui_name
-                                  : backup.errorInstances[0].module_id,
-                                num: backup.errorInstances.length,
+                                numInstances: unconfiguredInstances.length,
                               }
                             )
-                          }}
-                        </span>
-                      </div>
-                      <div class="row actions">
-                        <NsButton
-                          kind="ghost"
-                          :icon="ArrowRight20"
-                          @click="showBackupDetailsModal(backup)"
-                          >{{ $t("common.see_details") }}
-                        </NsButton>
-                      </div>
-                    </div>
+                          "
+                          :showCloseButton="false"
+                        />
+                      </cv-column>
+                    </cv-row>
+                    <cv-row>
+                      <cv-column>
+                        <!-- card grid -->
+                        <div
+                          class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
+                        >
+                          <NsInfoCard
+                            v-for="backup in backups"
+                            :key="backup.id"
+                            light
+                            :title="backup.name"
+                            :icon="Save32"
+                          >
+                            <template #menu>
+                              <cv-overflow-menu
+                                :flip-menu="true"
+                                tip-position="top"
+                                tip-alignment="end"
+                                class="top-right-overflow-menu"
+                              >
+                                <cv-overflow-menu-item
+                                  v-if="isBackupRunning(backup.id)"
+                                  @click="cancelBackupTask(backup)"
+                                >
+                                  <NsMenuItem
+                                    :icon="Close20"
+                                    :label="$t('backup.cancel_backup')"
+                                  />
+                                </cv-overflow-menu-item>
+                                <template v-else>
+                                  <cv-overflow-menu-item
+                                    @click="runBackup(backup)"
+                                    :disabled="!backup.enabled"
+                                  >
+                                    <NsMenuItem
+                                      :icon="Save20"
+                                      :label="$t('backup.run_backup_now')"
+                                    />
+                                  </cv-overflow-menu-item>
+                                  <cv-overflow-menu-item
+                                    @click="toggleBackupStatus(backup)"
+                                    :disabled="loading.alterBackup"
+                                  >
+                                    <NsMenuItem
+                                      :icon="Power20"
+                                      :label="
+                                        backup.enabled
+                                          ? $t('common.disable')
+                                          : $t('common.enable')
+                                      "
+                                    />
+                                  </cv-overflow-menu-item>
+                                  <cv-overflow-menu-item
+                                    @click="showEditBackupModal(backup)"
+                                  >
+                                    <NsMenuItem
+                                      :icon="Edit20"
+                                      :label="$t('common.edit')"
+                                    />
+                                  </cv-overflow-menu-item>
+                                  <NsMenuDivider />
+                                  <cv-overflow-menu-item
+                                    danger
+                                    @click="showDeleteBackupModal(backup)"
+                                  >
+                                    <NsMenuItem
+                                      :icon="TrashCan20"
+                                      :label="$t('common.delete')"
+                                    />
+                                  </cv-overflow-menu-item>
+                                </template>
+                              </cv-overflow-menu>
+                            </template>
+                            <template #content>
+                              <div class="card-content-backup">
+                                <div class="row instance-to-repo">
+                                  <div class="backup-source">
+                                    <NsSvg :svg="Application20" class="icon" />
+                                    <span v-if="backup.instances.length === 1">
+                                      {{
+                                        backup.instances[0].ui_name
+                                          ? backup.instances[0].ui_name
+                                          : backup.instances[0].module_id
+                                      }}
+                                    </span>
+                                    <span v-else>
+                                      <!-- multiple instances -->
+                                      {{
+                                        backup.instances.length +
+                                        " " +
+                                        $tc(
+                                          "backup.applications",
+                                          backup.instances.length
+                                        )
+                                      }}
+                                    </span>
+                                  </div>
+                                  <div class="arrow-right">
+                                    <NsSvg :svg="ArrowRight20" />
+                                  </div>
+                                  <div class="backup-destination">
+                                    <NsSvg :svg="DataBase20" class="icon" />
+                                    <span :title="$t('backup.repository')">{{
+                                      backup.repoName
+                                    }}</span>
+                                  </div>
+                                </div>
+                                <div class="row">
+                                  <cv-tag
+                                    v-if="backup.enabled"
+                                    kind="green"
+                                    :label="$t('common.enabled')"
+                                    :title="$t('backup.backup_enabled')"
+                                  ></cv-tag>
+                                  <cv-tag
+                                    v-else
+                                    kind="high-contrast"
+                                    :label="$t('common.disabled')"
+                                    :title="$t('backup.backup_disabled')"
+                                  ></cv-tag>
+                                </div>
+                                <div
+                                  v-if="backup.errorInstances.length"
+                                  class="row icon-and-text"
+                                >
+                                  <NsSvg
+                                    :svg="ErrorFilled16"
+                                    class="icon ns-error"
+                                  />
+                                  <span>
+                                    {{
+                                      $tc(
+                                        "backup.backup_of_instances_failed_c",
+                                        backup.errorInstances.length,
+                                        {
+                                          instance: backup.errorInstances[0]
+                                            .ui_name
+                                            ? backup.errorInstances[0].ui_name
+                                            : backup.errorInstances[0]
+                                                .module_id,
+                                          num: backup.errorInstances.length,
+                                        }
+                                      )
+                                    }}
+                                  </span>
+                                </div>
+                                <div class="row actions">
+                                  <NsButton
+                                    kind="ghost"
+                                    :icon="ArrowRight20"
+                                    @click="showBackupDetailsModal(backup)"
+                                    >{{ $t("common.see_details") }}
+                                  </NsButton>
+                                </div>
+                              </div>
+                            </template>
+                          </NsInfoCard>
+                        </div>
+                      </cv-column>
+                    </cv-row>
                   </template>
-                </NsInfoCard>
-              </div>
-            </cv-column>
-          </cv-row>
-        </template>
-        <cv-row>
-          <cv-column>
-            <h6 class="mg-bottom-md">
-              {{ $t("backup.restore") }}
-              <cv-interactive-tooltip
-                alignment="start"
-                direction="right"
-                class="info"
-              >
-                <template slot="trigger">
-                  <Information16 />
                 </template>
-                <template slot="content">
-                  {{ $t("backup.restore_tooltip") }}
-                </template>
-              </cv-interactive-tooltip>
-            </h6>
-          </cv-column>
-        </cv-row>
-        <cv-row>
-          <cv-column>
-            <NsButton
-              kind="secondary"
-              :icon="Reset20"
-              @click="showRestoreModal()"
-              :disabled="!repositories.length"
-              class="mg-bottom-xlg"
-              >{{ $t("backup.restore_app") }}
-            </NsButton>
-          </cv-column>
-        </cv-row>
-      </template>
+              </template>
+            </cv-tab>
+            <cv-tab
+              id="tab-2"
+              :label="$t('backup.restore')"
+              :selected="q.view === 'restore'"
+            >
+              <cv-row>
+                <cv-column>
+                  <div class="mg-bottom-sm">
+                    {{
+                      $t("backup.restore_applications_from_existing_backups")
+                    }}
+                  </div>
+                  <div class="mg-bottom-lg">
+                    {{
+                      $t(
+                        "backup.cluster_restore_during_initial_cluster_configuration"
+                      )
+                    }}
+                  </div>
+                </cv-column>
+              </cv-row>
+              <cv-row>
+                <cv-column>
+                  <template
+                    v-if="!repositories.length && isSetClusterBackupPassword"
+                  >
+                    <NsInlineNotification
+                      kind="warning"
+                      class="mg-bottom-lg"
+                      :title="$t('backup.no_backup_repository')"
+                      :description="
+                        $t(
+                          'backup.configure_a_destination_to_restore_applications'
+                        )
+                      "
+                      :actionLabel="$t('backup.add_repository')"
+                      @action="goToBackupTabAndOpenRepositoryModal()"
+                      :showCloseButton="false"
+                    />
+                  </template>
+                  <template v-if="!isSetClusterBackupPassword">
+                    <NsInlineNotification
+                      kind="warning"
+                      class="mg-bottom-lg"
+                      :title="$t('backup.no_cluster_backup_password')"
+                      :description="
+                        $t(
+                          'backup.set_cluster_backup_password_to_restore_applications'
+                        )
+                      "
+                      :actionLabel="$t('backup.set_cluster_backup_password')"
+                      @action="showBackupTabAndOpenPasswordModal()"
+                      :showCloseButton="false"
+                    />
+                  </template>
+                  <NsButton
+                    kind="primary"
+                    :icon="Reset20"
+                    @click="showRestoreModal()"
+                    :disabled="!repositories.length"
+                    class="mg-bottom-xlg"
+                    >{{ $t("backup.restore_app") }}
+                  </NsButton>
+                </cv-column>
+              </cv-row>
+            </cv-tab>
+          </NsTabs>
+        </cv-column>
+      </cv-row>
     </cv-grid>
     <!-- delete repository modal -->
     <NsDangerDeleteModal
@@ -715,6 +790,11 @@
       @hide="hideBackupPasswordModal"
       @password-set.once="reloadBackupRepositories"
     />
+    <!-- import backup destination modal -->
+    <ImportBackupDestinationModal
+      :state="importBackupDestinationModalState"
+      @import-backup-submit="onImportBackupSubmit"
+    />
   </div>
 </template>
 
@@ -727,6 +807,7 @@ import {
   DateTimeService,
   PageTitleService,
 } from "@nethserver/ns8-ui-lib";
+import { mapGetters } from "vuex";
 import AddRepositoryModal from "@/components/backup/AddRepositoryModal";
 import CreateOrEditBackupModal from "@/components/backup/CreateOrEditBackupModal";
 import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
@@ -734,8 +815,11 @@ import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
 import RestoreSingleInstanceModal from "@/components/backup/RestoreSingleInstanceModal";
 import BackupPasswordModal from "@/components/backup/BackupPasswordModal";
+import ImportBackupDestinationModal, {
+  StateManager as ImportBackupStateManager,
+} from "@/components/backup/ImportBackupDestinationModal";
 import to from "await-to-js";
-import Information16 from "@carbon/icons-vue/es/information/16";
+import Upload20 from "@carbon/icons-vue/es/upload/20";
 
 export default {
   name: "Backup",
@@ -747,7 +831,7 @@ export default {
     EditRepositoryModal,
     RestoreSingleInstanceModal,
     BackupPasswordModal,
-    Information16,
+    ImportBackupDestinationModal,
   },
   mixins: [
     TaskService,
@@ -764,7 +848,9 @@ export default {
     return {
       q: {
         isShownAddRepoModal: false,
+        view: "backup",
       },
+      Upload20,
       isShownCreateOrEditBackupModal: false,
       isShownDeleteRepoModal: false,
       isShownRepoDetailsModal: false,
@@ -773,6 +859,7 @@ export default {
       isShownBackupDetailsModal: false,
       isShownRestoreModal: false,
       isShownBackupPasswordModal: false,
+      importBackupDestinationModalState: new ImportBackupStateManager(),
       repositories: [],
       backups: [],
       unconfiguredInstances: [],
@@ -803,15 +890,39 @@ export default {
         alterBackup: "",
         downloadClusterBackup: "",
         passwordClusterBackup: "",
+        cancelBackup: "",
       },
     };
   },
   computed: {
+    ...mapGetters(["ongoingNotifications"]),
     disabledBackups() {
       return this.backups.filter((b) => !b.enabled);
     },
     erroredBackups() {
       return this.backups.filter((b) => b.errorInstances.length);
+    },
+    runningBackupTasksFromStore() {
+      // Compute running backup tasks from Vuex store (persists across page reloads)
+      const runningTasks = {};
+      this.ongoingNotifications.forEach((notification) => {
+        if (
+          notification.task &&
+          notification.task.context &&
+          notification.task.context.action === "run-backup" &&
+          notification.task.context.extra &&
+          notification.task.context.extra.backupId
+        ) {
+          const backupId = notification.task.context.extra.backupId;
+          runningTasks[backupId] = notification.task.context.id; // Use actual task ID from context
+        }
+      });
+      return runningTasks;
+    },
+    isBackupRunning() {
+      return (backupId) => {
+        return !!this.runningBackupTasksFromStore[backupId];
+      };
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -828,14 +939,22 @@ export default {
     this.listBackupRepositories();
   },
   methods: {
+    tabSelected(tabNum) {
+      if (tabNum === 0) {
+        this.q.view = "backup";
+      } else if (tabNum === 1) {
+        this.q.view = "restore";
+      }
+    },
     async listBackupRepositories() {
       this.loading.listBackupRepositories = true;
       this.error.listBackupRepositories = "";
       const taskAction = "list-backup-repositories";
+      const eventId = this.getUuid();
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.listBackupRepositoriesCompleted
       );
 
@@ -845,6 +964,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -869,9 +989,13 @@ export default {
       this.loading.listBackups = true;
       this.error.listBackups = "";
       const taskAction = "list-backups";
+      const eventId = this.getUuid();
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.listBackupsCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listBackupsCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -879,6 +1003,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -914,6 +1039,10 @@ export default {
       }
       this.backups = backups;
       this.loading.listBackups = false;
+    },
+    goToBackupTabAndOpenRepositoryModal() {
+      this.q.view = "backup";
+      this.showAddRepoModal();
     },
     showAddRepoModal() {
       this.q.isShownAddRepoModal = true;
@@ -975,19 +1104,113 @@ export default {
     hideRestoreModal() {
       this.isShownRestoreModal = false;
     },
+    showBackupTabAndOpenPasswordModal() {
+      this.q.view = "backup";
+      this.showBackupPasswordModal();
+    },
     showBackupPasswordModal() {
       this.isShownBackupPasswordModal = true;
     },
     hideBackupPasswordModal() {
       this.isShownBackupPasswordModal = false;
     },
+    showImportBackupDestinationModal() {
+      this.importBackupDestinationModalState.setVisible(true);
+    },
+    onImportBackupSubmit(data) {
+      if (data.backupFile && data.backupPassword) {
+        this.importBackupDestination(data);
+      }
+    },
+    async importBackupDestination(data) {
+      this.importBackupDestinationModalState.setLoading(true);
+      this.importBackupDestinationModalState.setBackupFileError("");
+      const taskAction = "import-backup-destinations";
+      const eventId = this.getUuid();
+
+      try {
+        // Convert file to base64 with fileToBase64 from util.js
+        const fileDataUri = await this.fileToBase64(data.backupFile);
+        // Extract only the base64 part (remove "data:...;base64," prefix)
+        const fileContent = fileDataUri.split(";base64,")[1];
+
+        // register to task completion
+        this.$root.$once(
+          `${taskAction}-completed-${eventId}`,
+          this.importBackupDestinationCompleted
+        );
+        // register to task error
+        this.$root.$once(
+          `${taskAction}-aborted-${eventId}`,
+          this.importBackupDestinationAborted
+        );
+        // register to task validation failed
+        this.$root.$once(
+          `${taskAction}-validation-failed-${eventId}`,
+          this.importBackupDestinationValidationFailed
+        );
+        const res = await to(
+          this.createClusterTask({
+            action: taskAction,
+            data: {
+              backup_data: fileContent,
+              backup_password: data.backupPassword,
+            },
+            extra: {
+              title: this.$t("action." + taskAction),
+              description: this.$t("common.processing"),
+              eventId,
+            },
+          })
+        );
+        const err = res[0];
+
+        if (err) {
+          console.error(`error creating task ${taskAction}`, err);
+          this.importBackupDestinationModalState.setLoading(false);
+          this.importBackupDestinationModalState.setBackupFileError(
+            this.getErrorMessage(err)
+          );
+          return;
+        }
+      } catch (error) {
+        console.error("Error reading backup file", error);
+        this.importBackupDestinationModalState.setBackupFileError(
+          this.$t("backup.error_reading_backup_file") ||
+            "Error reading backup file"
+        );
+        this.importBackupDestinationModalState.setLoading(false);
+      }
+    },
+    importBackupDestinationCompleted() {
+      this.importBackupDestinationModalState.setLoading(false);
+      this.importBackupDestinationModalState.clear();
+      this.importBackupDestinationModalState.setVisible(false);
+      // Reload repositories after successful import
+      this.listBackupRepositories();
+    },
+    importBackupDestinationAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.importBackupDestinationModalState.setLoading(false);
+      this.importBackupDestinationModalState.setBackupFileError(
+        this.$t("error.generic_error")
+      );
+    },
+    importBackupDestinationValidationFailed(validationErrors) {
+      this.importBackupDestinationModalState.setLoading(false);
+      const errorKey = validationErrors?.[0]?.error || "import_failed";
+      this.importBackupDestinationModalState.setBackupFileError(
+        this.$t("backup." + errorKey)
+      );
+    },
     async deleteRepo(repo) {
       this.error.removeBackupRepository = "";
       const taskAction = "remove-backup-repository";
+      const eventId = this.getUuid();
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.removeBackupRepositoryCompleted
       );
 
@@ -1000,6 +1223,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             description: this.$t("common.processing"),
+            eventId,
           },
         })
       );
@@ -1020,9 +1244,13 @@ export default {
     async deleteBackup(backup) {
       this.error.removeBackup = "";
       const taskAction = "remove-backup";
+      const eventId = this.getUuid();
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.removeBackupCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.removeBackupCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -1033,6 +1261,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             description: this.$t("common.processing"),
+            eventId,
           },
         })
       );
@@ -1053,14 +1282,19 @@ export default {
     async runBackup(backup) {
       this.error.runBackup = "";
       const taskAction = "run-backup";
+      const eventId = this.getUuid();
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.runBackupCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.runBackupCompleted
+      );
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.runBackupAborted);
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.runBackupAborted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -1069,6 +1303,8 @@ export default {
             id: backup.id,
           },
           extra: {
+            eventId,
+            backupId: backup.id,
             title: this.$t("action." + taskAction),
             description: this.$t("backup.running_backup_name", {
               backupName: backup.name,
@@ -1095,6 +1331,48 @@ export default {
     runBackupAborted() {
       this.listBackups();
     },
+    async cancelBackupTask(backup) {
+      this.error.cancelBackup = "";
+      const taskAction = "cancel-task";
+      const eventId = this.getUuid();
+
+      // Get task ID from store
+      let taskId = this.runningBackupTasksFromStore[backup.id];
+
+      // Ensure we have a valid task ID before attempting to cancel
+      // (protects against race conditions if task completes between button render and click)
+      if (typeof taskId !== "string" || !taskId) {
+        console.warn("Cannot cancel backup: task ID not yet available", {
+          backupId: backup && backup.id,
+          taskId: taskId,
+        });
+        return;
+      }
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            task: taskId,
+          },
+          extra: {
+            title: this.$t("common.cancel"),
+            description: this.$t("backup.canceling_backup", {
+              backupName: backup.name,
+            }),
+            eventId,
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.cancelBackup = this.getErrorMessage(err);
+        return;
+      }
+    },
     onBackupCreated(runBackupOnFinish, createdBackup) {
       this.listBackupRepositories();
 
@@ -1118,10 +1396,12 @@ export default {
       const taskDescription = backup.enabled
         ? this.$t("backup.disabling_backup", { backupName: backup.name })
         : this.$t("backup.enabling_backup", { backupName: backup.name });
-
+      const eventId = this.getUuid();
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.alterBackupCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.alterBackupCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -1138,6 +1418,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             description: taskDescription,
+            eventId,
           },
         })
       );
@@ -1156,18 +1437,17 @@ export default {
     async downloadClusterConfigurationBackup() {
       this.loading.downloadClusterBackup = true;
       const taskAction = "download-cluster-backup";
+      const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
       this.$root.$once(
-        taskAction + "-aborted",
+        `${taskAction}-aborted-${eventId}`,
         this.downloadClusterBackupAborted
       );
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.downloadClusterBackupCompleted
       );
 
@@ -1178,6 +1458,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
