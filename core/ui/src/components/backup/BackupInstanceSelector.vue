@@ -234,49 +234,42 @@ export default {
         : instance.id;
     },
     isInstanceMostRecent(instance) {
-      // A module is marked as "most recent" ONLY if ALL conditions are met:
-      // 1. Multiple instances of the same module exist (e.g., mattermost1, mattermost2, mattermost3)
-      // 2. The module base name is in the instancesNotBackedUp list (it needs backing up)
-      // 3. This instance has the highest number among all instances of that module
-      //
-      // Single instances are never marked as "most recent" (no point highlighting the only one).
-      // Modules that have been backed up are never marked as "most recent" (already handled).
+      // A module is marked as "most recent" if ALL conditions are met:
+      // 1. Multiple instances of the same module exist (e.g., nextcloud1, nextcloud2, nextcloud3)
+      // 2. THIS specific instance is not backed up
+      // 3. At least one sibling instance of the same module IS backed up
+      //    (so the label meaningfully signals "this is newer than what you have backed up")
 
-      // Extract base module name (remove trailing numbers)
+      // Extract base module name (remove trailing numbers, e.g. "nextcloud3" → "nextcloud")
       const baseModuleName = instance.id.replace(/\d+$/, "");
 
-      // Find all instances with the same module base name
+      // Find all instances sharing the same base module name
       const instancesWithSameModule = this.internalInstances.filter((inst) => {
         return inst.id.startsWith(baseModuleName);
       });
 
-      // If only one instance or module is not installed, don't mark as most recent
+      // Single instances are never marked as "most recent" (nothing to compare against)
       if (instancesWithSameModule.length <= 1) {
         return false;
       }
 
-      // Check if this module base name is in the not backed up list
-      const notBackedUpModule = this.instancesNotBackedUp.some(
-        (notBackedUp) => {
-          return (
-            notBackedUp.id === baseModuleName ||
-            notBackedUp.id.startsWith(baseModuleName)
-          );
-        }
+      // Build a Set of not-backed-up IDs for clean O(1) lookups
+      const notBackedUpIds = new Set(
+        this.instancesNotBackedUp.map((nb) => nb.id)
       );
 
-      if (!notBackedUpModule) {
+      // This instance must itself be not backed up to be considered "most recent"
+      if (!notBackedUpIds.has(instance.id)) {
         return false;
       }
 
-      // Check if this is the highest numbered one
-      const highest = instancesWithSameModule.reduce((max, inst) => {
-        const currentNum = parseInt(inst.id.replace(baseModuleName, "")) || 0;
-        const maxNum = parseInt(max.id.replace(baseModuleName, "")) || 0;
-        return currentNum > maxNum ? inst : max;
+      // At least one sibling must be backed up, otherwise all instances are in the
+      // same situation and there is no meaningful "most recent" distinction to highlight
+      const hasSiblingBackedUp = instancesWithSameModule.some((inst) => {
+        return inst.id !== instance.id && !notBackedUpIds.has(inst.id);
       });
 
-      return instance.id === highest.id;
+      return hasSiblingBackedUp;
     },
     updateSelection() {
       if (typeof this.selection == "string") {
