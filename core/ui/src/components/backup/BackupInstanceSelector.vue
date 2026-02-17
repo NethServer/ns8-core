@@ -93,20 +93,19 @@
               :alt="instance.id + ' logo'"
             />
           </div>
-          <span>{{ getInstanceLabel(instance) }} </span>
-          <cv-interactive-tooltip
+          <div class="instance-name-content">
+            <span>{{ getInstanceLabel(instance) }} </span>
+            <div v-if="isInstanceMostRecent(instance)">
+              {{ $t("backup.most_recent") }}
+            </div>
+          </div>
+          <NsTag
             v-if="instance.flags.includes('core_module')"
-            alignment="center"
-            direction="right"
-            class="info core-module-icon"
-          >
-            <template slot="trigger">
-              <Settings16 />
-            </template>
-            <template slot="content">
-              <div>{{ $tc("common.core_module_c", 1) }}</div>
-            </template>
-          </cv-interactive-tooltip>
+            kind="gray"
+            size="sm"
+            :label="$t('common.core_app')"
+            class="core-module-tag"
+          />
         </label>
       </cv-tile>
     </div>
@@ -117,11 +116,10 @@
 import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
 import _isEqual from "lodash/isEqual";
 import _cloneDeep from "lodash/cloneDeep";
-import Settings16 from "@carbon/icons-vue/es/settings/16";
 
 export default {
   name: "BackupInstanceSelector",
-  components: { Settings16 },
+  components: {},
   mixins: [UtilService, LottieService],
   props: {
     instances: {
@@ -234,6 +232,51 @@ export default {
       return instance.ui_name
         ? instance.ui_name + " (" + instance.id + ")"
         : instance.id;
+    },
+    isInstanceMostRecent(instance) {
+      // A module is marked as "most recent" ONLY if ALL conditions are met:
+      // 1. Multiple instances of the same module exist (e.g., mattermost1, mattermost2, mattermost3)
+      // 2. The module base name is in the instancesNotBackedUp list (it needs backing up)
+      // 3. This instance has the highest number among all instances of that module
+      //
+      // Single instances are never marked as "most recent" (no point highlighting the only one).
+      // Modules that have been backed up are never marked as "most recent" (already handled).
+
+      // Extract base module name (remove trailing numbers)
+      const baseModuleName = instance.id.replace(/\d+$/, "");
+
+      // Find all instances with the same module base name
+      const instancesWithSameModule = this.internalInstances.filter((inst) => {
+        return inst.id.startsWith(baseModuleName);
+      });
+
+      // If only one instance or module is not installed, don't mark as most recent
+      if (instancesWithSameModule.length <= 1) {
+        return false;
+      }
+
+      // Check if this module base name is in the not backed up list
+      const notBackedUpModule = this.instancesNotBackedUp.some(
+        (notBackedUp) => {
+          return (
+            notBackedUp.id === baseModuleName ||
+            notBackedUp.id.startsWith(baseModuleName)
+          );
+        }
+      );
+
+      if (!notBackedUpModule) {
+        return false;
+      }
+
+      // Check if this is the highest numbered one
+      const highest = instancesWithSameModule.reduce((max, inst) => {
+        const currentNum = parseInt(inst.id.replace(baseModuleName, "")) || 0;
+        const maxNum = parseInt(max.id.replace(baseModuleName, "")) || 0;
+        return currentNum > maxNum ? inst : max;
+      });
+
+      return instance.id === highest.id;
     },
     updateSelection() {
       if (typeof this.selection == "string") {
@@ -353,8 +396,21 @@ export default {
   height: 100%;
 }
 
-.core-module-icon {
-  margin-left: $spacing-03;
+.instance-name-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.not-backed-up-tag {
+  margin-left: auto;
+}
+
+.core-module-tag {
+  margin-left: auto;
+}
+
+.not-backed-up-tag ~ .core-module-tag {
+  margin-left: $spacing-02;
 }
 </style>
 
