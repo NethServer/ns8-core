@@ -8,6 +8,7 @@ export default new Vuex.Store({
   state: {
     notifications: [],
     taskPollingTimers: {},
+    cancellingTasks: [], // List of task IDs being cancelled
     isNotificationDrawerShown: false,
     isMobileSideMenuShown: false,
     isAppDrawerShown: false,
@@ -86,6 +87,9 @@ export default new Vuex.Store({
     },
     leaderNode: (state) => {
       return state.clusterNodes.find((node) => node.local);
+    },
+    isCancellingTask: (state) => (taskId) => {
+      return state.cancellingTasks.includes(taskId);
     },
   },
   mutations: {
@@ -211,6 +215,16 @@ export default new Vuex.Store({
       }
       state.taskContextCache.set(taskId, taskContext);
     },
+    addCancellingTask(state, taskId) {
+      if (!state.cancellingTasks.includes(taskId)) {
+        state.cancellingTasks.push(taskId);
+      }
+    },
+    removeCancellingTask(state, taskId) {
+      state.cancellingTasks = state.cancellingTasks.filter(
+        (id) => id !== taskId
+      );
+    },
   },
   actions: {
     setPollingTimerForTaskInStore(context, obj) {
@@ -313,6 +327,12 @@ export default new Vuex.Store({
       // Refresh the item: delete and re-insert so it's "newest"
       context.commit("refreshTaskContextInCache", { taskId, taskContext });
       return taskContext;
+    },
+    addCancellingTaskInStore(context, taskId) {
+      context.commit("addCancellingTask", taskId);
+    },
+    removeCancellingTaskInStore(context, taskId) {
+      context.commit("removeCancellingTask", taskId);
     },
   },
 });

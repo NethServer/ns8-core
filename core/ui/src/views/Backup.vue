@@ -820,6 +820,7 @@ import ImportBackupDestinationModal, {
 } from "@/components/backup/ImportBackupDestinationModal";
 import to from "await-to-js";
 import Upload20 from "@carbon/icons-vue/es/upload/20";
+import NotificationService from "@/mixins/notification";
 
 export default {
   name: "Backup",
@@ -834,6 +835,7 @@ export default {
     ImportBackupDestinationModal,
   },
   mixins: [
+    NotificationService,
     TaskService,
     UtilService,
     IconService,
@@ -1332,15 +1334,10 @@ export default {
       this.listBackups();
     },
     async cancelBackupTask(backup) {
-      this.error.cancelBackup = "";
-      const taskAction = "cancel-task";
-      const eventId = this.getUuid();
-
       // Get task ID from store
       let taskId = this.runningBackupTasksFromStore[backup.id];
 
       // Ensure we have a valid task ID before attempting to cancel
-      // (protects against race conditions if task completes between button render and click)
       if (typeof taskId !== "string" || !taskId) {
         console.warn("Cannot cancel backup: task ID not yet available", {
           backupId: backup && backup.id,
@@ -1349,29 +1346,8 @@ export default {
         return;
       }
 
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            task: taskId,
-          },
-          extra: {
-            title: this.$t("common.cancel"),
-            description: this.$t("backup.canceling_backup", {
-              backupName: backup.name,
-            }),
-            eventId,
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.cancelBackup = this.getErrorMessage(err);
-        return;
-      }
+      // Use handleCancelTask from NotificationService mixin
+      this.handleCancelTask(taskId);
     },
     onBackupCreated(runBackupOnFinish, createdBackup) {
       this.listBackupRepositories();
