@@ -176,7 +176,7 @@
                           kind="secondary"
                           :icon="Add20"
                           @click="showAddRepoModal()"
-                          class="empty-state-button"
+                          class="empty-state-button mb-4"
                           >{{ $t("backup.add_repository") }}
                         </NsButton>
                         <div>
@@ -185,7 +185,7 @@
                             :icon="Upload20"
                             @click="showImportBackupDestinationModal()"
                             class="empty-state-button"
-                            >{{ $t("backup.import_repository") }}
+                            >{{ $t("backup.import_destinations") }}
                           </NsButton>
                         </div>
                       </template>
@@ -258,7 +258,7 @@
                       :icon="Upload20"
                       @click="showImportBackupDestinationModal()"
                       class="mg-left-md"
-                      >{{ $t("backup.import_repository") }}
+                      >{{ $t("backup.import_destinations") }}
                     </NsButton>
                   </cv-column>
                 </cv-row>
