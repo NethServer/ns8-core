@@ -53,7 +53,9 @@ for kbid in rdb.scan_iter('cluster/backup/*'):
 trx.delete(f"cluster/backup_repository/{rid}")
 trx.hdel('private/nodes/backup_destination/rclone_conf', rid)
 trx.delete('private/nodes/backup_destination/parameters/' + rid)
-# XXX: publish event
+trx.publish(f"cluster/event/backup-destination-changed", json.dumps({
+    "destination_id": rid,
+}))
 trx.execute()
 
 terrors = agent.tasks.runp_brief(ptasks,
