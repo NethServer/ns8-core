@@ -59,25 +59,33 @@
                   :disabled="!instanceToReplace || replaceExistingDisabled"
                   value="checkReplaceExistingApp"
                   class="mg-top-xlg"
-                />
-                <div
-                  v-if="
-                    selectedInstance &&
-                    instanceToReplace &&
-                    replaceExistingDisabled
-                  "
-                  class="mg-top-sm"
+                  tooltipAlignment="start"
+                  tooltipDirection="right"
                 >
-                  {{
-                    $t("backup.replace_existing_app_is_not_available_tooltip")
-                  }}
-                </div>
-                <div v-else-if="!selectedInstance" class="mg-top-sm">
-                  {{ $t("backup.replace_existing_app_select_an_app_tooltip") }}
-                </div>
-                <div v-else class="mg-top-sm">
-                  {{ $t("backup.replace_existing_app_tooltip") }}
-                </div>
+                  <template slot="tooltip">
+                    <div
+                      v-if="
+                        selectedInstance &&
+                        instanceToReplace &&
+                        replaceExistingDisabled
+                      "
+                    >
+                      {{
+                        $t(
+                          "backup.replace_existing_app_is_not_available_tooltip"
+                        )
+                      }}
+                    </div>
+                    <div v-else-if="!selectedInstance">
+                      {{
+                        $t("backup.replace_existing_app_select_an_app_tooltip")
+                      }}
+                    </div>
+                    <div v-else>
+                      {{ $t("backup.replace_existing_app_tooltip") }}
+                    </div>
+                  </template>
+                </NsCheckbox>
               </cv-column>
             </cv-row>
           </cv-grid>
