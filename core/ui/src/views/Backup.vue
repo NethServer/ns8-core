@@ -184,7 +184,6 @@
                             kind="ghost"
                             :icon="Upload20"
                             @click="showImportBackupDestinationModal()"
-                            class="empty-state-button"
                             >{{ $t("backup.import_destinations") }}
                           </NsButton>
                         </div>
