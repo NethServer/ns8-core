@@ -50,6 +50,9 @@ Events fired by the `cluster` agent (i.e. channel is `cluster/event/<event name>
 
 Events fired by the `node` agent (i.e. channel is `node/<node id>/event/<event name>`):
 - `fqdn-changed`: the node FQDN has changed. The `hostname` and `domain` attribute describe the new FQDN, while the `node` attribute contains the node ID that originated the event
+- `rclone-password-changed`: a node changed its rclone password. Other
+  nodes must update their rclone htpasswd database. The `node_id` event
+  argument refers to the node that changed its password.
 
 ## Signaling events
 

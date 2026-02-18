@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import string
+import secrets
+import agent
+import bcrypt
+import json
+import sys
+import os
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--outfile", required=True, help="Write environment to outfile path")
+    args = parser.parse_args()
+    os.umask(0o137)
+    # Generate a random password for rclone-webdav service
+    alphabet = string.ascii_letters + string.digits + '+-/,.-_^'
+    nodepass = ''.join([secrets.choice(alphabet) for i in range(32)])
+    genenv = {
+        "RCLONE_WEBDAV_USER": 'node/' + os.environ["NODE_ID"],
+        "RCLONE_WEBDAV_PASS": nodepass,
+    }
+    agent.write_envfile(args.outfile, genenv)
+    rdb = agent.redis_connect(privileged=True)
+    rdb.set(f'private/node/{os.environ["NODE_ID"]}/rclone_webdav_pass', bcrypt_htpasswd(nodepass))
+    rdb.publish(f'node/{os.environ["NODE_ID"]}/event/rclone-password-changed', json.dumps({
+        "node_id": os.environ["NODE_ID"],
+    }))
+
+def bcrypt_htpasswd(password: str) -> str:
+    """
+    Generate a salted bcrypt hash for rclone serve webdav --htpasswd.
+    Returns a string like: $2b$12$...
+    """
+    if isinstance(password, str):
+        password = password.encode("utf-8")
+
+    salt = bcrypt.gensalt(rounds=12)  # cost factor 12 (default)
+    hashed = bcrypt.hashpw(password, salt)
+
+    return hashed.decode("utf-8")
+
+if __name__ == '__main__':
+    main()

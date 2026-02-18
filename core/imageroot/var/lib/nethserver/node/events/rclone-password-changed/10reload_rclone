@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+if [[ ${AGENT_EVENT_SOURCE} != node/* ]] ; then
+    exit 0 # invalid source, skip restart
+fi
+
+systemctl reload rclone-webdav.service
