@@ -42,6 +42,9 @@ Events fired by the `cluster` agent (i.e. channel is `cluster/event/<event name>
 - `module-removed`: the event is fired at the end of the remove-module process to inform other modules that a module has been removed on the cluster
 - `leader-changed`: a node was promoted to leader. The `node_id` attribute
   indicates the new leader, and `endpoint` its public Wireguard VPN endpoint address
+- `backup-destination-changed`: a backup destination was
+  added/altered/removed. See `destination_id` event argument to identify
+  it.
 
 ## Node events
 
