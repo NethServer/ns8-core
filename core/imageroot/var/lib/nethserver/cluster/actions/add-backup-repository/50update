@@ -81,7 +81,9 @@ def main():
     })
     trx.delete('cluster/backup_repository/' + destination_uuid)
     trx.hset('cluster/backup_repository/' + destination_uuid, mapping=public_data)
-    # XXX: publish event
+    trx.publish(f"cluster/event/backup-destination-changed", json.dumps({
+        "destination_id": destination_uuid,
+    }))
     if not trx.execute():
         sys.exit(1)
     json.dump({'password': password, 'id': destination_uuid}, fp=sys.stdout)
