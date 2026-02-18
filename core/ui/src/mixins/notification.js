@@ -260,6 +260,17 @@ export default {
           const taskEventName = this.getTaskEventName(taskContext, "aborted");
           this.$root.$emit(taskEventName, taskResult, taskContext);
         }
+
+        // Handle successful task cancellation: delete the original task notification
+        if (
+          taskContext.action === "cancel-task" &&
+          taskStatus === "completed"
+        ) {
+          const originalTaskId = taskContext.data?.task;
+          if (originalTaskId) {
+            this.deleteNotificationInStore(originalTaskId);
+          }
+        }
       }
 
       // check if it's a root task or a subtask
@@ -477,7 +488,14 @@ export default {
           this.$root.$emit(taskEventName, payload.progress, taskContext);
         }
 
-        this.putNotification(notification);
+        // Don't store notification if task is being cancelled
+        if (this.isCancellingTask(taskId)) {
+          this.deleteNotificationInStore(taskId);
+          // Remove from cancelling list after ensuring it's deleted
+          this.removeCancellingTaskInStore(taskId);
+        } else {
+          this.putNotification(notification);
+        }
       }
     },
     getCustomCompletionText(taskExtra, taskOutput) {
@@ -498,10 +516,8 @@ export default {
       return this.$t(taskExtra.completion.i18nString, i18nParams);
     },
     shouldShowNotification(notification, taskStatus) {
-      // Check if task is being cancelled
-      if (taskStatus === "aborted" && this.isCancellingTask(notification.id)) {
-        // Remove task ID from the list as it is now cancelled
-        this.removeCancellingTaskInStore(notification.id);
+      // Check if task is being cancelled - don't show it
+      if (this.isCancellingTask(notification.id)) {
         return false;
       }
 
