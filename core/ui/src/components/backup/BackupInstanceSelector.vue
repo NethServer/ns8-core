@@ -95,9 +95,6 @@
           </div>
           <div class="instance-name-content">
             <span>{{ getInstanceLabel(instance) }} </span>
-            <div v-if="isInstanceMostRecent(instance)">
-              {{ $t("backup.most_recent") }}
-            </div>
           </div>
           <NsTag
             v-if="instance.flags.includes('core_module')"
@@ -232,44 +229,6 @@ export default {
       return instance.ui_name
         ? instance.ui_name + " (" + instance.id + ")"
         : instance.id;
-    },
-    isInstanceMostRecent(instance) {
-      // A module is marked as "most recent" if ALL conditions are met:
-      // 1. Multiple instances of the same module exist (e.g., nextcloud1, nextcloud2, nextcloud3)
-      // 2. THIS specific instance is not backed up
-      // 3. At least one sibling instance of the same module IS backed up
-      //    (so the label meaningfully signals "this is newer than what you have backed up")
-
-      // Extract base module name (remove trailing numbers, e.g. "nextcloud3" → "nextcloud")
-      const baseModuleName = instance.id.replace(/\d+$/, "");
-
-      // Find all instances sharing the same base module name
-      const instancesWithSameModule = this.internalInstances.filter((inst) => {
-        return inst.id.startsWith(baseModuleName);
-      });
-
-      // Single instances are never marked as "most recent" (nothing to compare against)
-      if (instancesWithSameModule.length <= 1) {
-        return false;
-      }
-
-      // Build a Set of not-backed-up IDs for clean O(1) lookups
-      const notBackedUpIds = new Set(
-        this.instancesNotBackedUp.map((nb) => nb.id)
-      );
-
-      // This instance must itself be not backed up to be considered "most recent"
-      if (!notBackedUpIds.has(instance.id)) {
-        return false;
-      }
-
-      // At least one sibling must be backed up, otherwise all instances are in the
-      // same situation and there is no meaningful "most recent" distinction to highlight
-      const hasSiblingBackedUp = instancesWithSameModule.some((inst) => {
-        return inst.id !== instance.id && !notBackedUpIds.has(inst.id);
-      });
-
-      return hasSiblingBackedUp;
     },
     updateSelection() {
       if (typeof this.selection == "string") {
