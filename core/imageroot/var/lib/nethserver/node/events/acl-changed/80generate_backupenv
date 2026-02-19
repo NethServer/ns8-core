@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+if [[ ! -f backup.env ]] ; then
+    # Generate and store new backup credentials for the local node, and
+    # notify other nodes to reload rclone-webdav htpasswd database. To
+    # limit htpasswd reload races, wait a long, random time between 10-30
+    # seconds to start it. In case of system crash during this sleep
+    # period the backup a second generation attempt will be done when the
+    # first backup from on node runs.
+    sleep $(( 10 + RANDOM % 20 ))
+    generate-backup-env --outfile=backup.env
+fi

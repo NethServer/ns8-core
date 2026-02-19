@@ -9,6 +9,7 @@ import os
 import sys
 import agent
 import cluster.grants
+import cluster.backup
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -37,3 +38,55 @@ for node_id in set(rdb.hvals('cluster/module_node')):
 # END of grant updates
 #
 cluster.grants.refresh_permissions(rdb)
+
+# Grant nodes access to private/ key namespace to share backup secrets
+trx = rdb.pipeline()
+for acl_entry in rdb.acl_list():
+    if not acl_entry.startswith("user node/"):
+        continue # not a node entry
+    acl_fields = acl_entry.split()
+    if "%R~private/nodes/*" in acl_fields:
+        continue # already upgraded to Core 3.18+
+    agent_id = acl_fields[1]
+    trx.acl_setuser(agent_id, "~private/{agent_id}/*", "%R~private/nodes/*")
+trx_changes = trx.execute()
+if len(trx_changes) > 0:
+    # Migrate backup destinations, one by one:
+    for krepo in list(rdb.scan_iter('cluster/backup_repository/*')):
+        try:
+            # Collect existing backup repository attributes, and migrate to new DB keys:
+            destination_uuid = krepo.removeprefix('cluster/backup_repository/')
+            if rdb.hexists('private/nodes/backup_destination/rclone_conf', destination_uuid):
+                continue # skip if already migrated
+            mgx = rdb.pipeline() # Accumulate all repo changes in one command pipeline
+            odest = rdb.hgetall(krepo)
+            rclone_conf, destination_basepath = cluster.backup.generate_rclone_conf(destination_uuid, odest['url'], odest['provider'], odest)
+            # Migrate parameters to private key space:
+            mgx.hset('private/nodes/backup_destination/rclone_conf', destination_uuid, rclone_conf)
+            mgx.delete('private/nodes/backup_destination/parameters/' + destination_uuid)
+            mgx.hset('private/nodes/backup_destination/parameters/' + destination_uuid, mapping={
+                'restic_password': odest['password'],
+                'basepath': destination_basepath,
+            })
+            # Rebuild the public Redis key to clear its private
+            # parameters:
+            mgx.delete(krepo)
+            mgx.hset(krepo, mapping={
+                "name": odest.get('name', destination_uuid),
+                "url": odest['url'],
+                "provider": odest['provider'],
+            })
+            mgx.execute()
+        except Exception as ex:
+            print(agent.SD_WARNING + f"Failed migration of {krepo}", ex, file=sys.stderr)
+    else:
+        destination_uuid = None # No destination was migrated
+    if destination_uuid:
+        # At least one destination was migrated: trigger rclone-webdav
+        # restart on all nodes:
+        trx.publish(f"cluster/event/backup-destination-changed", json.dumps({
+            "destination_id": destination_uuid,
+        }))
+    # The acl-changed event handler of each node will trigger backup
+    # credentials generation and rclone-webdav reload:
+    cluster.grants.save_acls(rdb)
