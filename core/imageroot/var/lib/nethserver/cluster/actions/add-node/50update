@@ -124,6 +124,8 @@ for flag in flags:
 agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
     f'node/{node_id}', 'ON', '#' + node_pwh,
     'resetkeys', f'~node/{node_id}/*', f'~task/node/{node_id}/*',
+    '%R~cluster/*', '%R~node/*', '%R~module/*',
+    '%R~private/agents/*', '%R~private/nodes/*',
     'resetchannels', f'&progress/node/{node_id}/*', f'&node/{node_id}/event/*',
     'nocommands', '+@read', '+@write', '+@transaction', '+@connection', '+publish', '-@admin',
     '+psync', '+replconf', # commands for replication
