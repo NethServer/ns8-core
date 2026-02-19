@@ -14,8 +14,8 @@ purpose.
 To get write access a module must provide the Redis credentials stored in
 its `agent.env` file. The complete path is `~/.config/state/agent.env`.
 Write access is restricted to Redis keys and channels with prefix
-`module/{module_id}/*`. The same credentials allow read access of keys
-with the same prefix.
+`module/{module_id}/*`. The same credentials allow broad read access, also
+on `private/agents/*` namespace.
 
 The above rules are already implemented by the Python `agent` module.
 
@@ -33,4 +33,13 @@ import agent
 
 rdb = agent.redis_connect(privileged=True)
 rdb.hset('module/myapp1/myhash', mapping={'myvar': 'myvalue'})
+```
+
+If Redis connection is required at service boot time, prefer connecting to
+the local replica. This avoids issues if the leader node is unreachable.
+```python
+import agent
+
+rdb = agent.redis_connect(use_replica=True)
+cluster_network = rdb.get('cluster/network')
 ```
