@@ -38,6 +38,7 @@ import urllib.request
 import urllib.error
 import base64
 from urllib.parse import urlparse
+from .safeio import safe_open, exclusive_file_lock
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 SD_EMERG   = "<0>"  # system is unusable
