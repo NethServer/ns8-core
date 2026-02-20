@@ -39,9 +39,14 @@ POST /api/logout                          # no auth
 GET  /api/module/:module_id/http-basic/:action  # basic auth, for app integration
 ─── JWT middleware applied to /api routes below ───
 POST /api/cluster/tasks                   # cluster task operations
+GET  /api/cluster/tasks                   # list cluster tasks
 POST /api/node/:node_id/tasks             # node task operations
 POST /api/module/:module_id/tasks         # module task operations
+GET  /api/nodes                           # list nodes
+GET  /api/modules                         # list modules
 GET  /api/audit                           # audit log queries
+GET  /api/audit/users                     # audit log users
+GET  /api/audit/actions                   # audit log actions
 *    /api/2FA                             # 2FA management
 
 /ws                                       # WebSocket (Melody) at root; not behind Gin JWT middleware (session validated in WebSocket flow)
