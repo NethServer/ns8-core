@@ -249,7 +249,7 @@
         "restoring_cluster": "Restoring cluster",
         "restore_num_apps": "Restore applications | Restore {num} application | Restore {num} applications",
         "select_apps_to_restore": "Select applications to restore",
-        "select_apps_to_restore_description": "Your applications will be restored using the latest backup. If you need to restore certain applications from an earlier backup, you can do so later by going to '@:backup.title > @:backup.restore_app'",
+        "select_apps_to_restore_description": "Selected applications will be restored from the latest available backup. You can restore other applications later from Backup and restore.",
         "skip_apps_restore": "Skip applications restore",
         "skip_apps_restore_1": "Do you want to skip applications restore?",
         "skip_apps_restore_2": "You can restore applications later in Backup page",
@@ -275,7 +275,10 @@
         "forbidden_hostname_value": "Forbidden hostname",
         "apps_restoration": "Applications restoration",
         "apps_restoration_single_node_description": "You can choose which applications to restore in the next step, after the cluster has been restored.",
-        "apps_restoration_multi_node_description": "Applications cannot be restored automatically because the original cluster consisted of multiple nodes. You can manually restore applications later by going to '@:backup.title > @:backup.restore_app'"
+        "apps_restoration_multi_node_description": "Applications cannot be restored automatically because the original cluster consisted of multiple nodes. You can manually restore applications later by going to '@:backup.title > @:backup.restore_app'",
+        "only_core_applications_can_be_restored": "Only core applications can be restored at this stage",
+        "other_applications_can_be_restored_later": "Other applications can be restored later from Backup and restore.",
+        "restoring_applications": "Restoring applications"
     },
     "shell": {
         "skip_to_content": "Skip to content",
