@@ -1,5 +1,9 @@
 # Copilot Instructions for ns8-core
 
+> **Source of truth:** The canonical version of these instructions lives in
+> `.github/copilot-instructions.md`. This `AGENTS.md` file is a duplicated/
+> generated copy. To avoid drift, **edit only** `.github/copilot-instructions.md`
+> and regenerate or sync this file as needed.
 ## Architecture
 
 NethServer 8 is a container-based Linux platform orchestrated via Redis. This

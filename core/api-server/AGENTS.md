@@ -11,8 +11,8 @@ go build -tags api_server_logs -o api-server-logs api-server-logs.go  # logs CLI
 ```
 
 Built with `CGO_ENABLED=1` (required by `go-sqlite3`). The `build-image.sh`
-script uses `-ldflags '-linkmode external -extldflags "-static"'` for static
-linking.
+script uses `-ldflags='-extldflags=-static'` for static linking and adds
+`-tags sqlite_omit_load_extension`.
 
 ## Module layout
 
@@ -37,13 +37,14 @@ linking.
 POST /api/login                           # no auth
 POST /api/logout                          # no auth
 GET  /api/module/:module_id/http-basic/:action  # basic auth, for app integration
-─── JWT middleware applied below ───
+─── JWT middleware applied to /api routes below ───
 POST /api/cluster/tasks                   # cluster task operations
 POST /api/node/:node_id/tasks             # node task operations
 POST /api/module/:module_id/tasks         # module task operations
 GET  /api/audit                           # audit log queries
 *    /api/2FA                             # 2FA management
-/ws                                       # WebSocket (Melody)
+
+/ws                                       # WebSocket (Melody) at root; not behind Gin JWT middleware (session validated in WebSocket flow)
 ```
 
 ## Authentication
@@ -52,7 +53,7 @@ GET  /api/audit                           # audit log queries
 - **JWT**: 14-day expiry; claims contain username, role, actions array, 2FA flag
 - **Authorization**: Action-based (not role-based) using `filepath.Match`
   wildcard patterns against the user's authorized actions list
-- **2FA**: Optional TOTP via `github.com/pquerna/otp`; bypass for GET requests
+- **2FA**: Optional TOTP via `github.com/pquerna/otp`; enforced at login. Middleware bypasses authorization checks (not 2FA) for all GET requests, and `/api/2FA` POST/DELETE endpoints are explicitly exempted in the authorizer.
 
 ## Configuration
 
@@ -63,7 +64,7 @@ All via environment variables: `LISTEN_ADDRESS`, `REDIS_ADDRESS`, `REDIS_USER`,
 ## Conventions
 
 - Response envelopes use `structs.Map()` for struct-to-JSON conversion.
-- Redis keys follow `{cluster,node,module}/<id>/tasks/<task-id>` hierarchy.
+- Redis keys follow `task/<entity>/<id>/<task-id>/{context,output,error,exit_code}` (e.g. `task/node/<node-id>/<task-id>/output`).
 - Audit events: `login-ok`, `login-fail`, `auth-fail` stored in SQLite.
 - WebSocket sessions are validated on each ping-pong (JWT expiry check).
 - No unit tests in this package; testing is via integration tests in

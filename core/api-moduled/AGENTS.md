@@ -7,7 +7,7 @@ process.
 
 Known applications using `api-moduled` are ns8-samba and ns8-openldap.
 They use it to implement a user self-service portal (create/edit/delete
-users and groups of the LDAP DB). 
+users and groups of the LDAP DB).
 
 ## Build
 
@@ -52,14 +52,15 @@ POST /api/:handler
 
 - `JWT_ID` — authenticated user identity
 - `JWT_CLAIMS` — full JWT claims as JSON
-- `AMLD_EXPORT_ENV` — custom variables from config
+- Values of environment variables whose names are listed in `AMLD_EXPORT_ENV`
 
 ## Authentication
 
 - **Login**: `POST /api/login` calls `handlers/login/post` which must return
   JSON claims (including a `uid` field). Exit code 2–7 = bad credentials.
 - **JWT**: Configurable timeout (default 4h). Scope claim is an optional array
-  of allowed handler names (empty = unrestricted).
+  of allowed handler names. If the scope claim is absent, the token is unrestricted;
+  if it is present but empty, no handlers are allowed.
 - **Basic auth**: `GET /api/auth` validates credentials without issuing a token.
 
 ## Configuration
