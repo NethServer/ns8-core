@@ -700,7 +700,7 @@
               :description="error.readBackupRepositories"
               :showCloseButton="false"
             />
-            <cv-row>
+            <cv-row v-if="!error.restoreCluster && !error.readBackupRepositories">
               <cv-column>
                 <cv-tile light>
                   <NsEmptyState
@@ -822,8 +822,10 @@
               :title="$t('action.restore-modules')"
               :description="error.restoreModules"
               :showCloseButton="false"
+              @click="goToLogs"
+              :actionLabel="$t('common.go_to_system_logs')"
             />
-            <cv-row>
+            <cv-row v-if="!error.restoreModules">
               <cv-column>
                 <cv-tile light>
                   <NsEmptyState
@@ -2059,13 +2061,11 @@ export default {
     restoreModulesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.restoreModules = false;
-      this.error.restoreModules = this.$t("error.generic_error");
+      this.error.restoreModules = this.$t("error.some_apps_cannot_be_restored");
       // unregister to task progress
       this.$root.$off(
         `${taskContext.action}-progress-${taskContext.extra.eventId}`
       );
-      // Navigate to backup page
-      this.goToBackupRestore();
     },
     restoreModulesValidationOk() {
       // keep showing progress bar with "Restoring apps..." message
@@ -2073,8 +2073,7 @@ export default {
     },
     restoreModulesValidationFailed() {
       this.loading.restoreModules = false;
-      // Navigate to backup page
-      this.goToBackupRestore();
+      this.error.restoreModules = this.$t("error.some_apps_cannot_be_restored");
     },
     restoreModulesCompleted(taskContext) {
       // update app drawer to show restored instances
@@ -2093,11 +2092,25 @@ export default {
       this.getClusterStatus();
     },
     goToBackupRestore() {
+      // set cluster as initialized
       this.setClusterInitializedInStore(true);
       this.$root.$emit("clusterInitialized");
-      this.$router.replace({
+      this.$router.push({
         path: "/backup",
         query: { isShownAddRepoModal: false, view: "restore" },
+      });
+    },
+    goToLogs() {
+      // set cluster as initialized
+      this.setClusterInitializedInStore(true);
+      this.$root.$emit("clusterInitialized");
+      this.$router.push({
+        path: "/system-logs",
+        query: {
+          context: "node",
+          selectedNodeId: "1",
+          autoStartSearch: true,
+        },
       });
     },
   },
