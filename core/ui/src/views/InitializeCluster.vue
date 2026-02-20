@@ -22,53 +22,63 @@
           <cv-column>
             <cv-tile light>
               <cv-grid fullWidth class="mg-top-xlg">
-                <cv-row>
-                  <cv-column>
-                    <NsTile
-                      kind="clickable"
-                      :icon="EdgeCluster32"
-                      @click="selectCreateCluster"
-                      large
-                    >
-                      <h6 class="mg-bottom-sm">
-                        {{ $t("init.create_cluster") }}
-                      </h6>
-                      <div class="tile-description">
-                        {{ $t("init.create_cluster_description") }}
-                      </div>
-                    </NsTile>
-                  </cv-column>
-                  <cv-column>
-                    <NsTile
-                      kind="clickable"
-                      :icon="Connect32"
-                      @click="selectJoinCluster"
-                      large
-                    >
-                      <h6 class="mg-bottom-sm">
-                        {{ $t("init.join_cluster") }}
-                      </h6>
-                      <div class="tile-description">
-                        {{ $t("init.join_cluster_description") }}
-                      </div>
-                    </NsTile>
-                  </cv-column>
-                  <cv-column>
-                    <NsTile
-                      kind="clickable"
-                      :icon="Reset32"
-                      @click="selectRestoreCluster"
-                      large
-                    >
-                      <h6 class="mg-bottom-sm">
-                        {{ $t("init.restore_cluster") }}
-                      </h6>
-                      <div class="tile-description">
-                        {{ $t("init.restore_cluster_description") }}
-                      </div>
-                    </NsTile>
-                  </cv-column>
-                </cv-row>
+                <NsInlineNotification
+                  v-if="error.listMountPoints"
+                  kind="error"
+                  :title="$t('action.list-mountpoints')"
+                  :description="error.listMountPoints"
+                  :showCloseButton="false"
+                />
+                <template v-if="!loading.listMountPoints">
+                  <cv-row>
+                    <cv-column>
+                      <NsTile
+                        kind="clickable"
+                        :icon="EdgeCluster32"
+                        @click="selectCreateCluster"
+                        large
+                      >
+                        <h6 class="mg-bottom-sm">
+                          {{ $t("init.create_cluster") }}
+                        </h6>
+                        <div class="tile-description">
+                          {{ $t("init.create_cluster_description") }}
+                        </div>
+                      </NsTile>
+                    </cv-column>
+                    <cv-column>
+                      <NsTile
+                        kind="clickable"
+                        :icon="Connect32"
+                        @click="selectJoinCluster"
+                        large
+                      >
+                        <h6 class="mg-bottom-sm">
+                          {{ $t("init.join_cluster") }}
+                        </h6>
+                        <div class="tile-description">
+                          {{ $t("init.join_cluster_description") }}
+                        </div>
+                      </NsTile>
+                    </cv-column>
+                    <cv-column>
+                      <NsTile
+                        kind="clickable"
+                        :icon="Reset32"
+                        @click="selectRestoreCluster"
+                        large
+                      >
+                        <h6 class="mg-bottom-sm">
+                          {{ $t("init.restore_cluster") }}
+                        </h6>
+                        <div class="tile-description">
+                          {{ $t("init.restore_cluster_description") }}
+                        </div>
+                      </NsTile>
+                    </cv-column>
+                  </cv-row>
+                </template>
+                <cv-skeleton-text v-else :paragraph="true" :line-count="5" />
               </cv-grid>
             </cv-tile>
           </cv-column>
@@ -532,7 +542,7 @@
                     </div>
                     <cv-file-uploader
                       :drop-target-label="$t('common.upload_drop_target_text')"
-                      accept=".gpg"
+                      accept=".json.gz.gpg,.bin,.gpg"
                       :clear-on-reselect="true"
                       :multiple="false"
                       :removable="false"
@@ -723,19 +733,44 @@
             <cv-row>
               <cv-column>
                 <NsInlineNotification
+                  v-if="error.listCoreModules"
+                  kind="error"
+                  :title="$t('action.list-core-modules')"
+                  :description="error.listCoreModules"
+                  :showCloseButton="false"
+                />
+                <NsInlineNotification
+                  v-if="!additionalVolumes"
                   kind="info"
                   :title="$t('init.select_apps_to_restore')"
                   :description="$t('init.select_apps_to_restore_description')"
                   :showCloseButton="false"
                 />
+                <NsInlineNotification
+                  v-else
+                  kind="info"
+                  :title="$t('init.only_core_applications_can_be_restored')"
+                  :description="
+                    $t('init.other_applications_can_be_restored_later')
+                  "
+                  :showCloseButton="false"
+                />
                 <cv-tile light>
                   <cv-form @submit.prevent>
                     <RestoreMultipleInstancesSelector
+                      v-if="!loading.listCoreModules"
                       :instances="restore.instances"
                       selection="all"
+                      :coreApps="coreApps"
                       :loading="loading.retrieveClusterBackup"
+                      :additionalVolumes="additionalVolumes"
                       @select="onSelectInstances"
                       :light="false"
+                    />
+                    <cv-skeleton-text
+                      v-else
+                      :paragraph="true"
+                      :line-count="5"
                     />
                     <NsInlineNotification
                       v-if="error.restoreModules"
@@ -776,6 +811,33 @@
                       </NsButton>
                     </cv-button-set>
                   </cv-form>
+                </cv-tile>
+              </cv-column>
+            </cv-row>
+          </template>
+          <template v-if="restore.step == 'restoringApps'">
+            <NsInlineNotification
+              v-if="error.restoreModules"
+              kind="error"
+              :title="$t('action.restore-modules')"
+              :description="error.restoreModules"
+              :showCloseButton="false"
+            />
+            <cv-row>
+              <cv-column>
+                <cv-tile light>
+                  <NsEmptyState
+                    :title="$t('init.restoring_applications')"
+                    :animationData="GearsLottie"
+                    animationTitle="gears"
+                    :loop="true"
+                  >
+                  </NsEmptyState>
+                  <NsProgressBar
+                    :value="restore.progress"
+                    :indeterminate="!restore.progress"
+                    class="mg-bottom-md"
+                  />
                 </cv-tile>
               </cv-column>
             </cv-row>
@@ -868,6 +930,8 @@ export default {
         endpoint: null,
         action: null,
       },
+      additionalVolumes: false,
+      coreApps: [],
       isPasswordChangeNeeded: false,
       currentPassword: "",
       newPassword: "",
@@ -908,6 +972,8 @@ export default {
         restoreCluster: false,
         readBackupRepositories: false,
         restoreModules: false,
+        listMountPoints: false,
+        listCoreModules: false,
       },
       error: {
         currentPassword: "",
@@ -928,6 +994,8 @@ export default {
           backup_password: "",
           backup_file: "",
         },
+        listMountPoints: "",
+        listCoreModules: "",
       },
     };
   },
@@ -950,6 +1018,7 @@ export default {
   },
   created() {
     this.getClusterStatus();
+    this.listMountPoints();
     this.getDefaults();
   },
   methods: {
@@ -1073,6 +1142,99 @@ export default {
       if (action === "join") {
         this.focusElement("joinCode");
       }
+    },
+    async listCoreModules() {
+      this.error.listCoreModules = "";
+      this.loading.listCoreModules = true;
+      const taskAction = "list-core-modules";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listCoreModulesAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listCoreModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listCoreModules = this.getErrorMessage(err);
+        this.loading.listCoreModules = false;
+        return;
+      }
+    },
+    listCoreModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listCoreModules = this.$t("error.generic_error");
+      this.loading.listCoreModules = false;
+    },
+    listCoreModulesCompleted(taskContext, taskResult) {
+      this.coreApps = taskResult.output;
+      this.loading.listCoreModules = false;
+    },
+    async listMountPoints() {
+      this.error.listMountPoints = "";
+      this.loading.listMountPoints = true;
+      const taskAction = "list-mountpoints";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listMountPointsAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listMountPointsCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(1, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listMountPoints = this.getErrorMessage(err);
+        this.loading.listMountPoints = false;
+        return;
+      }
+    },
+    listMountPointsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listMountPoints = this.$t("error.generic_error");
+      this.loading.listMountPoints = false;
+    },
+    listMountPointsCompleted(taskContext, taskResult) {
+      const additionalVolumes = taskResult.output.mountpoints;
+      this.additionalVolumes = additionalVolumes.length > 0;
+      this.loading.listMountPoints = false;
     },
     async getClusterStatus() {
       const taskAction = "get-cluster-status";
@@ -1804,6 +1966,7 @@ export default {
 
       if (this.restore.instances.length) {
         this.restore.step = "apps";
+        this.listCoreModules(); // to show which apps are core in the selector
       } else {
         // there is no app to restore, go to cluster status
         this.getClusterStatus();
@@ -1835,29 +1998,39 @@ export default {
     },
     async restoreModules() {
       const inputData = this.prepareRestoreModulesData();
-
+      this.restore.progress = 0;
       this.error.restoreModules = "";
       this.loading.restoreModules = true;
       const taskAction = "restore-modules";
+      const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.restoreModulesAborted);
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.restoreModulesAborted
+      );
 
       // register to task validation
-      this.$root.$off(taskAction + "-validation-ok");
       this.$root.$once(
-        taskAction + "-validation-ok",
+        `${taskAction}-validation-ok-${eventId}`,
         this.restoreModulesValidationOk
       );
-      this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
-        taskAction + "-validation-failed",
+        `${taskAction}-validation-failed-${eventId}`,
         this.restoreModulesValidationFailed
       );
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.restoreModulesCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.restoreModulesCompleted
+      );
+
+      // register to task progress to update progress bar
+      this.$root.$on(
+        `${taskAction}-progress-${eventId}`,
+        this.restoreModulesProgress
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -1865,9 +2038,10 @@ export default {
           data: inputData,
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$tc("init.restoring_apps_c", inputData.length, {
-              num: inputData.length,
-            }),
+            isNotificationHidden: true,
+            isProgressNotified: true,
+            toastTimeout: 0, // persistent notification
+            eventId,
           },
         })
       );
@@ -1879,24 +2053,52 @@ export default {
         return;
       }
     },
+    restoreModulesProgress(progress) {
+      this.restore.progress = progress;
+    },
     restoreModulesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.restoreModules = false;
+      this.error.restoreModules = this.$t("error.generic_error");
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+      // Navigate to backup page
+      this.goToBackupRestore();
     },
     restoreModulesValidationOk() {
-      // go to cluster status page
-      this.getClusterStatus();
+      // keep showing progress bar with "Restoring apps..." message
+      this.restore.step = "restoringApps";
     },
     restoreModulesValidationFailed() {
       this.loading.restoreModules = false;
+      // Navigate to backup page
+      this.goToBackupRestore();
     },
-    restoreModulesCompleted() {
+    restoreModulesCompleted(taskContext) {
       // update app drawer to show restored instances
       this.$root.$emit("reloadAppDrawer");
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
+      // go to backup restore page
+      this.goToBackupRestore();
     },
     skipRestoreApps() {
-      // go to cluster status page
+      // go to status page
       this.getClusterStatus();
+    },
+    goToBackupRestore() {
+      this.setClusterInitializedInStore(true);
+      this.$root.$emit("clusterInitialized");
+      this.$router.replace({
+        path: "/backup",
+        query: { isShownAddRepoModal: false, view: "restore" },
+      });
     },
   },
 };
