@@ -849,7 +849,7 @@ export default {
     return {
       q: {
         isShownAddRepoModal: false,
-        view: "backup",
+        view: "",
       },
       Upload20,
       isShownCreateOrEditBackupModal: false,
@@ -938,6 +938,12 @@ export default {
   },
   created() {
     this.listBackupRepositories();
+  },
+  mounted() {
+    // if no view is set in query params, default to backup tab
+    if (!this.q.view) {
+      this.q.view = "backup";
+    }
   },
   methods: {
     tabSelected(tabNum) {
