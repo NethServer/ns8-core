@@ -98,7 +98,8 @@
         "any": "Any",
         "eg_value": "e.g. {value}",
         "go_to_page": "Go to {page}",
-        "not_configured": "Not configured"
+        "not_configured": "Not configured",
+        "go_to_system_logs": "Go to system logs"
     },
     "error": {
         "error": "Error",
@@ -134,7 +135,8 @@
         "warning_days_required": "Warning days are required",
         "invalid_url": "Invalid value or format",
         "invalid_fqdn": "Invalid fully qualified domain name",
-        "warning_days_range": "Warning days must be between 1 and 1000"
+        "warning_days_range": "Warning days must be between 1 and 1000",
+        "some_apps_cannot_be_restored": "Some applications cannot be restored."
     },
     "websocket": {
         "websocket_disconnected": "Websocket disconnected",
