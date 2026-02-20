@@ -6,8 +6,8 @@ real-time updates, task management, and SQLite audit logging.
 ## Build
 
 ```bash
-go build .                   # build api-server binary
-go build -tags api_server_logs -o api-server-logs api-server-logs.go  # logs CLI tool
+go build api-server.go       # build api-server binary
+go build api-server-logs.go  # logs CLI tool
 ```
 
 Built with `CGO_ENABLED=1` (required by `go-sqlite3`). The `build-image.sh`

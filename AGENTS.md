@@ -1,9 +1,8 @@
-# Copilot Instructions for ns8-core
+# ns8-core
 
-> **Source of truth:** The canonical version of these instructions lives in
-> `.github/copilot-instructions.md`. This `AGENTS.md` file is a duplicated/
-> generated copy. To avoid drift, **edit only** `.github/copilot-instructions.md`
-> and regenerate or sync this file as needed.
+This is production-grade project with thousands of installations. Breaking
+changes are not allowed.
+
 ## Architecture
 
 NethServer 8 is a container-based Linux platform orchestrated via Redis. This
@@ -71,7 +70,7 @@ For local Go development:
 
 ```bash
 cd core/agent && go build .
-cd core/api-server && go build .
+cd core/api-server && go build api-server.go
 ```
 
 UI development:
@@ -85,9 +84,13 @@ yarn build          # production build
 
 ## Lint
 
+For UI/Frontend:
+
 ```bash
 cd core/ui && yarn lint
 ```
+
+For Backend:
 
 Bash scripts should pass `shellcheck`.
 
@@ -128,7 +131,7 @@ Robot Framework tests are in `core/tests/` with numbered directories
   // use `${taskAction}-completed-${eventId}` for event names
   ```
 - **Go modules**: `core/agent` and `core/api-server` are independent Go modules
-  with separate `go.mod` files.
+  with separate `go.mod` files. Use `go fmt` before commits.
 - **Translations**: Managed via Weblate at
   `https://hosted.weblate.org/projects/ns8/`. Do not manually edit translation
   files.
