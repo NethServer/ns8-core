@@ -17,7 +17,7 @@
       <span class="selection-info">{{
         $t("common.x_of_y_selected", {
           selected: numSelected,
-          total: instances.length,
+          total: instancesInCoreApps.length,
         })
       }}</span>
     </div>
@@ -102,6 +102,14 @@ export default {
       default: false,
     },
     light: Boolean,
+    additionalVolumes: {
+      type: Boolean,
+      default: false,
+    },
+    coreApps: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
@@ -129,11 +137,25 @@ export default {
     numSelected() {
       return this.selectedList.length;
     },
+    instancesInCoreApps() {
+      if (this.additionalVolumes) {
+        // filter instances to show only those belonging to core apps
+        const coreAppIds = this.coreApps.flatMap((app) =>
+          app.instances.map((instance) => instance.id)
+        );
+        return this.instances.filter((instance) =>
+          coreAppIds.includes(instance.module_id)
+        );
+      } else {
+        // show all instances
+        return this.instances;
+      }
+    },
     instancesFiltered() {
       if (this.isSearchActive) {
         return this.searchResults;
       } else {
-        return this.instances;
+        return this.instancesInCoreApps;
       }
     },
   },
@@ -172,7 +194,8 @@ export default {
     selectAll() {
       this.selectedList = [];
 
-      for (const instance of this.instances) {
+      for (const instance of this.instancesInCoreApps) {
+        // value is "repository_id@path" to be unique and easily comparable
         this.selectedList.push(instance.repository_id + "@" + instance.path);
       }
     },
@@ -223,8 +246,8 @@ export default {
       // show search results
       this.isSearchActive = true;
 
-      // search
-      this.searchResults = this.instances.filter((instance) => {
+      // search only in instances of core apps if additional volumes are shown, otherwise in all instances
+      this.searchResults = this.instancesInCoreApps.filter((instance) => {
         // compare query text with all search fields of option
         return this.searchFields.some((searchField) => {
           const searchValue = instance[searchField];

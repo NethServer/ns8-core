@@ -93,20 +93,16 @@
               :alt="instance.id + ' logo'"
             />
           </div>
-          <span>{{ getInstanceLabel(instance) }} </span>
-          <cv-interactive-tooltip
+          <div class="instance-name-content">
+            <span>{{ getInstanceLabel(instance) }} </span>
+          </div>
+          <NsTag
             v-if="instance.flags.includes('core_module')"
-            alignment="center"
-            direction="right"
-            class="info core-module-icon"
-          >
-            <template slot="trigger">
-              <Settings16 />
-            </template>
-            <template slot="content">
-              <div>{{ $tc("common.core_module_c", 1) }}</div>
-            </template>
-          </cv-interactive-tooltip>
+            kind="gray"
+            size="sm"
+            :label="$t('common.core_app')"
+            class="core-module-tag"
+          />
         </label>
       </cv-tile>
     </div>
@@ -117,11 +113,10 @@
 import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
 import _isEqual from "lodash/isEqual";
 import _cloneDeep from "lodash/cloneDeep";
-import Settings16 from "@carbon/icons-vue/es/settings/16";
 
 export default {
   name: "BackupInstanceSelector",
-  components: { Settings16 },
+  components: {},
   mixins: [UtilService, LottieService],
   props: {
     instances: {
@@ -353,8 +348,21 @@ export default {
   height: 100%;
 }
 
-.core-module-icon {
-  margin-left: $spacing-03;
+.instance-name-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.not-backed-up-tag {
+  margin-left: auto;
+}
+
+.core-module-tag {
+  margin-left: auto;
+}
+
+.not-backed-up-tag ~ .core-module-tag {
+  margin-left: $spacing-02;
 }
 </style>
 
