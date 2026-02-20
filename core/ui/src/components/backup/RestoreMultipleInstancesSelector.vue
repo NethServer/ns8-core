@@ -140,8 +140,8 @@ export default {
     instancesInCoreApps() {
       if (this.additionalVolumes) {
         // filter instances to show only those belonging to core apps
-        const coreAppIds = this.coreApps.flatMap(app =>
-          app.instances.map(instance => instance.id)
+        const coreAppIds = this.coreApps.flatMap((app) =>
+          app.instances.map((instance) => instance.id)
         );
         return this.instances.filter((instance) =>
           coreAppIds.includes(instance.module_id)

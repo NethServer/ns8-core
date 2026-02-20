@@ -700,7 +700,9 @@
               :description="error.readBackupRepositories"
               :showCloseButton="false"
             />
-            <cv-row v-if="!error.restoreCluster && !error.readBackupRepositories">
+            <cv-row
+              v-if="!error.restoreCluster && !error.readBackupRepositories"
+            >
               <cv-column>
                 <cv-tile light>
                   <NsEmptyState
