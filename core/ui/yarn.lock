@@ -5565,13 +5565,13 @@ __metadata:
   linkType: hard
 
 "axios@npm:^0.30.2":
-  version: 0.30.2
-  resolution: "axios@npm:0.30.2"
+  version: 0.30.3
+  resolution: "axios@npm:0.30.3"
   dependencies:
     follow-redirects: ^1.15.4
     form-data: ^4.0.4
     proxy-from-env: ^1.1.0
-  checksum: c21a17bab1385c1b9aad0d3a293397be418a24d16ef02b34bb332a40c4ae645ce4e06ff2cf44acd5fb3cacea6fe6e6ea018ed581e0cd21fdfbd74e4e94f54f92
+  checksum: 81b23f291d639b0199a84c0428d5f3906f4b646044af4449c9d1fb673f46469b71399ba2f7363627e9c0379bea1a3d73df6c40f779b7c61441643377452c7dd7
   languageName: node
   linkType: hard
 
@@ -17197,7 +17197,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-js@npm:>=0.6.2 <2.0.0":
+"source-map-js@npm:>=0.6.2 <2.0.0, source-map-js@npm:^1.2.1":
   version: 1.2.1
   resolution: "source-map-js@npm:1.2.1"
   checksum: 4eb0cd997cdf228bc253bcaff9340afeb706176e64868ecd20efbe6efea931465f43955612346d6b7318789e5265bdc419bc7669c1cebe3db0eb255f57efa76b
@@ -17208,13 +17208,6 @@ __metadata:
   version: 1.0.1
   resolution: "source-map-js@npm:1.0.1"
   checksum: 22606113d62bbd468712b0cb0c46e9a8629de7eb081049c62a04d977a211abafd7d61455617f8b78daba0b6c0c7e7c88f8c6b5aaeacffac0a6676ecf5caac5ce
-  languageName: node
-  linkType: hard
-
-"source-map-js@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "source-map-js@npm:1.2.1"
-  checksum: 4eb0cd997cdf228bc253bcaff9340afeb706176e64868ecd20efbe6efea931465f43955612346d6b7318789e5265bdc419bc7669c1cebe3db0eb255f57efa76b
   languageName: node
   linkType: hard
 
