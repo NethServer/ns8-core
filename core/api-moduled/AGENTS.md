@@ -50,6 +50,7 @@ POST /api/:handler
 
 ### Environment injected into handlers
 
+- `PATH` — inherited from the server process
 - `JWT_ID` — authenticated user identity
 - `JWT_CLAIMS` — full JWT claims as JSON
 - Values of environment variables whose names are listed in `AMLD_EXPORT_ENV`
@@ -57,7 +58,9 @@ POST /api/:handler
 ## Authentication
 
 - **Login**: `POST /api/login` calls `handlers/login/post` which must return
-  JSON claims (including a `uid` field). Exit code 2–7 = bad credentials.
+  JSON claims (including a `uid` field). Exit code 2–7 = bad credentials;
+  exit code 1 or 8+ = internal error.
+- **Logout**: `POST /api/logout` invalidates the current token.
 - **JWT**: Configurable timeout (default 4h). Scope claim is an optional array
   of allowed handler names. If the scope claim is absent, the token is unrestricted;
   if it is present but empty, no handlers are allowed.
@@ -70,8 +73,12 @@ All via `AMLD_` prefixed environment variables (uses Viper):
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `AMLD_HANDLER_DIR` | `./handlers/` | Handler directory root |
+| `AMLD_PUBLIC_DIR` | `./public/` | Static files directory |
 | `AMLD_BIND_ADDRESS` | `:9313` | Listen address |
+| `AMLD_JWT_SECRET` | (empty) | JWT signing key — **must be set** |
 | `AMLD_JWT_TIMEOUT` | `4h` | Token expiry |
+| `AMLD_JWT_TOKEN_LOOKUP` | `header: Authorization` | Where to find the JWT token |
+| `AMLD_JWT_REALM` | `api-moduled` | JWT realm name |
 | `AMLD_ID_KEY` | `uid` | JWT identity claim key |
 | `AMLD_EXPORT_ENV` | — | Extra env vars for handlers |
 

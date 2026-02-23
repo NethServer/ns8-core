@@ -18,7 +18,8 @@ framework, and admin UI. External application modules live in separate
 | `core/api-server/` | Go | Gin-based REST API with JWT auth, WebSocket, SQLite audit log |
 | `core/api-moduled/` | Go | Generic HTTP API for individual modules (JWT, JSON Schema validation) |
 | `core/ui/` | Vue 2 + JS | Admin web UI — Carbon Design System, Vuex, Vue Router, WebSocket |
-| `core/imageroot/` | Python 3 / Bash | Action scripts and the Python `agent` package, for action and event handler implementation |
+| `core/imageroot/` | Python 3 / Bash | Action scripts and the Python `agent` package (at `usr/local/agent/pypkg/agent/`), for action and event handler implementation |
+| `core/support/` | Shell | Remote support session via OpenVPN |
 | `core/restic/`, `core/rsync/` | Shell | Backup and replication container wrappers |
 | `core/tests/` | Robot Framework | Integration tests (cluster sanity, UI) |
 | `docs/` | Markdown (Jekyll) | Developer manual at nethserver.github.io/ns8-core |
@@ -105,8 +106,7 @@ cd core/agent && bash test-agent.sh
 **Integration tests** (Robot Framework, requires a live node):
 
 ```bash
-export LEADER_NODE=<ssh-address>
-cd core && bash test-module.sh
+cd core && bash test-module.sh <ssh-address>
 ```
 
 Robot Framework tests are in `core/tests/` with numbered directories
@@ -114,27 +114,32 @@ Robot Framework tests are in `core/tests/` with numbered directories
 
 ## Conventions
 
-- **Action script numbering**: `00` = validation, `50` = main logic, `60+` =
-  post-processing. Each step is a separate executable (Python 3 or Bash).
+- **Action script numbering**: By convention, `00` = validation, `50` = main
+  logic, `60+` = post-processing, but intermediate numbers (e.g. `01`, `05`,
+  `10`, `20`, `30`) are commonly used. Each step is a separate executable
+  (Python 3 or Bash).
 - **JSON Schema validation**: Actions define `validate-input.json` /
   `validate-output.json` for automatic request/response validation.
 - **Redis as state store**: All persistent state is in Redis, not on the
   filesystem. Actions use `agent.redis_connect()` to read/write state.
 - **UI design system**: Carbon Design System (`@carbon/vue`). Use Carbon
   components, not custom HTML widgets.
-- **UI mixins**: Cross-cutting concerns (WebSocket, notifications, tasks, login,
-  2FA, audit) are Vue mixins in `core/ui/src/mixins/`.
+- **UI mixins**: Cross-cutting concerns (WebSocket, notifications, login,
+  2FA, audit, node) are Vue mixins in `core/ui/src/mixins/`. Task-related
+  services (`TaskService`, `UtilService`, etc.) come from the external
+  `@nethserver/ns8-ui-lib` package.
 - **Event ID pattern**: Always generate a unique `eventId` per task creation to
   prevent event handler collisions:
   ```js
   const eventId = this.getUuid();
   // use `${taskAction}-completed-${eventId}` for event names
   ```
-- **Go modules**: `core/agent` and `core/api-server` are independent Go modules
-  with separate `go.mod` files. Use `go fmt` before commits.
+- **Go modules**: `core/agent`, `core/api-server`, and `core/api-moduled` are
+  independent Go modules with separate `go.mod` files. Use `go fmt` before
+  commits.
 - **Translations**: Managed via Weblate at
   `https://hosted.weblate.org/projects/ns8/`. Do not manually edit translation
   files.
-- **`/etc/hosts` handling**: The `set-fqdn` action must not comment out
-  localhost entries; instead remove old hostnames from those lines and normalize
-  whitespace.
+- **`/etc/hosts` handling**: The `set-fqdn` action comments out lines
+  containing the old hostname (prefixed with `# commented by set-fqdn #`)
+  and appends a new `127.0.1.1` entry for the new hostname.

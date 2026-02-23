@@ -25,7 +25,8 @@ script uses `-ldflags='-extldflags=-static'` for static linking and adds
 | `methods/audit.go` | Audit log queries (filter by user, action, date range) |
 | `middleware/` | JWT lifecycle: authenticator, authorizer, payload builder |
 | `models/` | Data structs: Audit, Event, Task, UserAuthorizations, SocketAction |
-| `redis/` | Redis client singleton, leader host lookup, health checks |
+| `utils/` | Error logging, string helpers, mutex-guarded clock for session expiry |
+| `redis/` | Redis client factory (new client per call), leader host lookup, health checks |
 | `audit/` | SQLite audit store (WAL mode, transactions) |
 | `socket/` | Melody WebSocket — session management, Redis event relay |
 | `response/` | Standardized HTTP response envelopes (StatusOK, StatusBadRequest, etc.) |
@@ -34,43 +35,59 @@ script uses `-ldflags='-extldflags=-static'` for static linking and adds
 ## Routing structure
 
 ```
-POST /api/login                           # no auth
-POST /api/logout                          # no auth
-GET  /api/module/:module_id/http-basic/:action  # basic auth, for app integration
+POST /api/login                                        # no auth
+POST /api/logout                                       # no auth
+GET  /api/module/:module_id/http-basic/:action         # basic auth, for app integration
 ─── JWT middleware applied to /api routes below ───
-POST /api/cluster/tasks                   # cluster task operations
-GET  /api/cluster/tasks                   # list cluster tasks
-POST /api/node/:node_id/tasks             # node task operations
-POST /api/module/:module_id/tasks         # module task operations
-GET  /api/nodes                           # list nodes
-GET  /api/modules                         # list modules
-GET  /api/audit                           # audit log queries
-GET  /api/audit/users                     # audit log users
-GET  /api/audit/actions                   # audit log actions
-*    /api/2FA                             # 2FA management
+GET  /api/cluster/tasks                                # list cluster tasks
+GET  /api/cluster/task/:task_id/status                 # task status
+GET  /api/cluster/task/:task_id/context                # task context
+POST /api/cluster/tasks                                # create cluster task
+GET  /api/nodes                                        # list nodes
+GET  /api/node/:node_id/tasks                          # list node tasks
+GET  /api/node/:node_id/task/:task_id/status           # node task status
+GET  /api/node/:node_id/task/:task_id/context          # node task context
+POST /api/node/:node_id/tasks                          # create node task
+GET  /api/modules                                      # list modules
+GET  /api/module/:module_id/tasks                      # list module tasks
+GET  /api/module/:module_id/task/:task_id/status       # module task status
+GET  /api/module/:module_id/task/:task_id/context      # module task context
+POST /api/module/:module_id/tasks                      # create module task
+GET  /api/audit                                        # audit log queries
+GET  /api/audit/users                                  # audit log users
+GET  /api/audit/actions                                # audit log actions
+POST /api/2FA                                          # enable 2FA
+GET  /api/2FA                                          # get 2FA status
+DELETE /api/2FA                                        # disable 2FA
+GET  /api/2FA/qr-code                                  # generate QR code
 
-/ws                                       # WebSocket (Melody) at root; not behind Gin JWT middleware (session validated in WebSocket flow)
+/ws                                                    # WebSocket (Melody); auth via "authorize" action with JWT payload
 ```
 
 ## Authentication
 
 - **Primary**: Redis ACL credentials validated on login
-- **JWT**: 14-day expiry; claims contain username, role, actions array, 2FA flag
+- **JWT**: 14-day expiry; claims contain username, 2FA flag, and placeholder
+  `role`/`actions` fields (always empty). Actual role and actions are fetched
+  fresh from Redis on every request via `IdentityHandler`.
 - **Authorization**: Action-based (not role-based) using `filepath.Match`
-  wildcard patterns against the user's authorized actions list
-- **2FA**: Optional TOTP via `github.com/pquerna/otp`; enforced at login. Middleware bypasses authorization checks (not 2FA) for all GET requests, and `/api/2FA` POST/DELETE endpoints are explicitly exempted in the authorizer.
+  wildcard patterns against the user's authorized actions list (from Redis).
+  All GET requests bypass authorization checks.
+- **2FA**: Optional TOTP via `github.com/dgryski/dgoogauth`; enforced at
+  login. `/api/2FA` POST/DELETE endpoints are explicitly exempted in the
+  authorizer.
 
 ## Configuration
 
 All via environment variables: `LISTEN_ADDRESS`, `REDIS_ADDRESS`, `REDIS_USER`,
 `REDIS_PASSWORD`, `SECRET` (JWT key), `STATIC_PATH`, `AUDIT_FILE`,
-`SENSITIVE_LIST`.
+`SENSITIVE_LIST`, `ISSUER` (TOTP issuer name, default `NethServer`).
 
 ## Conventions
 
 - Response envelopes use `structs.Map()` for struct-to-JSON conversion.
 - Redis keys follow `task/<entity>/<id>/<task-id>/{context,output,error,exit_code}` (e.g. `task/node/<node-id>/<task-id>/output`).
-- Audit events: `login-ok`, `login-fail`, `auth-fail` stored in SQLite.
+- Audit events: `login-ok`, `auth-fail`, `create-task` stored in SQLite.
 - WebSocket sessions are validated on each ping-pong (JWT expiry check).
 - No unit tests in this package; testing is via integration tests in
   `core/tests/`.
