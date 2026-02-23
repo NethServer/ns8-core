@@ -10,6 +10,7 @@ import sys
 import agent
 import cluster.grants
 import cluster.backup
+import uuid
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -38,6 +39,17 @@ for node_id in set(rdb.hvals('cluster/module_node')):
 # END of grant updates
 #
 cluster.grants.refresh_permissions(rdb)
+
+# Import module UUIDs in cluster key
+if not rdb.exists('cluster/module_uuid'):
+    uix = rdb.pipeline()
+    for mid in rdb.hkeys('cluster/module_node'):
+        module_uuid = rdb.hget(f'module/{mid}/environment', 'MODULE_UUID')
+        if not module_uuid:
+            print(agent.SD_WARNING + "Failed import of MODULE_UUID environment variable. Generating one for", mid, file=sys.stderr)
+            module_uuid = str(uuid.uuid4())
+        uix.hset('cluster/module_uuid', mid, module_uuid)
+    uix.execute()
 
 # Grant nodes access to private/ key namespace to share backup secrets
 trx = rdb.pipeline()

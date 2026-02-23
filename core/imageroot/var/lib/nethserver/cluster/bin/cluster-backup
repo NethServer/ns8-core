@@ -90,7 +90,7 @@ dump['cluster']['override']['modules'] = rdb.hgetall('cluster/override/modules')
 # modules: backup schedules
 for m in rdb.scan_iter('module/*/backups'):
     k = m.removeprefix('module/').removesuffix('/backups')
-    uuid = rdb.hget(f'module/{k}/environment', 'MODULE_UUID')
+    uuid = rdb.hget('cluster/module_uuid', k)
     dump['modules'][uuid] = {'backups': []}
     dump['modules'][uuid]['backups'] = sorted(rdb.smembers(m))
 

@@ -42,6 +42,7 @@ secret = str(os.getpid()) + os.getenv('AGENT_TASK_ID')
 source_image_url = rdb.hget(f'module/{smid}/environment', 'IMAGE_URL')
 agent.assert_exp(source_image_url)
 rsyncd_addr = rdb.hget(f'node/{node_id}/vpn', 'ip_address')
+source_module_uuid = rdb.hget("cluster/module_uuid", smid)
 agent.assert_exp(rsyncd_addr)
 
 # Retrieve the list of volume names from the source module
@@ -58,6 +59,8 @@ add_module_result = agent.tasks.run("cluster", "add-module",
         "image": source_image_url,
         "node": node_id,
         **({"volumes": mvolumes} if mvolumes else {}),
+        # Force assignment of the same source module UUID:
+        **({"module_uuid": source_module_uuid} if replace else {}),
     }, 
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(13, 25),

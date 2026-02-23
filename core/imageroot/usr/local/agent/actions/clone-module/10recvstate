@@ -48,19 +48,8 @@ core_env = agent.read_envfile('/etc/nethserver/core.env') # Import URLs of core 
 
 agent.run_helper(*podman_cmd, core_env['RSYNC_IMAGE']).check_returncode()
 
-#
-# Replace the MODULE_UUID, if needed
-#
 env_clone = agent.read_envfile('environment.clone-module')
 env_local = agent.read_envfile('environment')
-uuid = env_clone.get('MODULE_UUID', '')
-replace = request.get('replace', False)
-
-# Restore old MODULE_UUID
-if replace == True and len(uuid) > 0:
-    print("Preserving original MODULE_UUID", file=sys.stderr)
-    agent.set_env("MODULE_UUID", uuid)
-
 #
 # Copy environment from the source module. Only missing variables are copied!
 #

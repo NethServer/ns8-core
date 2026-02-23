@@ -50,6 +50,7 @@ with tempfile.NamedTemporaryFile() as fenv:
 
 remove_tasks = []
 image_url = original_environment['IMAGE_URL']
+module_uuid = original_environment['MODULE_UUID']
 image_name = agent.get_image_name_from_url(image_url)
 if image_name == 'traefik':
     # Use existing instance for restoration. Restore the backup with a
@@ -65,21 +66,27 @@ if image_name == 'traefik':
         "exit_code": 0,
     }
 else:
+    is_free_uuid = module_uuid not in set(rdb.hvals("cluster/module_uuid"))
     add_module_result = agent.tasks.run("cluster", "add-module",
         data={
             "image": image_url,
             "node": node_id,
             **({"volumes": mvolumes} if mvolumes else {}),
+            # Force assignment of UUID from the restored environment:
+            **({"module_uuid": module_uuid} if replace_requested or is_free_uuid else {}),
         },
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(2, 15)
     )
     agent.assert_exp(add_module_result['exit_code'] == 0)
     module_id = add_module_result['output']['module_id']
-    # Search for existing instance with the same MODULE_UUID to remove:
-    for kmod in rdb.hkeys("cluster/module_node"):
-        if rdb.hget(f'module/{kmod}/environment', 'MODULE_UUID') == original_environment['MODULE_UUID']:
-            # Prepare a task that removes the old module:
+    # Search for existing instances with the same UUID to remove:
+    for kmod, kuuid in rdb.hgetall("cluster/module_uuid"):
+        if kmod != module_id and kuuid == module_uuid:
+            # Immediately resolve the UUID conflict between the new and
+            # the old instance:
+            rdb.hdel("cluster/module_uuid", kmod)
+            # Prepare a task to lately remove the old module:
             remove_tasks.append({
                 "agent_id": "cluster",
                 "action": "remove-module",

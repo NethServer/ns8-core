@@ -83,9 +83,8 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
 
 # Fetch module UUIDs to search destination matches:
 for module_id in rdb.hkeys("cluster/module_node"):
-    omodule = rdb.hgetall(f"module/{module_id}/environment")
-    module_uuid = omodule.get("MODULE_UUID", "")
-    if module_uuid not in backups:
+    module_uuid = rdb.hget("cluster/module_uuid", module_id)
+    if not module_uuid or module_uuid not in backups:
         continue
     for repo_uuid in backups[module_uuid]:
         backups[module_uuid][repo_uuid]["is_generated_locally"] = True

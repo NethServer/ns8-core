@@ -167,6 +167,7 @@ subsections for more information.
 |cluster/default_instance/{image}       |STRING     |a module ID for the given image ID |
 |cluster/node_sequence                  |INTEGER    |generate node IDs, default: `0` |
 |cluster/module_sequence/{image}        |INTEGER    |module sequence to generate instances of image ID, default: `0` |
+|cluster/module_uuid|                   |HASH       |Store the UUID of each module instance. Two modules may have the same UUID during restore or clone operations|
 |cluster/module_node                    |HASH       |The module-node association, used for roles assignment|
 |cluster/module_domains                 |HASH       |Store relation of modules with user domains. Hash key is MODULE_ID, hash value is a list of domains separated by spaces, e.g. `mydom1.tld mydom2.tld mydom3.tld`|
 |cluster/authorizations/{agent_id}      |SET        |Authorization labels persistence, to enforce labels on future modules|
