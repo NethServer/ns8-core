@@ -105,7 +105,7 @@
                   <h4 class="mg-bottom-lg">
                     {{ $t("backup.backup_destinations") }}
                   </h4>
-                  <div class="mg-bottom-md">
+                  <div class="mg-bottom-lg">
                     {{
                       $t("backup.backup_destinations_stored_local_or_remote")
                     }}
@@ -327,7 +327,7 @@
                 <cv-row>
                   <cv-column>
                     <h4 class="mg-bottom-lg">{{ $t("backup.schedules") }}</h4>
-                    <div class="mg-bottom-md">
+                    <div class="mg-bottom-lg">
                       {{
                         $t(
                           "backup.schedule_regular_backups_and_select_the_applications_to_include"
