@@ -498,7 +498,6 @@
         "genericS3_placeholder": "e.g. myminio.example.com/mybucket",
         "smb_url_label": "Share name",
         "backup_repository_exists": "A backup destination with this URL already exists",
-        "choose_app_instances_to_backup": "Select the applications to include in this scheduled backup. The cluster configuration is always backed up automatically.",
         "choose_destination_repository": "Choose backup destination",
         "select_by_category": "Select by category",
         "schedule": "Schedule",

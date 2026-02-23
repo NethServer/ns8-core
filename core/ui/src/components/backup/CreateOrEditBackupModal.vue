@@ -25,9 +25,6 @@
       <template slot="content">
         <cv-form>
           <div v-show="step == 'instances'">
-            <div class="mg-bottom-lg">
-              {{ $t("backup.choose_app_instances_to_backup") }}
-            </div>
             <div class="mg-bottom-sm">
               {{ $t("backup.select_by_category") }}
             </div>
