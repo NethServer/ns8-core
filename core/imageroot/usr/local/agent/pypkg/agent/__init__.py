@@ -538,10 +538,10 @@ def list_service_providers(rdb, service, transport='*', filters={}):
             module_id = splitted_key[1]
 
             if not 'module_uuid' in rvalue:
-                rvalue['module_uuid'] = rdb.hget(f'module/{module_id}/environment', 'MODULE_UUID')
+                rvalue['module_uuid'] = rdb.hget('cluster/module_uuid', module_id)
 
             if not 'node' in rvalue:
-                rvalue['node'] = rdb.hget(f'module/{module_id}/environment', 'NODE_ID')
+                rvalue['node'] = rdb.hget('cluster/module_node', module_id)
 
             if splitted_key[2] != 'srv':
                 rvalue['qualifier'] = splitted_key[2]
