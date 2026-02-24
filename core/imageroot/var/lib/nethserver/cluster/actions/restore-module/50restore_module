@@ -83,7 +83,7 @@ else:
     # Search for existing instances with the same UUID to remove:
     for kmod, kuuid in rdb.hgetall("cluster/module_uuid").items():
         if kmod != module_id and kuuid == source_module_uuid:
-            # Prepare a task to lately remove the old module:
+            # Prepare a task to later remove the old module:
             remove_tasks.append({
                 "agent_id": "cluster",
                 "action": "remove-module",
