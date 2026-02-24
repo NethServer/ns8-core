@@ -12,7 +12,7 @@
     />
     <div class="toolbar">
       <NsDropdownAction kind="secondary" disabled>
-        <template v-slot:trigger>{{ $t("common.select") }}</template>
+        <template v-slot:trigger>{{ $t("backup.select_by_category") }}</template>
         <cv-overflow-menu-item @click="selectAll">
           {{ $t("common.all") }}
         </cv-overflow-menu-item>
