@@ -25,9 +25,6 @@
       <template slot="content">
         <cv-form>
           <div v-show="step == 'instances'">
-            <div class="mg-bottom-sm">
-              {{ $t("backup.select_by_category") }}
-            </div>
             <BackupInstanceSelector
               :instances="installedModules"
               :selection="isEditing ? backup.instances : instanceSelection"
