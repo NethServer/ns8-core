@@ -211,14 +211,6 @@
               </template>
             </template>
           </NodeSelector>
-          <NsInlineNotification
-            v-if="error.url"
-            kind="error"
-            :title="$t('common.error')"
-            :description="$t(error.url)"
-            :showCloseButton="false"
-            class="mg-top-lg"
-          />
         </template>
         <template v-if="step == 'settings'">
           <NsInlineNotification
@@ -1428,7 +1420,6 @@ export default {
     onSelectNode(node) {
       this.selectedNode = node;
       this.setUrlFromSelectedNode();
-      this.error.url = "";
     },
     getEndpointLabelForNode(node) {
       return node.ui_name ? node.ui_name : `Node ${node.id}`;
