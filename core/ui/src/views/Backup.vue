@@ -791,8 +791,11 @@
     />
     <!-- import backup destination modal -->
     <ImportBackupDestinationModal
-      :state="importBackupDestinationModalState"
+      :visible="isShownImportBackupDestinationModal"
+      :loading="isLoadingImportBackupDestination"
+      :backupFileError="importBackupDestinationFileError"
       @import-backup-submit="onImportBackupSubmit"
+      @modal-hidden="isShownImportBackupDestinationModal = false"
     />
   </div>
 </template>
@@ -814,9 +817,7 @@ import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
 import RestoreSingleInstanceModal from "@/components/backup/RestoreSingleInstanceModal";
 import BackupPasswordModal from "@/components/backup/BackupPasswordModal";
-import ImportBackupDestinationModal, {
-  StateManager as ImportBackupStateManager,
-} from "@/components/backup/ImportBackupDestinationModal";
+import ImportBackupDestinationModal from "@/components/backup/ImportBackupDestinationModal";
 import to from "await-to-js";
 import Upload20 from "@carbon/icons-vue/es/upload/20";
 import NotificationService from "@/mixins/notification";
@@ -860,7 +861,9 @@ export default {
       isShownBackupDetailsModal: false,
       isShownRestoreModal: false,
       isShownBackupPasswordModal: false,
-      importBackupDestinationModalState: new ImportBackupStateManager(),
+      isShownImportBackupDestinationModal: false,
+      isLoadingImportBackupDestination: false,
+      importBackupDestinationFileError: null,
       repositories: [],
       backups: [],
       unconfiguredInstances: [],
@@ -1122,7 +1125,7 @@ export default {
       this.isShownBackupPasswordModal = false;
     },
     showImportBackupDestinationModal() {
-      this.importBackupDestinationModalState.setVisible(true);
+      this.isShownImportBackupDestinationModal = true;
     },
     onImportBackupSubmit(data) {
       if (data.backupFile && data.backupPassword) {
@@ -1130,8 +1133,8 @@ export default {
       }
     },
     async importBackupDestination(data) {
-      this.importBackupDestinationModalState.setLoading(true);
-      this.importBackupDestinationModalState.setBackupFileError("");
+      this.isLoadingImportBackupDestination = true;
+      this.importBackupDestinationFileError = null;
       const taskAction = "import-backup-destinations";
       const eventId = this.getUuid();
 
@@ -1174,41 +1177,33 @@ export default {
 
         if (err) {
           console.error(`error creating task ${taskAction}`, err);
-          this.importBackupDestinationModalState.setLoading(false);
-          this.importBackupDestinationModalState.setBackupFileError(
-            this.getErrorMessage(err)
-          );
+          this.isLoadingImportBackupDestination = false;
+          this.importBackupDestinationFileError = this.getErrorMessage(err);
           return;
         }
       } catch (error) {
         console.error("Error reading backup file", error);
-        this.importBackupDestinationModalState.setBackupFileError(
+        this.importBackupDestinationFileError =
           this.$t("backup.error_reading_backup_file") ||
-            "Error reading backup file"
-        );
-        this.importBackupDestinationModalState.setLoading(false);
+          "Error reading backup file";
+        this.isLoadingImportBackupDestination = false;
       }
     },
     importBackupDestinationCompleted() {
-      this.importBackupDestinationModalState.setLoading(false);
-      this.importBackupDestinationModalState.clear();
-      this.importBackupDestinationModalState.setVisible(false);
+      this.isLoadingImportBackupDestination = false;
+      this.isShownImportBackupDestinationModal = false;
       // Reload repositories after successful import
       this.listBackupRepositories();
     },
     importBackupDestinationAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.importBackupDestinationModalState.setLoading(false);
-      this.importBackupDestinationModalState.setBackupFileError(
-        this.$t("error.generic_error")
-      );
+      this.isLoadingImportBackupDestination = false;
+      this.importBackupDestinationFileError = this.$t("error.generic_error");
     },
     importBackupDestinationValidationFailed(validationErrors) {
-      this.importBackupDestinationModalState.setLoading(false);
+      this.isLoadingImportBackupDestination = false;
       const errorKey = validationErrors?.[0]?.error || "import_failed";
-      this.importBackupDestinationModalState.setBackupFileError(
-        this.$t("backup." + errorKey)
-      );
+      this.importBackupDestinationFileError = this.$t("backup." + errorKey);
     },
     async deleteRepo(repo) {
       this.error.removeBackupRepository = "";

@@ -4,9 +4,9 @@
 -->
 <template>
   <NsModal
-    :visible="state.visible"
-    :primaryButtonDisabled="state.isLoading()"
-    :isLoading="state.isLoading()"
+    :visible="visible"
+    :primaryButtonDisabled="loading"
+    :isLoading="loading"
     @primary-click="importBackupFile()"
     @secondary-click="cancelModal()"
     v-on:modal-hide-request="cancelModal()"
@@ -62,63 +62,6 @@
 import { NsModal } from "@nethserver/ns8-ui-lib";
 import _isEmpty from "lodash/isEmpty";
 
-export class StateManager {
-  constructor() {
-    this.visible = false;
-    this.loading = false;
-    this.errors = {
-      backupFile: null,
-    };
-  }
-
-  /**
-   * @argument {boolean} isVisible
-   */
-  setVisible(isVisible) {
-    this.visible = isVisible;
-  }
-
-  /**
-   * @returns {boolean}
-   */
-  getVisible() {
-    return this.visible;
-  }
-
-  /**
-   * @argument {boolean} isLoading
-   */
-  setLoading(isLoading) {
-    this.loading = isLoading;
-  }
-
-  /**
-   * @returns {boolean}
-   */
-  isLoading() {
-    return this.loading;
-  }
-
-  /**
-   * @argument {string} error Error to show in backupFile file picker.
-   */
-  setBackupFileError(error) {
-    this.errors.backupFile = error;
-  }
-
-  /**
-   * Clear the state of the component.
-   * Only clears loading and errors, not visibility.
-   */
-  clear() {
-    this.visible = false;
-    this.loading = false;
-    this.errors = {
-      backupFile: null,
-    };
-  }
-}
-
 function initialData() {
   return {
     backupFile: null,
@@ -135,9 +78,17 @@ export default {
   name: "ImportBackupDestinationModal",
   components: { NsModal },
   props: {
-    state: {
-      type: StateManager,
-      required: true,
+    visible: {
+      type: Boolean,
+      default: false,
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+    backupFileError: {
+      type: String,
+      default: null,
     },
   },
   data() {
@@ -171,10 +122,9 @@ export default {
     },
     cancelModal() {
       this.clearForm();
-      this.state.setVisible(false);
+      this.$emit("modal-hidden");
     },
     clearForm() {
-      this.state.clear();
       this.backupFile = null;
       this.password = "";
       this.errors = { file: null, password: null };
@@ -186,7 +136,7 @@ export default {
     },
   },
   watch: {
-    "state.visible": function (newVal) {
+    visible: function (newVal) {
       if (newVal) {
         // Reset form data when modal opens
         // Use a new key to force file uploader recreation
@@ -197,7 +147,7 @@ export default {
         this.errors = newData.errors;
       }
     },
-    "state.errors.backupFile": function (val) {
+    backupFileError: function (val) {
       if (this.backupFile && this.backupFile[0]) {
         this.backupFile[0].invalidMessage = val;
       }
