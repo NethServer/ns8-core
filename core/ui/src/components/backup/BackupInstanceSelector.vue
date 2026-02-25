@@ -12,7 +12,9 @@
     />
     <div class="toolbar">
       <NsDropdownAction kind="secondary" disabled>
-        <template v-slot:trigger>{{ $t("backup.select_by_category") }}</template>
+        <template v-slot:trigger>{{
+          $t("backup.select_by_category")
+        }}</template>
         <cv-overflow-menu-item @click="selectAll">
           {{ $t("common.all") }}
         </cv-overflow-menu-item>
@@ -93,7 +95,7 @@
               :alt="instance.id + ' logo'"
             />
           </div>
-          <div class="instance-name-content">
+          <div>
             <span>{{ getInstanceLabel(instance) }} </span>
           </div>
           <NsTag
@@ -348,15 +350,9 @@ export default {
   height: 100%;
 }
 
-.instance-name-content {
-  display: flex;
-  flex-direction: column;
-}
-
 .core-module-tag {
   margin-left: auto;
 }
-
 </style>
 
 <style lang="scss">
