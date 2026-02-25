@@ -587,7 +587,7 @@ export default {
     updateInstance(instance) {
       this.instanceToUpdate = instance;
       this.app = this.appUpdates.find(
-        (app) => app.id.toLowerCase() === instance.module.toLowerCase()
+        (app) => app.id === instance.appInfoData.id
       );
       this.isShownUpdateModal = true;
     },
