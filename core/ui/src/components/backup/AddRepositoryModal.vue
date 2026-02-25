@@ -192,7 +192,7 @@
           </cv-grid>
         </template>
         <template v-if="step == 'nodes'">
-          <div class="mg-bottom-sm">{{ $t("backup.node") }}</div>
+          <div class="mg-bottom-sm">{{ $t("backup.select_cluster_node") }}</div>
           <NodeSelector
             class="mg-top-xlg"
             @selectNode="onSelectNode"
