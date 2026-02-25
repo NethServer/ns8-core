@@ -17,7 +17,7 @@
       <span class="selection-info">{{
         $t("common.x_of_y_selected", {
           selected: numSelected,
-          total: instancesInCoreApps.length,
+          total: instancesToDisplay.length,
         })
       }}</span>
     </div>
@@ -137,7 +137,7 @@ export default {
     numSelected() {
       return this.selectedList.length;
     },
-    instancesInCoreApps() {
+    instancesToDisplay() {
       if (this.additionalVolumes) {
         // filter instances to show only those belonging to core apps
         const coreAppIds = this.coreApps.flatMap((app) =>
@@ -155,7 +155,7 @@ export default {
       if (this.isSearchActive) {
         return this.searchResults;
       } else {
-        return this.instancesInCoreApps;
+        return this.instancesToDisplay;
       }
     },
   },
@@ -194,7 +194,7 @@ export default {
     selectAll() {
       this.selectedList = [];
 
-      for (const instance of this.instancesInCoreApps) {
+      for (const instance of this.instancesToDisplay) {
         // value is "repository_id@path" to be unique and easily comparable
         this.selectedList.push(instance.repository_id + "@" + instance.path);
       }
@@ -247,7 +247,7 @@ export default {
       this.isSearchActive = true;
 
       // search only in instances of core apps if additional volumes are shown, otherwise in all instances
-      this.searchResults = this.instancesInCoreApps.filter((instance) => {
+      this.searchResults = this.instancesToDisplay.filter((instance) => {
         // compare query text with all search fields of option
         return this.searchFields.some((searchField) => {
           const searchValue = instance[searchField];
