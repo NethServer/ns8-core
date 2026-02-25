@@ -98,8 +98,7 @@
         "any": "Any",
         "eg_value": "e.g. {value}",
         "go_to_page": "Go to {page}",
-        "not_configured": "Not configured",
-        "go_to_system_logs": "Go to system logs"
+        "not_configured": "Not configured"
     },
     "error": {
         "error": "Error",

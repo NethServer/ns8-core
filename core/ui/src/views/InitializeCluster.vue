@@ -825,7 +825,9 @@
               :description="error.restoreModules"
               :showCloseButton="false"
               @click="goToLogs"
-              :actionLabel="$t('common.go_to_system_logs')"
+              :actionLabel="
+                $t('common.go_to_page', { page: $t('system_logs.title') })
+              "
             />
             <cv-row v-if="!error.restoreModules">
               <cv-column>
