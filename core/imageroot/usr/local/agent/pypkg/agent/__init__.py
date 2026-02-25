@@ -518,7 +518,8 @@ def remove_rich_rules(rich_rules):
 
 def get_module_seq(module_id : str) -> int:
     """Return the module sequential number from its full ID. e.g.
-    traefik3 has index 3."""
+    traefik3 has index 3. Special value -1 is returned if module_id is
+    malformed."""
     mtype = module_id.strip("0123456789")
     try:
         return int(module_id.removeprefix(mtype))

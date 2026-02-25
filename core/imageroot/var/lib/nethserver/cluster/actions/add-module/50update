@@ -36,8 +36,11 @@ node_id = int(request['node'])
 agent.assert_exp(node_id > 0)
 check_idle_time = request.get('check_idle_time')
 volumes = request.get('volumes', {})
-# If the caller procedure (i.e. clone, restore) provides an UUID use it,
-# otherwise generate a new random one.
+# If the caller procedure (i.e. clone, restore) provides a module_uuid, use it
+# directly (typically the source module UUID). This means there can be a
+# temporary window where both the old and new modules share the same UUID in
+# cluster/module_uuid, until the old module is removed. If no module_uuid is
+# provided, generate a new random one.
 new_module_uuid = request.get('module_uuid', str(uuid.uuid4()))
 
 if volumes:

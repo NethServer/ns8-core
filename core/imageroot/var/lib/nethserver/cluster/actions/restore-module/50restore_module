@@ -62,18 +62,23 @@ else:
     source_module_uuid = None
 image_name = agent.get_image_name_from_url(image_url)
 if image_name == 'traefik':
-    # Use existing instance for restoration. Restore the backup with a
-    # merge-like strategy, implemented by the module as wanted.
+    # Special case: Traefik restoration uses existing instance (no new module created).
+    # - Use existing instance for restoration. Restore the backup with a
+    #   merge-like strategy, implemented by the module as wanted.
+    # - Build fake add-module result to maintain consistent action output format.
+    # - Never schedule Traefik for removal to avoid breaking cluster connectivity.
     module_id = agent.resolve_agent_id("traefik@node", node_id=str(node_id)).removeprefix("module/")
     add_module_result = {
         "output": {
             "module_id": module_id,
             "image_name": image_name,
             "image_url": image_url,
+            "module_uuid": rdb.hget("cluster/module_uuid", module_id),
         },
         "error": "",
         "exit_code": 0,
     }
+    remove_modules = set()
 else:
     add_module_result = agent.tasks.run("cluster", "add-module",
         data={
