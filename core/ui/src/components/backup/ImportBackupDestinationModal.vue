@@ -121,7 +121,7 @@ export default {
     },
     cancelModal() {
       this.clearForm();
-      this.$emit("modal-hidden");
+      this.$emit("hide");
     },
     clearForm() {
       this.backupFile = null;

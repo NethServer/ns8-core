@@ -795,7 +795,7 @@
       :loading="isLoadingImportBackupDestination"
       :backupFileError="importBackupDestinationFileError"
       @import-backup-submit="onImportBackupSubmit"
-      @modal-hidden="isShownImportBackupDestinationModal = false"
+      @hide="hideImportBackupDestinationModal"
     />
   </div>
 </template>
@@ -1126,6 +1126,9 @@ export default {
     },
     showImportBackupDestinationModal() {
       this.isShownImportBackupDestinationModal = true;
+    },
+    hideImportBackupDestinationModal() {
+      this.isShownImportBackupDestinationModal = false;
     },
     onImportBackupSubmit(data) {
       if (data.backupFile && data.backupPassword) {
