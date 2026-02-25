@@ -17,7 +17,11 @@
     </template>
     <template slot="content">
       <p>
-        {{ $t("software_center.restart_app") }}
+        {{
+          $t("software_center.restart_app", {
+            name: instanceToRestart ? instanceToRestart.id : "",
+          })
+        }}
       </p>
       <div v-if="error.restartModule">
         <NsInlineNotification
