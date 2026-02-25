@@ -12,7 +12,6 @@
     v-on:modal-hide-request="cancelModal()"
     autoHideOff
     hasFormContent
-    class="import-backup-modal"
   >
     <template slot="title">
       {{ $t("backup.import_destinations") }}
@@ -156,12 +155,6 @@ export default {
 };
 </script>
 <style scoped>
-/* Carbon sets overflow: auto on .bx--modal-content, causing an unwanted scrollbar
-   when content slightly overflows (~14px). Scoped to this modal to avoid side effects. */
-.import-backup-modal .bx--modal-content {
-  overflow: visible !important;
-}
-
 .file-uploader-error ::v-deep .bx--file__drop-container {
   outline: 2px solid #da1e28;
   outline-offset: -2px;
