@@ -50,16 +50,15 @@ with tempfile.NamedTemporaryFile() as fenv:
 
 remove_modules = set()
 image_url = original_environment['IMAGE_URL']
+source_module_uuid = original_environment.get('MODULE_UUID')
 if replace_requested:
-    source_module_uuid = original_environment['MODULE_UUID']
-    agent.assert_exp(source_module_uuid)
-    # Search for existing instances with the same UUID to remove if
-    # restore succeedes:
-    for kmod, kuuid in rdb.hgetall("cluster/module_uuid").items():
-        if kuuid == source_module_uuid:
-            remove_modules.add(kmod)
-else:
-    source_module_uuid = None
+    agent.assert_exp(source_module_uuid) # Cannot replace without UUID
+# Search for existing instances with the same UUID to remove if
+# restore succeedes:
+for kmod, kuuid in rdb.hgetall("cluster/module_uuid").items():
+    if kuuid == source_module_uuid:
+        remove_modules.add(kmod)
+
 image_name = agent.get_image_name_from_url(image_url)
 if image_name == 'traefik':
     # Special case: Traefik restoration uses existing instance (no new module created).
@@ -80,13 +79,14 @@ if image_name == 'traefik':
     }
     remove_modules = set()
 else:
+    force_uuid = source_module_uuid and (replace_requested or len(remove_modules) == 0)
     add_module_result = agent.tasks.run("cluster", "add-module",
         data={
             "image": image_url,
             "node": node_id,
             **({"volumes": mvolumes} if mvolumes else {}),
             # Force assignment of UUID from the restored environment:
-            **({"module_uuid": source_module_uuid} if replace_requested else {}),
+            **({"module_uuid": source_module_uuid} if force_uuid else {}),
         },
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(2, 15)
