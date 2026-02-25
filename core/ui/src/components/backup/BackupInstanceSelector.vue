@@ -353,17 +353,10 @@ export default {
   flex-direction: column;
 }
 
-.not-backed-up-tag {
-  margin-left: auto;
-}
-
 .core-module-tag {
   margin-left: auto;
 }
 
-.not-backed-up-tag ~ .core-module-tag {
-  margin-left: $spacing-02;
-}
 </style>
 
 <style lang="scss">
