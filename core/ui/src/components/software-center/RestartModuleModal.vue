@@ -5,6 +5,7 @@
     :isLoading="loading.restartModule"
     @modal-hidden="onModalHidden"
     @primary-click="restartModule"
+    kind="danger"
     :primary-button-disabled="loading.restartModule ? true : false"
   >
     <template slot="title">
@@ -15,19 +16,9 @@
       }}
     </template>
     <template slot="content">
-      <NsInlineNotification
-        kind="warning"
-        :title="$t('common.please_read_carefully')"
-        :description="$t('software_center.restart_module_warning')"
-        :showCloseButton="false"
-      />
-      <div>
-        {{
-          $t("software_center.restart_app", {
-            name: instanceToRestart ? instanceToRestart.id : "",
-          })
-        }}
-      </div>
+      <p>
+        {{ $t("software_center.restart_app") }}
+      </p>
       <div v-if="error.restartModule">
         <NsInlineNotification
           kind="error"
