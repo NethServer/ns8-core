@@ -48,10 +48,18 @@ with tempfile.NamedTemporaryFile() as fenv:
     fenv.seek(0)
     original_environment = agent.read_envfile(fenv.name)
 
-remove_tasks = []
+remove_modules = set()
 image_url = original_environment['IMAGE_URL']
-source_module_uuid = original_environment['MODULE_UUID']
-has_no_uuid_conflict = source_module_uuid not in set(rdb.hvals("cluster/module_uuid"))
+if replace_requested:
+    source_module_uuid = original_environment['MODULE_UUID']
+    agent.assert_exp(source_module_uuid)
+    # Search for existing instances with the same UUID to remove if
+    # restore succeedes:
+    for kmod, kuuid in rdb.hgetall("cluster/module_uuid").items():
+        if kuuid == source_module_uuid:
+            remove_modules.add(kmod)
+else:
+    source_module_uuid = None
 image_name = agent.get_image_name_from_url(image_url)
 if image_name == 'traefik':
     # Use existing instance for restoration. Restore the backup with a
@@ -73,25 +81,13 @@ else:
             "node": node_id,
             **({"volumes": mvolumes} if mvolumes else {}),
             # Force assignment of UUID from the restored environment:
-            **({"module_uuid": source_module_uuid} if replace_requested or has_no_uuid_conflict else {}),
+            **({"module_uuid": source_module_uuid} if replace_requested else {}),
         },
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(2, 15)
     )
     agent.assert_exp(add_module_result['exit_code'] == 0)
     module_id = add_module_result['output']['module_id']
-    # Search for existing instances with the same UUID to remove:
-    for kmod, kuuid in rdb.hgetall("cluster/module_uuid").items():
-        if kmod != module_id and kuuid == source_module_uuid:
-            # Prepare a task to later remove the old module:
-            remove_tasks.append({
-                "agent_id": "cluster",
-                "action": "remove-module",
-                "data": {
-                    "module_id": kmod,
-                    "preserve_data": False
-                },
-            })
 
 restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
     data={
@@ -99,16 +95,26 @@ restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
         "path": path,
         "snapshot": snapshot,
         "environment": original_environment,
-        # replace flag is always set if there is no conflict with existing module
-        "replace": bool(replace_requested or has_no_uuid_conflict),
+        "replace": replace_requested,
     },
     endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(16, 99 if len(remove_tasks) == 0 else 94),
+    progress_callback=agent.get_progress_callback(16, 99 if len(remove_modules) == 0 else 94),
 )
 
 agent.assert_exp(restore_task_result['exit_code'] == 0)
 
-if len(remove_tasks) > 0 and replace_requested:
+if replace_requested and remove_modules:
+    # Prepare a task list to remove the old modules:
+    remove_tasks = []
+    for kmod in remove_modules:
+        remove_tasks.append({
+            "agent_id": "cluster",
+            "action": "remove-module",
+            "data": {
+                "module_id": kmod,
+                "preserve_data": False
+            },
+        })
     # Remove existing modules with the same MODULE_UUID:
     remove_modules_errors = agent.tasks.runp_brief(
         remove_tasks,
@@ -116,11 +122,5 @@ if len(remove_tasks) > 0 and replace_requested:
         progress_callback=agent.get_progress_callback(95, 99)
     )
     agent.assert_exp(remove_modules_errors == 0)
-
-if replace_requested or has_no_uuid_conflict:
-    # Copy source module UUID to destination:
-    rdb.hset('cluster/module_uuid', module_id, source_module_uuid)
-    # Override module UUID for consistent action output:
-    add_module_result['output']['module_uuid'] = source_module_uuid
 
 json.dump(add_module_result['output'], fp=sys.stdout)

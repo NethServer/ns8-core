@@ -36,8 +36,9 @@ node_id = int(request['node'])
 agent.assert_exp(node_id > 0)
 check_idle_time = request.get('check_idle_time')
 volumes = request.get('volumes', {})
-# Random UUID, always stored in cluster/module_uuid HASH key
-new_module_uuid = str(uuid.uuid4())
+# If the caller procedure (i.e. clone, restore) provides an UUID use it,
+# otherwise generate a new random one.
+new_module_uuid = request.get('module_uuid', str(uuid.uuid4()))
 
 if volumes:
     # Retrieve the list of valid mountpoint paths from the node:
@@ -137,7 +138,7 @@ module_environment = {
     'IMAGE_REOPODIGEST': inspect_image_repodigest,
     'MODULE_ID': module_id,
     'NODE_ID': str(node_id),
-    'MODULE_UUID': request.get('module_uuid', new_module_uuid),
+    'MODULE_UUID': new_module_uuid,
 }
 
 # Set the "default_instance" keys for cluster and node, if module_id is the first instance of image
@@ -177,7 +178,8 @@ add_module_result = agent.tasks.run(
 )
 agent.assert_exp(add_module_result['exit_code'] == 0)
 
-# Store generated module UUID in a safe cluster key to build backup paths
+# Store generated module UUID in a safe cluster key to implement service
+# discovery and backup access authorization.
 rdb.hset('cluster/module_uuid', module_id, new_module_uuid)
 
 outobj=add_module_result['output']

@@ -516,6 +516,14 @@ def remove_rich_rules(rich_rules):
     )
     return response['exit_code'] == 0
 
+def get_module_seq(module_id : str) -> int:
+    """Return the module sequential number from its full ID. e.g.
+    traefik3 has index 3."""
+    mtype = module_id.strip("0123456789")
+    try:
+        return int(module_id.removeprefix(mtype))
+    except (TypeError, ValueError):
+        return -1
 
 def list_service_providers(rdb, service, transport='*', filters={}):
     """Look up the endpoint information about a given service. Filter
@@ -537,11 +545,9 @@ def list_service_providers(rdb, service, transport='*', filters={}):
             splitted_key = rkey.split('/')
             module_id = splitted_key[1]
 
-            if not 'module_uuid' in rvalue:
-                rvalue['module_uuid'] = rdb.hget('cluster/module_uuid', module_id)
-
-            if not 'node' in rvalue:
-                rvalue['node'] = rdb.hget('cluster/module_node', module_id)
+            rvalue['module_seq'] = get_module_seq(module_id)
+            rvalue['module_uuid'] = rdb.hget('cluster/module_uuid', module_id)
+            rvalue['node'] = rdb.hget('cluster/module_node', module_id)
 
             if splitted_key[2] != 'srv':
                 rvalue['qualifier'] = splitted_key[2]
@@ -550,10 +556,15 @@ def list_service_providers(rdb, service, transport='*', filters={}):
             rvalue['module_id'] = module_id
             rvalue['ui_name'] = rdb.get(f'module/{module_id}/ui_name')
 
-        if not match_filter(rvalue, filters):
-            continue
+        if match_filter(rvalue, filters):
+            results.append(rvalue)
 
-        results.append(rvalue)
+    # If the results were filtered by module_uuid, reduce it to a single
+    # item with the highest sequence number. This strategy works around
+    # temporary UUID duplication produced by clone and restore procedures.
+    if 'module_uuid' in filters and len(results) > 1:
+        results.sort(key=lambda e: e['module_seq'])
+        results = [results[-1]] # Return last item only
 
     return results
 

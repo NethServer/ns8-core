@@ -151,10 +151,6 @@ if replace:
     if remove_retval['exit_code'] != 0:
         print(f"Removal of module/{smid} has failed!")
         sys.exit(1)
-    # Copy source module UUID to destination:
-    rdb.hset('cluster/module_uuid', dmid, source_module_uuid)
-    # Override module UUID for consistent action output:
-    add_module_result['output']['module_uuid'] = source_module_uuid
 
 # Deallocate rsync port
 deallocated_range = agent.tasks.run(
