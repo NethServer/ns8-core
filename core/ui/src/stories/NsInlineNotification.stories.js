@@ -25,7 +25,7 @@ Default.args = {
   showCloseButton: false,
   actionLabel: "",
   closeAriaLabel: "Dismiss notification",
-  lowContrast: false,
+  lowContrast: true,
   loading: false,
   timer: null,
 };
