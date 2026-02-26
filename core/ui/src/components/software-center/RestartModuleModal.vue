@@ -9,17 +9,13 @@
     :primary-button-disabled="loading.restartModule ? true : false"
   >
     <template slot="title">
-      {{
-        $t("software_center.app_restart", {
-          app: instanceToRestart ? instanceToRestart.id : "",
-        })
-      }}
+      {{ $t("software_center.restart_application") }}
     </template>
     <template slot="content">
       <p>
         {{
           $t("software_center.restart_app", {
-            name: instanceToRestart ? instanceToRestart.id : "",
+            name: appName,
           })
         }}
       </p>
@@ -34,7 +30,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("software_center.restart_instance")
+      $t("software_center.restart_application")
     }}</template>
   </NsModal>
 </template>
@@ -57,6 +53,20 @@ export default {
   },
   data() {
     return { error: { restartModule: "" }, loading: { restartModule: false } };
+  },
+  computed: {
+    appName() {
+      if (!this.instanceToRestart) {
+        return "";
+      }
+
+      return this.instanceToRestart.ui_name
+        ? this.instanceToRestart.ui_name +
+            " (" +
+            this.instanceToRestart.id +
+            ")"
+        : this.instanceToRestart.id;
+    },
   },
   methods: {
     async restartModule() {
