@@ -1073,11 +1073,12 @@
         "updates_disabled_ns7_migration_title": "Updates are suspended",
         "updates_disabled_ns7_migration_description": "There is an ongoing NS7 migration. Updates will resume once the migration is complete.",
         "app_restart": "Restart the instance {app}",
-        "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
+        "restart_app": "Restarting the application {name} will interrupt its operation and may cause downtime. Proceed only if maintenance is needed and users are aware.",
         "restart_instance": "Restart instance",
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
         "restarting":" Restarting...",
         "restart_instance_name": "Restart instance {instance}",
+        "restart_application": "Restart application",
         "app_categories": {
             "core": "Core",
             "development": "Development",
