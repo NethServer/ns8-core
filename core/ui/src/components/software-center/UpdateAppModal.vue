@@ -10,8 +10,8 @@
     @primary-click="updateModule"
     class="no-pad-modal"
   >
-    <template v-if="app" slot="title">{{
-      $t("software_center.update_app", { app: app.name })
+    <template slot="title">{{
+      app ? $t("software_center.update_app", { app: app.name }) : ""
     }}</template>
     <template v-if="app && instance" slot="content">
       <cv-form @submit.prevent="updateModule">

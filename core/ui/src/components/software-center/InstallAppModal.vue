@@ -24,8 +24,8 @@
     :isPreviousShown="hasAdditionalStorageAvailable"
     :isLastStep="isLastStep"
   >
-    <template v-if="app" slot="title">{{
-      $t("software_center.app_installation", { app: app.name })
+    <template slot="title">{{
+      app ? $t("software_center.app_installation", { app: app.name }) : ""
     }}</template>
 
     <template v-if="app" slot="content">
