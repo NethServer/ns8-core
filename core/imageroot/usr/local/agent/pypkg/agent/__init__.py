@@ -160,7 +160,7 @@ def munset_env(var_list):
         changed = False
         for v in var_list:
             try:
-                del envmap[var_name]
+                del envmap[v]
                 changed = True
             except KeyError:
                 pass
