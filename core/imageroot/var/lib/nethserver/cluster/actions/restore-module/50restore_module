@@ -48,46 +48,51 @@ with tempfile.NamedTemporaryFile() as fenv:
     fenv.seek(0)
     original_environment = agent.read_envfile(fenv.name)
 
-remove_tasks = []
+remove_modules = set()
 image_url = original_environment['IMAGE_URL']
+source_module_uuid = original_environment.get('MODULE_UUID')
+if replace_requested:
+    agent.assert_exp(source_module_uuid) # Cannot replace without UUID
+# Search for existing instances with the same UUID to remove if
+# restore succeedes:
+for kmod, kuuid in rdb.hgetall("cluster/module_uuid").items():
+    if kuuid == source_module_uuid:
+        remove_modules.add(kmod)
+
 image_name = agent.get_image_name_from_url(image_url)
 if image_name == 'traefik':
-    # Use existing instance for restoration. Restore the backup with a
-    # merge-like strategy, implemented by the module as wanted.
+    # Special case: Traefik restoration uses existing instance (no new module created).
+    # - Use existing instance for restoration. Restore the backup with a
+    #   merge-like strategy, implemented by the module as wanted.
+    # - Build fake add-module result to maintain consistent action output format.
+    # - Never schedule Traefik for removal to avoid breaking cluster connectivity.
     module_id = agent.resolve_agent_id("traefik@node", node_id=str(node_id)).removeprefix("module/")
     add_module_result = {
         "output": {
             "module_id": module_id,
             "image_name": image_name,
             "image_url": image_url,
+            "module_uuid": rdb.hget("cluster/module_uuid", module_id),
         },
         "error": "",
         "exit_code": 0,
     }
+    remove_modules = set()
 else:
+    force_uuid = source_module_uuid and (replace_requested or len(remove_modules) == 0)
     add_module_result = agent.tasks.run("cluster", "add-module",
         data={
             "image": image_url,
             "node": node_id,
             **({"volumes": mvolumes} if mvolumes else {}),
+            # Force assignment of UUID from the restored environment:
+            **({"module_uuid": source_module_uuid} if force_uuid else {}),
         },
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(2, 15)
     )
     agent.assert_exp(add_module_result['exit_code'] == 0)
     module_id = add_module_result['output']['module_id']
-    # Search for existing instance with the same MODULE_UUID to remove:
-    for kmod in rdb.hkeys("cluster/module_node"):
-        if rdb.hget(f'module/{kmod}/environment', 'MODULE_UUID') == original_environment['MODULE_UUID']:
-            # Prepare a task that removes the old module:
-            remove_tasks.append({
-                "agent_id": "cluster",
-                "action": "remove-module",
-                "data": {
-                    "module_id": kmod,
-                    "preserve_data": False
-                },
-            })
 
 restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
     data={
@@ -95,16 +100,26 @@ restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
         "path": path,
         "snapshot": snapshot,
         "environment": original_environment,
-        # MODULE_UUID is always preserved if there is no module to be replaced
-        "replace": replace_requested or len(remove_tasks) == 0
+        "replace": replace_requested,
     },
     endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(16, 99 if len(remove_tasks) == 0 else 94),
+    progress_callback=agent.get_progress_callback(16, 99 if len(remove_modules) == 0 else 94),
 )
 
 agent.assert_exp(restore_task_result['exit_code'] == 0)
 
-if len(remove_tasks) > 0 and replace_requested:
+if replace_requested and remove_modules:
+    # Prepare a task list to remove the old modules:
+    remove_tasks = []
+    for kmod in remove_modules:
+        remove_tasks.append({
+            "agent_id": "cluster",
+            "action": "remove-module",
+            "data": {
+                "module_id": kmod,
+                "preserve_data": False
+            },
+        })
     # Remove existing modules with the same MODULE_UUID:
     remove_modules_errors = agent.tasks.runp_brief(
         remove_tasks,
