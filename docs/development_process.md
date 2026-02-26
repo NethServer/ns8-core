@@ -14,7 +14,8 @@ Here you can find some additional guidelines regarding the releases of modules, 
 
 ## Release process
 
-The release process is documented in the [release process](https://handbook.nethserver.org/release-process/) page.
+The release process starts from issues that keep track of the work.
+How to use the issues is documented inside the [handbook](https://handbook.nethserver.org/issues/) page.
 But some additional steps are required for a correct release of all NS8 modules, including the core.
 
 It's important to create a release on GitHub for each new version of the module,

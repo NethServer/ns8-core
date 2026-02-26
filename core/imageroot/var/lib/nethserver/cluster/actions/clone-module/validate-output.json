@@ -21,6 +21,10 @@
             "description": "Generated identifier of the clone instance",
             "type": "string"
         },
+        "module_uuid": {
+            "description": "Generated UUID of the added module instance",
+            "type": "string"
+        },
         "image_name": {
             "description": "Display name of the clone image",
             "type": "string"

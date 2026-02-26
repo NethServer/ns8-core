@@ -13,12 +13,17 @@
     "type": "object",
     "required": [
         "module_id",
+        "module_uuid",
         "image_name",
         "image_url"
     ],
     "properties": {
         "module_id": {
             "description": "Generated identifier of the added module instance",
+            "type": "string"
+        },
+        "module_uuid": {
+            "description": "Generated UUID of the added module instance",
             "type": "string"
         },
         "image_name": {

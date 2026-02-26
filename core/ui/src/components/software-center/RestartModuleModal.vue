@@ -5,29 +5,20 @@
     :isLoading="loading.restartModule"
     @modal-hidden="onModalHidden"
     @primary-click="restartModule"
+    kind="danger"
     :primary-button-disabled="loading.restartModule ? true : false"
   >
     <template slot="title">
-      {{
-        $t("software_center.app_restart", {
-          app: instanceToRestart ? instanceToRestart.id : "",
-        })
-      }}
+      {{ $t("software_center.restart_application") }}
     </template>
     <template slot="content">
-      <NsInlineNotification
-        kind="warning"
-        :title="$t('common.please_read_carefully')"
-        :description="$t('software_center.restart_module_warning')"
-        :showCloseButton="false"
-      />
-      <div>
+      <p>
         {{
           $t("software_center.restart_app", {
-            name: instanceToRestart ? instanceToRestart.id : "",
+            name: appName,
           })
         }}
-      </div>
+      </p>
       <div v-if="error.restartModule">
         <NsInlineNotification
           kind="error"
@@ -39,7 +30,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("software_center.restart_instance")
+      $t("software_center.restart_application")
     }}</template>
   </NsModal>
 </template>
@@ -62,6 +53,20 @@ export default {
   },
   data() {
     return { error: { restartModule: "" }, loading: { restartModule: false } };
+  },
+  computed: {
+    appName() {
+      if (!this.instanceToRestart) {
+        return "";
+      }
+
+      return this.instanceToRestart.ui_name
+        ? this.instanceToRestart.ui_name +
+            " (" +
+            this.instanceToRestart.id +
+            ")"
+        : this.instanceToRestart.id;
+    },
   },
   methods: {
     async restartModule() {

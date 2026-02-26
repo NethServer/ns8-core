@@ -33,6 +33,11 @@ function send_heartbeat_nsent ()
         --header "Content-Type: application/json" \
         --data @- \
         "https://my.nethesis.it/isa/heartbeats/store" >/dev/null || :
+
+    # Temporary send data to new endpoint
+    # To be removed when the migration to new my.nethesis.it will be completed
+    /usr/bin/curl -m 180 --retry 3 -L -s -X POST \
+       --user "${system_id:?}:${auth_token:?}" https://my.nethesis.it/proxy/heartbeat >/dev/null || :
 }
 
 function send_heartbeat_nscom ()

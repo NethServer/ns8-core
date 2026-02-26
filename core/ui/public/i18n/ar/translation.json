@@ -620,7 +620,8 @@
         "default_storage": "Default volume",
         "node_offline": "Node is offline",
         "additional_storage_available": "Additional volumes available",
-        "select_node_volume_for_installation": "Select the volume installation on {node} for application data"
+        "select_node_volume_for_installation": "Select the volume installation on {node} for application data",
+        "installation_node_for_app": "Installation node for {app} {version}"
     },
     "system_logs": {
         "end_time_label": "End time (24-hour)",
@@ -813,7 +814,10 @@
         "warning_disabled_description": "Enable the Age policy to configure password expiration warning",
         "password_does_not_expire": "No password expiration",
         "password_expired": "Password expired",
-        "must_change_password_on_next_login": "Required password change"
+        "must_change_password_on_next_login": "Required password change",
+        "select_node_volume_for_installation": "Select the volume for shared folders data on {node}",
+        "nodes_with_additional_storage_info": "Additional storage for shared folders",
+        "nodes_with_additional_storage_info_description": "Shared folders can be enabled in the next step. Only one provider per domain can host them."
     },
     "domain_users": {
         "edit_group": "Edit group",
