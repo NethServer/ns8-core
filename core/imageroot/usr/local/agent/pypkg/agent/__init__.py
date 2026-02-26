@@ -113,37 +113,59 @@ def write_envfile(file_path, envmap):
     entries = [ek + "=" + str(ev) for ek, ev in envmap.items()]
     entries.sort()
     payload = "\n".join(entries) + "\n"
-    tmpfile = ".{0}-{1!s}.tmp".format(os.path.basename(file_path), os.getpid())
 
-    bdir = os.path.dirname(file_path) # Base directory
-    if bdir:
-        tmpfile = bdir + '/' + tmpfile # Prepend the base directory
-    else:
-        pass # File is in the current working directory
-
-    with open(tmpfile, 'w') as ofile:
+    with safe_open(file_path, 'w') as ofile:
         ofile.write(payload)
-    os.rename(tmpfile, file_path)
 
 def set_env(var_name, var_value):
     """Change the ./environment file contents, setting the variable "var_name" to the given "var_value"
     """
     envfile_path = os.environ['AGENT_STATE_DIR'] + "/environment"
-    envmap = read_envfile(envfile_path)
-    envmap[var_name] = var_value
-    write_envfile(envfile_path, envmap)
+    with exclusive_file_lock(envfile_path):
+        envmap = read_envfile(envfile_path)
+        envmap[var_name] = var_value
+        write_envfile(envfile_path, envmap)
+
+def mset_env(env_dict):
+    """Change the ./environment file contents, merging the env_dict into key/value pairs
+    """
+    if not env_dict:
+        return
+    envfile_path = os.environ['AGENT_STATE_DIR'] + "/environment"
+    with exclusive_file_lock(envfile_path):
+        envmap = read_envfile(envfile_path)
+        envmap.update(env_dict)
+        write_envfile(envfile_path, envmap)
 
 def unset_env(var_name):
     """Change the ./environment file contents, removing the variable "var_name"
     """
     envfile_path = os.environ['AGENT_STATE_DIR'] + "/environment"
-    envmap = read_envfile(envfile_path)
-    try:
-        del envmap[var_name]
-    except KeyError:
-        pass
-    write_envfile(envfile_path, envmap)
+    with exclusive_file_lock(envfile_path):
+        envmap = read_envfile(envfile_path)
+        try:
+            del envmap[var_name]
+            write_envfile(envfile_path, envmap)
+        except KeyError:
+            pass
 
+def munset_env(var_list):
+    """Change the ./environment file contents, removing all variables in var_list
+    """
+    if not var_list:
+        return
+    envfile_path = os.environ['AGENT_STATE_DIR'] + "/environment"
+    with exclusive_file_lock(envfile_path):
+        envmap = read_envfile(envfile_path)
+        changed = False
+        for v in var_list:
+            try:
+                del envmap[var_name]
+                changed = True
+            except KeyError:
+                pass
+        if changed:
+            write_envfile(envfile_path, envmap)
 
 def get_progress_callback(range_low, range_high):
     """Return a function that maps progress range 0-100 to range_low-range_high and
