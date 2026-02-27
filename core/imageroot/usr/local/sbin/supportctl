@@ -1,0 +1,153 @@
+#!/usr/local/bin/runagent python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import agent
+import agent.tasks
+import argparse
+
+def main():
+    root_parser = argparse.ArgumentParser(description="""
+    Control support sessions on cluster nodes
+    """)
+    subparsers = root_parser.add_subparsers(title="commands", required=True, dest='command')
+
+    start_parser = subparsers.add_parser('start', help="Start support session on a cluster node")
+    start_parser.add_argument("where", help="Find the node from the given token")
+    stop_parser = subparsers.add_parser('stop', help="Stop support session(s)")
+    stop_parser.add_argument("--all", action="store_true", help="Stop active sessions on all cluster nodes")
+    stop_parser.add_argument("where", help="Find the node from the given token")
+
+    args = root_parser.parse_args()
+
+    if args.command == 'start':
+        start_session(args.where)
+    elif args.command == 'stop':
+        stop_session(args.where, args.all)
+
+def start_session(where):
+    onode = lookup_node_object(where)
+    if onode is None:
+        print("Node not found from:", where, file=sys.stderr)
+        sys.exit(1)
+    print(onode)
+    # Start the support session and obtain the session ID
+    result = agent.tasks.run(
+        agent_id=f"node/{onode['node_id']}",
+        action="start-support-session",
+        endpoint="redis://cluster-leader",
+    )
+
+    if result["exit_code"] != 0:
+        print(result["error"], file=sys.stderr, end="")
+        sys.exit(1)
+
+    session_id = result["output"].get("session_id", "")
+    print(f"Session ID: {session_id}")
+    print()
+
+
+def stop_session(where, all_sessions):
+    if not all_sessions:
+        onode = lookup_node_object(where)
+        if onode is None:
+            print("Node not found from:", where, file=sys.stderr)
+            sys.exit(1)
+        nid_set = {onode['node_id']}
+    else:
+        rdb = agent.redis_connect()
+        nid_set = set(rdb.hvals("cluster/module_node"))
+
+    errors = 0
+    for nid in nid_set:
+        # Stop the support session on the found node
+        result = agent.tasks.run(
+            agent_id=f"node/{nid}",
+            action="stop-support-session",
+            endpoint="redis://cluster-leader",
+        )
+        if result["exit_code"] != 0:
+            print(result["error"], file=sys.stderr, end="")
+            errors += 1
+            continue
+        print(f"Session stopped on node {nid}")
+
+    if errors:
+        sys.exit(1)
+
+def lookup_node_object(where: str) -> dict:
+    node_map = fetch_tokens()
+
+    if where.isnumeric() and where in node_map:
+        return node_map[where]
+    elif where in node_map:
+        node_id = node_map[where]
+        return node_map[node_id]
+    else:
+        return None
+
+def fetch_tokens():
+    rdb = agent.redis_connect()
+
+    # Build a dict: identifier -> node_id, from various Redis keys
+    node_map = {}  # str -> str (node_id), and node_id -> node object
+
+    # 1. Initialize from cluster/module_node HASH: module_id -> node_id
+    module_node = rdb.hgetall("cluster/module_node")
+    node_map.update(module_node)
+
+    # 1.1. A node ID lookup returns an object with node attributes:
+    node_map.update({
+        nid: {
+            "fqdn": "",
+            "ui_name": "",
+            "vpn_ip_address": "",
+            "main_ip": "",
+        } for nid in set(module_node.values())
+    })
+
+    # 2. Extend with module UI names
+    for module_id, nid in module_node.items():
+        ui_name = rdb.get(f"module/{module_id}/ui_name")
+        if ui_name:
+            node_map[ui_name] = nid
+
+    # 3. Extend with traefik FQDNs from module/traefik*/hosts (SET keys)
+    for module_id in module_node:
+        if module_id.strip("0123456789") != 'traefik':
+            continue
+        for fqdn in rdb.smembers(f'module/{module_id}/hosts'):
+            node_map[fqdn] = nid
+
+    # 4. Collect node metadata, for lookups and results:
+    result = agent.tasks.run(
+        agent_id="cluster",
+        action="list-nodes",
+        endpoint="redis://cluster-leader",
+    )
+    if result["exit_code"] != 0:
+        print(result["error"], file=sys.stderr, end="")
+        sys.exit(1)
+    for onode in result['output']['nodes']:
+        node_id = str(onode['node_id'])
+        node_map[onode['main_ip']] = node_id
+        node_map[onode['fqdn']] = node_id
+        node_map[onode['vpn_ip_address']] = node_id
+        node_map[onode['ui_name']] = node_id
+
+        node_map[node_id] = {
+            'node_id': node_id,
+            'main_ip': onode['main_ip'],
+            'fqdn': onode['fqdn'],
+            'vpn_ip_address': onode['vpn_ip_address'],
+            'ui_name': onode['ui_name'],
+        }
+    return node_map
+
+if __name__ == '__main__':
+    main()
