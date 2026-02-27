@@ -12,7 +12,7 @@ export default {
   mixins: [UtilService, TaskService],
   computed: {
     ...mapState(["notifications", "taskPollingTimers"]),
-    ...mapGetters(["getNotificationById", "getTaskById"]),
+    ...mapGetters(["getNotificationById", "getTaskById", "isCancellingTask"]),
   },
   methods: {
     ...mapActions([
@@ -23,6 +23,8 @@ export default {
       "deleteNotificationInStore",
       "setPollingTimerForTaskInStore",
       "getTaskContextFromCache",
+      "addCancellingTaskInStore",
+      "removeCancellingTaskInStore",
     ]),
     ...mapMutations(["setTaskContextInCache"]),
     createNotification(notification) {
@@ -124,11 +126,18 @@ export default {
       const taskAction = "cancel-task";
       const eventId = this.getUuid();
 
+      // Get task context from cache to retrieve task name
+      let taskContext = await this.getTaskContextFromCache(notificationId);
+      let taskName = taskContext?.extra?.title || "cancel-task";
+
       // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
         this.cancelTaskAborted
       );
+
+      // Add task ID to the list of tasks being cancelled
+      this.addCancellingTaskInStore(notificationId);
 
       const res = await to(
         this.createClusterTask({
@@ -137,8 +146,8 @@ export default {
             task: notificationId,
           },
           extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
+            title: this.$t("common.cancel") + " " + taskName.toLowerCase(),
+            isNotificationHidden: false,
             eventId,
           },
         })
@@ -147,6 +156,8 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
+        // Remove task ID if cancellation failed
+        this.removeCancellingTaskInStore(notificationId);
         return;
       }
     },
@@ -248,6 +259,17 @@ export default {
         } else if (taskStatus === "aborted") {
           const taskEventName = this.getTaskEventName(taskContext, "aborted");
           this.$root.$emit(taskEventName, taskResult, taskContext);
+        }
+
+        // Handle successful task cancellation: delete the original task notification
+        if (
+          taskContext.action === "cancel-task" &&
+          taskStatus === "completed"
+        ) {
+          const originalTaskId = taskContext.data?.task;
+          if (originalTaskId) {
+            this.deleteNotificationInStore(originalTaskId);
+          }
         }
       }
 
@@ -466,7 +488,14 @@ export default {
           this.$root.$emit(taskEventName, payload.progress, taskContext);
         }
 
-        this.putNotification(notification);
+        // Don't store notification if task is being cancelled
+        if (this.isCancellingTask(taskId)) {
+          this.deleteNotificationInStore(taskId);
+          // Remove from cancelling list after ensuring it's deleted
+          this.removeCancellingTaskInStore(taskId);
+        } else {
+          this.putNotification(notification);
+        }
       }
     },
     getCustomCompletionText(taskExtra, taskOutput) {
@@ -487,6 +516,11 @@ export default {
       return this.$t(taskExtra.completion.i18nString, i18nParams);
     },
     shouldShowNotification(notification, taskStatus) {
+      // Check if task is being cancelled - don't show it
+      if (this.isCancellingTask(notification.id)) {
+        return false;
+      }
+
       // - show notification unless isNotificationHidden is true
       // - error notifications are shown even if isNotificationHidden is true
       // - show notification only if it already exists (to avoid showing duplicate notifications if it is new but already completed)
