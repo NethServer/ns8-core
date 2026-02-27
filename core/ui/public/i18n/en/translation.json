@@ -652,8 +652,6 @@
         "enter_backup_password": "Enter the password used to encrypt the cluster backup file",
         "import": "Import",
         "cancel_backup": "Cancel backup",
-        "canceling_backup": "Canceling {backupName}...",
-        "backup_cancelled": "Backup cancelled",
         "cancel_backup_failed": "Failed to cancel backup",
         "repository_already_used": "This destination is already used",
         "invalid_passphrase": "Invalid password",
