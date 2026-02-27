@@ -656,7 +656,7 @@
         "backup_cancelled": "Backup cancelled",
         "cancel_backup_failed": "Failed to cancel backup",
         "repository_already_used": "This destination is already used",
-        "invalid_passphrase": "Invalid password.",
+        "invalid_passphrase": "Invalid password",
         "import_failed": "Failed to import backup destinations",
         "set_cluster_backup_password_to_restore_applications": "Set the encryption password to configure backup and restore",
         "no_cluster_backup_password": "Encryption password not configured",
