@@ -39,6 +39,7 @@
             <cv-file-uploader
               :helper-text="$t('import_users.csv_upload_helper_text')"
               :multiple="false"
+              :removable="true"
               :clear-on-reselect="true"
               :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
               @change="convertFileToJson"
