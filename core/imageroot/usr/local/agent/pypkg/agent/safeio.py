@@ -16,6 +16,7 @@ def safe_open(path, mode="w", encoding=None):
     directory = os.path.dirname(path) or "."
 
     fd = None
+    f = None
     tmp_path = None
     try:
         # Unique temp file in same directory
@@ -28,6 +29,7 @@ def safe_open(path, mode="w", encoding=None):
             f = os.fdopen(fd, mode)
         else:
             f = os.fdopen(fd, mode, encoding=encoding)
+        fd = None  # fd is now owned by f
 
         try:
             yield f
@@ -36,6 +38,7 @@ def safe_open(path, mode="w", encoding=None):
             f.flush()
             os.fsync(f.fileno())
             f.close()
+            f = None  # Mark as closed
 
             os.replace(tmp_path, path)
 
@@ -47,10 +50,13 @@ def safe_open(path, mode="w", encoding=None):
                 os.close(dirfd)
 
         except Exception:
-            f.close()
+            if f is not None:
+                f.close()
             raise
 
     finally:
+        if fd is not None:
+            os.close(fd)
         if tmp_path and os.path.exists(tmp_path):
             try:
                 os.unlink(tmp_path)
