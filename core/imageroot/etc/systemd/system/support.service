@@ -24,7 +24,6 @@ ExecStart=runagent -m node podman run \
     ${SUPPORT_IMAGE}
 ExecStartPost=runagent -m node bash -c "nsenter -t $$(podman ps --format='{{.Pid}}' --filter=id=$$(< %t/support.cid)) -n -- nft -f $${AGENT_INSTALL_DIR}/etc/support/nft.conf"
 ExecStartPost=runagent -m cluster support-clusteradminctl add
-ExecStartPost=runagent -m node bash -c "printf '<5>Transmit the following session ID to the support team: %%s\n' $$(sed -n '/^VPN_PASSWORD=/ { s/^VPN_PASSWORD=// ; p }' support.env)"
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/support.cid -t 10
 ExecStopPost=runagent -m node support-sshkeyctl remove
 ExecStopPost=runagent -m cluster support-clusteradminctl remove
