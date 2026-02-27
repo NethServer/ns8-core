@@ -30,6 +30,7 @@ request = json.load(sys.stdin)
 images = request['images']
 agent_id = os.environ['AGENT_ID']
 
+env_changes = {}
 for image_url in images:
     image_name = agent.get_image_name_from_url(image_url)
 
@@ -40,7 +41,8 @@ for image_url in images:
         var_name = 'I' + var_name
 
     print(f'Add to {agent_id} environment {var_name}={image_url}', file=sys.stderr)
-    agent.set_env(var_name, image_url)
+    env_changes[var_name] = image_url
+agent.mset_env(env_changes)
 
 # Start the download
 agent.run_helper('podman-pull-missing', *images).check_returncode()

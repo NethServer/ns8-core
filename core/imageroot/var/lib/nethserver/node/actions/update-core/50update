@@ -83,11 +83,13 @@ agent.run_helper('install-coreimage', core_url,
 agent.run_helper('systemctl', 'daemon-reload')
 
 # Update node environment with image attributes
-agent.set_env('IMAGE_ID',inspect_image_id)
-agent.set_env('IMAGE_URL', inspect[0]['RepoTags'][0])
-agent.set_env('IMAGE_DIGEST', inspect_image_digest)
-agent.set_env('IMAGE_REPODIGEST', inspect_image_repodigest)
-agent.set_env('PREV_IMAGE_ID', prev_inspect[0]['Id'])
-agent.set_env('PREV_IMAGE_URL', prev_inspect[0]['RepoTags'][0])
-agent.set_env('PREV_IMAGE_DIGEST', prev_inspect[0]['Digest'])
-agent.set_env('PREV_IMAGE_REPODIGEST', prev_inspect[0]['RepoDigests'][0])
+agent.mset_env({
+    'IMAGE_ID': inspect_image_id,
+    'IMAGE_URL': inspect[0]['RepoTags'][0],
+    'IMAGE_DIGEST': inspect_image_digest,
+    'IMAGE_REPODIGEST': inspect_image_repodigest,
+    'PREV_IMAGE_ID': prev_inspect[0]['Id'],
+    'PREV_IMAGE_URL': prev_inspect[0]['RepoTags'][0],
+    'PREV_IMAGE_DIGEST': prev_inspect[0]['Digest'],
+    'PREV_IMAGE_REPODIGEST': prev_inspect[0]['RepoDigests'][0],
+})
