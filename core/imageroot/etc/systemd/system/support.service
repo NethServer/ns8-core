@@ -24,10 +24,17 @@ ExecStart=runagent -m node podman run \
     ${SUPPORT_IMAGE}
 ExecStartPost=runagent -m node bash -c "nsenter -t $$(podman ps --format='{{.Pid}}' --filter=id=$$(< %t/support.cid)) -n -- nft -f $${AGENT_INSTALL_DIR}/etc/support/nft.conf"
 ExecStartPost=runagent -m cluster support-clusteradminctl add
+ExecStartPost=/usr/bin/systemd-run \
+    --collect \
+    --unit=%N-expire.timer \
+    --on-active=24h \
+    /usr/bin/systemctl stop %n
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/support.cid -t 10
 ExecStopPost=runagent -m node support-sshkeyctl remove
 ExecStopPost=runagent -m cluster support-clusteradminctl remove
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/support.cid
+ExecStopPost=-/usr/bin/systemctl --no-block stop %N-expire.timer
 PIDFile=%t/support.pid
 Type=forking
 SyslogIdentifier=support
+RuntimeMaxSec=30d
