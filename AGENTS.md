@@ -143,3 +143,6 @@ Robot Framework tests are in `core/tests/` with numbered directories
 - **`/etc/hosts` handling**: The `set-fqdn` action comments out lines
   containing the old hostname (prefixed with `# commented by set-fqdn #`)
   and appends a new `127.0.1.1` entry for the new hostname.
+- **Branch names**: never use "/" in branch names. Use only chars allowed
+  by container registry tags, like "-" and alphanumeric chars. This is a
+  requirement for container image uploads.
