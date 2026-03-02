@@ -26,6 +26,7 @@
             :key="componentKey"
             :label="$t('backup.cluster_backup_file')"
             :multiple="false"
+            :removable="true"
             :clear-on-reselect="true"
             :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
             v-model="backupFile"

@@ -39,6 +39,7 @@
         <cv-file-uploader
           :label="$t('settings_tls_certificates.key_upload_label')"
           :multiple="false"
+          :removable="true"
           :clear-on-reselect="true"
           :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
           v-model="keyFile"
@@ -46,6 +47,7 @@
         <cv-file-uploader
           :label="$t('settings_tls_certificates.cert_upload_label')"
           :multiple="false"
+          :removable="true"
           :clear-on-reselect="true"
           :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
           v-model="certFile"
@@ -58,6 +60,7 @@
             ')'
           "
           :multiple="false"
+          :removable="true"
           :clear-on-reselect="true"
           :drop-target-label="$t('common.drag_and_drop_or_click_to_upload')"
           v-model="chainFile"

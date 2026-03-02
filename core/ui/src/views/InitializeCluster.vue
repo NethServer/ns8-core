@@ -545,7 +545,7 @@
                       accept=".json.gz.gpg,.bin,.gpg"
                       :clear-on-reselect="true"
                       :multiple="false"
-                      :removable="false"
+                      :removable="true"
                       :remove-aria-label="$t('common.remove')"
                       v-model="restore.filesUploaded"
                       @change="onFileUpload"
