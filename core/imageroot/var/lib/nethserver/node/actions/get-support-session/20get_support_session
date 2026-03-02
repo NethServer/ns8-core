@@ -9,6 +9,13 @@
 
 if [[ "$(systemctl is-active support.service)" == "active" ]]; then
     jactive=true
+    if [[ "$(systemctl is-active support-expire.timer)" == "active" ]]; then
+        # 24 hours expiry
+        expires_at=$(date --utc -d "$(systemctl show --timestamp=utc -P ActiveEnterTimestamp support-expire.timer) + 24 hours" --iso-8601=seconds)
+    else
+        # 30 days expiry
+        expires_at=$(date --utc -d "$(systemctl show --timestamp=utc -P ActiveEnterTimestamp support.service) + 30 days" --iso-8601=seconds)
+    fi
 else
     jactive=false
 fi
@@ -16,4 +23,5 @@ fi
 jq -c -n \
     --argjson active "${jactive}" \
     --arg session_id "$(grep VPN_PASSWORD support.env | cut -f 2 -d =)" \
-    '{"session_id": $session_id, "active": $active}'
+    --arg expires_at "${expires_at}" \
+    '{"session_id": $session_id, "active": $active, "expires_at": $expires_at}'
