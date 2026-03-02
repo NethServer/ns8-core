@@ -107,6 +107,13 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				otpPassClaim = true // claim that 2FA is enabled and used
 			}
 
+			// check source IP against per-user allowed networks
+			allowedNetworks := methods.GetUserNetworks(username)
+			if !methods.CheckIPAllowed(c.ClientIP(), allowedNetworks) {
+				utils.LogError(errors.New("[AUTH] login-denied (IP not allowed) " + generateLogMessage(c, username, otpNeed)))
+				return nil, jwt.ErrFailedAuthentication
+			}
+
 			// Login is successful. Middleware returns a JWT.
 			// store login action
 			auditData := models.Audit{

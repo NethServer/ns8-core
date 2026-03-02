@@ -27,6 +27,7 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -469,4 +470,41 @@ func getUserSecret(username string) string {
 
 func Needs2faCheck(username string) bool {
 	return getUserSecret(username) != ""
+}
+
+func GetUserNetworks(username string) string {
+	redisConnection := redis.Instance()
+	result, err := redisConnection.HGet(ctx, "user/"+username, "networks").Result()
+	if err != nil {
+		return ""
+	}
+	return result
+}
+
+func CheckIPAllowed(clientIP string, allowedNetworks string) bool {
+	if allowedNetworks == "" {
+		return true
+	}
+	ip := net.ParseIP(clientIP)
+	if ip == nil {
+		return false
+	}
+	for _, entry := range strings.Split(allowedNetworks, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		// treat bare IPs (no prefix length) as /32
+		if !strings.Contains(entry, "/") {
+			entry = entry + "/32"
+		}
+		_, network, err := net.ParseCIDR(entry)
+		if err != nil {
+			continue
+		}
+		if network.Contains(ip) {
+			return true
+		}
+	}
+	return false
 }
