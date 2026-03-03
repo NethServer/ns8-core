@@ -53,6 +53,16 @@
       <cv-row>
         <cv-column>
           <cv-tile light>
+            <div v-if="offlineTraefikInstances.length">
+              <NsInlineNotification
+                v-for="instance in offlineTraefikInstances"
+                :key="instance.id"
+                kind="error"
+                :title="getOfflineInstanceTitle(instance)"
+                :description="getOfflineInstanceDescription(instance)"
+                :showCloseButton="false"
+              />
+            </div>
             <div class="toolbar gap-2 flex-wrap" v-if="certificates.length">
               <!-- request certificate -->
               <NsButton
@@ -166,9 +176,7 @@
                   "
                   :isLoading="loadingCertificates"
                   :skeletonRows="5"
-                  :isErrorShown="
-                    !!error.listInstalledModules || !!error.listCertificates
-                  "
+                  :isErrorShown="!!error.listInstalledModules"
                   :errorTitle="currentErrorAction"
                   :errorDescription="currentErrorDescription"
                   :itemsPerPageLabel="$t('pagination.items_per_page')"
@@ -613,6 +621,7 @@ export default {
         listCertificates: "",
         deleteCertificate: "",
       },
+      offlineTraefikInstances: [],
       uploadTlsCertificateState: new UploadTlsCertificateState(),
     };
   },
@@ -896,6 +905,8 @@ export default {
       this.listCertificates();
     },
     async listCertificates() {
+      this.offlineTraefikInstances = [];
+
       for (const traefikInstance of this.traefikInstances) {
         const taskAction = "list-certificates";
         const eventId = this.getUuid();
@@ -905,7 +916,13 @@ export default {
 
         this.$root.$once(
           `${taskAction}-aborted-${eventId}`,
-          this.listCertificatesAborted
+          (taskResult, taskContext) => {
+            this.listCertificatesAborted(
+              taskResult,
+              taskContext,
+              traefikInstance
+            );
+          }
         );
 
         this.$root.$once(
@@ -930,20 +947,28 @@ export default {
         const err = res[0];
 
         if (err) {
-          console.error(`error creating task ${taskAction}`, err);
-          const errMessage = this.getErrorMessage(err);
-          this.error.listCertificates = errMessage;
-          this.currentErrorAction = this.$t("action." + taskAction);
-          this.currentErrorDescription = errMessage;
+          // Add to offline instances so the error notification is displayed
+          if (
+            traefikInstance &&
+            !this.offlineTraefikInstances.find(
+              (instance) => instance.id === traefikInstance.id
+            )
+          ) {
+            this.offlineTraefikInstances.push(traefikInstance);
+          }
           this.loading.listCertificatesNum--;
         }
       }
     },
-    listCertificatesAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.listCertificates = this.$t("error.generic_error");
-      this.currentErrorAction = this.$t("action." + taskContext.action);
-      this.currentErrorDescription = this.$t("error.generic_error");
+    listCertificatesAborted(taskResult, taskContext, traefikInstance) {
+      if (
+        traefikInstance &&
+        !this.offlineTraefikInstances.find(
+          (instance) => instance.id === traefikInstance.id
+        )
+      ) {
+        this.offlineTraefikInstances.push(traefikInstance);
+      }
       this.loading.listCertificatesNum--;
     },
     listCertificatesCompleted(taskContext, taskResult) {
@@ -1031,6 +1056,29 @@ export default {
         default:
           return "gray";
       }
+    },
+    getOfflineInstanceTitle(instance) {
+      let nodeUiNameDisplay = "";
+      if (instance.node_ui_name && instance.node_ui_name.trim()) {
+        nodeUiNameDisplay = ` (${instance.node_ui_name})`;
+      }
+
+      return this.$t("settings_tls_certificates.node_is_offline", {
+        nodeId: instance.node,
+        nodeUiName: nodeUiNameDisplay,
+      });
+    },
+    getOfflineInstanceDescription(instance) {
+      let instanceLabel = instance.id;
+
+      // Add traefik instance ui_name in parentheses if it exists and is not empty
+      if (instance.ui_name && instance.ui_name.trim()) {
+        instanceLabel = `${instance.id} (${instance.ui_name})`;
+      }
+
+      return this.$t("settings_tls_certificates.certificates_not_displayed", {
+        instanceId: instanceLabel,
+      });
     },
     clearFilters() {
       this.q.selectedNodeId = "any";
