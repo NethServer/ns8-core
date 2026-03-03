@@ -16,3 +16,27 @@ export async function loadLanguage(lang) {
     }
   }
 }
+
+export async function getDateFnsLocale() {
+  const lang = navigator.language;
+  try {
+    const mod = await import(
+      /* webpackChunkName: "date-fns-locale-[request]" */
+      `date-fns/locale/${lang}`
+    );
+    return mod.default || mod;
+  } catch {
+    // try base language (e.g. "it" from "it-IT")
+    const baseLang = lang.split("-")[0];
+    try {
+      const mod = await import(
+        /* webpackChunkName: "date-fns-locale-[request]" */
+        `date-fns/locale/${baseLang}`
+      );
+      return mod.default || mod;
+    } catch {
+      const mod = await import("date-fns/locale/en-US");
+      return mod.default || mod;
+    }
+  }
+}

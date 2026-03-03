@@ -1615,7 +1615,7 @@
         "remove_cluster_subscription_title": "Rimuovi la subscription del cluster",
         "no_expiration": "Senza scadenza",
         "paste_session_id_to_support_team": "Incolla l'ID di sessione al team di supporto",
-        "remote_support_in_progress": "Sessione di supporto remoto in corso",
+        "remote_support_in_progress": "La sessione di supporto remoto terminerà automaticamente tra {time}. Puoi terminarla manualmente in qualsiasi momento.",
         "remote_support": "Supporto remoto",
         "plan_name": "Piano",
         "request_subscription": "Registra",

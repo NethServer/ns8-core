@@ -295,7 +295,9 @@
               <div class="mg-top-sm icon-and-text mg-bottom-lg">
                 <NsSvg :svg="InformationFilled16" class="icon ns-info" />
                 <span>{{
-                  $t("settings_subscription.remote_support_in_progress")
+                  $t("settings_subscription.remote_support_in_progress", {
+                    time: formatExpiryDate(sessionExpireDate),
+                  })
                 }}</span>
               </div>
               <NsButton
@@ -346,6 +348,8 @@ import {
   PageTitleService,
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
+import { intervalToDuration, parseISO, formatDuration } from "date-fns";
+import { getDateFnsLocale } from "@/i18n";
 import { mapGetters } from "vuex";
 
 import NotificationService from "@/mixins/notification";
@@ -389,6 +393,8 @@ export default {
       session_id: "",
       termsUrl: "",
       agreeTerms: false,
+      sessionExpireDate: "",
+      dateFnsLocale: null,
       loading: {
         getSubscription: false,
         setSubscription: false,
@@ -412,6 +418,11 @@ export default {
   created() {
     this.getSubscription();
     this.getSupportSession();
+
+    // load date-fns locale based on user language
+    getDateFnsLocale().then((locale) => {
+      this.dateFnsLocale = locale;
+    });
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -424,6 +435,27 @@ export default {
     next();
   },
   methods: {
+    formatExpiryDate(dateString) {
+      const parsedDate = parseISO(dateString);
+      const duration = intervalToDuration({
+        start: new Date(),
+        end: parsedDate,
+      });
+
+      const dateTimeStr = new Intl.DateTimeFormat(navigator.language, {
+        hour: "2-digit",
+        minute: "2-digit",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }).format(parsedDate);
+      const durationStr = formatDuration(duration, {
+        format: ["days", "hours"],
+        delimiter: ", ",
+        locale: this.dateFnsLocale,
+      });
+      return `${durationStr} (${dateTimeStr})`;
+    },
     showRemoveSubcriptionModal() {
       this.isShownRemoveSubcription = true;
     },
@@ -693,6 +725,7 @@ export default {
       const output = taskResult.output;
       this.session_id = output.session_id;
       this.active = output.active;
+      this.sessionExpireDate = output.expires_at;
     },
 
     async startSessionSupport() {
