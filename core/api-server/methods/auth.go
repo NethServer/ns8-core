@@ -385,6 +385,17 @@ func BasicAuthModule(c *gin.Context) {
 		return
 	}
 
+	// check source IP against per-user allowed networks
+	if !CheckIPAllowed(c.ClientIP(), GetUserNetworks(username)) {
+		utils.LogError(errors.New("[BASIC AUTH] request denied (IP not allowed) for user " + username))
+		c.JSON(http.StatusForbidden, structs.Map(response.StatusForbidden{
+			Code:    403,
+			Message: "basic auth failed. IP not allowed",
+			Data:    "",
+		}))
+		return
+	}
+
 	// check authorizations
 	pathGet := "module/" + c.Param("module_id")
 	pathScan := "module/" + c.Param("module_id") + "/roles/"
