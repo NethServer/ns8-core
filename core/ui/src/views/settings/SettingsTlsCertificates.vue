@@ -922,6 +922,7 @@ export default {
     async listCertificates() {
       this.offlineTraefikInstances = [];
       this.listCertificatesErrors = [];
+      this.loading.listCertificatesNum = 0;
 
       for (const traefikInstance of this.traefikInstances) {
         const taskAction = "list-certificates";
@@ -976,6 +977,7 @@ export default {
           ) {
             this.offlineTraefikInstances.push(traefikInstance);
           }
+          // force error notification to be displayed
           this.loading.listCertificatesNum--;
         }
       }
