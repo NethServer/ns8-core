@@ -63,6 +63,16 @@
                 :showCloseButton="false"
               />
             </div>
+            <div v-if="listCertificatesErrors.length">
+              <NsInlineNotification
+                v-for="(error, index) in listCertificatesErrors"
+                :key="index"
+                kind="error"
+                :title="error.title"
+                :description="error.description"
+                :showCloseButton="false"
+              />
+            </div>
             <div class="toolbar gap-2 flex-wrap" v-if="certificates.length">
               <!-- request certificate -->
               <NsButton
@@ -621,6 +631,7 @@ export default {
         listCertificates: "",
         deleteCertificate: "",
       },
+      listCertificatesErrors: [],
       offlineTraefikInstances: [],
       uploadTlsCertificateState: new UploadTlsCertificateState(),
     };
@@ -906,6 +917,7 @@ export default {
     },
     async listCertificates() {
       this.offlineTraefikInstances = [];
+      this.listCertificatesErrors = [];
 
       for (const traefikInstance of this.traefikInstances) {
         const taskAction = "list-certificates";
@@ -947,6 +959,10 @@ export default {
         const err = res[0];
 
         if (err) {
+          console.error(
+            `error creating task ${taskAction} for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
+            err
+          );
           // Add to offline instances so the error notification is displayed
           if (
             traefikInstance &&
@@ -961,14 +977,27 @@ export default {
       }
     },
     listCertificatesAborted(taskResult, taskContext, traefikInstance) {
-      if (
-        traefikInstance &&
-        !this.offlineTraefikInstances.find(
-          (instance) => instance.id === traefikInstance.id
-        )
-      ) {
-        this.offlineTraefikInstances.push(traefikInstance);
+      console.error(
+        `${taskContext.action} aborted for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
+        taskResult
+      );
+      // Build module part: module_name(module_id) or module_id
+      let modulePart = traefikInstance.id;
+      if (traefikInstance.ui_name && traefikInstance.ui_name.trim()) {
+        modulePart = `${traefikInstance.ui_name}(${traefikInstance.id})`;
       }
+      
+      // Build node part: node_ui_name (node_id) or (node_id)
+      let nodePart = `(${traefikInstance.node})`;
+      if (traefikInstance.node_ui_name && traefikInstance.node_ui_name.trim()) {
+        nodePart = `${traefikInstance.node_ui_name} (${this.$t("common.node")} ${traefikInstance.node})`;
+      }
+      
+      // Add error to array
+      this.listCertificatesErrors.push({
+        title: this.$t("action." + taskContext.action),
+        description: `${this.$t("error.generic_error")} (${modulePart} - ${nodePart})`
+      });
       this.loading.listCertificatesNum--;
     },
     listCertificatesCompleted(taskContext, taskResult) {
@@ -1073,7 +1102,7 @@ export default {
 
       // Add traefik instance ui_name in parentheses if it exists and is not empty
       if (instance.ui_name && instance.ui_name.trim()) {
-        instanceLabel = `${instance.id} (${instance.ui_name})`;
+        instanceLabel = `${instance.ui_name} (${instance.id})`;
       }
 
       return this.$t("settings_tls_certificates.certificates_not_displayed", {
