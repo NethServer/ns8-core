@@ -60,7 +60,7 @@
                 kind="error"
                 :title="
                   $t('settings_tls_certificates.node_is_offline', {
-                    node: getOfflineInstanceTitle(instance),
+                    node: getNodeLabel(instance),
                   })
                 "
                 :description="getOfflineInstanceDescription(instance)"
@@ -985,26 +985,15 @@ export default {
         `${taskContext.action} aborted for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
         taskResult
       );
-      // Build module part: module_name(module_id) or module_id
-      let modulePart = traefikInstance.id;
-      if (traefikInstance.ui_name && traefikInstance.ui_name.trim()) {
-        modulePart = `${traefikInstance.ui_name}(${traefikInstance.id})`;
-      }
-
-      // Build node part: node_ui_name (node_id) or (node_id)
-      let nodePart = `${this.$t("common.node")} ${traefikInstance.node}`;
-      if (traefikInstance.node_ui_name && traefikInstance.node_ui_name.trim()) {
-        nodePart = `${traefikInstance.node_ui_name} (${this.$t(
-          "common.node"
-        )} ${traefikInstance.node})`;
-      }
 
       // Add error to array
       this.listCertificatesErrors.push({
         title: this.$t("action." + taskContext.action),
         description: `${this.$t(
           "error.generic_error"
-        )} (${modulePart} - ${nodePart})`,
+        )} (${this.getTraefikInstanceLabel(
+          traefikInstance
+        )} - ${this.getNodeLabel(traefikInstance)})`,
       });
       this.loading.listCertificatesNum--;
     },
@@ -1094,7 +1083,7 @@ export default {
           return "gray";
       }
     },
-    getOfflineInstanceTitle(instance) {
+    getNodeLabel(instance) {
       const nodeLabel = instance.node_ui_name
         ? instance.node_ui_name +
           " (" +
@@ -1105,16 +1094,16 @@ export default {
         : this.$t("common.node") + " " + instance.node;
       return nodeLabel;
     },
-    getOfflineInstanceDescription(instance) {
-      let instanceLabel = instance.id;
-
-      // Add traefik instance ui_name in parentheses if it exists and is not empty
+    getTraefikInstanceLabel(instance) {
+      let label = instance.id;
       if (instance.ui_name && instance.ui_name.trim()) {
-        instanceLabel = `${instance.ui_name} (${instance.id})`;
+        label = `${instance.ui_name}(${instance.id})`;
       }
-
+      return label;
+    },
+    getOfflineInstanceDescription(instance) {
       return this.$t("settings_tls_certificates.certificates_not_displayed", {
-        instanceId: instanceLabel,
+        instanceId: this.getTraefikInstanceLabel(instance),
       });
     },
     clearFilters() {
