@@ -472,7 +472,27 @@ func Needs2faCheck(username string) bool {
 	return getUserSecret(username) != ""
 }
 
+// getClusterNetworks returns the loopback addresses and the cluster VPN
+// network (stored in the Redis key "cluster/network") as a comma-separated
+// allowlist string. It is used to restrict agent credentials to intra-cluster
+// traffic only.
+func getClusterNetworks() string {
+	redisConnection := redis.Instance()
+	vpnNetwork, err := redisConnection.Get(ctx, "cluster/network").Result()
+	if err != nil || vpnNetwork == "" {
+		return "127.0.0.1,::1"
+	}
+	return "127.0.0.1,::1," + vpnNetwork
+}
+
 func GetUserNetworks(username string) string {
+	// Agent credentials (cluster, node/*, module/*) must only be usable from
+	// within the cluster: restrict them to loopback + VPN network regardless of
+	// any per-user networks setting stored in Redis.
+	if username == "cluster" || strings.HasPrefix(username, "node/") || strings.HasPrefix(username, "module/") {
+		return getClusterNetworks()
+	}
+
 	redisConnection := redis.Instance()
 	result, err := redisConnection.HGet(ctx, "user/"+username, "networks").Result()
 	if err != nil {
