@@ -23,10 +23,11 @@
 package models
 
 type UserAuthorizations struct {
-	Username string   `json:"username" structs:"username"`
-	Role     string   `json:"role" structs:"role"`
-	Actions  []string `json:"actions" structs:"actions"`
-	OtpPass  bool	  `json:"otppass" structs:"otppass"`
+	Username        string   `json:"username" structs:"username"`
+	Role            string   `json:"role" structs:"role"`
+	Actions         []string `json:"actions" structs:"actions"`
+	OtpPass         bool     `json:"otppass" structs:"otppass"`
+	AllowedNetworks string   `json:"allowed_networks" structs:"allowed_networks"`
 }
 
 type OTPJson struct {

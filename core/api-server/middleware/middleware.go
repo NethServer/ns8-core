@@ -161,30 +161,36 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 			// create user object
 			user := &models.UserAuthorizations{
-				Username: claims[identityKey].(string),
-				Role:     userAuthorizations.Role,
-				Actions:  userAuthorizations.Actions,
+				Username:        claims[identityKey].(string),
+				Role:            userAuthorizations.Role,
+				Actions:         userAuthorizations.Actions,
+				AllowedNetworks: methods.GetUserNetworks(claims[identityKey].(string)),
 			}
 
 			// return user
 			return user
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			// bypass auth for GET requests: // TODO
-			if c.Request.Method == "GET" {
-				return true
-			}
-
-			// bypass for 2FA apis
-			if c.Request.Method == "POST" && c.Request.RequestURI == "/api/2FA" {
-				return true
-			}
-			if c.Request.Method == "DELETE" && c.Request.RequestURI == "/api/2FA" {
-				return true
-			}
-
 			// extract data payload and check authorizations
 			if v, ok := data.(*models.UserAuthorizations); ok {
+				// enforce IP allowlist on every request
+				if !methods.CheckIPAllowed(c.ClientIP(), v.AllowedNetworks) {
+					utils.LogError(errors.New("[AUTH] request denied (IP not allowed) for user " + v.Username))
+					return false
+				}
+
+				// bypass auth for GET requests: // TODO
+				if c.Request.Method == "GET" {
+					return true
+				}
+
+				// bypass for 2FA apis
+				if c.Request.Method == "POST" && c.Request.RequestURI == "/api/2FA" {
+					return true
+				}
+				if c.Request.Method == "DELETE" && c.Request.RequestURI == "/api/2FA" {
+					return true
+				}
 				authorizedActions := v.Actions
 
 				// extract task obj
