@@ -58,7 +58,11 @@
                 v-for="instance in offlineTraefikInstances"
                 :key="instance.id"
                 kind="error"
-                :title="getOfflineInstanceTitle(instance)"
+                :title="
+                  $t('settings_tls_certificates.node_is_offline', {
+                    node: getOfflineInstanceTitle(instance),
+                  })
+                "
                 :description="getOfflineInstanceDescription(instance)"
                 :showCloseButton="false"
               />
@@ -986,17 +990,21 @@ export default {
       if (traefikInstance.ui_name && traefikInstance.ui_name.trim()) {
         modulePart = `${traefikInstance.ui_name}(${traefikInstance.id})`;
       }
-      
+
       // Build node part: node_ui_name (node_id) or (node_id)
       let nodePart = `${this.$t("common.node")} ${traefikInstance.node}`;
       if (traefikInstance.node_ui_name && traefikInstance.node_ui_name.trim()) {
-        nodePart = `${traefikInstance.node_ui_name} (${this.$t("common.node")} ${traefikInstance.node})`;
+        nodePart = `${traefikInstance.node_ui_name} (${this.$t(
+          "common.node"
+        )} ${traefikInstance.node})`;
       }
-      
+
       // Add error to array
       this.listCertificatesErrors.push({
         title: this.$t("action." + taskContext.action),
-        description: `${this.$t("error.generic_error")} (${modulePart} - ${nodePart})`
+        description: `${this.$t(
+          "error.generic_error"
+        )} (${modulePart} - ${nodePart})`,
       });
       this.loading.listCertificatesNum--;
     },
@@ -1087,15 +1095,15 @@ export default {
       }
     },
     getOfflineInstanceTitle(instance) {
-      let nodeUiNameDisplay = "";
-      if (instance.node_ui_name && instance.node_ui_name.trim()) {
-        nodeUiNameDisplay = ` (${instance.node_ui_name})`;
-      }
-
-      return this.$t("settings_tls_certificates.node_is_offline", {
-        nodeId: instance.node,
-        nodeUiName: nodeUiNameDisplay,
-      });
+      const nodeLabel = instance.node_ui_name
+        ? instance.node_ui_name +
+          " (" +
+          this.$t("common.node") +
+          " " +
+          instance.node +
+          ")"
+        : this.$t("common.node") + " " + instance.node;
+      return nodeLabel;
     },
     getOfflineInstanceDescription(instance) {
       let instanceLabel = instance.id;
