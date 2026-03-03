@@ -6,7 +6,8 @@
     "examples": [
           {
             "display_name": "Admin",
-            "email": ""
+            "email": "",
+            "allowed_networks": []
           }
     ],
     "type": "object",
@@ -18,6 +19,13 @@
         "email": {
             "description": "Email of the user",
             "type": "string"
+        },
+        "allowed_networks": {
+            "description": "Array of IPv4/IPv6 addresses or CIDR networks the user is allowed to connect from. An empty array means no restriction.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
         }
     },
     "required": [

@@ -505,7 +505,7 @@ func GetUserNetworks(username string) string {
 	}
 
 	redisConnection := redis.Instance()
-	result, err := redisConnection.HGet(ctx, "user/"+username, "networks").Result()
+	result, err := redisConnection.HGet(ctx, "user/"+username, "allowed_networks").Result()
 	if err != nil {
 		return ""
 	}

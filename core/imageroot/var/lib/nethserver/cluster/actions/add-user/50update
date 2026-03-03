@@ -36,9 +36,11 @@ if rdb.execute_command('ACL', 'GETUSER', user) != None:
     json.dump([{'field':'user','parameter':'user','value':user,'error':'user_already_exists'}], fp=sys.stdout)
     sys.exit(2)
 
+rdb.delete(f'user/{user}', f'roles/{user}')
 agent.assert_exp(rdb.hset(f'user/{user}', mapping={
     'display_name': request['set'].get('display_name', user),
     'email': request['set'].get('email', ''),
+    'allowed_networks': ','.join(request['set'].get('allowed_networks', [])),
     # 2fa is always disabled when user is created. To enable it, the user
     # must login and run the UI procedure from their session.
 }) >= 0)

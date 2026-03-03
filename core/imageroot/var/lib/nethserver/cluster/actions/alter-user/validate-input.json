@@ -8,7 +8,8 @@
             "user": "admin",
             "set": {
                 "display_name": "The Administrator",
-                "password": "New Password"
+                "password": "New Password",
+                "allowed_networks": ["192.168.1.0/24", "10.0.0.1"]
             },
             "grant": [],
             "revoke": []

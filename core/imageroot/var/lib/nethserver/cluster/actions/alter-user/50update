@@ -74,6 +74,10 @@ if 'set' in request:
         # forcibly disable 2fa
         rdb.hset(f'user/{user}', '2fa', "")
 
+    if 'allowed_networks' in request['set']:
+        # update the IP/network allowlist (empty list removes all restrictions)
+        rdb.hset(f'user/{user}', 'allowed_networks', ','.join(request['set']['allowed_networks']))
+
 revoke_list = request.get('revoke', []) # parameter "revoke" is optional
 for roledef in revoke_list: # !!! revoke BEFORE grant
     cluster.grants.alter_user(rdb, user, True, roledef['role'], roledef['on'])

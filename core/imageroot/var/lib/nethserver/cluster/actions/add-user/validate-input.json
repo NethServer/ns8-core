@@ -8,7 +8,8 @@
             "user": "admin",
             "password_hash": "73cb3858a687a8494ca3323053016282f3dad39d42cf62ca4e79dda2aac7d9ac",
             "set": {
-                "display_name": "The Administrator"
+                "display_name": "The Administrator",
+                "allowed_networks": ["192.168.1.0/24"]
             },
             "grant": [
                 {
