@@ -76,6 +76,12 @@ func main() {
 		gin.Recovery(),
 	)
 
+	// Trust only the local Traefik instance as a reverse proxy.
+	// X-Forwarded-For is honoured only when the TCP connection originates
+	// from loopback; direct connections (e.g. cluster agents on the VPN)
+	// use the TCP peer address, preventing header-based IP spoofing.
+	router.SetTrustedProxies([]string{"127.0.0.1", "::1"})
+
 	// add default compression
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
