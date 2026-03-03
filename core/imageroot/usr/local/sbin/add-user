@@ -30,6 +30,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('user')
 parser.add_argument('--role', required=True)
 parser.add_argument('--password', default=False, help="If not given, the password is read from stdin")
+parser.add_argument('--allowed-networks', dest='allowed_networks', metavar='CIDR[,CIDR…]',
+    help="Restrict logins to these source IP addresses or CIDR ranges (comma-separated)")
 parser.add_argument('--verbose', help='show add-user action stderr on success', action='store_true')
 
 args = parser.parse_args()
@@ -46,7 +48,7 @@ result = agent.tasks.run(
     data={
         "user": args.user,
         "password_hash": hashlib.sha256(password.encode()).hexdigest(),
-        "set": {},
+        "set": {"allowed_networks": [n.strip() for n in args.allowed_networks.split(',') if n.strip()]} if args.allowed_networks else {},
         "grant": [{"role":args.role,"on":"*"}],
     },
     extra={
