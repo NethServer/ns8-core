@@ -988,7 +988,7 @@ export default {
       }
       
       // Build node part: node_ui_name (node_id) or (node_id)
-      let nodePart = `(${traefikInstance.node})`;
+      let nodePart = `${this.$t("common.node")} ${traefikInstance.node}`;
       if (traefikInstance.node_ui_name && traefikInstance.node_ui_name.trim()) {
         nodePart = `${traefikInstance.node_ui_name} (${this.$t("common.node")} ${traefikInstance.node})`;
       }
