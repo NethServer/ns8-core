@@ -1,41 +1,43 @@
 #!/bin/bash
 
-LEADER_NODE=$1
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e -a
+
 SSH_KEYFILE=${SSH_KEYFILE:-$HOME/.ssh/id_rsa}
-COREMODULES=$(echo ${COREMODULES} | tr ' ' ',')
+LEADER_NODE="${1:?missing LEADER_NODE argument}"
+shift
 
-ssh_key="$(cat $SSH_KEYFILE)"
-
-wget -nv -P /tmp/ https://raw.githubusercontent.com/microsoft/playwright/master/utils/docker/seccomp_profile.json
+ssh_key="$(< $SSH_KEYFILE)"
+venvroot=/usr/local/venv
 
 podman run -i \
-    -v ..:/home/pwuser/ns8-scratchpad:z \
-    --security-opt seccomp=/tmp/seccomp_profile.json \
-    --ipc=host \
-    --volume=site-packages:/home/pwuser/.local/lib/python3.8/site-packages:Z \
-    --name rf-core-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:17.5.2 \
-    bash -l -s <<EOF
-    set -e
-    echo "$ssh_key" > /home/pwuser/ns8-key
-    set -x
-    pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
-    mkdir ~/outputs
-    cd /home/pwuser/ns8-scratchpad/core/
-    robot -v NODE_ADDR:${LEADER_NODE} \
-        -v SSH_KEYFILE:/home/pwuser/ns8-key \
-	-v COREMODULES:${COREMODULES} \
-	--name core \
-	--skiponfailure unstable \
-    --exclude frontend \
-	--console dotted \
-	-d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
+    --network=host \
+    --volume=.:/srv/source:z \
+    --volume=rftest-cache:${venvroot}:z \
+    --replace --name=rftest \
+    --env=ssh_key \
+    --env=venvroot \
+    --env=LEADER_NODE \
+    --env=COREMODULES \
+    docker.io/python:3.11-alpine \
+    ash -l -s -- "${@}" <<'EOF'
+set -e
+echo "$ssh_key" > /tmp/idssh
+if [ ! -x ${venvroot}/bin/robot ] ; then
+    python3 -mvenv ${venvroot} --upgrade
+    ${venvroot}/bin/pip3 install -q -r /srv/source/tests/pythonreq.txt
+fi
+cd /srv/source
+mkdir -vp tests/outputs/
+exec ${venvroot}/bin/robot \
+    -v "NODE_ADDR:${LEADER_NODE}" \
+    ${COREMODULES:+-v "COREMODULES:${COREMODULES}"} \
+    -v SSH_KEYFILE:/tmp/idssh \
+    --name core \
+    --skiponfailure unstable \
+    -d tests/outputs "${@}" tests/
 EOF
-
-tests_res=$?
-
-podman cp rf-core-runner:/home/pwuser/outputs tests/
-podman stop rf-core-runner
-podman rm rf-core-runner
-rm -f /tmp/seccomp_profile.json
-
-exit ${tests_res}

@@ -71,7 +71,7 @@ Get server url
     [Arguments]    ${mid}
     ${out} =    Execute Command    runagent redis-exec HGETALL module/${mid}/srv/tcp/ldap
     &{srv} =    Evaluate    ${out}
-    [Return]    ldaps://${srv.host}:${srv.port}
+    RETURN    ldaps://${srv.host}:${srv.port}
 
 RootDSE is correct
     [Arguments]    ${hurl}

@@ -74,7 +74,7 @@ Get server url
     [Arguments]    ${mid}
     ${out} =    Execute Command    runagent redis-exec HGETALL module/${mid}/srv/tcp/ldap
     &{srv} =    Evaluate    ${out}
-    [Return]    ldap://${srv.host}:${srv.port}
+    RETURN    ldap://${srv.host}:${srv.port}
 
 
 Start the client tool container
