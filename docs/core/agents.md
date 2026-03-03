@@ -122,7 +122,12 @@ requires `cluster` privileges to work.
 
 As said above, only the `cluster` agent and `api-server` are allowed to
 LPUSH new tasks in Redis. Module agents must submit tasks for other agents
-as HTTP requests, through the `api-server`. 
+as HTTP requests, through the `api-server`.
+
+> **Note:** the API server only accepts agent credentials (`cluster`,
+> `node/*`, `module/*`) from the loopback or cluster VPN network.
+> Therefore `agent.tasks` works correctly only when called from an action
+> step running on a cluster node (not from an external host).
 
 Basically this can be done in two steps:
 
