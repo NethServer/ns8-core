@@ -33,6 +33,18 @@ except agent.tasks.exceptions.TaskSubmissionCheckFailed:
 def action_add():
     global hsubscription, support_env
 
+    set_args = {}
+    if hsubscription['support_user'] == 'nethsupport':
+        # Restrict api-server access from Nethesis official networks and
+        # loopback interface:
+        set_args = { "allowed_networks":[
+            "127.0.0.1",
+            "::1",
+            "159.65.203.113", # sos.nethesis.it
+            "2.119.67.168/29", # nethesis network 1
+            "80.17.99.72/29", # nethesis network 2
+        ]}
+
     # Create a new cluster-admin user account
     password_hash = hashlib.sha256(support_env['VPN_PASSWORD'].encode()).hexdigest()
     add_user_result = agent.tasks.run(
@@ -41,7 +53,7 @@ def action_add():
         data={
             'user': hsubscription['support_user'],
             'password_hash': password_hash,
-            'set': {},
+            'set': set_args,
             'grant': [{"role": "owner", "on": "*" }],
         },
         extra={
@@ -72,9 +84,7 @@ rdb = agent.redis_connect()
 hsubscription = rdb.hgetall("cluster/subscription")
 support_env = agent.read_envfile("/var/lib/nethserver/node/state/support.env")
 
-
-have_support_user = len(list(filter(lambda e: e['user'] == hsubscription['support_user'], list_users_result['output']))) > 0
-
+have_support_user = any(filter(lambda e: e['user'] == hsubscription['support_user'], list_users_result['output']))
 if args.action == 'add':
     if have_support_user:
         action_remove() # ensure the user is always created from scratch
