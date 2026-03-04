@@ -26,7 +26,6 @@ import (
 	"path/filepath"
 	"time"
 	"fmt"
-	"strings"
 
 	"github.com/pkg/errors"
 
@@ -272,7 +271,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 }
 
 func generateLogMessage(c *gin.Context, username string, otpNeed bool) string {
-	remoteAddress := c.Request.RemoteAddr
-	ipSource := strings.Split(remoteAddress, ":")[0]
+	ipSource := c.ClientIP()
 	return fmt.Sprintf("user=%s source=%s 2fa=%t", username, ipSource, otpNeed)
 }
