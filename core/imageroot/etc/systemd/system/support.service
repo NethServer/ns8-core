@@ -37,4 +37,4 @@ ExecStopPost=-/usr/bin/systemctl --no-block stop %N-expire.timer
 PIDFile=%t/support.pid
 Type=forking
 SyslogIdentifier=support
-RuntimeMaxSec=30d
+RuntimeMaxSec=7d

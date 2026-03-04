@@ -13,8 +13,8 @@ if [[ "$(systemctl is-active support.service)" == "active" ]]; then
         # 24 hours expiry
         expires_at=$(date --utc -d "$(systemctl show --timestamp=utc -P ActiveEnterTimestamp support-expire.timer) + 24 hours" --iso-8601=seconds)
     else
-        # 30 days expiry
-        expires_at=$(date --utc -d "$(systemctl show --timestamp=utc -P ActiveEnterTimestamp support.service) + 30 days" --iso-8601=seconds)
+        # 7 days expiry
+        expires_at=$(date --utc -d "$(systemctl show --timestamp=utc -P ActiveEnterTimestamp support.service) + 7 days" --iso-8601=seconds)
     fi
 else
     jactive=false
