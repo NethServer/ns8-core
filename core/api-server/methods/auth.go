@@ -525,9 +525,19 @@ func CheckIPAllowed(clientIP string, allowedNetworks string) bool {
 		if entry == "" {
 			continue
 		}
-		// treat bare IPs (no prefix length) as /32
+		// Treat bare IPs (no prefix length) as single-host networks:
+		// use /32 for IPv4 and /128 for IPv6.
 		if !strings.Contains(entry, "/") {
-			entry = entry + "/32"
+			ipEntry := net.ParseIP(entry)
+			if ipEntry == nil {
+				// Invalid IP entry, skip it
+				continue
+			}
+			if ipEntry.To4() != nil {
+				entry = entry + "/32"
+			} else {
+				entry = entry + "/128"
+			}
 		}
 		_, network, err := net.ParseCIDR(entry)
 		if err != nil {
