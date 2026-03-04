@@ -968,16 +968,31 @@ export default {
             `error creating task ${taskAction} for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
             err
           );
-          // Add to offline instances so the error notification is displayed
-          if (
-            traefikInstance &&
-            !this.offlineTraefikInstances.find(
-              (instance) => instance.id === traefikInstance.id
-            )
-          ) {
-            this.offlineTraefikInstances.push(traefikInstance);
+          // Clean up orphaned event listeners since the task was never created
+          this.$root.$off(`${taskAction}-aborted-${eventId}`);
+          this.$root.$off(`${taskAction}-completed-${eventId}`);
+
+          if (err.response && err.response.status === 404) {
+            // 404 means the module API is unreachable: node is offline
+            if (
+              traefikInstance &&
+              !this.offlineTraefikInstances.find(
+                (instance) => instance.id === traefikInstance.id
+              )
+            ) {
+              this.offlineTraefikInstances.push(traefikInstance);
+            }
+          } else {
+            // Unexpected error: display a generic inline error notification
+            this.listCertificatesErrors.push({
+              title: this.$t("action." + taskAction),
+              description: `${this.$t(
+                "error.generic_error"
+              )} (${this.getTraefikInstanceLabel(
+                traefikInstance
+              )} - ${this.getNodeLabel(traefikInstance)})`,
+            });
           }
-          // force error notification to be displayed
           this.loading.listCertificatesNum--;
         }
       }
