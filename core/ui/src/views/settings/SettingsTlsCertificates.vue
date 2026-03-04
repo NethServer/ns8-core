@@ -924,9 +924,7 @@ export default {
       this.listCertificatesErrors = [];
       this.loading.listCertificatesNum = 0;
 
-      // Build all task creation promises in parallel so that a slow or
-      // hanging HTTP request on an offline node does not block the others.
-      const taskPromises = this.traefikInstances.map((traefikInstance) => {
+      for (const traefikInstance of this.traefikInstances) {
         const taskAction = "list-certificates";
         const eventId = this.getUuid();
         this.loading.listCertificatesNum++;
@@ -949,7 +947,7 @@ export default {
           this.listCertificatesCompleted
         );
 
-        return to(
+        const res = await to(
           this.createModuleTaskForApp(traefikInstance.id, {
             action: taskAction,
             data: {
@@ -962,31 +960,27 @@ export default {
               eventId,
             },
           })
-        ).then(([err]) => {
-          if (err) {
-            console.error(
-              `error creating task ${taskAction} for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
-              err
-            );
-            // Clean up orphaned event listeners
-            this.$root.$off(`${taskAction}-aborted-${eventId}`);
-            this.$root.$off(`${taskAction}-completed-${eventId}`);
-            // Add to offline instances so the error notification is displayed
-            if (
-              traefikInstance &&
-              !this.offlineTraefikInstances.find(
-                (instance) => instance.id === traefikInstance.id
-              )
-            ) {
-              this.offlineTraefikInstances.push(traefikInstance);
-            }
-            this.loading.listCertificatesNum--;
+        );
+        const err = res[0];
+
+        if (err) {
+          console.error(
+            `error creating task ${taskAction} for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
+            err
+          );
+          // Add to offline instances so the error notification is displayed
+          if (
+            traefikInstance &&
+            !this.offlineTraefikInstances.find(
+              (instance) => instance.id === traefikInstance.id
+            )
+          ) {
+            this.offlineTraefikInstances.push(traefikInstance);
           }
-        });
-      });
-      // Wait for all task creations to settle (succeed or fail) before
-      // returning.
-      await Promise.allSettled(taskPromises);
+          // force error notification to be displayed
+          this.loading.listCertificatesNum--;
+        }
+      }
     },
     listCertificatesAborted(taskResult, taskContext, traefikInstance) {
       console.error(
