@@ -913,7 +913,9 @@
         "invalid_format": "Invalid format",
         "cert_verification_failed_selfsigned": "Self-signed certificates are not allowed",
         "cert_verification_failed_chain": "Certificate chain is incomplete or invalid",
-        "newcert_acme_error": "Cannot obtain certificate. Check the 'Request certificate' error in the notification drawer for details."
+        "newcert_acme_error": "Cannot obtain certificate. Check the 'Request certificate' error in the notification drawer for details.",
+        "node_is_offline": "{node} is offline",
+        "certificates_not_displayed": "Certificates configured on {instanceId} are not displayed"
     },
     "settings_acme_servers": {
         "title": "ACME servers",

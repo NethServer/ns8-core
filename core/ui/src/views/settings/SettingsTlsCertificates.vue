@@ -53,6 +53,30 @@
       <cv-row>
         <cv-column>
           <cv-tile light>
+            <div v-if="offlineTraefikInstances.length">
+              <NsInlineNotification
+                v-for="instance in offlineTraefikInstances"
+                :key="instance.id"
+                kind="error"
+                :title="
+                  $t('settings_tls_certificates.node_is_offline', {
+                    node: getNodeLabel(instance),
+                  })
+                "
+                :description="getOfflineInstanceDescription(instance)"
+                :showCloseButton="false"
+              />
+            </div>
+            <div v-if="listCertificatesErrors.length">
+              <NsInlineNotification
+                v-for="(error, index) in listCertificatesErrors"
+                :key="index"
+                kind="error"
+                :title="error.title"
+                :description="error.description"
+                :showCloseButton="false"
+              />
+            </div>
             <div class="toolbar gap-2 flex-wrap" v-if="certificates.length">
               <!-- request certificate -->
               <NsButton
@@ -166,9 +190,7 @@
                   "
                   :isLoading="loadingCertificates"
                   :skeletonRows="5"
-                  :isErrorShown="
-                    !!error.listInstalledModules || !!error.listCertificates
-                  "
+                  :isErrorShown="!!error.listInstalledModules"
                   :errorTitle="currentErrorAction"
                   :errorDescription="currentErrorDescription"
                   :itemsPerPageLabel="$t('pagination.items_per_page')"
@@ -613,6 +635,8 @@ export default {
         listCertificates: "",
         deleteCertificate: "",
       },
+      listCertificatesErrors: [],
+      offlineTraefikInstances: [],
       uploadTlsCertificateState: new UploadTlsCertificateState(),
     };
   },
@@ -896,6 +920,10 @@ export default {
       this.listCertificates();
     },
     async listCertificates() {
+      this.offlineTraefikInstances = [];
+      this.listCertificatesErrors = [];
+      this.loading.listCertificatesNum = 0;
+
       for (const traefikInstance of this.traefikInstances) {
         const taskAction = "list-certificates";
         const eventId = this.getUuid();
@@ -905,7 +933,13 @@ export default {
 
         this.$root.$once(
           `${taskAction}-aborted-${eventId}`,
-          this.listCertificatesAborted
+          (taskResult, taskContext) => {
+            this.listCertificatesAborted(
+              taskResult,
+              taskContext,
+              traefikInstance
+            );
+          }
         );
 
         this.$root.$once(
@@ -930,20 +964,54 @@ export default {
         const err = res[0];
 
         if (err) {
-          console.error(`error creating task ${taskAction}`, err);
-          const errMessage = this.getErrorMessage(err);
-          this.error.listCertificates = errMessage;
-          this.currentErrorAction = this.$t("action." + taskAction);
-          this.currentErrorDescription = errMessage;
+          console.error(
+            `error creating task ${taskAction} for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
+            err
+          );
+          // Clean up orphaned event listeners since the task was never created
+          this.$root.$off(`${taskAction}-aborted-${eventId}`);
+          this.$root.$off(`${taskAction}-completed-${eventId}`);
+
+          if (err.response && err.response.status === 404) {
+            // 404 means the module API is unreachable: node is offline
+            if (
+              traefikInstance &&
+              !this.offlineTraefikInstances.find(
+                (instance) => instance.id === traefikInstance.id
+              )
+            ) {
+              this.offlineTraefikInstances.push(traefikInstance);
+            }
+          } else {
+            // Unexpected error: display a generic inline error notification
+            this.listCertificatesErrors.push({
+              title: this.$t("action." + taskAction),
+              description: `${this.$t(
+                "error.generic_error"
+              )} (${this.getTraefikInstanceLabel(
+                traefikInstance
+              )} - ${this.getNodeLabel(traefikInstance)})`,
+            });
+          }
           this.loading.listCertificatesNum--;
         }
       }
     },
-    listCertificatesAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.listCertificates = this.$t("error.generic_error");
-      this.currentErrorAction = this.$t("action." + taskContext.action);
-      this.currentErrorDescription = this.$t("error.generic_error");
+    listCertificatesAborted(taskResult, taskContext, traefikInstance) {
+      console.error(
+        `${taskContext.action} aborted for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
+        taskResult
+      );
+
+      // Add error to array
+      this.listCertificatesErrors.push({
+        title: this.$t("action." + taskContext.action),
+        description: `${this.$t(
+          "error.generic_error"
+        )} (${this.getTraefikInstanceLabel(
+          traefikInstance
+        )} - ${this.getNodeLabel(traefikInstance)})`,
+      });
       this.loading.listCertificatesNum--;
     },
     listCertificatesCompleted(taskContext, taskResult) {
@@ -1031,6 +1099,29 @@ export default {
         default:
           return "gray";
       }
+    },
+    getNodeLabel(instance) {
+      const nodeLabel = instance.node_ui_name
+        ? instance.node_ui_name +
+          " (" +
+          this.$t("common.node") +
+          " " +
+          instance.node +
+          ")"
+        : this.$t("common.node") + " " + instance.node;
+      return nodeLabel;
+    },
+    getTraefikInstanceLabel(instance) {
+      let label = instance.id;
+      if (instance.ui_name && instance.ui_name.trim()) {
+        label = `${instance.ui_name}(${instance.id})`;
+      }
+      return label;
+    },
+    getOfflineInstanceDescription(instance) {
+      return this.$t("settings_tls_certificates.certificates_not_displayed", {
+        instanceId: this.getTraefikInstanceLabel(instance),
+      });
     },
     clearFilters() {
       this.q.selectedNodeId = "any";
