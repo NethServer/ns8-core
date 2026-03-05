@@ -51,7 +51,7 @@ if (user == 'cluster' or '/' in user):
     sys.exit(2)
 
 if rdb.execute_command('ACL', 'GETUSER', user) is None:
-    json.dump({"field": "user", "parameter": "user", "value": user, "error": "user_not_found"}, fp=sys.stdout)
+    json.dump([{"field": "user", "parameter": "user", "value": user, "error": "user_not_found"}], fp=sys.stdout)
     agent.set_status('validation-failed')
     sys.exit(3)
 
