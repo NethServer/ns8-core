@@ -80,7 +80,10 @@
         "apps_restoration": "Apps herstel",
         "select_apps_to_restore_description": "Je apps worden hersteld met de nieuwste back-up. Als je bepaalde apps moet herstellen van een eerdere back-up. Dit kun je doen door te gaan naar '@:backup.title > @:backup.restore_app'",
         "public_key_matches_existing_node": "Dit node is al toegevoegd aan het cluster",
-        "core_version_mismatch": "Kernversie komt niet overeen: cluster vereist versie {value}. Werk de leader bij of installeer dit node opnieuw met versie {value}"
+        "core_version_mismatch": "Kernversie komt niet overeen: cluster vereist versie {value}. Werk de leader bij of installeer dit node opnieuw met versie {value}",
+        "restoring_applications": "Restoring applications",
+        "other_applications_can_be_restored_later": "Some applications can't be restored right now because this cluster has additional volumes configured. You can restore them later from '@:backup.title' page.",
+        "only_core_applications_can_be_restored": "Only core applications can be restored at this stage"
     },
     "action": {
         "remove-favorite": "Favoriet verwijderen",
@@ -190,7 +193,9 @@
         "import-users": "Import users",
         "export-users": "Export users",
         "get-password-warning": "Get password warning",
-        "list-mountpoints": "List mountpoints"
+        "list-mountpoints": "List mountpoints",
+        "list-cluster-backup-endpoints": "List cluster backup endpoints",
+        "import-backup-destinations": "Import backup destinations"
     },
     "backup": {
         "aws_url_label": "AWS bucket naam",
@@ -214,8 +219,6 @@
         "change_cluster_backup_password": "Verander encryptie wachtwoord",
         "backup_page_tooltip_1": "Hier kan je de backups configureren en elke app herstellen.",
         "aws": "Amazon S3",
-        "no_backup_scheduled": "Geen back-up gepland",
-        "repositories": "Bestemmingen",
         "run_backup_now": "Voer back-up uit",
         "schedule_backup_for_instance": "Maak een back-upschema voor {instance}",
         "completed": "Afgerond",
@@ -275,7 +278,6 @@
         "from_node_name_of_this_cluster": "Van node {name} van dit cluster",
         "disable_backup": "Back-up uitschakelen",
         "backup_repository_exists": "Een back-up bestemming met deze URL bestaat al",
-        "cluster_configuration_info": "Toevoeging, de clusterconfiguratie wordt automatisch geback-upt tijdens elke geplande uitvoering.",
         "edit_backup": "Wijzig backup",
         "type_repo_password_to_confirm": "Typ het bestemmingswachtwoord om het verwijderen te bevestigen",
         "backup_page_tooltip_manual": "Voor meer informatie {manualLink}.",
@@ -313,7 +315,6 @@
         "cluster_backup_password_warning": "U moet het encryptiewachtwoord instellen",
         "from_node_name": "Van node {name}",
         "disabling_backup": "Uitschakelen {backupName}",
-        "apps_configuration_tooltip": "Voeg je back-upbestemming toe en configureer apps backup planning",
         "delete_backup_repository": "Back-upbestemming verwijderen",
         "aws_short": "S3",
         "repository_password_helper": "Voer de encryptiesleutel in als de back-upbestemming eerder is geconfigureerd",
@@ -324,9 +325,7 @@
         "smb_domain": "Domein naam (NT/Werkgroep)",
         "aws_default_region": "AWS standaard regio",
         "download": "Download",
-        "node": "Node",
         "azure_short": "Azure",
-        "apps": "Apps",
         "custom": "Aangepast",
         "add_repository": "Voeg de bestemming toe",
         "run_backup": "Voer back-up uit",
@@ -352,7 +351,6 @@
         "backblaze": "Backblaze B2",
         "cluster_placeholder": "Kies een node in de cluster",
         "no_instance_to_restore_description": "Het lijkt erop dat er geen app instance backed up op je bestemming is",
-        "choose_app_instances_to_backup": "Kies app instances voor back-up.",
         "delete_backup_explanation_1": "{instanceName} wordt niet meer geback-upt. Als u van gedachten verandert, moet u een nieuwe back-up plannen. | {numInstances} app instances wordt niet meer geback-upt. Als u van gedachten verandert, moet u een nieuwe back-up plannen.",
         "app_instances_not_backed_up": "Apps zijn niet geback-upt",
         "most_recent": "Meest recent",
@@ -380,7 +378,35 @@
         "replace_existing_app_tooltip": "Vervang de bestaande app. De oude app-instantie wordt verwijderd en de nieuwe wordt hersteld",
         "replace_existing_app_select_an_app_tooltip": "Selecteer een applicatie om te vervangen",
         "some_backups_failed_or_are_pending": "Sommige back-ups faalden of staan in afwachting",
-        "go_to_notification_drawer": "Meldingenlade openen"
+        "go_to_notification_drawer": "Meldingenlade openen",
+        "invalid_passphrase": "Invalid password",
+        "invalid_base64": "Invalid base64 file format",
+        "import_destinations": "Import destinations",
+        "error_reading_backup_file": "Error reading backup file",
+        "backup_password": "Backup encryption password",
+        "set_cluster_backup_password_to_restore_applications": "Set the encryption password to configure backup and restore",
+        "configure_manage_backups_for_your_applications": "Configure and manage backups for your cluster and applications. The cluster backup stores the cluster configuration and can be used for disaster recovery.",
+        "backup_destinations": "Backup destinations",
+        "repository_already_used": "This destination is already used",
+        "cancel_backup": "Cancel backup",
+        "enter_backup_password": "Enter the password used to encrypt the cluster backup file",
+        "create_backup": "Create backup",
+        "cluster_backup_file": "Cluster backup file",
+        "import_destinations_description": "Import backup destinations from a cluster backup file.",
+        "no_cluster_backup_password": "Encryption password not configured",
+        "restore_applications_from_existing_backups": "Restore applications from an existing backup destination.",
+        "import": "Import",
+        "schedule_regular_backups_and_select_the_applications_to_include": "Schedule regular application backups.",
+        "cancel_backup_failed": "Failed to cancel backup",
+        "select_cluster_node": "Select a cluster node",
+        "schedule_backup_now": "Schedule backup now",
+        "import_failed": "Failed to import backup destinations",
+        "backup": "Backup",
+        "cluster_restore_during_initial_cluster_configuration": "Cluster restore (disaster recovery) can be performed during the initial cluster configuration.",
+        "select_by_category": "Select by category",
+        "configure_a_destination_to_restore_applications": "Configure a destination to restore applications from existing backups.",
+        "backup_destinations_stored_local_or_remote": "Configure where application backups are stored.",
+        "applications": "Application | Applications"
     },
     "calendar": {
         "months": "maanden",
@@ -600,7 +626,8 @@
         "node_offline": "Node is offline",
         "additional_storage_available": "Additional volumes available",
         "select_node_volume_for_installation": "Select the volume installation on {node} for application data",
-        "installation_node_for_app": "Installation node for {app} {version}"
+        "installation_node_for_app": "Installation node for {app} {version}",
+        "restart_application": "Restart application"
     },
     "domains": {
         "domain_summary": "Samenvatting",
@@ -1278,7 +1305,8 @@
         "any": "Elke",
         "eg_value": "e.g. {value}",
         "not_configured": "Not configured",
-        "go_to_page": "Go to {page}"
+        "go_to_page": "Go to {page}",
+        "core_app": "Core app"
     },
     "error": {
         "403": "Opdracht niet toegestaan",
@@ -1314,7 +1342,8 @@
         "warning_mail_template_content_required": "Mail template inhoud is vereist",
         "validation_error": "Validatiefout",
         "invalid_url": "Foutieve waarde of formaat",
-        "invalid_fqdn": "Ongeldige volledig gekwalificeerde domeinnaam"
+        "invalid_fqdn": "Ongeldige volledig gekwalificeerde domeinnaam",
+        "some_apps_cannot_be_restored": "Some applications cannot be restored."
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket verbinding is instabiel. Wacht tot verbinding of herlaad de pagina",
@@ -1423,7 +1452,9 @@
         "valid": "Valid",
         "delete_obsolete_certificates_message": "Deleting obsolete certificates will briefly disconnect HTTP clients connected to the selected node.",
         "delete_certificate_message": "Deleting this certificate will briefly disconnect HTTP clients connected to {node}.",
-        "names_format": "Invalid FQDN format"
+        "names_format": "Invalid FQDN format",
+        "certificates_not_displayed": "Certificates configured on {instanceId} are not displayed",
+        "node_is_offline": "{node} is offline"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Verwijder beheerder {admin}",

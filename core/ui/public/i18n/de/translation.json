@@ -80,7 +80,10 @@
         "apps_restoration_single_node_description": "Sie können wählen, welche Apps wiederhergestellt werden sollen, nachdem das Cluster wiederhergestellt wurde.",
         "apps_restoration": "Apps restoration",
         "public_key_matches_existing_node": "Dieser Knoten wurde bereits zum Cluster hinzugefügt",
-        "core_version_mismatch": "Core version mismatch: cluster requires version {value}. Update the leader or reinstall this node with version {value}"
+        "core_version_mismatch": "Core version mismatch: cluster requires version {value}. Update the leader or reinstall this node with version {value}",
+        "restoring_applications": "Restoring applications",
+        "other_applications_can_be_restored_later": "Some applications can't be restored right now because this cluster has additional volumes configured. You can restore them later from '@:backup.title' page.",
+        "only_core_applications_can_be_restored": "Only core applications can be restored at this stage"
     },
     "password": {
         "uppercase_letter": "Großbuchstaben",
@@ -257,7 +260,9 @@
         "import-users": "Import users",
         "export-users": "Export users",
         "get-password-warning": "Get password warning",
-        "list-mountpoints": "List mountpoints"
+        "list-mountpoints": "List mountpoints",
+        "list-cluster-backup-endpoints": "List cluster backup endpoints",
+        "import-backup-destinations": "Import backup destinations"
     },
     "common": {
         "hide": "verstecken",
@@ -357,7 +362,8 @@
         "any": "Any",
         "eg_value": "e.g. {value}",
         "not_configured": "Not configured",
-        "go_to_page": "Go to {page}"
+        "go_to_page": "Go to {page}",
+        "core_app": "Core app"
     },
     "error": {
         "403": "Vorgang nicht autorisiert",
@@ -393,7 +399,8 @@
         "warning_days_range": "Warntage müssen zwischen 1 und 1000 liegen",
         "warning_mail_template_content_required": "E-Mail-Vorlage ist erforderlich",
         "invalid_url": "Ungültiger Wert oder Format",
-        "invalid_fqdn": "Ungültiger vollqualifizierter Domainname"
+        "invalid_fqdn": "Ungültiger vollqualifizierter Domainname",
+        "some_apps_cannot_be_restored": "Some applications cannot be restored."
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket-Verbindung instabil. Bitte warten bis die Verbindung wiederhergestellt ist oder die Seite neu laden",
@@ -635,7 +642,8 @@
         "node_offline": "Node is offline",
         "additional_storage_available": "Additional volumes available",
         "select_node_volume_for_installation": "Select the volume installation on {node} for application data",
-        "installation_node_for_app": "Installation node for {app} {version}"
+        "installation_node_for_app": "Installation node for {app} {version}",
+        "restart_application": "Restart application"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Admin {admin} löschen",
@@ -913,7 +921,6 @@
         "backup_repository_auth_error": "Anmeldung nicht möglich",
         "backup_repository_not_accessible": "Zugriff auf Ziel nicht möglich",
         "backup_repository_exists": "Ein Sicherungs-Ziel mit dieser URL existiert bereits",
-        "cluster_configuration_info": "Die Konfiguration des Cluster wird automatisch bei jeder geplanten Datensicherung im Sicherungs-Ziel gespeichert.",
         "backblaze_short": "B2",
         "delete_repository_confirm": "Sicherungsziel '{name}' löschen?",
         "genericS3_access_key_id": "ID des Zugriffschlüssel",
@@ -921,11 +928,9 @@
         "empty_state_repository_description": "Ein Ziel erstellen, um die Sicherung zu konfigurieren",
         "backup_has_not_run_yet": "Noch keine Sicherung erstellt.",
         "azure_account_name": "Azure Kontoname",
-        "apps_configuration_tooltip": "Sicherungs-Ziele hinzufügen , Sicherung-Zeitplan konfigurieren",
         "delete_backup_repository": "Sicherungs-Ziel löschen",
         "aws_default_region": "AWS Standard-Region",
         "azure_short": "Azure",
-        "apps": "Anwendungen",
         "custom": "Benutzerdefiniert",
         "add_repository": "Ziel hinzufügen",
         "backup_name": "Sicherungsname",
@@ -933,7 +938,6 @@
         "configure": "konfigurieren",
         "backup_details": "Sicherungsdetails",
         "backblaze": "Backblase B2",
-        "choose_app_instances_to_backup": "Anwendungs-Instanz zur Sicherung wählen",
         "app_instances_not_backed_up": "nicht gesicherte Anwendungen",
         "cluster_placeholder": "Cluster-Knoten auswählen",
         "backup_enabled": "Sicherung aktiviert",
@@ -957,8 +961,6 @@
         "samba": "Windows Dateifreigabe",
         "status": "Status",
         "samba_tooltips": "Nur Freigabe mit SMB2/3 Protokoll sind unterstützt. Veraltete SMB1/CIFS Freigaben sind unsicher und können nicht verwendet werden.",
-        "no_backup_scheduled": "Keine geplante Datensicherung",
-        "repositories": "Ziele",
         "run_backup_now": "Datensicherungen jetzt starten",
         "i_have_stored_encryption_password": "Das Kennwort ist sicher verwahrt",
         "num_backup_snapshots": "{num} Datensicherungs-Punkt| {num} Datensicherungs-Punkte",
@@ -1007,7 +1009,6 @@
         "minute": "Minute",
         "last_backup": "letzte Datensicherung",
         "cluster_backup_password_info_description": "Kennwort zur Verschlüsselung der Datensicherung. Aus Sicherheitsgründen NICHT das Kennwort des angemeldeten Nutzer verwenden. Im Falle einer Wiederherstellung wird dieses Kennwort benötigt, bitte gut aufbewahren.",
-        "node": "Knoten",
         "run_backup": "Datensicherungen starten",
         "restoring_app_to_node": "Stelle {app} auf {node} wieder her",
         "repository": "Ziel",
@@ -1079,7 +1080,35 @@
         "replace_existing_app_tooltip": "Ersetzen Sie die bestehende App. Die alte App-Instanz wird entfernt und die neue wiederhergestellt",
         "replace_existing_app_select_an_app_tooltip": "Select an application to replace",
         "some_backups_failed_or_are_pending": "Einige Backups sind fehlgeschlagen oder stehen an",
-        "go_to_notification_drawer": "Open Notifications drawer"
+        "go_to_notification_drawer": "Open Notifications drawer",
+        "invalid_passphrase": "Invalid password",
+        "invalid_base64": "Invalid base64 file format",
+        "import_destinations": "Import destinations",
+        "error_reading_backup_file": "Error reading backup file",
+        "backup_password": "Backup encryption password",
+        "set_cluster_backup_password_to_restore_applications": "Set the encryption password to configure backup and restore",
+        "configure_manage_backups_for_your_applications": "Configure and manage backups for your cluster and applications. The cluster backup stores the cluster configuration and can be used for disaster recovery.",
+        "backup_destinations": "Backup destinations",
+        "repository_already_used": "This destination is already used",
+        "cancel_backup": "Cancel backup",
+        "enter_backup_password": "Enter the password used to encrypt the cluster backup file",
+        "create_backup": "Create backup",
+        "cluster_backup_file": "Cluster backup file",
+        "import_destinations_description": "Import backup destinations from a cluster backup file.",
+        "no_cluster_backup_password": "Encryption password not configured",
+        "restore_applications_from_existing_backups": "Restore applications from an existing backup destination.",
+        "import": "Import",
+        "schedule_regular_backups_and_select_the_applications_to_include": "Schedule regular application backups.",
+        "cancel_backup_failed": "Failed to cancel backup",
+        "select_cluster_node": "Select a cluster node",
+        "schedule_backup_now": "Schedule backup now",
+        "import_failed": "Failed to import backup destinations",
+        "backup": "Backup",
+        "cluster_restore_during_initial_cluster_configuration": "Cluster restore (disaster recovery) can be performed during the initial cluster configuration.",
+        "select_by_category": "Select by category",
+        "configure_a_destination_to_restore_applications": "Configure a destination to restore applications from existing backups.",
+        "backup_destinations_stored_local_or_remote": "Configure where application backups are stored.",
+        "applications": "Application | Applications"
     },
     "settings_http_routes": {
         "delete_route_description": "Route {name} löschen? Jede Anwendung, die an diese Route gebunden ist, wird nicht mehr zugreifbar sein.",
@@ -1468,7 +1497,9 @@
         "valid": "Gültig",
         "delete_obsolete_certificates_message": "Deleting obsolete certificates will briefly disconnect HTTP clients connected to the selected node.",
         "delete_certificate_message": "Deleting this certificate will briefly disconnect HTTP clients connected to {node}.",
-        "names_format": "Invalid FQDN format"
+        "names_format": "Invalid FQDN format",
+        "certificates_not_displayed": "Certificates configured on {instanceId} are not displayed",
+        "node_is_offline": "{node} is offline"
     },
     "node_detail": {
         "num_core": "{num} Kern",
