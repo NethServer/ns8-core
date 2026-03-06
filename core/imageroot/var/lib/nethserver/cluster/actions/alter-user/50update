@@ -51,7 +51,7 @@ if (user == 'cluster' or '/' in user):
     sys.exit(2)
 
 if rdb.execute_command('ACL', 'GETUSER', user) is None:
-    json.dump({"field": "user", "parameter": "user", "value": user, "error": "user_not_found"}, fp=sys.stdout)
+    json.dump([{"field": "user", "parameter": "user", "value": user, "error": "user_not_found"}], fp=sys.stdout)
     agent.set_status('validation-failed')
     sys.exit(3)
 
@@ -73,6 +73,10 @@ if 'set' in request:
     if '2fa' in request['set']:
         # forcibly disable 2fa
         rdb.hset(f'user/{user}', '2fa', "")
+
+    if 'allowed_networks' in request['set']:
+        # update the IP/network allowlist (empty list removes all restrictions)
+        rdb.hset(f'user/{user}', 'allowed_networks', ','.join(request['set']['allowed_networks']))
 
 revoke_list = request.get('revoke', []) # parameter "revoke" is optional
 for roledef in revoke_list: # !!! revoke BEFORE grant

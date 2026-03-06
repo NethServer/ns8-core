@@ -21,7 +21,8 @@
             "examples": [
                 {
                     "display_name": "Mighty Admin",
-                    "2fa": false
+                    "2fa": false,
+                    "allowed_networks": ["192.168.1.0/24", "10.0.0.1"]
                 }
             ],
             "type": "object",
@@ -32,6 +33,15 @@
                 },
                 "2fa": {
                     "type": "boolean"
+                },
+                "allowed_networks": {
+                    "title": "Allowed networks",
+                    "description": "List of IPv4/IPv6 addresses or CIDR networks the user is allowed to connect from. An empty list removes any restriction.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ip-cidr"
+                    },
+                    "uniqueItems": true
                 }
             }
         },
@@ -125,6 +135,24 @@
             "examples": [
                 "10.5.4.0/24",
                 "192.168.73.0/24"
+            ]
+        },
+        "ipv6-cidr": {
+            "title": "IPv6 CIDR",
+            "description": "IPv6 address or network in CIDR notation",
+            "type": "string",
+            "pattern": "^[0-9a-fA-F:]+(\\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$",
+            "examples": [
+                "::1",
+                "fd12:3456:789a::/48"
+            ]
+        },
+        "ip-cidr": {
+            "title": "IP address or CIDR",
+            "description": "IPv4 or IPv6 address or network in CIDR notation",
+            "anyOf": [
+                {"$ref": "#/definitions/ipv4-cidr"},
+                {"$ref": "#/definitions/ipv6-cidr"}
             ]
         }
     }

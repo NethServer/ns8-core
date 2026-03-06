@@ -47,6 +47,24 @@ LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 REDIS_USER=my-user REDI
 
 Each API is authenticated and authorized through a `JWT (JSON Web Token)`. In order to get access to the APIs you have to login before and get a JWT `token`. `SECRET` is used to set the JWT signature.
 
+### Network access restrictions
+
+The API server enforces source-IP restrictions at login and on every
+authenticated request:
+
+- **Agent credentials** (`cluster`, `node/*`, `module/*`): always
+  restricted to `127.0.0.1`, `::1`, and the cluster VPN network (Redis
+  key `cluster/network`). Login from any other IP returns HTTP 401;
+  requests with an agent-issued JWT from outside those networks return
+  HTTP 403. This is unconditional and cannot be overridden.
+
+- **User accounts** (e.g. `admin`): an optional `allowed_networks` field
+  can be set via `cluster/add-user` or `cluster/alter-user`. When
+  non-empty, logins and JWT requests from non-matching IPs are rejected
+  (401/403 respectively). An empty list means no IP restriction.
+
+#### Login API list
+
 -   `POST /login`
 
 ```bash

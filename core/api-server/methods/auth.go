@@ -27,6 +27,7 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -384,6 +385,17 @@ func BasicAuthModule(c *gin.Context) {
 		return
 	}
 
+	// check source IP against per-user allowed networks
+	if !CheckIPAllowed(c.ClientIP(), GetUserNetworks(username)) {
+		utils.LogError(errors.New("[BASIC AUTH] request denied (IP not allowed) for user " + username))
+		c.JSON(http.StatusForbidden, structs.Map(response.StatusForbidden{
+			Code:    403,
+			Message: "basic auth failed. IP not allowed",
+			Data:    "",
+		}))
+		return
+	}
+
 	// check authorizations
 	pathGet := "module/" + c.Param("module_id")
 	pathScan := "module/" + c.Param("module_id") + "/roles/"
@@ -469,4 +481,71 @@ func getUserSecret(username string) string {
 
 func Needs2faCheck(username string) bool {
 	return getUserSecret(username) != ""
+}
+
+// getClusterNetworks returns the loopback addresses and the cluster VPN
+// network (stored in the Redis key "cluster/network") as a comma-separated
+// allowlist string. It is used to restrict agent credentials to intra-cluster
+// traffic only.
+func getClusterNetworks() string {
+	redisConnection := redis.Instance()
+	vpnNetwork, err := redisConnection.Get(ctx, "cluster/network").Result()
+	if err != nil || vpnNetwork == "" {
+		return "127.0.0.1,::1"
+	}
+	return "127.0.0.1,::1," + vpnNetwork
+}
+
+func GetUserNetworks(username string) string {
+	// Agent credentials (cluster, node/*, module/*) must only be usable from
+	// within the cluster: restrict them to loopback + VPN network regardless of
+	// any per-user networks setting stored in Redis.
+	if username == "cluster" || strings.HasPrefix(username, "node/") || strings.HasPrefix(username, "module/") {
+		return getClusterNetworks()
+	}
+
+	redisConnection := redis.Instance()
+	result, err := redisConnection.HGet(ctx, "user/"+username, "allowed_networks").Result()
+	if err != nil {
+		return ""
+	}
+	return result
+}
+
+func CheckIPAllowed(clientIP string, allowedNetworks string) bool {
+	if allowedNetworks == "" {
+		return true
+	}
+	ip := net.ParseIP(clientIP)
+	if ip == nil {
+		return false
+	}
+	for _, entry := range strings.Split(allowedNetworks, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		// Treat bare IPs (no prefix length) as single-host networks:
+		// use /32 for IPv4 and /128 for IPv6.
+		if !strings.Contains(entry, "/") {
+			ipEntry := net.ParseIP(entry)
+			if ipEntry == nil {
+				// Invalid IP entry, skip it
+				continue
+			}
+			if ipEntry.To4() != nil {
+				entry = entry + "/32"
+			} else {
+				entry = entry + "/128"
+			}
+		}
+		_, network, err := net.ParseCIDR(entry)
+		if err != nil {
+			continue
+		}
+		if network.Contains(ip) {
+			return true
+		}
+	}
+	return false
 }

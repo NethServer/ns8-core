@@ -73,6 +73,30 @@ node/1/get-node-status
 ...
 ```
 
+## Network access control
+
+The API server enforces source-IP restrictions at login time and on every
+authenticated request.
+
+### Agent credentials
+
+Credentials belonging to the internal agents — `cluster`, `node/*`, and
+`module/*` — are **always** restricted to the loopback addresses
+(`127.0.0.1`, `::1`) and the cluster VPN network (stored in the Redis key
+`cluster/network`).  Login attempts from any other source IP are rejected
+with HTTP 401, and requests carrying a JWT obtained with agent credentials
+are rejected with HTTP 403 when the source IP is outside those networks.
+This rule is unconditional and cannot be changed per-user.
+
+### User accounts
+
+Regular user accounts (e.g. `admin`) can optionally be given an
+`allowed_networks` restriction through the `cluster/add-user` and
+`cluster/alter-user` actions.  When the list is non-empty, login attempts
+from IPs that do not match any entry are rejected with HTTP 401, and
+requests carrying a JWT are rejected with HTTP 403.  An empty
+`allowed_networks` list means no IP restriction.
+
 ## Audit log
 
 Every request made to the server, using its APIs or WebSocket, is logged inside an audit db.

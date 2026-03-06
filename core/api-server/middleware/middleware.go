@@ -26,7 +26,6 @@ import (
 	"path/filepath"
 	"time"
 	"fmt"
-	"strings"
 
 	"github.com/pkg/errors"
 
@@ -107,6 +106,13 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				otpPassClaim = true // claim that 2FA is enabled and used
 			}
 
+			// check source IP against per-user allowed networks
+			allowedNetworks := methods.GetUserNetworks(username)
+			if !methods.CheckIPAllowed(c.ClientIP(), allowedNetworks) {
+				utils.LogError(errors.New("[AUTH] login-denied (IP not allowed) " + generateLogMessage(c, username, otpNeed)))
+				return nil, jwt.ErrFailedAuthentication
+			}
+
 			// Login is successful. Middleware returns a JWT.
 			// store login action
 			auditData := models.Audit{
@@ -154,30 +160,36 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 			// create user object
 			user := &models.UserAuthorizations{
-				Username: claims[identityKey].(string),
-				Role:     userAuthorizations.Role,
-				Actions:  userAuthorizations.Actions,
+				Username:        claims[identityKey].(string),
+				Role:            userAuthorizations.Role,
+				Actions:         userAuthorizations.Actions,
+				AllowedNetworks: methods.GetUserNetworks(claims[identityKey].(string)),
 			}
 
 			// return user
 			return user
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			// bypass auth for GET requests: // TODO
-			if c.Request.Method == "GET" {
-				return true
-			}
-
-			// bypass for 2FA apis
-			if c.Request.Method == "POST" && c.Request.RequestURI == "/api/2FA" {
-				return true
-			}
-			if c.Request.Method == "DELETE" && c.Request.RequestURI == "/api/2FA" {
-				return true
-			}
-
 			// extract data payload and check authorizations
 			if v, ok := data.(*models.UserAuthorizations); ok {
+				// enforce IP allowlist on every request
+				if !methods.CheckIPAllowed(c.ClientIP(), v.AllowedNetworks) {
+					utils.LogError(errors.New("[AUTH] request denied (IP not allowed) for user " + v.Username))
+					return false
+				}
+
+				// bypass auth for GET requests: // TODO
+				if c.Request.Method == "GET" {
+					return true
+				}
+
+				// bypass for 2FA apis
+				if c.Request.Method == "POST" && c.Request.RequestURI == "/api/2FA" {
+					return true
+				}
+				if c.Request.Method == "DELETE" && c.Request.RequestURI == "/api/2FA" {
+					return true
+				}
 				authorizedActions := v.Actions
 
 				// extract task obj
@@ -259,7 +271,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 }
 
 func generateLogMessage(c *gin.Context, username string, otpNeed bool) string {
-	remoteAddress := c.Request.RemoteAddr
-	ipSource := strings.Split(remoteAddress, ":")[0]
+	ipSource := c.ClientIP()
 	return fmt.Sprintf("user=%s source=%s 2fa=%t", username, ipSource, otpNeed)
 }

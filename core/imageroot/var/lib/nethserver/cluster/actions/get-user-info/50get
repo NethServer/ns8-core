@@ -24,8 +24,21 @@ if (user == 'cluster' or '/' in user):
 # init redis db
 rdb = agent.redis_connect(privileged=True)
 
+if rdb.execute_command('ACL', 'GETUSER', user) is None:
+    json.dump([{"field": "user", "parameter": "user", "value": user, "error": "user_not_found"}], fp=sys.stdout)
+    agent.set_status('validation-failed')
+    sys.exit(3)
+
 # get user info
 info = rdb.hgetall('user/' + user)
 
+response = {}
+if 'display_name' in info:
+    response['display_name'] = info['display_name']
+if 'email' in info:
+    response['email'] = info['email']
+if 'allowed_networks' in info:
+    response['allowed_networks'] = list(filter(None, info['allowed_networks'].split(',')))
+
 # return json
-json.dump(info, fp=sys.stdout)
+json.dump(response, fp=sys.stdout)
