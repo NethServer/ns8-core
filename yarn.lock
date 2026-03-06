@@ -8,9 +8,9 @@
   integrity sha512-05WQkdpL9COIMz4LjTxGpPNCdlpyimKppYNoJ5Di5EUObifl8t4tuLuUBBZEpoLYOmfvIWrsp9fCl0HoPRVTdA==
 
 "@nethserver/ns8-ui-lib@^1.12.0":
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-1.12.0.tgz#29e07b1980ba926f4f2c25b94ac6cf80d14c4bc4"
-  integrity sha512-vV9wE390bJxKO/38EZCV4ZRxYj9Zkp3RnvJQSEV/o0VUbWH04OWCvUXZtzQ6K2NJ/pW93alcyxeukIZ6Xx2M4A==
+  version "1.12.1"
+  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-1.12.1.tgz#fe4dc6487c79c20ccf8ba3c7dc439337197a3a61"
+  integrity sha512-WkAtcBpRS6BbUIiT0T0BafWmeaa9uxkDHUZu14wCcF/MLU34GJlGjo3cTdw3BtK2deqZ9iIXZQVtXSFWEnK01g==
   dependencies:
     "@rollup/plugin-json" "^4.1.0"
     core-js "^3.15.2"
