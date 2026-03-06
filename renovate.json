@@ -3,9 +3,11 @@
   "extends": [
     "local>NethServer/.github:ns8-automerge"
   ],
-  "lockFileMaintenance": {
-    "enabled": false
-  },
+  "enabledManagers": [
+    "npm",
+    "gomod",
+    "regex"
+  ],
   "packageRules": [
     {
       "description": "Suppress PRs for major and minor updates",
