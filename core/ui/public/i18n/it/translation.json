@@ -477,8 +477,8 @@
         "cert_verification_failed_selfsigned": "I certificati autofirmati non sono consentiti",
         "cert_verification_failed_chain": "La chain del certificato è incompleta o non valida",
         "newcert_acme_error": "Impossibile ottenere il certificato. Controlla l'errore 'Richiedi certificato' nel pannello delle notifiche per i dettagli.",
-        "certificates_not_displayed": "Certificates configured on {instanceId} are not displayed",
-        "node_is_offline": "{node} is offline"
+        "certificates_not_displayed": "I certificati configurati su {instanceId} non sono mostrati",
+        "node_is_offline": "{node} è offline"
     },
     "about": {
         "documentation": "Documentazione",
