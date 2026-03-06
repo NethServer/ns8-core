@@ -3,6 +3,7 @@
   "extends": [
     "local>NethServer/.github:ns8-automerge"
   ],
+  "osvVulnerabilityAlerts": false,
   "vulnerabilityAlerts": {
     "enabled": false
   },
