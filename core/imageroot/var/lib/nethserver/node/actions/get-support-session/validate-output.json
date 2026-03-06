@@ -6,10 +6,12 @@
     "examples": [
         {
             "session_id": "811630de-67f4-5b6d-8b2f-7cc01f592b1b",
+            "expires_at": "2026-03-03T15:53:22+00:00",
             "active": true
         },
         {
             "session_id": "811630de-67f4-5b6d-8b2f-7cc01f592b1b",
+            "expires_at": "",
             "active": false
         }
     ],
@@ -22,6 +24,10 @@
         "session_id": {
             "type": "string",
             "description": "Last opened session identifier for the support team"
+        },
+        "expires_at": {
+            "type":"string",
+            "description": "Scheduled and automatic session stop time, in ISO 8601 format. An empty string is returned if support is not active."
         },
         "active": {
             "type": "boolean",

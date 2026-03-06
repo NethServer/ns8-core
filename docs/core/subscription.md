@@ -80,16 +80,17 @@ with this command:
     systemctl start support
     systemctl status support
 
-The second command prints a journal excerpt that should contain the session ID.
-
 When a node support session is started
 
-- support SSH key is added to the node /root/.ssh/authorized_keys file.
-  Only connections from the node itself are allowed with that key
+- support SSH key is added to the node `/root/.ssh/authorized_keys` file
+  with an `expiry-time=` attribute. Only connections from the node itself
+  are allowed with that key.
 - support credentials are enabled for cluster-admin access. The user name
   is defined in Redis. Type `HGET cluster/subscription support_user` to
   see its value, by default it is `nethsupport`. The password is set to
-  the support session ID value
+  the support session ID value.  `nethsupport` can connect from localhost
+  and a restricted set of IP addresses, coded in the
+  `support-clusteradminctl` command.
 - an OpenVPN tunnel is established with the support server, allowing
   connections to sshd and cluster-admin. The support server address and
   port can be overridden in the Redis `cluster/subscription` key
@@ -99,6 +100,19 @@ When the support session is terminated
 - the OpenVPN tunnel is closed
 - cluster-admin access is removed
 - SSH key is removed
+
+The support session is automatically terminated after 24 hours. To avoid
+automatic termination and allow it to run up to the maximum allowed
+duration of 7 days, execute this command on the relevant node:
+
+    systemctl stop support-expire.timer
+
+After 7 days the session is terminated unconditionally.
+
+Inspect the node session expiry with the `get-support-session` action. For
+example:
+
+    api-cli run node/7/get-support-session
 
 ## OpenVPN support client
 

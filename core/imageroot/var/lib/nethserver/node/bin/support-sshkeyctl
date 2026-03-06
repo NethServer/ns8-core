@@ -16,7 +16,7 @@ pubkey_file=${3:-${AGENT_INSTALL_DIR:?}/etc/support/ssh-rsa.pub}
 function add_ssh_key
 {
     local keyopts
-    keyopts=$(printf 'expiry-time="%s",from="127.0.0.1"' "$(date -d 'next month' +'%Y%m%dZ')")
+    keyopts=$(printf 'expiry-time="%s",from="127.0.0.1"' "$(date --utc -d '7 days' +'%Y%m%d%H%M%SZ')")
     umask 077
     printf "%s %s %s\n" "${keyopts}" "$(cat "${pubkey_file}")" "${key_comment}" >> "${authkeys_file}"
 }
