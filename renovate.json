@@ -3,6 +3,9 @@
   "extends": [
     "local>NethServer/.github:ns8-automerge"
   ],
+  "vulnerabilityAlerts": {
+    "enabled": false
+  },
   "packageRules": [
     {
       "description": "Suppress PRs for major and minor updates",
