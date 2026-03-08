@@ -6,50 +6,187 @@ nav_order: 3
 
 # Development process
 
-All NethServer projects follow a shared development process.
+The NethServer project follows a shared development process. See
+[NethServer developer handbook](https://handbook.nethserver.org/) for a
+detailed guide on **how to contribute to NethServer** and how we keep
+track of the work with GitHub Project and Issues.
 
-See [NethServer development handbook](https://handbook.nethserver.org/) for a detailed guide on how to contribute to NethServer.
+The following section describes the release process of NS8 core
+and application images.
 
-Here you can find some additional guidelines regarding the releases of modules, including the core.
+## NS8 release process
 
-## Release process
+The release process is fully automated with a [GitHub Actions
+workflow][^gha]. The workflow is triggered when a [Semver tag][^semver] is pushed
+to the git repository.
 
-The release process starts from issues that keep track of the work.
-How to use the issues is documented inside the [handbook](https://handbook.nethserver.org/issues/) page.
-But some additional steps are required for a correct release of all NS8 modules, including the core.
+[^gha]: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+[^semver]: https://handbook.nethserver.org/version_numbering/#version-numbering-rules
 
-It's important to create a release on GitHub for each new version of the module,
-because the release allows to attach the SBOM files and create a changelog.
+An action runner starts and executes the main release procedure as defined
+by a .yml file under ``.github/workflows/`` directory:
 
-The release process is divided into two main steps:
+- `publish-images.yml`, for application images,
+- `core.yml`, for core images.
 
-1. tag the repository with the new version, following the [version numbering](https://handbook.nethserver.org/version_numbering/) guidelines
-2. create a release on GitHub, attaching the SBOM files generated during the build process
+In both cases the repository build script (e.g. `build-images.sh`) is
+executed by the action runner and resulting Podman container images are
+uploaded to the `ghcr.io` image registry.
 
-The best and recommended way to create a new release is using the [GitHub CLI](https://cli.github.com/).
-After installing the tool, use the following command:
+There may be other conditional workflows that follow. For example:
 
-```bash
-gh release create
-```
+- If the Semver tag is _stable_, the `ns8-core` repository also builds and
+  uploads .qcow and .vmdk images to DigitalOcean Spaces.
+- If the stable tag corresponds to a GitHub release, SBOM signatures are
+  produced and attached to the release.
 
-The command will create a tag and a release on GitHub.
-In case of stable releases, the command will also attach the SBOM files generated during the build process.
+The repository GitHub release page is referenced by NS8 Software Center UI
+to provide a human-readable summary of changes (changelog). Hence **a
+GitHub release must be created**, with the same name as the Semver tag.
 
-Then, you can sync the remote tag with the local repository using the following command:
+Since SBOM signatures and the release changelog are mandatory, the
+following section explains how to simultaneously create the repository tag
+with a GitHub release.
 
-```bash
-git fetch --tags
-```
+### Stable release with `gh release` command
 
-For testing releases, you can also use [ns8-release-module](https://github.com/NethServer/gh-ns8-release-module/). 
-It is a [GitHub CLI](https://cli.github.com/) Extension that automates the creation and management and it's quite useful when
-creating testing releases.
-See the full documentation inside the [README](https://github.com/NethServer/gh-ns8-release-module/blob/main/Readme.md).
+As pre-requisite, install `gh`, the official [GitHub CLI][^ghcli] command,
+to trigger the release process from a terminal.
 
-### Manual release
+[^ghcli]: https://cli.github.com/
 
-**Warning**: always prefer the GitHub CLI to create a release.
+#### 1. Last release number
+
+Find the last release number, to use as base to inspect the pending
+changes on the `main` branch and generate the changelog.
+
+    ⬢ [davidep@toolbx ns8-core]$ gh release list -L 3
+    TITLE   TYPE    TAG NAME  PUBLISHED
+    3.17.1  Latest  3.17.1    about 6 days ago
+    3.17.0          3.17.0    about 21 days ago
+    3.16.1          3.16.1    about 24 days ago
+
+For example, latest is `3.17.1`.
+
+#### 2. Inspect pending changes
+
+The goal of this step is to ensure that all pending changes have gone
+through the QA review process.
+
+Switch to `main` branch and pull latest changes.
+
+    git checkout main
+    git pull origin main
+
+Review the pending changes changelog:
+
+    git log
+    git diff --stat 3.17.1
+    git diff 3.17.1
+
+Commits often contain a reference to pull requests. Reference to the
+related issue is reported in the PR description.
+
+#### 3. Find related issues
+
+Find in the issue tracker the items with
+[VERIFIED][^vrfy] label.
+Filter by project, e.g. `NethServer`, `NethVoice` or by milestone.
+
+[^vrfy]: https://github.com/NethServer/dev/issues?q=is%3Aissue%20state%3Aopen%20label%3Averified
+
+If there are still non-verified commits, for example commits that belong
+to issues in development or QA stage, **the release process must be stopped**.
+
+#### 4. Check documentation
+
+If a related issue requires a documentation update, make sure the
+documentation changes are ready for publication in [ns8-docs
+repository][^ns8docs].
+
+[^ns8docs]: https://github.com/NethServer/ns8-docs
+
+#### 5. Check translations
+
+If there are pending UI changes, make sure related strings are ready for
+translation on [NS8 Weblate project][^weblate].
+
+[^weblate]: https://hosted.weblate.org/projects/ns8/#components
+
+Check also if a pull request from Weblate is ready, and merge it.
+
+#### 6. Create the release
+
+Choose the [release version number][^semver], incrementing the latest
+version major, minor, or patch number.  For example `3.17.1 -> 3.18.0` is
+a minor increment.
+
+Create the release and git tag on GitHub in a single command:
+
+    gh release create 3.18.0 --generate-notes --notes-start-tag 3.17.1
+
+Note that if you run `gh` on a git local repository, the working tree
+state does not matter.  The command creates the tag on the last commit of
+the main repository branch. Use ``--target`` to select an alternative
+commit, e.g.:
+
+    gh release create 3.18.0 --generate-notes --notes-start-tag 3.17.1 --target COMMIT-SHA
+
+Then, you can sync the remote tag with the local repository using the
+following command:
+
+    git fetch --tags
+
+#### 7. Publish documentation
+
+To publish a documentation PR found at step 4, just merge it.
+
+#### 8. Verification checks
+
+1. The GitHub release has the list of closed PRs (changelog)
+1. The SBOM artifacts were attached to the release
+1. The container images were pushed to GitHub Packages (ghcr.io)
+1. For ns8-core only, the VM pre-built images were uploaded to
+   DigitalOcean Spaces
+1. Documentation was published
+1. Translation repository is not locked
+1. Related issues were closed with a link to the GitHub release
+
+## Testing releases
+
+Testing releases occur when code changes are merged with the `main`
+branch, to start a testing (QA) process.
+
+Choose the [release version number][^semver], incrementing the latest
+stable version major, minor, or patch number. For example, `3.17.1 ->
+3.17.2` is a patch increment for a bug fix. The latest release is visible
+in the GitHub repository page.
+
+Then append a pre-release suffix, like `-testing.1`, or `-dev.1`:
+
+    3.17.2-testing.1
+
+Create the testing tag on the last commit of your working tree:
+
+    git tag 3.17.2-testing.1
+
+Push the tag to trigger the testing build:
+
+    git push origin 3.17.2-testing.1
+
+For testing releases, you can also use
+[ns8-release-module](https://github.com/NethServer/gh-ns8-release-module/).
+
+It is a [GitHub CLI](https://cli.github.com/) extension that automates the
+creation and management and it's quite useful when creating testing
+releases.
+
+See the full documentation inside the
+[README](https://github.com/NethServer/gh-ns8-release-module/blob/main/Readme.md).
+
+## Create a release from GitHub
+
+> **Warning**: always prefer the GitHub CLI to create a release.
 
 In case you forgot to create a release using the GitHub CLI, you can create it manually.
 First, make sure the tag is created in the repository and pushed to the remote. Then:
@@ -58,10 +195,10 @@ First, make sure the tag is created in the repository and pushed to the remote. 
     - Go to the repository's "Releases" section.
     - Click on "Draft a new release" to start the process.
 
-3. Add a changelog:
+2. Add a changelog:
     - Provide a detailed changelog for the release.
     - Optionally, use the automatic changelog generation button if available.
 
-4. Attach the SBOM file:
+3. Attach the SBOM file:
     - For stable releases, attach the Software Bill of Materials (SBOM) file to the release by respecting conventions describe in the [SBOM generation](https://handbook.nethserver.org/security/#sbom-software-bill-of-materials) page.
     You can find the SBOM files as artifacts of the GitHub Actions workflow.
