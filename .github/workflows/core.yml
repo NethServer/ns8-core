@@ -14,7 +14,7 @@ on:
 
 jobs:
   module:
-    uses: NethServer/ns8-github-actions/.github/workflows/module-info.yml@main
+    uses: NethServer/ns8-github-actions/.github/workflows/module-info.yml@v1
   push_image:
     env:
       REPONAME: ${{needs.module.outputs.name}}

@@ -5,7 +5,7 @@ on:
       - "labeled"
   workflow_dispatch:
 env:
-  NS8_CORE_MODULES: "core traefik loki ldapproxy"
+  NS8_CORE_MODULES: "core traefik loki ldapproxy metrics"
 
 jobs:
   ns8:
@@ -29,7 +29,8 @@ jobs:
           then
             tag="latest"
           fi
-          echo "::set-output name=name::${tag}"
+          # Sanitize tag, slash is forbidden
+          echo "name=${tag//\//-}" >> $GITHUB_OUTPUT
       - id: modules
         run: |
           modules_list='[]'
@@ -41,7 +42,7 @@ jobs:
               modules_list=$(echo "${modules_list}"  | jq -c --arg m ghcr.io/nethserver/${module}:${{ steps.tag.outputs.name }} ' . + [$m]')
             fi
           done
-          echo "::set-output name=list::${modules_list}"
+          echo "list=${modules_list}" >> $GITHUB_OUTPUT
   run_tests:
     needs: ns8
     uses: NethServer/ns8-github-actions/.github/workflows/test-on-digitalocean-infra.yml@main
