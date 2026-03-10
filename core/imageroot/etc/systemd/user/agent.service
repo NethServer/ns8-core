@@ -10,6 +10,8 @@ Environment=AGENT_ID=module/%u
 EnvironmentFile=/etc/nethserver/agent.env
 EnvironmentFile=-%S/state/agent.env
 WorkingDirectory=%S/state
+# Fix bogus permissions for NethServer/dev#7915
+ExecStartPre=-/usr/bin/chmod -c 644 environment
 ExecStart=/usr/local/bin/agent \
     --agentid=${AGENT_ID} \
     --actionsdir=${AGENT_BASEACTIONS_DIR} \
