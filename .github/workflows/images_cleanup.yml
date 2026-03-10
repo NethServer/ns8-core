@@ -5,7 +5,7 @@ on:
     types: [closed]
   workflow_dispatch:
 env:
-  NS8_MODULES: "core redis rsync restic rclone"
+  NS8_MODULES: "redis restic core rsync support rclone"
 
 jobs:
   ns8:
@@ -42,15 +42,15 @@ jobs:
           else
             tag="${{ github.ref_name }}"
           fi
-          echo "name=${tag}" >> $GITHUB_OUTPUT
+          # Sanitize tag, slash is forbidden
+          echo "name=${tag//\//-}" >> $GITHUB_OUTPUT
       - id: modules
         name: "Retrieve the list of the PR's containers"
         run: |
           modules_list='[]'
           for module in ${NS8_MODULES}
           do
-            res=$(podman search --limit 150 --list-tags   --format json   ghcr.io/${{ steps.gh_user.outputs.name }}/${module} | jq 'any(.[].Tags[]; . == "${{ steps.tag.outputs.name }}")')
-            if [ "$res" = "true" ]
+            if skopeo inspect "docker://ghcr.io/${{ steps.gh_user.outputs.name }}/${module}:${{ steps.tag.outputs.name }}"
             then
               modules_list=$(echo "${modules_list}"  | jq -c --arg m ${module} ' . + [$m]')
             fi
