@@ -19,7 +19,7 @@ def extract_region_code(hostname, position, default=""):
         return default
 
 core_env = agent.read_envfile("/etc/nethserver/core.env")
-rclone_image = core_env["RESTIC_IMAGE"]
+rclone_image = core_env["RCLONE_IMAGE"]
 
 rdb = agent.redis_connect(privileged=False, host="127.0.0.1")
 try:
