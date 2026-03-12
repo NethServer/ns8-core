@@ -51,12 +51,22 @@
       </cv-row>
       <cv-row v-if="error.addFavorite">
         <cv-column>
-          <NsInlineNotification kind="error" :title="$t('action.add-favorite')" :description="error.addFavorite" :showCloseButton="false" />
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.add-favorite')"
+            :description="error.addFavorite"
+            :showCloseButton="false"
+          />
         </cv-column>
       </cv-row>
       <cv-row v-if="error.removeFavorite">
         <cv-column>
-          <NsInlineNotification kind="error" :title="$t('action.remove-favorite')" :description="error.removeFavorite" :showCloseButton="false" />
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.remove-favorite')"
+            :description="error.removeFavorite"
+            :showCloseButton="false"
+          />
         </cv-column>
       </cv-row>
     </cv-grid>
@@ -285,21 +295,32 @@
                         :disabled="isUpdateInProgress"
                         @click="updateInstance(row, true)"
                       >
-                        <NsMenuItem :icon="Upgrade20" :label="$t('software_center.update_to_testing_version')" />
+                        <NsMenuItem
+                          :icon="Upgrade20"
+                          :label="
+                            $t('software_center.update_to_testing_version')
+                          "
+                        />
                       </cv-overflow-menu-item>
                       <!-- add to favorites -->
                       <cv-overflow-menu-item
                         v-if="!favoriteApps.includes(row.id)"
                         @click="addAppToFavorites(row)"
                       >
-                        <NsMenuItem :icon="Star20" :label="$t('software_center.add_to_favorites')" />
+                        <NsMenuItem
+                          :icon="Star20"
+                          :label="$t('software_center.add_to_favorites')"
+                        />
                       </cv-overflow-menu-item>
                       <!-- remove from favorites -->
                       <cv-overflow-menu-item
                         v-if="favoriteApps.includes(row.id)"
                         @click="removeAppFromFavorites(row)"
                       >
-                        <NsMenuItem :icon="Star20" :label="$t('software_center.remove_from_favorites')" />
+                        <NsMenuItem
+                          :icon="Star20"
+                          :label="$t('software_center.remove_from_favorites')"
+                        />
                       </cv-overflow-menu-item>
                       <cv-overflow-menu-item @click="showCloneAppModal(row)">
                         <NsMenuItem
@@ -649,9 +670,21 @@ export default {
       this.error.addFavorite = "";
       const taskAction = "add-favorite";
       this.$root.$once(taskAction + "-completed", this.addFavoriteCompleted);
-      const res = await to(this.createClusterTask({ action: taskAction, data: { instance: app.id }, extra: { title: this.$t("action." + taskAction), isNotificationHidden: true } }));
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: { instance: app.id },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
       const err = res[0];
-      if (err) { console.error(`error creating task ${taskAction}`, err); this.error.addFavorite = this.getErrorMessage(err); }
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addFavorite = this.getErrorMessage(err);
+      }
     },
     removeFavoriteCompleted() {
       this.$root.$emit("reloadAppDrawer");
@@ -661,9 +694,21 @@ export default {
       this.error.removeFavorite = "";
       const taskAction = "remove-favorite";
       this.$root.$once(taskAction + "-completed", this.removeFavoriteCompleted);
-      const res = await to(this.createClusterTask({ action: taskAction, data: { instance: app.id }, extra: { title: this.$t("action." + taskAction), isNotificationHidden: true } }));
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: { instance: app.id },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
       const err = res[0];
-      if (err) { console.error(`error creating task ${taskAction}`, err); this.error.removeFavorite = this.getErrorMessage(err); }
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeFavorite = this.getErrorMessage(err);
+      }
     },
     showCloneAppModal(instance) {
       this.cloneOrMove.isClone = true;
