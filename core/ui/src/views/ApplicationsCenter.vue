@@ -669,7 +669,11 @@ export default {
     async addFavorite(app) {
       this.error.addFavorite = "";
       const taskAction = "add-favorite";
-      this.$root.$once(taskAction + "-completed", this.addFavoriteCompleted);
+      const eventId = this.getUuid();
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.addFavoriteCompleted
+      );
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -677,6 +681,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -693,7 +698,11 @@ export default {
     async removeFavorite(app) {
       this.error.removeFavorite = "";
       const taskAction = "remove-favorite";
-      this.$root.$once(taskAction + "-completed", this.removeFavoriteCompleted);
+      const eventId = this.getUuid();
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.removeFavoriteCompleted
+      );
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -701,6 +710,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
