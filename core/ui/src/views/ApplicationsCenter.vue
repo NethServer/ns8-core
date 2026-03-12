@@ -291,7 +291,7 @@
                       </cv-overflow-menu-item>
                       <!-- update to testing version -->
                       <cv-overflow-menu-item
-                        v-if="isTestingUpdateAvailable(row.appInfoData, row)"
+                        v-if="isTestingUpdateAvailable(row)"
                         :disabled="isUpdateInProgress"
                         @click="updateInstance(row, true)"
                       >
@@ -648,13 +648,16 @@ export default {
       );
       this.isShownUpdateModal = true;
     },
-    isTestingUpdateAvailable(app, instance) {
-      return (
-        app.updates &&
-        app.updates.find((update) => {
-          return update.id === instance.id && update.testing_update;
-        })
-      );
+    isTestingUpdateAvailable(instance) {
+      const app = this.appUpdates.find((a) => a.id === instance.appInfoData.id);
+
+      if (!app || !app.updates) {
+        return false;
+      }
+
+      return app.updates.find((update) => {
+        return update.id === instance.id && update.testing_update;
+      });
     },
     addAppToFavorites(instance) {
       this.addFavorite(instance);
@@ -859,8 +862,11 @@ export default {
 
       for (const module of modules) {
         const hasStableUpdate = module.updates.some((update) => update.update);
+        const hasTestingUpdate = module.updates.some(
+          (update) => update.testing_update
+        );
 
-        if (hasStableUpdate) {
+        if (hasStableUpdate || hasTestingUpdate) {
           appUpdates.push(module);
         }
 
