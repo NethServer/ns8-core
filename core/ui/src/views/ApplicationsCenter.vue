@@ -49,6 +49,26 @@
           />
         </cv-column>
       </cv-row>
+      <cv-row v-if="error.addFavorite">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.add-favorite')"
+            :description="error.addFavorite"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.removeFavorite">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.remove-favorite')"
+            :description="error.removeFavorite"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
     </cv-grid>
     <cv-grid fullWidth>
       <cv-row>
@@ -262,11 +282,44 @@
                       <cv-overflow-menu-item
                         v-if="row.update"
                         :disabled="isUpdateInProgress"
-                        @click="updateInstance(row)"
+                        @click="updateInstance(row, false)"
                       >
                         <NsMenuItem
                           :icon="Upgrade20"
                           :label="$t('applications.update')"
+                        />
+                      </cv-overflow-menu-item>
+                      <!-- update to testing version -->
+                      <cv-overflow-menu-item
+                        v-if="isTestingUpdateAvailable(row)"
+                        :disabled="isUpdateInProgress"
+                        @click="updateInstance(row, true)"
+                      >
+                        <NsMenuItem
+                          :icon="Upgrade20"
+                          :label="
+                            $t('software_center.update_to_testing_version')
+                          "
+                        />
+                      </cv-overflow-menu-item>
+                      <!-- add to favorites -->
+                      <cv-overflow-menu-item
+                        v-if="!favoriteApps.includes(row.id)"
+                        @click="addAppToFavorites(row)"
+                      >
+                        <NsMenuItem
+                          :icon="Star20"
+                          :label="$t('software_center.add_to_favorites')"
+                        />
+                      </cv-overflow-menu-item>
+                      <!-- remove from favorites -->
+                      <cv-overflow-menu-item
+                        v-if="favoriteApps.includes(row.id)"
+                        @click="removeAppFromFavorites(row)"
+                      >
+                        <NsMenuItem
+                          :icon="Star20"
+                          :label="$t('software_center.remove_from_favorites')"
                         />
                       </cv-overflow-menu-item>
                       <cv-overflow-menu-item @click="showCloneAppModal(row)">
@@ -369,7 +422,7 @@
       :isShown="isShownUpdateModal"
       :app="app"
       :instance="instanceToUpdate"
-      :isUpdatingToTestingVersion="false"
+      :isUpdatingToTestingVersion="isUpdatingToTestingVersion"
       @hide="isShownUpdateModal = false"
       @updateCompleted="listModules"
     />
@@ -456,6 +509,7 @@ export default {
       },
       instanceToUpdate: null,
       isShownUpdateModal: false,
+      isUpdatingToTestingVersion: false,
       appUpdates: [],
       app: null,
       modules: [],
@@ -475,6 +529,8 @@ export default {
         listModules: "",
         removeModule: "",
         addNote: "",
+        addFavorite: "",
+        removeFavorite: "",
       },
       isShowNote: false,
       noteInstance: null,
@@ -486,7 +542,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["isUpdateInProgress", "clusterNodes", "isUpdateInProgress"]),
+    ...mapState(["isUpdateInProgress", "clusterNodes", "favoriteApps"]),
     instanceToUninstallLabel() {
       if (!this.instanceToUninstall) {
         return "";
@@ -566,7 +622,7 @@ export default {
     this.listModules();
   },
   methods: {
-    ...mapActions(["setUpdateInProgressInStore"]),
+    ...mapActions(["setUpdateInProgressInStore", "setAppDrawerShownInStore"]),
     showAppInfo(app) {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
@@ -584,12 +640,88 @@ export default {
       this.filter.text = "";
       this.filter.moduleType = "any";
     },
-    updateInstance(instance) {
+    updateInstance(instance, isUpdatingToTestingVersion = false) {
       this.instanceToUpdate = instance;
+      this.isUpdatingToTestingVersion = isUpdatingToTestingVersion;
       this.app = this.appUpdates.find(
         (app) => app.id === instance.appInfoData.id
       );
       this.isShownUpdateModal = true;
+    },
+    isTestingUpdateAvailable(instance) {
+      const app = this.appUpdates.find((a) => a.id === instance.appInfoData.id);
+
+      if (!app || !app.updates) {
+        return false;
+      }
+
+      return app.updates.find((update) => {
+        return update.id === instance.id && update.testing_update;
+      });
+    },
+    addAppToFavorites(instance) {
+      this.addFavorite(instance);
+    },
+    removeAppFromFavorites(instance) {
+      this.removeFavorite(instance);
+    },
+    addFavoriteCompleted() {
+      this.$root.$emit("reloadAppDrawer");
+      this.setAppDrawerShownInStore(true);
+    },
+    async addFavorite(app) {
+      this.error.addFavorite = "";
+      const taskAction = "add-favorite";
+      const eventId = this.getUuid();
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.addFavoriteCompleted
+      );
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: { instance: app.id },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addFavorite = this.getErrorMessage(err);
+      }
+    },
+    removeFavoriteCompleted() {
+      this.$root.$emit("reloadAppDrawer");
+      this.setAppDrawerShownInStore(true);
+    },
+    async removeFavorite(app) {
+      this.error.removeFavorite = "";
+      const taskAction = "remove-favorite";
+      const eventId = this.getUuid();
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.removeFavoriteCompleted
+      );
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: { instance: app.id },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeFavorite = this.getErrorMessage(err);
+      }
     },
     showCloneAppModal(instance) {
       this.cloneOrMove.isClone = true;
@@ -730,8 +862,11 @@ export default {
 
       for (const module of modules) {
         const hasStableUpdate = module.updates.some((update) => update.update);
+        const hasTestingUpdate = module.updates.some(
+          (update) => update.testing_update
+        );
 
-        if (hasStableUpdate) {
+        if (hasStableUpdate || hasTestingUpdate) {
           appUpdates.push(module);
         }
 
@@ -883,6 +1018,7 @@ export default {
   vertical-align: middle;
   margin-right: 8px;
 }
+
 .app-name {
   font-weight: 600;
 }
