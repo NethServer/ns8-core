@@ -1,6 +1,7 @@
 *** Settings ***
 Library     SSHLibrary
 Library     RequestsLibrary
+Library     String
 Resource    api.resource
 Suite Setup    Evaluate    __import__('urllib3').disable_warnings(__import__('urllib3').exceptions.InsecureRequestWarning)
 
@@ -43,10 +44,9 @@ cluster agent credentials are blocked from external IP
 
 cluster agent credentials are allowed from cluster network
     ${password} =    Execute Command    runagent grep REDIS_PASSWORD agent.env | cut -d= -f2
-    ${jsondata} =    Evaluate    json.loads('{"username":"cluster","password":"${password}"}')    modules=json
-    ${request} =    POST    https://10.5.4.1/cluster-admin/api/login
+    ${jsondata}    Set Variable    {"username":"cluster","password":"${password}"}
+    ${request} =     HTTP internal  POST    https://10.5.4.1/cluster-admin/api/login
     ...    json=${jsondata}
-    ...    verify=${FALSE}
     ...    expected_status=200
 
 node/1 agent credentials are blocked from external IP
@@ -60,10 +60,9 @@ node/1 agent credentials are blocked from external IP
 
 node/1 agent credentials are allowed from cluster network
     ${password} =    Execute Command    runagent -m node grep REDIS_PASSWORD agent.env | cut -d= -f2
-    ${jsondata} =    Evaluate    json.loads('{"username":"node/1","password":"${password}"}')    modules=json
-    ${request} =    POST    https://10.5.4.1/cluster-admin/api/login
+    ${jsondata}    Set Variable    {"username":"node/1","password":"${password}"}
+    ${request} =     HTTP internal  POST    https://10.5.4.1/cluster-admin/api/login
     ...    json=${jsondata}
-    ...    verify=${FALSE}
     ...    expected_status=200
 
 module/traefik1 credentials are blocked from external IP (login)
@@ -77,11 +76,10 @@ module/traefik1 credentials are blocked from external IP (login)
     Should Contain    ${request.text}    incorrect Username or Password    Unexpected response contents
 
 module/traefik1 credentials are allowed from cluster network
+    ${jsondata}    Set Variable    {"username":"module/traefik1","password":"${TRAEFIK1_PASSWORD}"}
     ${password} =    Execute Command    runagent -m traefik1 grep REDIS_PASSWORD agent.env | cut -d= -f2
-    ${jsondata} =    Evaluate    json.loads('{"username":"module/traefik1","password":"${TRAEFIK1_PASSWORD}"}')    modules=json
-    ${request} =    POST    https://10.5.4.1/cluster-admin/api/login
+    ${request} =     HTTP internal  POST    https://10.5.4.1/cluster-admin/api/login
     ...    json=${jsondata}
-    ...    verify=${FALSE}
     ...    expected_status=200
 
 HTTP-Basic with module/traefik1 credentials is denied from external IP
@@ -93,11 +91,28 @@ HTTP-Basic with module/traefik1 credentials is denied from external IP
     Should Contain    ${request.text}    IP not allowed    Unexpected response contents
 
 HTTP-Basic with module/traefik1 credentials is allowed from cluster network
-    ${basic_auth} =    Evaluate    ('module/traefik1', '${TRAEFIK1_PASSWORD}')
-    ${request} =    GET    https://10.5.4.1/cluster-admin/api/module/traefik1/http-basic/set-route
-    ...    auth=${basic_auth}
-    ...    verify=${FALSE}
+    ${request} =    HTTP internal  GET    https://10.5.4.1/cluster-admin/api/module/traefik1/http-basic/set-route
+    ...    auth=module/traefik1:${TRAEFIK1_PASSWORD}
     ...    expected_status=200
 
 Cleanup testblock user
     Run task    cluster/remove-user    {"user":"testblock"}
+
+
+*** Keywords ***
+HTTP internal
+    [Arguments]    ${verb}    ${url}    ${expected_status}=200    ${json}=    ${auth}=
+    ${curl_cmd}  Set Variable  curl -i -k -X ${verb}
+    IF  $json != ""
+       ${curl_cmd}    Catenate    ${curl_cmd}  --data '${json}' -H "Content-Type: application/json"
+    END
+    IF  $auth != ""
+        ${curl_cmd}    Catenate    ${curl_cmd}  -u "${auth}"
+    END
+    ${curl_cmd}    Catenate    ${curl_cmd}    '${url}'
+    ${out}  ${err}  ${rc} =    Execute Command    ${curl_cmd}
+    ...    return_stdout=True
+    ...    return_stderr=True
+    ...    return_rc=True
+    Should Match    ${out}  HTTP/2 ${expected_status}*
+    RETURN  ${out}
