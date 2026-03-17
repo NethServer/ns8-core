@@ -58,7 +58,7 @@ fi
 echo "Checking port 80 and 443 are not already in use"
 for port in 80 443
 do
-    if ss -H -l "( sport = :${port} )" | grep -q .; then
+    if ss -H -l -t -u "( sport = :${port} )" | grep -q .; then
         echo "Installation failed: port ${port} is already in use."
         exit 1
     fi
