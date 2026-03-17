@@ -241,7 +241,7 @@
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
                     v-if="!favoriteApps.includes(instance.id)"
-                    @click="addAppToFavorites(instance)"
+                    @click="addFavorite(instance)"
                   >
                     <NsMenuItem
                       :icon="Star20"
@@ -250,7 +250,7 @@
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
                     v-if="favoriteApps.includes(instance.id)"
-                    @click="removeAppFromFavorites(instance)"
+                    @click="removeFavorite(instance)"
                   >
                     <NsMenuItem
                       :icon="Star20"
@@ -645,53 +645,30 @@ export default {
       this.isUpdatingToTestingVersion = isUpdatingToTestingVersion;
       this.isShownUpdateModal = true;
     },
-    addAppToFavorites(instance) {
-      this.addFavorite(instance);
-    },
-    removeAppFromFavorites(instance) {
-      this.removeFavorite(instance);
-    },
-    removeFavoriteCompleted() {
-      this.$root.$emit("reloadAppDrawer");
-      this.setAppDrawerShownInStore(true);
-    },
-    async removeFavorite(app) {
-      this.error.removeFavorite = "";
-      const taskAction = "remove-favorite";
-
-      // register to task completion
-      this.$root.$once(taskAction + "-completed", this.removeFavoriteCompleted);
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            instance: app.id,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.removeFavorite = this.getErrorMessage(err);
-        return;
-      }
-    },
     addFavoriteCompleted() {
       this.$root.$emit("reloadAppDrawer");
       this.setAppDrawerShownInStore(true);
     },
+    addFavoriteAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.addFavorite = this.$t("error.generic_error");
+    },
     async addFavorite(app) {
       this.error.addFavorite = "";
       const taskAction = "add-favorite";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.addFavoriteAborted
+      );
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.addFavoriteCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.addFavoriteCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -702,6 +679,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -710,6 +688,68 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.addFavorite = this.getErrorMessage(err);
+        this.$root.$off(
+          `${taskAction}-completed-${eventId}`,
+          this.addFavoriteCompleted
+        );
+        this.$root.$off(
+          `${taskAction}-aborted-${eventId}`,
+          this.addFavoriteAborted
+        );
+        return;
+      }
+    },
+    removeFavoriteCompleted() {
+      this.$root.$emit("reloadAppDrawer");
+      this.setAppDrawerShownInStore(true);
+    },
+    removeFavoriteAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.removeFavorite = this.$t("error.generic_error");
+    },
+    async removeFavorite(app) {
+      this.error.removeFavorite = "";
+      const taskAction = "remove-favorite";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.removeFavoriteAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.removeFavoriteCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            instance: app.id,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeFavorite = this.getErrorMessage(err);
+        this.$root.$off(
+          `${taskAction}-completed-${eventId}`,
+          this.removeFavoriteCompleted
+        );
+        this.$root.$off(
+          `${taskAction}-aborted-${eventId}`,
+          this.removeFavoriteAborted
+        );
         return;
       }
     },
