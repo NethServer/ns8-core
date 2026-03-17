@@ -305,7 +305,7 @@
                       <!-- add to favorites -->
                       <cv-overflow-menu-item
                         v-if="!favoriteApps.includes(row.id)"
-                        @click="addAppToFavorites(row)"
+                        @click="addFavorite(row)"
                       >
                         <NsMenuItem
                           :icon="Star20"
@@ -315,7 +315,7 @@
                       <!-- remove from favorites -->
                       <cv-overflow-menu-item
                         v-if="favoriteApps.includes(row.id)"
-                        @click="removeAppFromFavorites(row)"
+                        @click="removeFavorite(row)"
                       >
                         <NsMenuItem
                           :icon="Star20"
@@ -659,20 +659,26 @@ export default {
         return update.id === instance.id && update.testing_update;
       });
     },
-    addAppToFavorites(instance) {
-      this.addFavorite(instance);
-    },
-    removeAppFromFavorites(instance) {
-      this.removeFavorite(instance);
-    },
     addFavoriteCompleted() {
       this.$root.$emit("reloadAppDrawer");
       this.setAppDrawerShownInStore(true);
+    },
+    addFavoriteAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.addFavorite = this.$t("error.generic_error");
     },
     async addFavorite(app) {
       this.error.addFavorite = "";
       const taskAction = "add-favorite";
       const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.addFavoriteAborted
+      );
+
+      // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
         this.addFavoriteCompleted
@@ -692,16 +698,37 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.addFavorite = this.getErrorMessage(err);
+        this.$root.$off(
+          `${taskAction}-completed-${eventId}`,
+          this.addFavoriteCompleted
+        );
+        this.$root.$off(
+          `${taskAction}-aborted-${eventId}`,
+          this.addFavoriteAborted
+        );
+        return;
       }
     },
     removeFavoriteCompleted() {
       this.$root.$emit("reloadAppDrawer");
       this.setAppDrawerShownInStore(true);
     },
+    removeFavoriteAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.removeFavorite = this.$t("error.generic_error");
+    },
     async removeFavorite(app) {
       this.error.removeFavorite = "";
       const taskAction = "remove-favorite";
       const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.removeFavoriteAborted
+      );
+
+      // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
         this.removeFavoriteCompleted
@@ -721,6 +748,15 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.removeFavorite = this.getErrorMessage(err);
+        this.$root.$off(
+          `${taskAction}-completed-${eventId}`,
+          this.removeFavoriteCompleted
+        );
+        this.$root.$off(
+          `${taskAction}-aborted-${eventId}`,
+          this.removeFavoriteAborted
+        );
+        return;
       }
     },
     showCloneAppModal(instance) {
