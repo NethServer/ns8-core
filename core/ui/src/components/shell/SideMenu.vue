@@ -93,9 +93,7 @@ export default {
   > .bx--side-nav__link:hover,
 .core-side-nav
   .bx--side-nav__menu
-  a.bx--side-nav__link:not(.bx--side-nav__link--current):not(
-    [aria-current="page"]
-  ):hover,
+  a.bx--side-nav__link:not(.bx--side-nav__link--current):not([aria-current="page"]):hover,
 .core-side-nav .bx--side-nav a.bx--header__menu-item:hover,
 .core-side-nav
   .bx--side-nav
