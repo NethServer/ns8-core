@@ -88,6 +88,11 @@
             "type": "number",
             "title": "UDP ports",
             "description": "Number of UDP ports that will be allocate"
+        },
+        "nologin": {
+            "type": "boolean",
+            "title": "No login shell",
+            "description": "If true, set /usr/sbin/nologin as the login shell for the rootless module user."
         }
     }
 }

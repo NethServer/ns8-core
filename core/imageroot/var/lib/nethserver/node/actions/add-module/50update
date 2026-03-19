@@ -54,6 +54,7 @@ def save_agent_env(module_id):
 request = json.load(sys.stdin)
 module_id = request['module_id']
 is_rootfull = request['is_rootfull']
+nologin = request.get('nologin', False)
 module_environment = request['environment']
 image_url = module_environment['IMAGE_URL']
 
@@ -104,7 +105,8 @@ else: # rootless
         # use default base path (see useradd -D)
         module_basedir_args = []
     # Create the module dirs structure
-    agent.run_helper('useradd', *module_basedir_args, '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
+    login_shell = '/usr/sbin/nologin' if nologin else '/bin/bash'
+    agent.run_helper('useradd', *module_basedir_args, '-m', '-k', '/etc/nethserver/skel', '-s', login_shell, module_id).check_returncode()
     agent.run_helper('chmod', '-c', '0700', os.path.expanduser("~" + module_id)).check_returncode()
     os.chdir(os.path.expanduser("~" + module_id) + '/.config')
     save_environment(module_environment)
