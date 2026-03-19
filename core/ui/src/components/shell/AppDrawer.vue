@@ -720,6 +720,11 @@ export default {
   background-color: $ui-01;
 }
 
+.bx--content-switcher-btn.bx--content-switcher--selected::after {
+  color: $ui-05;
+  background-color: $ui-01;
+}
+
 .bx--content-switcher-btn {
   color: $active-ui;
   background-color: #262626;
@@ -734,6 +739,12 @@ export default {
 .bx--content-switcher-btn:hover {
   color: $ui-01;
   background-color: #353535;
+}
+
+.bx--content-switcher-btn.bx--content-switcher--selected:active,
+.bx--content-switcher-btn.bx--content-switcher--selected:hover {
+  color: $ui-05;
+  background-color: $ui-01;
 }
 
 .app-divider {
@@ -876,5 +887,13 @@ export default {
 
 .app-drawer .toggle-app-favorite .bx--toggle-input__label .bx--toggle__switch {
   margin-top: $spacing-03;
+}
+
+.app-drawer .view-switcher,
+.app-drawer .view-switcher *,
+.app-drawer .view-switcher *::before,
+.app-drawer .view-switcher *::after {
+  transition: none !important;
+  animation: none !important;
 }
 </style>
