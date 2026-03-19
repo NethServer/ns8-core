@@ -20,13 +20,14 @@ Modules can be managed using these commands:
 - `add-module <module> <node_id>`: install a module on the given node with ID `node_id`; search for `module` inside enabled repositories and install
   latest available version. If `module` is a image registry URL, just install the module straight from it; this method can be used to install
   customized images.
-  - `--nologin`: set `/usr/sbin/nologin` as the login shell for the new rootless module Unix user (see [Login shell hardening](#login-shell-hardening)).
+  - `--nologin`: set `/usr/sbin/nologin` as the login shell for the new rootless module Unix user (see [Login shell hardening](#login-shell-hardening)). Applicable to **rootless modules only**; passing it for a rootfull module is an error.
 - `remove-module [--no-preserve] <module>`: remove an installed module; if `--no-preserve` is given, erase also all module data
 
 ## Login shell hardening
 
 By default, rootless module users are created with `/bin/bash` as their login shell.
-Passing `--nologin` to `add-module` sets `/usr/sbin/nologin` instead:
+Passing `--nologin` to `add-module` sets `/usr/sbin/nologin` instead.
+This option is **only applicable to rootless modules**; attempting to use it with a rootfull module will produce an error.
 
 ```
 add-module traefik 1 --nologin

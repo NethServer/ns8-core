@@ -156,6 +156,11 @@ os.mkdir(f'/var/lib/nethserver/cluster/ui/apps/{module_id}')
 os.chdir(f'/var/lib/nethserver/cluster/ui/apps/{module_id}')
 agent.run_helper('extract-ui', image_url).check_returncode()
 
+# nologin is only meaningful for rootless modules
+if nologin and is_rootfull:
+    print(agent.SD_ERR + "[ERROR] --nologin is not applicable to rootfull modules.", file=sys.stderr)
+    sys.exit(2)
+
 # Write on redis image ports demands
 if tcp_ports_demand > 0:
     rdb.hset('cluster/tcp_ports_demand', mapping={module_id: tcp_ports_demand})
