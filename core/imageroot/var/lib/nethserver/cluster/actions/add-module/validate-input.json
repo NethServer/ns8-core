@@ -53,6 +53,10 @@
             "description": "Used by clone and restore to set UUID in module's environment, instead of generating a new one.",
             "type": "string"
         },
+        "nologin": {
+            "description": "If true, set /usr/sbin/nologin as the login shell for the new rootless module user.",
+            "type": "boolean"
+        },
         "node": {
             "title": "Node ID",
             "description": "Node identifier where the module has to be installed",
