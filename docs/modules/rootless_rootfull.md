@@ -75,13 +75,27 @@ a command like this:
 runagent -l | xargs -l -t -r -- usermod -s /sbin/nologin
 ```
 
-An interactive shell is not required by NS8. However, if you need to
-enable `/bin/bash` for any reason (for example, to log in as the module
-user and transfer files with `ssh+rsync`), execute:
+Note that the above command may raise harmless errors for `cluster`,
+`node` and other rootfull module names, which have no corresponding Unix
+user.
+
+An interactive shell is not required by NS8 rootless modules. However, if
+you need to enable `/bin/bash` for any reason (for example, to log in as
+the module user and transfer files with `ssh+rsync`), execute:
 
 ```bash
 usermod -s /bin/bash myapp1
 ```
+
+If the new default policy is too strict, customize the shell assigned to
+new modules by `add-module` action. Run this command on each cluster node:
+
+```bash
+runagent -m node python3 -c 'import agent ; agent.set_env("LOGIN_SHELL", "/bin/bash")'
+```
+
+The above command sets the custom shell executable path in the node's
+`LOGIN_SHELL` agent environment.
 
 
 ## Filesystem paths
