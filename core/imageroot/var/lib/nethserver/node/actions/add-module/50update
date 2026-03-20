@@ -103,8 +103,14 @@ else: # rootless
     else:
         # use default base path (see useradd -D)
         module_basedir_args = []
+    if 'LOGIN_SHELL' in os.environ:
+        # assign a custom shell to the module
+        module_login_shell_args = ["-s", os.environ["LOGIN_SHELL"]]
+    else:
+        # default module shell, preventing interactive logins (e.g. from SSH)
+        module_login_shell_args = ["-s", "/bin/nologin"]
     # Create the module dirs structure
-    agent.run_helper('useradd', *module_basedir_args, '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
+    agent.run_helper('useradd', *module_basedir_args, '-m', '-k', '/etc/nethserver/skel', *module_login_shell_args, module_id).check_returncode()
     agent.run_helper('chmod', '-c', '0700', os.path.expanduser("~" + module_id)).check_returncode()
     os.chdir(os.path.expanduser("~" + module_id) + '/.config')
     save_environment(module_environment)

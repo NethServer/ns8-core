@@ -66,6 +66,24 @@ As alternative print the effective user ID with
 
     id -u
 
+To protect against system configuration errors, starting with Core 3.20,
+Unix users created for rootless modules are assigned the `/sbin/nologin`
+shell by default. To upgrade existing modules to the new shell policy, run
+a command like this:
+
+```bash
+runagent -l | xargs -l -t -r -- usermod -s /sbin/nologin
+```
+
+An interactive shell is not required by NS8. However, if you need to
+enable `/bin/bash` for any reason (for example, to log in as the module
+user and transfer files with `ssh+rsync`), execute:
+
+```bash
+usermod -s /bin/bash myapp1
+```
+
+
 ## Filesystem paths
 
 The two types of modules have a similar filesystem structure. Rootless
