@@ -103,6 +103,11 @@ if 'org.nethserver.rootfull' in inspect_labels:
 else:
     is_rootfull = False
 
+# nologin is only meaningful for rootless modules
+if nologin and is_rootfull:
+    print(agent.SD_ERR + "[ERROR] --nologin is not applicable to rootfull modules.", file=sys.stderr)
+    sys.exit(2)
+
 if 'org.nethserver.tcp-ports-demand' in inspect_labels:
     tcp_ports_demand = int(inspect_labels['org.nethserver.tcp-ports-demand'])
 else:
@@ -155,11 +160,6 @@ for kdefault_instance in [f'cluster/default_instance/{image_id}', f'node/{node_i
 os.mkdir(f'/var/lib/nethserver/cluster/ui/apps/{module_id}')
 os.chdir(f'/var/lib/nethserver/cluster/ui/apps/{module_id}')
 agent.run_helper('extract-ui', image_url).check_returncode()
-
-# nologin is only meaningful for rootless modules
-if nologin and is_rootfull:
-    print(agent.SD_ERR + "[ERROR] --nologin is not applicable to rootfull modules.", file=sys.stderr)
-    sys.exit(2)
 
 # Write on redis image ports demands
 if tcp_ports_demand > 0:

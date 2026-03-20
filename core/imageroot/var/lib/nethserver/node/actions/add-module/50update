@@ -55,6 +55,11 @@ request = json.load(sys.stdin)
 module_id = request['module_id']
 is_rootfull = request['is_rootfull']
 nologin = request.get('nologin', False)
+
+if is_rootfull and nologin:
+    print(agent.SD_ERR + "[ERROR] The 'nologin' option is only supported for rootless modules.", file=sys.stderr)
+    sys.exit(2)
+
 module_environment = request['environment']
 image_url = module_environment['IMAGE_URL']
 
