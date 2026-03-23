@@ -45,7 +45,7 @@ def main():
         all_vpn_nodes.add(node_id)
     
     # Combine all node sources: VPN nodes, module nodes, and NS7 nodes
-    for node_id in all_vpn_nodes | set(module_node.values()) | ns7nodes:
+    for node_id in all_vpn_nodes:
         hvpn = rdb.hgetall(f"node/{node_id}/vpn") or {}
         if node_id in ns7nodes:
             node_list.append({
