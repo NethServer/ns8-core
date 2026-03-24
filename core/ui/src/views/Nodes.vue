@@ -307,6 +307,7 @@
       :isShown="isShownRemoveNodeModal"
       :node="nodeToRemove"
       @hide="hideRemoveNodeModal"
+      @nodeRemoved="retrieveData"
     />
     <!-- promote node modal -->
     <PromoteNodeModal

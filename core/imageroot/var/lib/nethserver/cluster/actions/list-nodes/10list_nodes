@@ -36,7 +36,16 @@ def main():
     module_node = rdb.hgetall("cluster/module_node")
     app_count = get_app_count(rdb, module_node)
     ns7nodes = get_ns7nodes(rdb)
-    for node_id in set(module_node.values()) | ns7nodes:
+    # Get all nodes that have a VPN configuration in Redis
+    # This includes nodes that failed to complete join-cluster 
+    # but were already added
+    all_vpn_nodes = set()
+    for vpn_key in rdb.keys('node/*/vpn'):
+        node_id = vpn_key.removeprefix('node/').removesuffix('/vpn')
+        all_vpn_nodes.add(node_id)
+    
+    # Combine all node sources: VPN nodes, module nodes, and NS7 nodes
+    for node_id in all_vpn_nodes:
         hvpn = rdb.hgetall(f"node/{node_id}/vpn") or {}
         if node_id in ns7nodes:
             node_list.append({
