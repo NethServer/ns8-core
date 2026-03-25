@@ -36,6 +36,13 @@
             :description="error.readBackupRepositories"
             :showCloseButton="false"
           />
+          <NsInlineNotification
+            v-if="error.getModulesCanReplace"
+            kind="error"
+            :title="$t('action.get-modules-can-replace')"
+            :description="error.getModulesCanReplace"
+            :showCloseButton="false"
+          />
           <cv-grid class="mg-top-xlg mg-bottom-md no-padding">
             <cv-row>
               <cv-column>
@@ -244,6 +251,7 @@ export default {
       selectedSnapshot: null,
       replaceExistingApp: false,
       canReplace: true,
+      canReplaceMap: {},
       installDestinations: [],
       clusterStatus: [],
       additionalVolumes: [],
@@ -255,6 +263,7 @@ export default {
         restoreModule: false,
         readBackupSnapshots: false,
         determineRestoreEligibility: false,
+        getModulesCanReplace: false,
         getClusterStatus: true,
         listMountPoints: false,
         listModules: true,
@@ -265,6 +274,7 @@ export default {
         restoreModule: "",
         readBackupSnapshots: "",
         determineRestoreEligibility: "",
+        getModulesCanReplace: "",
         getClusterStatus: "",
         listMountPoints: "",
         listModules: "",
@@ -305,7 +315,8 @@ export default {
     isNextButtonDisabled() {
       return (
         this.loading.restoreModule ||
-        (this.step == "instance" && !this.selectedInstance) ||
+        (this.step == "instance" &&
+          (!this.selectedInstance || this.loading.getModulesCanReplace)) ||
         (this.step == "snapshot" && !this.selectedSnapshot) ||
         (this.step == "node" &&
           (this.isLoadingNodeData ||
@@ -364,6 +375,9 @@ export default {
       }
     },
     replaceExistingDisabled() {
+      if (this.selectedInstance && this.selectedInstance.name in this.canReplaceMap) {
+        return !this.canReplaceMap[this.selectedInstance.name];
+      }
       return !this.canReplace;
     },
     nodesInfo() {
@@ -454,6 +468,8 @@ export default {
       if (this.step == "instance") {
         this.selectedInstance = null;
         this.replaceExistingApp = false;
+        this.canReplaceMap = {};
+        this.getModulesCanReplace();
       } else if (this.step == "snapshot") {
         this.selectedSnapshot = null;
         this.readBackupSnapshots();
@@ -506,6 +522,7 @@ export default {
       this.selectedInstance = null;
       this.selectedSnapshot = null;
       this.replaceExistingApp = false;
+      this.canReplaceMap = {};
       this.installDestinations = [];
       this.additionalVolumes = [];
       if (this.clusterNodesCount == 1) {
@@ -859,12 +876,60 @@ export default {
     onSelectInstance(selectedInstance) {
       this.selectedInstance = selectedInstance;
       this.replaceExistingApp = false;
+      // Reset canReplace fallback from determineRestoreEligibility
+      this.canReplace = true;
     },
     onSelectSnapshot(selectedSnapshot) {
       this.selectedSnapshot = selectedSnapshot;
     },
     onSelectVolume(selectedVolume) {
       this.selectedVolume = selectedVolume;
+    },
+    async getModulesCanReplace() {
+      this.loading.getModulesCanReplace = true;
+      this.error.getModulesCanReplace = "";
+      const taskAction = "get-modules-can-replace";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getModulesCanReplaceAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getModulesCanReplaceCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getModulesCanReplace = this.getErrorMessage(err);
+        this.loading.getModulesCanReplace = false;
+        return;
+      }
+    },
+    getModulesCanReplaceAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getModulesCanReplace = this.$t("error.generic_error");
+      this.loading.getModulesCanReplace = false;
+    },
+    getModulesCanReplaceCompleted(taskContext, taskResult) {
+      this.canReplaceMap = taskResult.output.can_replace;
+      this.loading.getModulesCanReplace = false;
     },
     async determineRestoreEligibility() {
       this.loading.determineRestoreEligibility = true;

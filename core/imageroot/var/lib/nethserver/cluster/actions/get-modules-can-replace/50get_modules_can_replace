@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import sys
+import json
+import cluster.modules
+
+# Write privileges are required for Redis repository metadata caching:
+rdb = agent.redis_connect(privileged=True)
+available = cluster.modules.list_available(rdb, skip_core_modules=False)
+
+can_replace = {}
+for omod in available:
+    try:
+        image_name = omod["source"].rsplit("/", 1)[-1]
+    except (KeyError, IndexError):
+        continue
+    try:
+        max_per_node = int(omod["versions"][0]["labels"]["org.nethserver.max-per-node"])
+    except (KeyError, IndexError, ValueError):
+        max_per_node = 9999
+    try:
+        flags = omod["versions"][0]["labels"].get("org.nethserver.flags", "").split()
+    except (KeyError, IndexError, AttributeError):
+        flags = []
+    # A module cannot replace an existing instance if:
+    # - org.nethserver.max-per-node=1: only one instance is allowed per node
+    #   (e.g. samba, mail, ejabberd, nethvoice-proxy). A replace would require
+    #   spinning up a second temporary instance on the same node, which is
+    #   forbidden by this constraint.
+    # - org.nethserver.flags contains "core_module": core modules (e.g. loki,
+    #   traefik) are infrastructure singletons managed by the node itself. They
+    #   do not carry a max-per-node label but are equally non-replaceable because
+    #   exactly one instance must always be running per node at cluster level.
+    can_replace[image_name] = max_per_node != 1 and "core_module" not in flags
+
+json.dump({"can_replace": can_replace}, fp=sys.stdout)
