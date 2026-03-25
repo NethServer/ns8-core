@@ -6,6 +6,7 @@
     "examples": [
         {
             "image_url": "ghcr.io/nethserver/ejabberd:1.0.1",
+            "can_replace": false,
             "install_destinations": [
                 {
                     "node_id": 1,
@@ -28,11 +29,16 @@
     "type": "object",
     "required": [
         "image_url",
+        "can_replace",
         "install_destinations"
     ],
     "properties": {
         "image_url": {
             "type":"string"
+        },
+        "can_replace": {
+            "type": "boolean",
+            "description": "True if the module can be restored over an existing instance (max-per-node > 1)"
         },
         "install_destinations": {
             "description": "Describe for each node of the cluster if the node is eligible or not to install a new module instance. If not, a reject reason is returned.",
