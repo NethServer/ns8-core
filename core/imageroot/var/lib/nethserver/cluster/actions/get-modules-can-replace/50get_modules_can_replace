@@ -33,10 +33,11 @@ for omod in available:
     #   (e.g. samba, mail, ejabberd, nethvoice-proxy). A replace would require
     #   spinning up a second temporary instance on the same node, which is
     #   forbidden by this constraint.
-    # - org.nethserver.flags contains "core_module": core modules (e.g. loki,
-    #   traefik) are infrastructure singletons managed by the node itself. They
-    #   do not carry a max-per-node label but are equally non-replaceable because
-    #   exactly one instance must always be running per node at cluster level.
-    can_replace[image_name] = max_per_node != 1 and "core_module" not in flags
+    # - org.nethserver.flags contains "core_module" but NOT "account_provider":
+    #   pure infrastructure singletons (e.g. loki, traefik) are managed by the
+    #   node itself and must always be running. Account-provider core modules
+    #   (e.g. openldap) carry both flags and ARE replaceable.
+    is_infra_singleton = "core_module" in flags and "account_provider" not in flags
+    can_replace[image_name] = max_per_node != 1 and not is_infra_singleton
 
 json.dump({"can_replace": can_replace}, fp=sys.stdout)

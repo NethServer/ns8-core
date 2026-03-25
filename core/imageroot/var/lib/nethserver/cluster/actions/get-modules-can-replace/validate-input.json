@@ -1,9 +1,0 @@
-{
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "get-modules-can-replace input",
-    "$id": "http://schema.nethserver.org/cluster/get-modules-can-replace-input.json",
-    "description": "Input schema of the get-modules-can-replace action",
-    "examples": [{}],
-    "type": "object",
-    "properties": {}
-}
