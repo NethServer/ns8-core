@@ -37,30 +37,10 @@ if not available:
     print(agent.SD_WARNING + f"Can't determine restore eligibility for {module_source}. All nodes are allowed.", file=sys.stderr)
     destination_all_nodes = [{"node_id": int(xnode_id), "instances": 0, "eligible": True, "reject_reason": None} for xnode_id in set(rdb.hvals('cluster/module_node'))]
     available = [{"install_destinations": destination_all_nodes}]
-    can_replace = True
 else:
     cluster.modules.decorate_with_installed(rdb, available)
     cluster.modules.decorate_with_install_destinations(rdb, available)
-    try:
-        max_per_node = int(available[0]["versions"][0]["labels"]["org.nethserver.max-per-node"])
-    except (KeyError, IndexError, ValueError):
-        max_per_node = 9999
-    try:
-        flags = available[0]["versions"][0]["labels"].get("org.nethserver.flags", "").split()
-    except (KeyError, IndexError, AttributeError):
-        flags = []
-    # A module cannot replace an existing instance if:
-    # - org.nethserver.max-per-node=1: only one instance is allowed per node
-    #   (e.g. samba, mail, ejabberd, nethvoice-proxy). A replace would require
-    #   spinning up a second temporary instance on the same node, which is
-    #   forbidden by this constraint.
-    # - org.nethserver.flags contains "core_module": core modules (e.g. loki,
-    #   traefik) are infrastructure singletons managed by the node itself. They
-    #   do not carry a max-per-node label but are equally non-replaceable because
-    #   exactly one instance must always be running per node at cluster level.
-    can_replace = max_per_node != 1 and "core_module" not in flags
 json.dump({
     "image_url": original_environment['IMAGE_URL'],
     "install_destinations": available[0]["install_destinations"],
-    "can_replace": can_replace,
 }, fp=sys.stdout)

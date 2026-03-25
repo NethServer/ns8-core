@@ -980,7 +980,6 @@ export default {
     },
     determineRestoreEligibilityCompleted(taskContext, taskResult) {
       this.installDestinations = taskResult.output.install_destinations;
-      this.canReplace = taskResult.output.can_replace;
       this.loading.determineRestoreEligibility = false;
     },
     async getClusterStatus() {
