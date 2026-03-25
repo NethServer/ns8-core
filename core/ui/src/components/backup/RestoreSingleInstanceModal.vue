@@ -243,6 +243,7 @@ export default {
       selectedInstance: null,
       selectedSnapshot: null,
       replaceExistingApp: false,
+      canReplace: true,
       installDestinations: [],
       clusterStatus: [],
       additionalVolumes: [],
@@ -363,16 +364,7 @@ export default {
       }
     },
     replaceExistingDisabled() {
-      // FIXME: remove hardcoded values due to the static port, the API should give us this info
-      //check if the selected instance is not in an array ['loki']
-      const notAllowed = [
-        "samba",
-        "loki",
-        "mail",
-        "ejabberd",
-        "nethvoice-proxy",
-      ];
-      return notAllowed.includes(this.selectedInstance.name) ? true : false;
+      return !this.canReplace;
     },
     nodesInfo() {
       const nodesInfo = {};
@@ -923,6 +915,7 @@ export default {
     },
     determineRestoreEligibilityCompleted(taskContext, taskResult) {
       this.installDestinations = taskResult.output.install_destinations;
+      this.canReplace = taskResult.output.can_replace;
       this.loading.determineRestoreEligibility = false;
     },
     async getClusterStatus() {
