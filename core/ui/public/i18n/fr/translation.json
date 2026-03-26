@@ -1613,7 +1613,8 @@
         "subscription_status": "Subscription status",
         "session_id": "Session ID",
         "start_session_support": "Start session",
-        "subscription_pattern": "Invalid token format"
+        "subscription_pattern": "Invalid token format",
+        "remote_support_in_progress_with_expiration": "The remote support session will end automatically in {time}. You can end it manually at any time."
     },
     "settings_cluster": {
         "title": "Cluster"
