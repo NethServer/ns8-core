@@ -23,7 +23,7 @@ hostnamectl set-hostname "${hostname}"
 # as a localhost alias, it is removed completely.
 [[ ${old_hostname} != localhost ]] && sed -i -r \
     -e "/^\s*(127\.0\.0\.1|::1)[^#]*\slocalhost(\s|$)/ { s/\s+${old_fqdn_re}(\s|$)/\1/g ; s/\s+${old_hostname}(\s|$)/\1/g ; b }" \
-    -e "/^[^#]+\s${old_hostname}(\s|$)/ s/^/# commented by set-fqdn #/" \
+    -e "/^[^#]+\s(${old_hostname}|${old_fqdn_re})(\s|$)/ s/^/# commented by set-fqdn #/" \
     /etc/hosts
 
 # Append to /etc/hosts according to hostname man page:
