@@ -1,0 +1,187 @@
+#!/bin/bash
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# users.d plugin for NethVoice (NS8)
+#
+# Creates a FreePBX admin user (ampusers) for each local NethVoice instance,
+# using the domain user credentials that match the instance's account provider.
+#
+# The tunnel-client passes --instances-file with all NethVoice instances,
+# their domains, labels, and service routes. This script uses that context
+# to configure each instance and return per-instance app info.
+#
+# Setup:  creates support user in ampusers for each instance
+# Teardown: removes support user from ampusers for each instance
+
+ACTION="$1"
+USERS_FILE=""
+INSTANCES_FILE=""
+shift
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --users-file) USERS_FILE="$2"; shift 2 ;;
+    --instances-file) INSTANCES_FILE="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+
+if [[ -z "$USERS_FILE" ]] || [[ ! -f "$USERS_FILE" ]]; then
+  exit 1
+fi
+
+# Use instances-file if provided, otherwise exit (no instances to configure)
+if [[ -z "$INSTANCES_FILE" ]] || [[ ! -f "$INSTANCES_FILE" ]]; then
+  exit 0
+fi
+
+# Run a mysql command inside the mariadb container of a NethVoice module.
+# Containers run as the module user (e.g., nethvoice103), not root.
+run_mysql() {
+  local mod="$1"
+  local db_pass="$2"
+  local sql="$3"
+  su - "$mod" -s /bin/bash -c "podman exec -e MYSQL_PWD='${db_pass}' mariadb mysql -uroot -N -B asterisk -e \"${sql}\"" 2>/dev/null
+}
+
+case "$ACTION" in
+  setup)
+    # Use Python to process both files and output the results as JSON array
+    python3 -c "
+import json, sys, subprocess, os
+
+users = json.load(open('$USERS_FILE'))
+instances_data = json.load(open('$INSTANCES_FILE'))
+
+# Build domain -> password lookup from users file
+domain_passwords = {}
+for du in users.get('domain_users', []):
+    domain_passwords[du['domain']] = du['password']
+
+# Get the support username
+username = None
+for du in users.get('domain_users', []):
+    username = du['username']
+    break
+if not username:
+    ca = users.get('cluster_admin')
+    if ca:
+        username = ca['username']
+if not username:
+    sys.exit(0)
+
+results = []
+
+for inst in instances_data.get('instances', []):
+    mod = inst['id']
+    domain = inst.get('domain', '')
+    label = inst.get('label', '')
+    node_id = inst.get('node_id', '')
+
+    # Check if this instance is local (has a home directory)
+    home = f'/home/{mod}'
+    passwords_file = f'{home}/.config/state/passwords.env'
+    if not os.path.isfile(passwords_file):
+        continue
+
+    # Read MariaDB root password
+    db_pass = ''
+    with open(passwords_file) as f:
+        for line in f:
+            if line.startswith('MARIADB_ROOT_PASSWORD='):
+                db_pass = line.strip().split('=', 1)[1]
+                break
+    if not db_pass:
+        continue
+
+    # Get the password for this instance's domain
+    password = domain_passwords.get(domain, '')
+    if not password:
+        continue
+
+    # Create the support user in ampusers
+    sql = f\"INSERT IGNORE INTO ampusers (username, password_sha1, sections) VALUES ('{username}', SHA1('{password}'), '*')\"
+    try:
+        subprocess.run(
+            ['su', '-', mod, '-s', '/bin/bash', '-c',
+             f\"podman exec -e MYSQL_PWD='{db_pass}' mariadb mysql -uroot -N -B asterisk -e \\\"{sql}\\\"\"],
+            capture_output=True, text=True, timeout=15
+        )
+    except Exception:
+        continue
+
+    # Build display name
+    name = f'NethVoice'
+    if label:
+        name += f' ({label})'
+    elif mod:
+        name += f' ({mod})'
+
+    # Find the wizard service URL for this instance
+    wizard_svc = ''
+    for svc_name in inst.get('services', {}):
+        if 'wizard' in svc_name:
+            wizard_svc = svc_name
+            break
+
+    results.append({
+        'id': mod,
+        'name': name,
+        'notes': f'Domain: {domain}' + (f' | Service: {wizard_svc}' if wizard_svc else ''),
+    })
+
+print(json.dumps(results))
+" 2>/dev/null
+    ;;
+
+  teardown)
+    python3 -c "
+import json, sys, subprocess, os
+
+users = json.load(open('$USERS_FILE'))
+instances_data = json.load(open('$INSTANCES_FILE'))
+
+# Get the support username
+username = None
+for du in users.get('domain_users', []):
+    username = du['username']
+    break
+if not username:
+    ca = users.get('cluster_admin')
+    if ca:
+        username = ca['username']
+if not username:
+    sys.exit(0)
+
+for inst in instances_data.get('instances', []):
+    mod = inst['id']
+    home = f'/home/{mod}'
+    passwords_file = f'{home}/.config/state/passwords.env'
+    if not os.path.isfile(passwords_file):
+        continue
+
+    db_pass = ''
+    with open(passwords_file) as f:
+        for line in f:
+            if line.startswith('MARIADB_ROOT_PASSWORD='):
+                db_pass = line.strip().split('=', 1)[1]
+                break
+    if not db_pass:
+        continue
+
+    sql = f\"DELETE FROM ampusers WHERE username = '{username}'\"
+    try:
+        subprocess.run(
+            ['su', '-', mod, '-s', '/bin/bash', '-c',
+             f\"podman exec -e MYSQL_PWD='{db_pass}' mariadb mysql -uroot -N -B asterisk -e \\\"{sql}\\\"\"],
+            capture_output=True, text=True, timeout=15
+        )
+    except Exception:
+        pass
+
+print(json.dumps({'id': 'nethvoice', 'status': 'ok'}))
+" 2>/dev/null
+    ;;
+esac
