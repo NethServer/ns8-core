@@ -367,7 +367,10 @@
                   class="card-row"
                 >
                   <div class="mg-top-sm icon-and-text">
-                    <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+                    <NsSvg
+                      :svg="InformationFilled16"
+                      class="icon ns-info shrink-0"
+                    />
                     <span>{{
                       $t("settings_subscription.remote_support_in_progress")
                     }}</span>

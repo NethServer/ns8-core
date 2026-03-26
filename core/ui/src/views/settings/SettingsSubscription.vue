@@ -295,9 +295,12 @@
               <div class="mg-top-sm icon-and-text mg-bottom-lg">
                 <NsSvg :svg="InformationFilled16" class="icon ns-info" />
                 <span>{{
-                  $t("settings_subscription.remote_support_in_progress", {
-                    time: formatExpiryDate(sessionExpireDate),
-                  })
+                  $t(
+                    "settings_subscription.remote_support_in_progress_with_expiration",
+                    {
+                      time: formatExpiryDate(sessionExpireDate),
+                    }
+                  )
                 }}</span>
               </div>
               <NsButton
