@@ -1658,7 +1658,8 @@
         "session_id": "Session ID",
         "start_session_support": "Start session",
         "agree_terms_before_register": "I have read and agree to subscription {terms}.",
-        "subscription_pattern": "Invalid token format"
+        "subscription_pattern": "Invalid token format",
+        "remote_support_in_progress_with_expiration": "The remote support session will end automatically in {time}. You can end it manually at any time."
     },
     "cloud_log_manager_forwarder": {
         "tenant_tooltip": "Lorem Ipsum",

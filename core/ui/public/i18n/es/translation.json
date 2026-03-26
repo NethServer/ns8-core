@@ -1658,7 +1658,8 @@
         "session_id": "ID de sesión",
         "start_session_support": "Iniciar sesión",
         "agree_terms_before_register": "He leído y acepto la suscripción {terms}.",
-        "subscription_pattern": "Invalid token format"
+        "subscription_pattern": "Invalid token format",
+        "remote_support_in_progress_with_expiration": "The remote support session will end automatically in {time}. You can end it manually at any time."
     },
     "syslog_forwarder": {
         "start_time": "Start time (24-hour)",
