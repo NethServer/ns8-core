@@ -10,14 +10,14 @@ import sys
 import agent
 
 rdb = agent.redis_connect(use_replica=True)
-subscription = rdb.hgetall("cluster/subscription")
+tunnel_config = rdb.hgetall("cluster/support_tunnel")
 
-if not subscription.get("system_id") or not subscription.get("auth_token"):
+if not tunnel_config.get("key") or not tunnel_config.get("secret"):
     agent.set_status('validation-failed')
     json.dump([{
-        "field": "subscription",
-        "parameter": "subscription",
+        "field": "support_tunnel",
+        "parameter": "support_tunnel",
         "value": "",
-        "error": "subscription_required",
+        "error": "tunnel_credentials_required",
     }], fp=sys.stdout)
     sys.exit(2)

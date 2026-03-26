@@ -16,21 +16,24 @@ mkdir -p "$SUPPORT_DIR"
 # Extract tunnel-client binary and plugins from core image
 runagent -m node install-support-tunnel
 
-# Read credentials from cluster/subscription Redis hash
-SYSTEM_ID=$(redis-cli HGET cluster/subscription system_id)
-AUTH_TOKEN=$(redis-cli HGET cluster/subscription auth_token)
-SUPPORT_URL=$(redis-cli HGET cluster/subscription vpn_peer_host)
+# Read tunnel configuration from cluster/support_tunnel Redis hash.
+# Use the local replica as default user (no auth, readable by any agent).
+# The node agent context sets REDISCLI_AUTH which restricts access to cluster/* keys,
+# so we unset it to use the default user on the local replica.
+# Set these on the leader with: redis-cli HSET cluster/support_tunnel url <wss://...> key <NETH-...> secret <...>
+unset REDISCLI_AUTH
+SUPPORT_URL=$(redis-cli -h 127.0.0.1 -p 6379 HGET cluster/support_tunnel url)
+SYSTEM_KEY=$(redis-cli -h 127.0.0.1 -p 6379 HGET cluster/support_tunnel key)
+SYSTEM_SECRET=$(redis-cli -h 127.0.0.1 -p 6379 HGET cluster/support_tunnel secret)
 
-if [[ -z "$SYSTEM_ID" || -z "$AUTH_TOKEN" ]]; then
-    echo "ERROR: missing subscription credentials (system_id or auth_token)" >&2
+if [[ -z "$SYSTEM_KEY" || -z "$SYSTEM_SECRET" ]]; then
+    echo "ERROR: missing tunnel credentials. Set them with:" >&2
+    echo "  redis-cli HSET cluster/support_tunnel url <wss://...> key <NETH-...> secret <...>" >&2
     exit 1
 fi
 
-# Build support URL from vpn_peer_host or use default
-if [[ -z "$SUPPORT_URL" || "$SUPPORT_URL" == "sos.nethesis.it" ]]; then
+if [[ -z "$SUPPORT_URL" ]]; then
     SUPPORT_URL="wss://support.nethesis.it/api/tunnel"
-else
-    SUPPORT_URL="wss://${SUPPORT_URL}/api/tunnel"
 fi
 
 # Detect NODE_ID from node environment
@@ -40,8 +43,8 @@ NODE_ID="${NODE_ID:-1}"
 # Write environment file for the systemd service
 cat > "$SUPPORT_DIR/support.env" <<EOF
 SUPPORT_URL=${SUPPORT_URL}
-SYSTEM_KEY=${SYSTEM_ID}
-SYSTEM_SECRET=${AUTH_TOKEN}
+SYSTEM_KEY=${SYSTEM_KEY}
+SYSTEM_SECRET=${SYSTEM_SECRET}
 NODE_ID=${NODE_ID}
 REDIS_ADDR=127.0.0.1:6379
 USERS_DIR=${SUPPORT_DIR}/users.d
@@ -55,12 +58,44 @@ chmod 600 "$SUPPORT_DIR/support.env"
 systemctl daemon-reload
 systemctl start support-tunnel.service
 
-# Generate session ID and store state in Redis
-SESSION_ID=$(cat /proc/sys/kernel/random/uuid)
-redis-cli HSET "node/${NODE_ID}/tunnel" \
-    session_id "$SESSION_ID" \
-    started_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    active "true" > /dev/null
+# Wait for the tunnel to actually connect (max 15 seconds)
+CONNECTED=false
+for i in $(seq 1 15); do
+    # Check if the service is still running
+    if ! systemctl is-active --quiet support-tunnel.service; then
+        echo "ERROR: support-tunnel.service failed to start" >&2
+        journalctl -u support-tunnel --since "30 sec ago" --no-pager | tail -5 >&2
+        exit 1
+    fi
+    # Check for "WebSocket connected" in the journal
+    if journalctl -u support-tunnel --since "30 sec ago" --no-pager 2>/dev/null | grep -q "WebSocket connected"; then
+        CONNECTED=true
+        break
+    fi
+    sleep 1
+done
 
-# Output session info on the original stdout (fd3)
-echo "{\"session_id\": \"${SESSION_ID}\"}" >&3
+if [[ "$CONNECTED" != "true" ]]; then
+    echo "WARNING: tunnel service started but WebSocket connection not confirmed within 15s" >&2
+fi
+
+# Count discovered services from the journal
+SERVICES_COUNT=$(journalctl -u support-tunnel --since "30 sec ago" --no-pager 2>/dev/null \
+    | grep -oP 'Manifest sent with \K[0-9]+' | tail -1)
+SERVICES_COUNT="${SERVICES_COUNT:-0}"
+
+# Store state in Redis
+redis-cli HSET "node/${NODE_ID}/tunnel" \
+    started_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    active "true" \
+    connected "$CONNECTED" \
+    support_url "$SUPPORT_URL" \
+    services_count "$SERVICES_COUNT" > /dev/null
+
+# Output on the original stdout (fd3)
+jq -c -n \
+    --arg node_id "$NODE_ID" \
+    --arg support_url "$SUPPORT_URL" \
+    --argjson connected "$CONNECTED" \
+    --argjson services_count "${SERVICES_COUNT}" \
+    '{node_id: $node_id, support_url: $support_url, connected: $connected, services: $services_count}' >&3
