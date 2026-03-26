@@ -21,13 +21,16 @@ mkdir -p "$SUPPORT_DIR/users.d" "$SUPPORT_DIR/diagnostics.d"
 cid=$(podman create "$CORE_IMAGE" /bin/true)
 trap "podman rm $cid > /dev/null 2>&1" EXIT
 
+# Binary goes to /usr/local/bin/ (SELinux bin_t label by default)
 podman cp "${cid}:/var/lib/nethserver/node/support-tunnel/tunnel-client" \
-    "$SUPPORT_DIR/tunnel-client"
+    /usr/local/bin/tunnel-client
+chmod 755 /usr/local/bin/tunnel-client
+
+# Plugins go to the support data directory
 podman cp "${cid}:/var/lib/nethserver/node/support-tunnel/users.d/." \
     "$SUPPORT_DIR/users.d/" 2>/dev/null || true
 podman cp "${cid}:/var/lib/nethserver/node/support-tunnel/diagnostics.d/." \
     "$SUPPORT_DIR/diagnostics.d/" 2>/dev/null || true
 
-chmod 755 "$SUPPORT_DIR/tunnel-client"
 find "$SUPPORT_DIR/users.d" -type f -exec chmod 755 {} \; 2>/dev/null || true
 find "$SUPPORT_DIR/diagnostics.d" -type f -exec chmod 755 {} \; 2>/dev/null || true

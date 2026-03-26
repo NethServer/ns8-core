@@ -11,7 +11,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 EnvironmentFile=/var/lib/nethserver/support-tunnel/support.env
-ExecStart=/var/lib/nethserver/support-tunnel/tunnel-client \
+ExecStart=/usr/local/bin/tunnel-client \
     --url ${SUPPORT_URL} \
     --key ${SYSTEM_KEY} \
     --secret ${SYSTEM_SECRET} \
