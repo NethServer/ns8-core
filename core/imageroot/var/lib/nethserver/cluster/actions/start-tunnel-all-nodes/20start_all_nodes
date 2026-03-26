@@ -30,17 +30,50 @@ for node_id in node_ids:
         "data": {},
     })
 
-errors = agent.tasks.runp_brief(
+results = agent.tasks.runp(
     tasks,
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(10, 90),
 )
 
+# Collect per-node results
+nodes = []
+errors = 0
+for i, result in enumerate(results):
+    node_id = node_ids[i]
+    if isinstance(result, Exception) or (isinstance(result, dict) and result.get("error")):
+        errors += 1
+        nodes.append({
+            "node_id": node_id,
+            "connected": False,
+            "error": str(result),
+        })
+    elif isinstance(result, dict) and "output" in result:
+        output = result["output"]
+        if isinstance(output, str):
+            try:
+                output = json.loads(output)
+            except json.JSONDecodeError:
+                output = {}
+        nodes.append(output)
+    else:
+        nodes.append({
+            "node_id": node_id,
+            "connected": False,
+            "error": "unexpected result",
+        })
+
 if errors > 0:
     print(f"Warning: {errors} node(s) failed to start tunnel client", file=sys.stderr)
 
+all_connected = all(n.get("connected", False) for n in nodes)
+total_services = sum(n.get("services", 0) for n in nodes)
+
 json.dump({
+    "connected": all_connected,
+    "total_services": total_services,
     "nodes_started": len(node_ids) - errors,
     "nodes_failed": errors,
     "total_nodes": len(node_ids),
+    "nodes": nodes,
 }, fp=sys.stdout)
