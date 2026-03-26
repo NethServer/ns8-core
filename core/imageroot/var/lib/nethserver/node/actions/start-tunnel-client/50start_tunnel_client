@@ -1,0 +1,66 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+# Save original stdout for action output, redirect rest to stderr
+exec 3>&1 1>&2
+
+SUPPORT_DIR=/var/lib/nethserver/support-tunnel
+mkdir -p "$SUPPORT_DIR"
+
+# Extract tunnel-client binary and plugins from core image
+runagent -m node install-support-tunnel
+
+# Read credentials from cluster/subscription Redis hash
+SYSTEM_ID=$(redis-cli HGET cluster/subscription system_id)
+AUTH_TOKEN=$(redis-cli HGET cluster/subscription auth_token)
+SUPPORT_URL=$(redis-cli HGET cluster/subscription vpn_peer_host)
+
+if [[ -z "$SYSTEM_ID" || -z "$AUTH_TOKEN" ]]; then
+    echo "ERROR: missing subscription credentials (system_id or auth_token)" >&2
+    exit 1
+fi
+
+# Build support URL from vpn_peer_host or use default
+if [[ -z "$SUPPORT_URL" || "$SUPPORT_URL" == "sos.nethesis.it" ]]; then
+    SUPPORT_URL="wss://support.nethesis.it/api/tunnel"
+else
+    SUPPORT_URL="wss://${SUPPORT_URL}/api/tunnel"
+fi
+
+# Detect NODE_ID from node environment
+source /var/lib/nethserver/node/state/environment
+NODE_ID="${NODE_ID:-1}"
+
+# Write environment file for the systemd service
+cat > "$SUPPORT_DIR/support.env" <<EOF
+SUPPORT_URL=${SUPPORT_URL}
+SYSTEM_KEY=${SYSTEM_ID}
+SYSTEM_SECRET=${AUTH_TOKEN}
+NODE_ID=${NODE_ID}
+REDIS_ADDR=127.0.0.1:6379
+USERS_DIR=${SUPPORT_DIR}/users.d
+DIAGNOSTICS_DIR=${SUPPORT_DIR}/diagnostics.d
+EXCLUDE_PATTERNS=
+USERS_STATE_FILE=${SUPPORT_DIR}/users-state.json
+EOF
+chmod 600 "$SUPPORT_DIR/support.env"
+
+# Start the tunnel service (session expiry is managed server-side by MY)
+systemctl daemon-reload
+systemctl start support-tunnel.service
+
+# Generate session ID and store state in Redis
+SESSION_ID=$(cat /proc/sys/kernel/random/uuid)
+redis-cli HSET "node/${NODE_ID}/tunnel" \
+    session_id "$SESSION_ID" \
+    started_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    active "true" > /dev/null
+
+# Output session info on the original stdout (fd3)
+echo "{\"session_id\": \"${SESSION_ID}\"}" >&3
