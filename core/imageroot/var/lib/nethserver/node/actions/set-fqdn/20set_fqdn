@@ -9,6 +9,8 @@ set -e
 exec 1>&2
 
 old_hostname=$(hostname -s)
+old_fqdn=$(hostname -f || echo "${old_hostname}")
+old_fqdn_re=${old_fqdn//./\.}
 
 read -r hostname domain < <(jq -r '[.hostname, .domain] | join("\t")')
 
@@ -17,8 +19,12 @@ read -r hostname domain < <(jq -r '[.hostname, .domain] | join("\t")')
 
 hostnamectl set-hostname "${hostname}"
 
-# Comment old hostname records in /etc/hosts
-sed -i -E "/^[^#].+\s${old_hostname}(\s|$)/ s/^/# commented by set-fqdn #/" /etc/hosts
+# Comment old hostname records in /etc/hosts. If the old hostname appears
+# as a localhost alias, it is removed completely.
+[[ ${old_hostname} != localhost ]] && sed -i -r \
+    -e "/^\s*(127\.0\.0\.1|::1)[^#]*\slocalhost(\s|$)/ { s/\s+${old_fqdn_re}(\s|$)/\1/g ; s/\s+${old_hostname}(\s|$)/\1/g ; b }" \
+    -e "/^[^#]+\s${old_hostname}(\s|$)/ s/^/# commented by set-fqdn #/" \
+    /etc/hosts
 
 # Append to /etc/hosts according to hostname man page:
 printf "127.0.1.1 %s %s\n" "${hostname}.${domain}" "${hostname}" >> /etc/hosts
