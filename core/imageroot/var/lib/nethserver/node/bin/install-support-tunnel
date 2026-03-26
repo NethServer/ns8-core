@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Extract tunnel-client binary and plugin scripts from the core image.
+# Called by start-tunnel-client node action before starting the service.
+#
+
+set -e
+
+SUPPORT_DIR=/var/lib/nethserver/support-tunnel
+CORE_IMAGE=$(source /etc/nethserver/core.env; echo "$CORE_IMAGE")
+
+mkdir -p "$SUPPORT_DIR/users.d" "$SUPPORT_DIR/diagnostics.d"
+
+# Extract binary and plugins from core image
+cid=$(podman create "$CORE_IMAGE" /bin/true)
+trap "podman rm $cid > /dev/null 2>&1" EXIT
+
+podman cp "${cid}:/var/lib/nethserver/node/support-tunnel/tunnel-client" \
+    "$SUPPORT_DIR/tunnel-client"
+podman cp "${cid}:/var/lib/nethserver/node/support-tunnel/users.d/." \
+    "$SUPPORT_DIR/users.d/" 2>/dev/null || true
+podman cp "${cid}:/var/lib/nethserver/node/support-tunnel/diagnostics.d/." \
+    "$SUPPORT_DIR/diagnostics.d/" 2>/dev/null || true
+
+chmod 755 "$SUPPORT_DIR/tunnel-client"
+find "$SUPPORT_DIR/users.d" -type f -exec chmod 755 {} \; 2>/dev/null || true
+find "$SUPPORT_DIR/diagnostics.d" -type f -exec chmod 755 {} \; 2>/dev/null || true
