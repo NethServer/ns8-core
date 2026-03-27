@@ -823,6 +823,7 @@
         "ip_allowlist_placeholder": "Eg. 192.168.7.0/24",
         "ip_allowlist_helper": "Enter one IPv4 or CIDR address per line. Leave empty to allow access from any IP address",
         "invalid_ipv4": "Invalid IPv4 address: {ip}",
+        "invalid_ipv6": "Invalid IPv6 address: {ip}",
         "automatic": "Automatic",
         "restricted": "Access restricted",
         "attributes": "Attributes",
