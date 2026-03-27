@@ -178,7 +178,7 @@ crit_count = sum(1 for c in checks if c["status"] == "critical")
 summary = f"{ok_count} ok, {warn_count} warning, {crit_count} critical"
 
 result = {
-    "id": "ns8-node",
+    "id": "health",
     "name": "NS8 Node Health",
     "status": overall,
     "summary": summary,
