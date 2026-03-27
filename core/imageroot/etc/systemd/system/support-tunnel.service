@@ -20,6 +20,7 @@ ExecStart=/usr/local/bin/tunnel-client \
     --users-dir ${USERS_DIR} \
     --diagnostics-dir ${DIAGNOSTICS_DIR} \
     --exclude ${EXCLUDE_PATTERNS} \
+    --tls-insecure=${TLS_INSECURE} \
     --users-state-file /var/lib/nethserver/support-tunnel/users-state.json
 Restart=no
 RuntimeMaxSec=7d
