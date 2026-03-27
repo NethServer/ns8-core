@@ -59,7 +59,7 @@ checks.append({
     "name": "core_services",
     "status": "ok" if all_active else "critical",
     "value": f"{sum(1 for s in services_status if s['state'] == 'active')}/{len(services_status)} active",
-    "details": json.dumps(services_status),
+    "details": services_status,
 })
 
 
@@ -82,7 +82,7 @@ except Exception as e:
         "name": "redis",
         "status": "critical",
         "value": "unreachable",
-        "details": json.dumps({"error": str(e)}),
+        "details": {"error": str(e)},
     })
     overall = worst(overall, "critical")
 
@@ -113,7 +113,7 @@ try:
         "name": "modules",
         "status": "ok",
         "value": str(len(module_names)),
-        "details": json.dumps({"node_id": node_id, "modules": module_names}),
+        "details": {"node_id": node_id, "modules": module_names},
     })
 except Exception:
     pass
@@ -141,7 +141,7 @@ try:
         "name": "failed_units",
         "status": status,
         "value": str(failed_count),
-        "details": json.dumps(failed_units) if failed_units else "",
+        "details": failed_units if failed_units else None,
     })
     overall = worst(overall, status)
 except Exception:
@@ -163,7 +163,7 @@ try:
                 "name": "tls_acme",
                 "status": status,
                 "value": f"{age_days}d",
-                "details": json.dumps({"path": cert_path, "age_days": age_days}),
+                "details": {"path": cert_path, "age_days": age_days},
             })
             overall = worst(overall, status)
             break
