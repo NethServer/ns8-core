@@ -23,15 +23,27 @@ result = subprocess.run(
 )
 active = result.stdout.strip() == "active"
 
-# Read session state from Redis
+# Get PID from systemd
+pid = 0
+if active:
+    pid_result = subprocess.run(
+        ["systemctl", "show", "-p", "MainPID", "--value", "support-tunnel.service"],
+        capture_output=True, text=True
+    )
+    try:
+        pid = int(pid_result.stdout.strip())
+    except ValueError:
+        pass
+
+# Read state from Redis
 session = rdb.hgetall(f"node/{node_id}/tunnel")
 
 json.dump({
     "active": active,
     "node_id": node_id,
-    "session_id": session.get("session_id", ""),
-    "started_at": session.get("started_at", ""),
-    "connected": session.get("connected", "") == "true",
     "support_url": session.get("support_url", ""),
+    "system_key": session.get("system_key", ""),
+    "connected": session.get("connected", "") == "true",
     "services": int(session.get("services_count", "0") or "0"),
+    "pid": pid,
 }, fp=sys.stdout)
