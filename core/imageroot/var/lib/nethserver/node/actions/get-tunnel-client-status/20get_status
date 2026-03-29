@@ -28,7 +28,10 @@ session = rdb.hgetall(f"node/{node_id}/tunnel")
 
 json.dump({
     "active": active,
+    "node_id": node_id,
     "session_id": session.get("session_id", ""),
     "started_at": session.get("started_at", ""),
-    "node_id": node_id,
+    "connected": session.get("connected", "") == "true",
+    "support_url": session.get("support_url", ""),
+    "services": int(session.get("services_count", "0") or "0"),
 }, fp=sys.stdout)
