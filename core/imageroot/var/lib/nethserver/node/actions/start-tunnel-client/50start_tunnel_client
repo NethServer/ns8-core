@@ -92,21 +92,27 @@ SERVICES_COUNT=$(journalctl -u support-tunnel --since "30 sec ago" --no-pager 2>
     | grep -oP 'Manifest sent with \K[0-9]+' | tail -1)
 SERVICES_COUNT="${SERVICES_COUNT:-0}"
 
+# Get the PID of the tunnel-client process
+TUNNEL_PID=$(systemctl show -p MainPID --value support-tunnel.service 2>/dev/null)
+TUNNEL_PID="${TUNNEL_PID:-0}"
+
 # Store state in Redis (use default user on local replica for write access)
 unset REDISCLI_AUTH
-SESSION_ID=$(cat /proc/sys/kernel/random/uuid)
 redis-cli HSET "node/${NODE_ID}/tunnel" \
-    session_id "$SESSION_ID" \
-    started_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     active "true" \
-    connected "$CONNECTED" \
     support_url "$SUPPORT_URL" \
-    services_count "$SERVICES_COUNT" > /dev/null
+    system_key "$SYSTEM_KEY" \
+    connected "$CONNECTED" \
+    services_count "$SERVICES_COUNT" \
+    pid "$TUNNEL_PID" > /dev/null
 
 # Output on the original stdout (fd3)
 jq -c -n \
+    --argjson active true \
     --arg node_id "$NODE_ID" \
     --arg support_url "$SUPPORT_URL" \
+    --arg system_key "$SYSTEM_KEY" \
     --argjson connected "$CONNECTED" \
-    --argjson services_count "${SERVICES_COUNT}" \
-    '{node_id: $node_id, support_url: $support_url, connected: $connected, services: $services_count}' >&3
+    --argjson services "${SERVICES_COUNT}" \
+    --argjson pid "$TUNNEL_PID" \
+    '{active: $active, node_id: $node_id, support_url: $support_url, system_key: $system_key, connected: $connected, services: $services, pid: $pid}' >&3
