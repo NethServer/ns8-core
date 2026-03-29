@@ -92,8 +92,11 @@ SERVICES_COUNT=$(journalctl -u support-tunnel --since "30 sec ago" --no-pager 2>
     | grep -oP 'Manifest sent with \K[0-9]+' | tail -1)
 SERVICES_COUNT="${SERVICES_COUNT:-0}"
 
-# Store state in Redis
+# Store state in Redis (use default user on local replica for write access)
+unset REDISCLI_AUTH
+SESSION_ID=$(cat /proc/sys/kernel/random/uuid)
 redis-cli HSET "node/${NODE_ID}/tunnel" \
+    session_id "$SESSION_ID" \
     started_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     active "true" \
     connected "$CONNECTED" \
