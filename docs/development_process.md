@@ -257,12 +257,12 @@ The following procedure is used by the NethVoice project. It relies on the
 
    Copy the script output and paste it into the release notes.
 
-5. Optionally, remove intermediate testing releases that were created during
+5. Remove intermediate testing releases that were created during
    the QA cycle:
 
        gh ns8-release-module clean --release-name <version>
 
-6. Optionally, post a comment on each linked issue to notify that the issue
+6. Post a comment on each linked issue to notify that the issue
    has been included in the release:
 
        gh ns8-release-module comment --release-name <version>
