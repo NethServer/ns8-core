@@ -64,7 +64,7 @@ chmod 600 "$SUPPORT_DIR/support.env"
 
 # Start the tunnel service (session expiry is managed server-side by MY)
 systemctl daemon-reload
-systemctl start support-tunnel.service
+systemctl restart support-tunnel.service
 
 # Wait for the tunnel to actually connect (max 15 seconds)
 CONNECTED=false
