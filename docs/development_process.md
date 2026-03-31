@@ -216,7 +216,7 @@ gh extension install NethServer/gh-ns8-release-module
 ```
 
 1. Run the pre-release checks to verify that all linked issues are in the
-   correct state:
+   `verified` state:
 
        gh ns8-release-module check
 
