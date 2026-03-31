@@ -209,6 +209,12 @@ The following procedure is used by the NethVoice project. It relies on the
 `gh ns8-release-module` extension from
 [NethServer/gh-ns8-release-module](https://github.com/NethServer/gh-ns8-release-module).
 
+Before using the extension, install it if needed:
+
+```bash
+gh extension install NethServer/gh-ns8-release-module
+```
+
 1. Run the pre-release checks to verify that all linked issues are in the
    correct state:
 
