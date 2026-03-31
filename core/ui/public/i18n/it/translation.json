@@ -1532,7 +1532,7 @@
         "automatic": "Automatico",
         "invalid_ipv4": "Indirizzo IPv4 non valido: {ip}",
         "restricted": "Accesso limitato",
-        "ip_allowlist_helper": "Inserisci un indirizzo IPv4 o CIDR per riga. Lasciare vuoto per consentire l'accesso da qualsiasi indirizzo IP",
+        "ip_allowlist_helper": "Immettere un indirizzo IPv4/IPv6 o CIDR per riga. Lasciare vuoto per consentire l'accesso da qualsiasi indirizzo IP",
         "route": "Rotta",
         "save_route": "Salva rotta",
         "host_pattern": "Formato hostname non valido",
@@ -1542,7 +1542,8 @@
         "show_logs": "Mostra log",
         "traefik_will_be_restarted": "Traefik verrà riavviato",
         "delete_route_with_certificate_message": "L'eliminazione di questa rotta comporterà una breve disconnessione dei client HTTP connessi a {node}.",
-        "revoke_certificate_message": "La revoca del certificato della rotta comporterà una breve disconnessione dei client HTTP connessi a {node}."
+        "revoke_certificate_message": "La revoca del certificato della rotta comporterà una breve disconnessione dei client HTTP connessi a {node}.",
+        "invalid_ipv6": "Indirizzo IPv6 non valido: {ip}"
     },
     "samba": {
         "choose_samba_admin_username": "Scegli il nome utente dell'amministratore di Samba",

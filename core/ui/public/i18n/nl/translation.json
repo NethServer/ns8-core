@@ -1010,7 +1010,8 @@
         "cannot_obtain_tls_certificate": "Cannot obtain TLS certificate.",
         "delete_route_with_certificate_message": "Deleting this route will briefly disconnect HTTP clients connected to {node}.",
         "traefik_will_be_restarted": "Traefik will be restarted",
-        "revoke_certificate_message": "Revoking the route certificate will briefly disconnect HTTP clients connected to {node}."
+        "revoke_certificate_message": "Revoking the route certificate will briefly disconnect HTTP clients connected to {node}.",
+        "invalid_ipv6": "Invalid IPv6 address: {ip}"
     },
     "password": {
         "uppercase_letter": "Hoofdletters",
