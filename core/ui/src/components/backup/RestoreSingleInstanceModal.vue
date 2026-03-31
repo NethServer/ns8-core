@@ -303,7 +303,6 @@ export default {
     },
     isNextButtonDisabled() {
       return (
-        this.loading.restoreModule ||
         (this.step == "instance" && !this.selectedInstance) ||
         (this.step == "snapshot" && !this.selectedSnapshot) ||
         (this.step == "node" &&
@@ -843,6 +842,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.restoreModule = this.getErrorMessage(err);
+        this.loading.restoreModule = false;
         return;
       }
 
