@@ -272,3 +272,6 @@ gh extension install NethServer/gh-ns8-release-module
    has been included in the release:
 
        gh ns8-release-module comment --release-name <version>
+
+7. Notify the `~nethvoice` channel that the release has been
+   published.
