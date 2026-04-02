@@ -303,6 +303,7 @@ export default {
     },
     isNextButtonDisabled() {
       return (
+        this.loading.restoreModule ||
         (this.step == "instance" && !this.selectedInstance) ||
         (this.step == "snapshot" && !this.selectedSnapshot) ||
         (this.step == "node" &&
