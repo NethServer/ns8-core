@@ -848,6 +848,7 @@ export default {
       }
 
       // close modal immediately, no validation needed
+      this.loading.restoreModule = false;
       this.$emit("hide");
     },
     restoreModuleAborted(taskResult, taskContext) {
