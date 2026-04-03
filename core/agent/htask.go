@@ -464,7 +464,7 @@ func obscureTaskInput(jsonStr string) string {
 }
 
 func isSensitive(target string) bool {
-	sensitiveList := []string{"password", "secret", "token"}
+	sensitiveList := []string{"password", "secret", "token", "key", "pass"}
 	ltarget := strings.ToLower(target)
 	for _, sensitive := range sensitiveList {
 		if strings.HasSuffix(ltarget, sensitive) {
