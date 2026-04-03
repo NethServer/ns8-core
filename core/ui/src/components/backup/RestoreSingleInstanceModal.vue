@@ -843,10 +843,12 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.restoreModule = this.getErrorMessage(err);
+        this.loading.restoreModule = false;
         return;
       }
 
       // close modal immediately, no validation needed
+      this.loading.restoreModule = false;
       this.$emit("hide");
     },
     restoreModuleAborted(taskResult, taskContext) {
