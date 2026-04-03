@@ -32,7 +32,7 @@ repopath = request['path']
 snapshot = request['snapshot'] or "latest"
 original_environment = request['environment']
 
-rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
+rdb = agent.redis_connect(privileged=True, use_replica=True)
 
 podman_args = ["--workdir=/srv"]
 podman_args.extend(agent.get_state_volume_args()) # get volumes from state-include.conf
