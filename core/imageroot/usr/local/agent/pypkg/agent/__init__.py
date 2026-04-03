@@ -212,57 +212,61 @@ def run_helper(*args, log_command=True, **kwargs):
     return subprocess.CompletedProcess(args, proc.returncode)
 
 def prepare_restic_command(rdb, repository, repo_path, podman_args, restic_args):
+    """Return a full podman command line with arguments to run Restic in a
+    temporary container, and a dictionary of expected environment
+    variables for it. Parameters for Podman ("podman_args") and Restic
+    ("restic_args") are accepted with separate argument lists. The
+    "repository" parameter must be a remote backup destination ID, and
+    "repo_path" corresponds to the path of Restic repository, relative to
+    the destination remote filesystem.
+    """
     core_env = read_envfile('/etc/nethserver/core.env') # Import URLs of core images
     orepo = rdb.hgetall(f"cluster/backup_repository/{repository}")
     assert_exp(len(orepo) > 0) # Check the repository exists
 
-    # Build the environment to run Restic against the given repository+repo_path
-    restic_env = {}
-    restic_env["RESTIC_PASSWORD"] = orepo['password']
-    restic_env["RESTIC_CACHE_DIR"] = '/var/cache/restic'
-
-    uschema, upath = orepo['url'].split(':', 1)
-    if uschema == 's3':
-        restic_env["RESTIC_REPOSITORY"] = orepo['url'] + "/" + repo_path
-        restic_env["AWS_ACCESS_KEY_ID"] = orepo['aws_access_key_id']
-        restic_env["AWS_SECRET_ACCESS_KEY"] = orepo['aws_secret_access_key']
-        if orepo['provider'] == 'aws':
-            restic_env['AWS_DEFAULT_REGION'] = orepo.get('aws_default_region', '')
-    elif uschema == 'b2':
-        restic_env["RESTIC_REPOSITORY"] = orepo['url'] + ":" + repo_path
-        restic_env["B2_ACCOUNT_ID"] = orepo['b2_account_id']
-        restic_env["B2_ACCOUNT_KEY"] = orepo['b2_account_key']
-    elif uschema == 'azure':
-        restic_env["RESTIC_REPOSITORY"] = orepo['url'] + ":" + repo_path
-        restic_env["AZURE_ACCOUNT_NAME"] = orepo['azure_account_name']
-        restic_env["AZURE_ACCOUNT_KEY"] = orepo['azure_account_key']
-    elif uschema == 'smb':
-        restic_env["RESTIC_REPOSITORY"] = 'rclone::' + orepo['url'].rstrip("/") + "/" + repo_path
-        restic_env["RCLONE_SMB_HOST"] = orepo["smb_host"]
-        restic_env["RCLONE_SMB_USER"] = orepo["smb_user"]
-        restic_env["RCLONE_SMB_PASS"] = orepo["smb_pass"]
-        restic_env["RCLONE_SMB_DOMAIN"] = orepo["smb_domain"]
-        restic_args.insert(0, "--option=rclone.program=/usr/local/bin/rclone-wrapper")
-    elif uschema == 'webdav' and orepo['provider'] == 'cluster':
-        ourl = urlparse(upath)
-        restic_env["RESTIC_REPOSITORY"] = 'rclone::webdav:' + ourl.path.rstrip("/") + "/" + repo_path
-        restic_env["RCLONE_WEBDAV_URL"] = ourl.scheme + '://' + ourl.netloc
+    if os.environ['REDIS_USER'] == 'cluster':
+        # cluster credentials are not known to rclone-gateway, use node
+        # creds instead.
+        node_env = read_envfile('/var/lib/nethserver/node/state/agent.env')
+        http_auth = (node_env['REDIS_USER'], node_env['REDIS_PASSWORD'])
+        restic_rest_username = node_env['REDIS_USER']
+        restic_rest_password = node_env['REDIS_PASSWORD']
     else:
-        raise Exception(f"Schema {uschema} not supported")
+        # default authentication is based on agent environment and suits
+        # node and modules as-is.
+        http_auth = None
+        restic_rest_username = os.environ['REDIS_USER']
+        restic_rest_password = os.environ['REDIS_PASSWORD']
+
+    try:
+        restic_password = rdb.hget('private/agents/backup_destination/restic_password', repository)
+    except redis.exceptions.NoPermissionError:
+        # Warn app devs to fix the connection privileges of rdb argument:
+        warnings.warn("Fix your agent.prepare_restic_command() or agent.run_restic() invocation by passing a privileged Redis connection (e.g.: \"redis_connect(privileged=True)\").", stacklevel=3)
+        rdbrw = redis_connect(privileged=True)
+        restic_password = rdbrw.hget('private/agents/backup_destination/restic_password', repository)
+
+    # Build the environment to run Restic against the given repository+repo_path
+    restic_env = {
+        "RESTIC_PASSWORD": restic_password,
+        "RESTIC_CACHE_DIR": "/var/cache/restic",
+        "RESTIC_REPOSITORY": f"rest:http://127.0.0.1:4694/{repository}/{repo_path}",
+        "RESTIC_REST_USERNAME": restic_rest_username,
+        "RESTIC_REST_PASSWORD": restic_rest_password,
+    }
 
     # Build the Podman command line to run Restic
-    container_name = "restic-" + os.environ.get('MODULE_ID', os.environ["AGENT_ID"]) + "-" + str(os.getpid())
-    podman_cmd = ['podman', 'run', '-i', '--rm', f'--name={container_name}', '--privileged', '--network=host',
+    container_name = "restic-" + os.environ.get('MODULE_ID', os.environ["AGENT_ID"].replace("/", "")) + "-" + str(os.getpid())
+    podman_cmd = ['podman', 'run',
+        '--interactive', '--rm', '--replace', f'--name={container_name}',
+        '--privileged', '--network=host',
+        '--env=RESTIC_*',
         '--volume=restic-cache:/var/cache/restic',
-        "--log-driver=none",
+        '--log-driver=none',
+        *podman_args,
+        core_env["RESTIC_IMAGE"],
+        *restic_args,
     ]
-
-    for envvar in restic_env:
-        podman_cmd.extend(['-e', envvar]) # Import Restic environment variables
-
-    podman_cmd.extend(podman_args) # Any argument is appended to podman invocation
-    podman_cmd.append(core_env["RESTIC_IMAGE"])
-    podman_cmd.extend(restic_args)
 
     return (podman_cmd, restic_env)
 
