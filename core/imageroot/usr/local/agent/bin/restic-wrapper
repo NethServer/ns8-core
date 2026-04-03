@@ -54,7 +54,7 @@ if '--help' in rargs:
     # Print the wrapper helper, then continue, to forward the help flag to Restic
     parser.print_help()
 
-rdb = agent.redis_connect(use_replica=True) # Connect to local replica
+rdb = agent.redis_connect(use_replica=True, privileged=True) # Connect to local replica
 
 if wargs.show:
     header="No backup destination found.\n"
