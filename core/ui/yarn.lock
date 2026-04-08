@@ -18792,8 +18792,8 @@ __metadata:
   linkType: hard
 
 "vue-loader@npm:^15.9.2, vue-loader@npm:^15.9.7":
-  version: 15.9.8
-  resolution: "vue-loader@npm:15.9.8"
+  version: 15.11.1
+  resolution: "vue-loader@npm:15.11.1"
   dependencies:
     "@vue/component-compiler-utils": ^3.1.0
     hash-sum: ^1.0.2
@@ -18806,9 +18806,11 @@ __metadata:
   peerDependenciesMeta:
     cache-loader:
       optional: true
+    prettier:
+      optional: true
     vue-template-compiler:
       optional: true
-  checksum: ca4c99b2617b207eb96925b889669f8bfecb6e82d22ed59220b324b6caaccc38bf3bc1d7961353155ab19ec71b791e887e8a06109ec719e8a791a2b00a2420bc
+  checksum: 509a816d45d4f3de6fbe8aed2267e3113637950e61597bb7647cd43328d4eab9c70235f5161ab761f0a2162471f69271ae54b2a806663c2094a10266434fa6a3
   languageName: node
   linkType: hard
 
