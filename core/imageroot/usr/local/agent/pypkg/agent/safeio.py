@@ -87,7 +87,7 @@ def safe_open(path, mode="w", encoding=None):
 @contextmanager
 def exclusive_file_lock(path):
     directory = os.path.dirname(path) or "."
-    lock_path = directory + '/.' + os.path.basename(path) + '.lock'
+    lock_path = directory + '/.' + os.path.basename(path).lstrip(".") + '.lock'
     fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o644)
     try:
         fcntl.flock(fd, fcntl.LOCK_EX)
