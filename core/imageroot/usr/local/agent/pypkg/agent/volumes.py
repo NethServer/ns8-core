@@ -64,6 +64,8 @@ def get_base_paths() -> list:
             continue # ignore bind mounts
         elif ofs["target"].startswith("/boot"):
             continue # ignore /boot* mountpoints
+        elif ofs["target"].endswith("/_data"):
+            continue # ignore Podman volumes
         elif ofs["target"] in ["/", home_basedir]:
             continue # ignore HOME_BASEDIR and root volume
         opath = {
