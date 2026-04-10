@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import time
+
+import agent
+
+EXIT_ALREADY_RUNNING = 3
+RETRY_INTERVAL = 60   # seconds between retries
+RETRY_TIMEOUT = 3600  # total retry window in seconds
+
+def get_module_repopath(rdb, module_id):
+    """Compute the restic repository path for a module."""
+    env = rdb.hgetall(f"module/{module_id}/environment")
+    image_url = env.get("IMAGE_URL", "")
+    module_uuid = rdb.hget("cluster/module_uuid", module_id) or ""
+    return agent.get_image_name_from_url(image_url) + "/" + module_uuid
+
+def run_module_backup(module_id, backup_id):
+    """Run backup for a single module. Returns the exit code."""
+    print(f"{module_id}: starting backup {backup_id} at {time.asctime()}", file=sys.stderr)
+    result = subprocess.run(
+        ["runagent", "-m", module_id, "module-backup", backup_id],
+    )
+    return result.returncode
+
+def collect_backup_stats(rdb, repository, repopath, start_time):
+    """Collect restic stats for a module's backup. Returns status dict."""
+    status = {"start": start_time, "total_size": 0, "total_file_count": 0, "snapshots_count": 0, "errors": 0}
+    stats_proc = agent.run_restic(rdb, repository, repopath, [], ["stats", "--json", "latest"], text=True, stdout=subprocess.PIPE)
+    if stats_proc.returncode == 0:
+        try:
+            status.update(json.loads(stats_proc.stdout))
+        except json.JSONDecodeError:
+            status["errors"] += 1
+    else:
+        print(f"[ERROR] restic stats failed for {repopath}", file=sys.stderr)
+        status["errors"] += 1
+    status["end"] = int(time.time())
+    return status
+
+def store_backup_status(node_id, backup_id, module_id, status):
+    """Store module backup status in Redis under the node key and publish backup-status-changed event."""
+    rdb = agent.redis_connect(privileged=True) # Connect to leader node
+    trx = rdb.pipeline()
+    agent_id = os.environ["AGENT_ID"]
+    try:
+        event_payload = {
+            "node_id": int(node_id),
+            "backup_id": int(backup_id),
+            "module_id": module_id,
+        }
+        trx.hset(
+            f"node/{node_id}/backup_status/{backup_id}",
+            module_id,
+            json.dumps(status),
+        )
+        trx.publish(f"{agent_id}/event/backup-status-changed", json.dumps(event_payload))
+        trx.execute()
+    except (ValueError, redis.exceptions.RedisError) as ex:
+        print(agent.SD_WARNING + "Cannot store backup status!", ex, file=sys.stderr)
+
+def run_retention(rdb, repository, repopath, retention):
+    """Apply retention policy after a successful backup."""
+    try:
+        agent.run_restic(rdb, repository, repopath, [], [
+            "forget", "--prune", f"--keep-last={retention}",
+        ]).check_returncode()
+    except subprocess.CalledProcessError as ex:
+        print(f"[ERROR] retention policy failed for {repopath}: {ex}", file=sys.stderr)
+
+def update_repopath_json(rdb, backup_id, module_id, repopath, success):
+    """Upload {repopath}.json metadata to the remote destination."""
+    ometa = {
+        "module_id": module_id,
+        "module_ui_name": rdb.get(f"module/{module_id}/ui_name") or "",
+        "node_fqdn": agent.get_hostname(),
+        "cluster_uuid": rdb.get("cluster/uuid") or "",
+        "uuid": rdb.hget("cluster/module_uuid", module_id) or "",
+        "timestamp": int(time.time()),
+        "success": success,
+    }
+    try:
+        subprocess.run(
+            ["rclone-wrapper", str(backup_id), "rcat", f"REMOTE_PATH/{repopath}.json"],
+            stdout=sys.stderr,
+            input="\n" + json.dumps(ometa, separators=(",", ":")) + "\n",
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as ex:
+        print(f"[ERROR] rclone-wrapper failed for {repopath}.json: {ex}", file=sys.stderr)
+
+
+def process_module(rdb, module_id, backup_id, node_id, repository, retention):
+    """Run backup for one module, handle post-backup tasks. Returns exit code."""
+    start_time = int(time.time())
+    rc = run_module_backup(module_id, backup_id)
+    if rc == EXIT_ALREADY_RUNNING:
+        return rc
+
+    repopath = get_module_repopath(rdb, module_id)
+    success = (rc == 0)
+
+    # Collect stats and store backup status
+    status = collect_backup_stats(rdb, repository, repopath, start_time)
+    if not success:
+        status["errors"] += 1
+
+    store_backup_status(node_id, backup_id, module_id, status)
+
+    if success:
+        run_retention(rdb, repository, repopath, retention)
+
+    update_repopath_json(rdb, backup_id, module_id, repopath, success)
+    return rc
+
+def main():
+    parser = argparse.ArgumentParser(description="Run a backup by ID")
+    parser.add_argument(
+        "--backup",
+        required=True,
+        help="Backup ID to run",
+    )
+    args = parser.parse_args()
+    backup_id = args.backup
+
+    rdb = agent.redis_connect(use_replica=True, privileged=True)
+    node_id = os.environ["NODE_ID"]
+
+    battrs = rdb.hgetall(f"cluster/backup/{backup_id}")
+    if not battrs:
+        print(f"Backup {backup_id} not found in Redis", file=sys.stderr)
+        sys.exit(1)
+
+    if battrs.get("enabled") != "1":
+        print(f"Backup {backup_id} is not enabled", file=sys.stderr)
+        return
+
+    repository = battrs.get("repository", "")
+    retention = battrs.get("retention", "3")
+    instances = battrs.get("instances", "").split()
+    module_node = rdb.hgetall("cluster/module_node")
+
+    # Keep only modules that belong to this node
+    local_modules = [m for m in instances if module_node.get(m) == node_id]
+    if not local_modules:
+        print(f"No local modules for backup {backup_id}", file=sys.stderr)
+        return
+
+    failed = []
+    retry_queue = []
+
+    # First pass: run all local modules sequentially
+    for module_id in local_modules:
+        rc = process_module(rdb, module_id, backup_id, node_id, repository, retention)
+        if rc == 0:
+            print(f"{module_id}: backup {backup_id} completed", file=sys.stderr)
+        elif rc == EXIT_ALREADY_RUNNING:
+            print(f"{module_id}: already running, queued for retry", file=sys.stderr)
+            retry_queue.append(module_id)
+        else:
+            print(f"{module_id}: backup {backup_id} failed (exit code {rc})", file=sys.stderr)
+            failed.append(module_id)
+
+    # Retry loop for modules that were already running
+    deadline = time.monotonic() + RETRY_TIMEOUT
+    while retry_queue and time.monotonic() < deadline:
+        print(f"Waiting {RETRY_INTERVAL}s before retrying {len(retry_queue)} module(s)...", file=sys.stderr)
+        time.sleep(RETRY_INTERVAL)
+        still_busy = []
+        for module_id in retry_queue:
+            rc = process_module(rdb, module_id, backup_id, node_id, repository, retention)
+            if rc == 0:
+                print(f"{module_id}: backup {backup_id} completed (retry)", file=sys.stderr)
+            elif rc == EXIT_ALREADY_RUNNING:
+                print(f"{module_id}: still running, will retry", file=sys.stderr)
+                still_busy.append(module_id)
+            else:
+                print(f"{module_id}: backup {backup_id} failed on retry (exit code {rc})", file=sys.stderr)
+                failed.append(module_id)
+        retry_queue = still_busy
+
+    # Modules that never became available within the timeout
+    for module_id in retry_queue:
+        print(f"{module_id}: gave up retrying after {RETRY_TIMEOUT}s", file=sys.stderr)
+        failed.append(module_id)
+
+    if failed:
+        print(f"Backup {backup_id} finished with failures: {', '.join(failed)}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Backup {backup_id} completed successfully", file=sys.stderr)
+
+if __name__ == "__main__":
+    main()
