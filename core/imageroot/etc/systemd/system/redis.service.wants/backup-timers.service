@@ -1,0 +1,9 @@
+[Unit]
+Description=Backup timers (from Redis state)
+After=redis.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=runagent -m node schedule-backup start-timers
+ExecStop=runagent -m node schedule-backup stop-timers
