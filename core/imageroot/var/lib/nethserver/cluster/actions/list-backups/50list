@@ -50,30 +50,38 @@ for kbackup in rdb.scan_iter('cluster/backup/*'):
 
 configured_instances = set()
 
-for mbackup in rdb.scan_iter('module/*/backups'):
-    for bid in rdb.sscan_iter(mbackup):
-        if bid in backups:
-            mid = mbackup.removeprefix('module/').removesuffix('/backups')
-            module_uuid = rdb.hget("cluster/module_uuid", mid)
-            status = rdb.hgetall(f"module/{mid}/backup_status/{bid}") or None
-            if not status is None:
-                for k in status.keys():
-                    status[k] = int(status[k])
-                status["success"] = status["errors"] == 0
-                del(status["errors"])
-            backups[bid]['instances'].append({
-                "module_id": mid,
-                "ui_name": rdb.get(f"module/{mid}/ui_name") or "",
-                "repository_path": module_uuid,
-                "status": status,
-            })
-            configured_instances.add(mid)
+# Collect backup status from all nodes
+node_ids = set(rdb.hvals("cluster/module_node"))
+backup_statuses = {}  # {(backup_id, module_id): status_dict}
+for node_id in node_ids:
+    for bid in backups:
+        raw = rdb.hgetall(f"node/{node_id}/backup_status/{bid}")
+        for mid, status_json in raw.items():
+            try:
+                backup_statuses[(bid, mid)] = json.loads(status_json)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+for bid, backup in backups.items():
+    instances = rdb.hget(f"cluster/backup/{bid}", "instances") or ""
+    for mid in instances.split():
+        module_uuid = rdb.hget("cluster/module_uuid", mid)
+        status = backup_statuses.get((bid, mid))
+        if status is not None:
+            status = dict(status)
+            status["success"] = status.pop("errors", 0) == 0
+        backup['instances'].append({
+            "module_id": mid,
+            "ui_name": rdb.get(f"module/{mid}/ui_name") or "",
+            "repository_path": module_uuid,
+            "status": status,
+        })
+        configured_instances.add(mid)
 
 unconfigured_instances = []
 
 # The user will not be warned if the following modules have the `no_data_backup` flag.
-for xins in rdb.scan_iter('module/*/environment'):
-    mid = xins.removesuffix('/environment').removeprefix('module/')
+for mid in rdb.hkeys('cluster/module_node'):
     flags = rdb.smembers(f'module/{mid}/flags')
     if 'no_data_backup' in flags:
         continue
