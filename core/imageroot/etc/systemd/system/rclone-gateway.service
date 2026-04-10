@@ -1,7 +1,7 @@
 [Unit]
 Description=Rclone Gateway server
 After=redis.service
-Wants=redis.service
+Wants=redis.service backup-timers.service
 StartLimitIntervalSec=10s
 StartLimitBurst=3
 

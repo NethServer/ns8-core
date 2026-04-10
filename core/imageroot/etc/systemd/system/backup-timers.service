@@ -1,6 +1,8 @@
 [Unit]
 Description=Backup timers (from Redis state)
 After=redis.service
+Requires=redis.service
+ConditionPathExists=/var/lib/nethserver/node/state/rclone
 
 [Service]
 Type=oneshot
