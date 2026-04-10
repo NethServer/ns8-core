@@ -36,25 +36,7 @@ if not rdb.exists(f"cluster/backup/{bid}"):
     sys.exit(2)
 
 #
-# Remove the backup and all its backward references in module keys
+# Remove the backup
 #
-ptasks = []
 rdb.delete(f"cluster/backup/{bid}")
-for kbackups in rdb.scan_iter('module/*/backups'):
-    if rdb.srem(kbackups, bid) > 0:
-        ptasks.append({
-            "agent_id": kbackups.removesuffix('/backups'),
-            "action": "configure-backup",
-            "data": {
-                "id": bid,
-                "optype": "remove",
-            }
-        })
-
-terrors = agent.tasks.runp_brief(ptasks,
-    endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(2,98)
-)
-if terrors:
-    print(terrors, file=sys.stderr)
-    sys.exit(1)
+rdb.publish('cluster/event/backup-schedule-changed', json.dumps({"backup_ids":[str(bid)]}))

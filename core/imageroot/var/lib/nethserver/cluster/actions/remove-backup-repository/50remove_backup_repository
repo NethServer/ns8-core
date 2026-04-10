@@ -42,14 +42,22 @@ trx = rdb.pipeline()
 #
 # Drop related backup objects
 #
-ptasks = []
+related_backups = []
 # XXX use an index instead of scan
 for kbid in rdb.scan_iter('cluster/backup/*'):
     repo_id = rdb.hget(kbid, 'repository')
     if repo_id != rid:
         continue # backup not related, skip
     trx.delete(kbid)
-
+    backup_id = kbid.removeprefix('cluster/backup/')
+    related_backups.append(backup_id)
+if related_backups:
+    trx.publish(f"cluster/event/backup-schedule-changed", json.dumps({
+        "backup_ids": related_backups,
+    }))
+#
+# Delete the backup destination
+#
 trx.delete(f"cluster/backup_repository/{rid}")
 trx.hdel('private/nodes/backup_destination/rclone_conf', rid)
 trx.hdel('private/agents/backup_destination/restic_password', rid)
@@ -57,11 +65,3 @@ trx.publish(f"cluster/event/backup-destination-changed", json.dumps({
     "destination_id": rid,
 }))
 trx.execute()
-
-terrors = agent.tasks.runp_brief(ptasks,
-    endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(25,98)
-)
-if terrors:
-    print(terrors, file=sys.stderr)
-    sys.exit(1)
