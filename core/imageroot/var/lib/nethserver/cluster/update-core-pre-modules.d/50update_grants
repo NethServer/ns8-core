@@ -7,6 +7,7 @@
 
 import os
 import sys
+import json
 import agent
 import cluster.grants
 import cluster.backup
@@ -117,9 +118,37 @@ if len(trx_changes) > 0:
     if destination_uuid:
         # At least one destination was migrated: trigger rclone-webdav
         # restart on all nodes:
-        trx.publish(f"cluster/event/backup-destination-changed", json.dumps({
+        rdb.publish(f"cluster/event/backup-destination-changed", json.dumps({
             "destination_id": destination_uuid,
         }))
-    # The acl-changed event handler of each node will trigger backup
-    # credentials generation and rclone-webdav reload:
+    # Migrate backup schedules: populate instances field from module/*/backups SET keys
+    module_node = rdb.hgetall("cluster/module_node")
+    schedule_instances = {}  # {backup_id: set of module_ids}
+    sgx = rdb.pipeline()
+    for mid in module_node:
+        for bid in rdb.smembers(f"module/{mid}/backups"):
+            schedule_instances.setdefault(bid, set()).add(mid)
+        sgx.delete(f"module/{mid}/backups")
+    for bid, mids in schedule_instances.items():
+        if rdb.exists(f"cluster/backup/{bid}"):
+            sgx.hset(f"cluster/backup/{bid}", "instances", " ".join(sorted(mids)))
+    sgx.execute()
+
+    # Migrate backup_status: convert module/{mid}/backup_status/{bid}
+    # HASH to node/{nodeID}/backup_status/{bid} with module_id as field
+    bgx = rdb.pipeline()
+    for mid, node_id in module_node.items():
+        for kstatus in rdb.scan_iter(f"module/{mid}/backup_status/*"):
+            bid = kstatus.removeprefix(f"module/{mid}/backup_status/")
+            status_data = rdb.hgetall(kstatus)
+            if status_data:
+                # Convert string values to integers to match the new format
+                for k in status_data:
+                    try:
+                        status_data[k] = int(status_data[k])
+                    except (ValueError, TypeError):
+                        pass
+                bgx.hset(f"node/{node_id}/backup_status/{bid}", mid, json.dumps(status_data))
+    bgx.execute()
+    # rclone-gateway.service should be stopped at this point and this will start it:
     cluster.grants.save_acls(rdb)

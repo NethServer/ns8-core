@@ -35,34 +35,12 @@ data = {
     "schedule": request['schedule'],
     "schedule_hint": json.dumps(request.get("schedule_hint", {})),
     "enabled": "1" if request['enabled'] else "",
+    "instances": ' '.join(request["instances"]),
 }
 
 backup_id = int(rdb.incr('cluster/backup_sequence'))
 if not data['name']:
     data['name'] = "Backup " + str(backup_id)
 rdb.hset(f'cluster/backup/{backup_id}', mapping=data)
-
-ptasks = []
-for target in request['instances']:
-    rdb.sadd(f'module/{target}/backups', backup_id)
-    ptasks.append({
-        "action": "configure-backup",
-        "agent_id": f"module/{target}",
-        "data": {
-            "optype": "add",
-            "id": backup_id,
-            "name": request["name"],
-            "schedule": request["schedule"],
-            "enabled": request["enabled"],
-        },
-    })
-
-terrors = agent.tasks.runp_brief(ptasks,
-    endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(10,98)
-)
-if terrors:
-    print(terrors, file=sys.stderr)
-    sys.exit(1)
-
+rdb.publish('cluster/event/backup-schedule-changed', json.dumps({"backup_ids":[str(backup_id)]}))
 print(backup_id, file=sys.stdout)

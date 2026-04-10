@@ -35,20 +35,18 @@ if not rdb.exists(f"cluster/backup/{bid}"):
     json.dump([{'field':'id', 'parameter':'id','value': bid, 'error':'backup_not_found'}], fp=sys.stdout)
     sys.exit(2)
 
-#
-# Remove the backup and all its backward references in module keys
-#
+cluster_nodes = set(rdb.hvals("cluster/module_node"))
+
 ptasks = []
-for kbackups in rdb.scan_iter('module/*/backups'):
-    if rdb.sismember(kbackups, bid) > 0:
+for node_id in cluster_nodes:
         ptasks.append({
-            "agent_id": kbackups.removesuffix('/backups'),
+            "agent_id": f"node/{node_id}",
             "action": "run-backup",
             "data": {
                 "id": bid,
             },
             "extra": {
-                'title': kbackups.removesuffix('/backups') + "/run-backup",
+                'title': f"node/{node_id}/run-backup",
                 'description': "run-backup agent action",
                 'isNotificationHidden': True,
             }
@@ -58,7 +56,7 @@ results = agent.tasks.runp(ptasks,
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(2,98)
 )
-berrors = len([r['exit_code'] != 0 for r in results])
+berrors = len([r for r in results if r['exit_code'] != 0])
 if berrors > 0:
     print(agent.SD_ERR + f"run-backup {bid} failed on {berrors} node(s)", file=sys.stderr)
     sys.exit(1)
