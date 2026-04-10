@@ -44,7 +44,7 @@ if cluster.backup.validate_schedule(request['schedule']):
     errors.append({'field':'schedule','parameter':'schedule','value': request['schedule'],'error':'bad_schedule_format'})
 
 for mid in request['instances']:
-    if not rdb.exists(f'module/{mid}/environment'):
+    if not rdb.exists(f'module/{mid}/environment') or not mid in rdb.hkeys("cluster/module_node"):
         errors.append({'field':'instances','parameter':'instances','value': mid,'error':'module_not_found'})
 
 if errors:
