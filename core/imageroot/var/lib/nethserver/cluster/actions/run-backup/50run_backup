@@ -54,10 +54,11 @@ for kbackups in rdb.scan_iter('module/*/backups'):
             }
         })
 
-terrors = agent.tasks.runp_brief(ptasks,
+results = agent.tasks.runp(ptasks,
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(2,98)
 )
-if terrors:
-    print(terrors, file=sys.stderr)
+berrors = len([r['exit_code'] != 0 for r in results])
+if berrors > 0:
+    print(agent.SD_ERR + f"run-backup {bid} failed on {berrors} node(s)", file=sys.stderr)
     sys.exit(1)
