@@ -127,6 +127,27 @@ def update_repopath_json(rdb, backup_id, module_id, repopath, success):
     except subprocess.CalledProcessError as ex:
         print(f"[ERROR] rclone-wrapper failed for {repopath}.json: {ex}", file=sys.stderr)
 
+def upload_cluster_backup(backup_id, cluster_uuid):
+    """Generate and upload the cluster backup to the remote destination."""
+    dump_path = "/var/lib/nethserver/cluster/state/backup/dump.json.gz.gpg"
+    if not os.path.isfile(dump_path):
+        try:
+            subprocess.run(["runagent", "-m", "cluster", "cluster-backup"], check=True)
+        except subprocess.CalledProcessError as ex:
+            print(f"[ERROR] cluster-backup failed: {ex}", file=sys.stderr)
+            return
+    remote_name = f"cluster-backup-{cluster_uuid}.json.gz.gpg"
+    try:
+        with open(dump_path, "rb") as f:
+            subprocess.run(
+                ["rclone-wrapper", str(backup_id), "rcat", f"REMOTE_PATH/{remote_name}"],
+                stdin=f,
+                stdout=sys.stderr,
+                check=True,
+            )
+        print(f"Cluster backup uploaded as {remote_name}", file=sys.stderr)
+    except subprocess.CalledProcessError as ex:
+        print(f"[ERROR] rclone-wrapper failed for cluster backup: {ex}", file=sys.stderr)
 
 def process_module(rdb, module_id, backup_id, node_id, repository, retention):
     """Run backup for one module, handle post-backup tasks. Returns exit code."""
@@ -178,6 +199,12 @@ def main():
     backup_name = battrs.get("name", "")
     instances = battrs.get("instances", "").split()
     module_node = rdb.hgetall("cluster/module_node")
+
+    # Upload cluster backup before module backups (leader node only)
+    leader_id = rdb.hget("cluster/environment", "NODE_ID")
+    if node_id == leader_id:
+        cluster_uuid = rdb.get("cluster/uuid") or ""
+        upload_cluster_backup(backup_id, cluster_uuid)
 
     # Keep only modules that belong to this node
     local_modules = [m for m in instances if module_node.get(m) == node_id]
