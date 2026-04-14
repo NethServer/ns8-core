@@ -37,11 +37,30 @@ from glob import glob
 
 output_dir = f'{os.environ["AGENT_STATE_DIR"]}/backup'
 
-rdb = agent.redis_connect(host='127.0.0.1')
+rdb = agent.redis_connect(privileged=True)
+module_uuid_map = rdb.hgetall("cluster/module_uuid")
 
-VERSION = "3"
+DUMP_VERSION = 4
 
-dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'node_count': 0, 'subscription': {}, 'apply_updates': {}, 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } } }
+dump = {
+    'version': DUMP_VERSION,
+    'modules': {},
+    'vpn': {},
+    'cluster': {
+        'node_count': 0, # added by DUMP_VERSION 3
+        'subscription': {}, # added by DUMP_VERSION 2
+        'apply_updates': {},
+        'repository': {},
+        'backup': {}, # alias backup_schedules
+        'backup_repository': {}, # alias backup_destinations
+        'user_domain': {
+            'ldap': {},
+        },
+        'override': {
+            'modules': {},
+        }
+    }
+}
 
 # cluster: number of nodes
 dump['cluster']['node_count'] = len(set(rdb.hvals('cluster/module_node')))
@@ -57,15 +76,39 @@ for r in rdb.scan_iter('cluster/repository/*'):
     k = r.removeprefix('cluster/repository/')
     dump['cluster']['repository'][k] = rdb.hgetall(r)
 
-# cluster: backup repositories
-for r in rdb.scan_iter('cluster/backup_repository/*'):
-    k = r.removeprefix('cluster/backup_repository/')
-    dump['cluster']['backup_repository'][k] = rdb.hgetall(r)
+# cluster: backup repositories (destinations)
+for dest_id, rclone_conf in rdb.hgetall('private/nodes/backup_destination/rclone_conf').items():
+    restic_password = rdb.hget('private/agents/backup_destination/restic_password', dest_id)
+    odest = rdb.hgetall(f'cluster/backup_repository/{dest_id}')
+    # If secrets cannot be retrieved the whole cluster-backup is useless.
+    # Make sure the required information is present with some assertions:
+    agent.assert_exp(odest, f'Backup destination {dest_id} is empty!')
+    agent.assert_exp(restic_password, f'Restic password of backup destination {dest_id} is empty!')
+    agent.assert_exp(rclone_conf, f'Rclone configuration of backup destination {dest_id} is empty!')
+    dump['cluster']['backup_repository'][dest_id] = odest
+    dump['cluster']['backup_repository'][dest_id]['rclone_conf'] = rclone_conf
+    dump['cluster']['backup_repository'][dest_id]['restic_password'] = restic_password
 
-# cluster: backups
+# cluster: backup (schedules)
 for r in rdb.scan_iter('cluster/backup/*'):
     k = r.removeprefix('cluster/backup/')
-    dump['cluster']['backup'][k] = rdb.hgetall(r)
+    obackup = rdb.hgetall(r)
+    if obackup["repository"] not in dump['cluster']['backup_repository']:
+        # Destination reference is broken, skip.
+        continue
+    uinstances = set()
+    if 'instances' in obackup:
+        # Convert module IDs to UUIDs
+        for mid in obackup['instances'].split():
+            if mid in module_uuid_map:
+                uinstances.add(module_uuid_map[mid])
+        # Clear module internal references:
+        obackup['instances'] = ""
+    if 'uinstances' in obackup:
+        # Keep previously loaded references, that were never resolved:
+        uinstances.update(obackup['uinstances'].split())
+    obackup['uinstances'] = " ".join(sorted(uinstances))
+    dump['cluster']['backup'][k] = obackup
 
 # cluster ldap user domains
 for d in rdb.scan_iter('cluster/user_domain/ldap/*/conf'):
@@ -86,13 +129,6 @@ dump['cluster']['favorites'] = sorted(rdb.smembers(f'cluster/favorites'))
 
 # cluster: module URL override
 dump['cluster']['override']['modules'] = rdb.hgetall('cluster/override/modules')
-
-# modules: backup schedules
-for m in rdb.scan_iter('module/*/backups'):
-    k = m.removeprefix('module/').removesuffix('/backups')
-    uuid = rdb.hget('cluster/module_uuid', k)
-    dump['modules'][uuid] = {'backups': []}
-    dump['modules'][uuid]['backups'] = sorted(rdb.smembers(m))
 
 leader_id = rdb.hget("cluster/environment", "NODE_ID")
 
