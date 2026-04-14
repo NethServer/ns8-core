@@ -58,7 +58,7 @@ const sharedBackups = [
     instances: [
       {
         module_id: "dokuwiki1",
-        repository_path: "dokuwiki1@fb745f96-65dc-4a2d-ba4f-712e8c049227",
+        repository_path: "dokuwiki/fb745f96-65dc-4a2d-ba4f-712e8c049227",
         status: {
           success: true,
           end: 1641832747,
@@ -148,7 +148,7 @@ BackupDisabled.args = {
       instances: [
         {
           module_id: "dokuwiki1",
-          repository_path: "dokuwiki1@fb745f96-65dc-4a2d-ba4f-712e8c049227",
+          repository_path: "dokuwiki/fb745f96-65dc-4a2d-ba4f-712e8c049227",
           status: {
             success: true,
             end: 1641832747,
@@ -183,7 +183,7 @@ MultipleBackup.args = {
       instances: [
         {
           module_id: "dokuwiki1",
-          repository_path: "dokuwiki1@fb745f96-65dc-4a2d-ba4f-712e8c049227",
+          repository_path: "dokuwiki/fb745f96-65dc-4a2d-ba4f-712e8c049227",
           status: null,
           ui_name: "",
         },
@@ -200,7 +200,7 @@ MultipleBackup.args = {
       instances: [
         {
           module_id: "dokuwiki1",
-          repository_path: "dokuwiki1@th745f96-65dc-4a2d-ba4f-712e8c049245",
+          repository_path: "dokuwiki/f2afdd11-5b4e-4850-8e5d-a05541050ef7",
           status: {
             success: true,
             end: 1641832747,
