@@ -26,16 +26,18 @@ if [ "${RUN_UI_TESTS}" = "true" ]; then
     container_image="mcr.microsoft.com/playwright:v1.51.0-noble"
     container_shell="bash"
     pythonreq="/srv/source/tests/pythonreq-ui.txt"
+    cache_volume="rftest-cache-ui"
 else
     container_image="docker.io/python:3.11-alpine"
     container_shell="ash"
     pythonreq="/srv/source/tests/pythonreq.txt"
+    cache_volume="rftest-cache"
 fi
 
 podman run -i \
     --network=host \
     --volume=.:/srv/source:z \
-    --volume=rftest-cache:${venvroot}:z \
+    --volume=${cache_volume}:${venvroot}:z \
     --replace --name=rftest \
     --env=ssh_key \
     --env=venvroot \
