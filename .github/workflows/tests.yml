@@ -12,7 +12,7 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event.label.name == 'testing'
-    name: Find NS8 cluster informations
+    name: Find NS8 cluster information
     runs-on: ubuntu-latest
     outputs:
       modules: ${{ steps.modules.outputs.list }}
