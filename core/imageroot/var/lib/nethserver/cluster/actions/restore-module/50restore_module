@@ -40,7 +40,7 @@ replace_requested = request.get('replace', False)
 node_id = int(request['node'])
 mvolumes = request.get('volumes', {})
 
-rdb = agent.redis_connect()
+rdb = agent.redis_connect(privileged=True)
 
 # Write the output to a named temporary file, 
 # to parse it with the existing read_envfile() function
@@ -155,5 +155,28 @@ if replace_requested and remove_modules:
         progress_callback=agent.get_progress_callback(95, 99)
     )
     agent.assert_exp(remove_modules_errors == 0)
+
+# Check if the new_module_uuid was previously referenced by some scheduled
+# backup. If so, rebuild the reference in the backup schedule data model.
+new_module_uuid = add_module_result['output']['module_uuid']
+changed_backup_ids = []
+trx = rdb.pipeline()
+for kbackup in rdb.scan_iter('cluster/backup/*'):
+    obackup = rdb.hgetall(kbackup)
+    uinstances = set(obackup.get("uinstances", "").split())
+    if new_module_uuid in uinstances:
+        # The UUID is known, update the references for the new module
+        # instance:
+        minstances = set(obackup.get("instances", "").split())
+        minstances.add(module_id)
+        uinstances.remove(new_module_uuid)
+        trx.hset(kbackup, mapping={
+            "instances": " ".join(sorted(minstances)),
+            "uinstances": " ".join(sorted(uinstances)),
+        })
+        changed_backup_ids.append(kbackup.removeprefix("cluster/backup/"))
+if changed_backup_ids:
+    trx.publish('cluster/event/backup-schedule-changed', json.dumps({"backup_ids":changed_backup_ids}))
+    trx.execute()
 
 json.dump(add_module_result['output'], fp=sys.stdout)

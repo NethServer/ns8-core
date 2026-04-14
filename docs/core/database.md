@@ -247,6 +247,7 @@ The attribute of a backup schedule are stored in an HASH key under the
 |cluster/backup/{id} schedule              |STRING  |Schedule time using `onCalendar` systemd syntax|
 |cluster/backup/{id} schedule_hint         |STRING  |Schedule in JSON format for the UI|
 |cluster/backup/{id} instances             |STRING  |Space-separated list of module IDs|
+|cluster/backup/{id} uinstances            |STRING  |Space-separated list of UUIDs used to rebuild the `instances` field reference after module restoration|
 
 #### cluster/user_domain/
 

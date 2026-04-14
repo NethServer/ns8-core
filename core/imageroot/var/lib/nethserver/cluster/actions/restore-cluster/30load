@@ -26,6 +26,8 @@ import sys
 import json
 import gzip
 import agent
+import cluster.backup
+import time
 
 dump_file = './backup/dump.json.gz'
 
@@ -33,6 +35,11 @@ dump_file = './backup/dump.json.gz'
 fgz = gzip.open(dump_file, mode='r')
 dump = json.loads(fgz.read().decode('utf-8'))
 fgz.close()
+
+try:
+    dump_version = int(dump["version"])
+except ValueError:
+    dump_version = 3
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -67,14 +74,34 @@ del(dump['cluster']['user_domain'])
 
 # Restore backup repositories
 for r in dump['cluster']['backup_repository'].keys():
-    rdb.hset(f'cluster/backup_repository/{r}', mapping=dump['cluster']['backup_repository'][r])
+    odest = dump['cluster']['backup_repository'][r]
+    if dump_version > 3:
+        rclone_conf = odest['rclone_conf']
+        restic_password = odest['restic_password']
+    else:
+        # Convert backup destination data model from old format:
+        rclone_conf = cluster.backup.generate_rclone_conf(r, odest['url'], odest['provider'], odest)
+        restic_password = odest['password']
+    rdb.hset(f'cluster/backup_repository/{r}', mapping={
+        "provider": odest['provider'],
+        "url": odest['url'],
+        "name": odest['name'],
+    })
+    # Secrets are stored under a private namespace:
+    rdb.hset('private/agents/backup_destination/restic_password', r, restic_password)
+    rdb.hset('private/nodes/backup_destination/rclone_conf', r, rclone_conf)
 
 # Restore backups, make sure backup_sequence is consistent
 max_backup = -1
 for b in dump['cluster']['backup'].keys():
     max_backup = max(max_backup, int(b))
     rdb.hset(f'cluster/backup/{b}', mapping=dump['cluster']['backup'][b])
-rdb.set('cluster/backup_sequence', max_backup)
+if max_backup > 0:
+    # If backup schedules were restored, set the id sequence to protect
+    # against id collisions.
+    rdb.set('cluster/backup_sequence', max_backup)
+    # Restart scheduled backup timers:
+    agent.run_helper("systemctl", "restart", "backup-timers.service")
 
 # Restore cluster override for modules
 if 'override' in dump['cluster'] and dump['cluster']['override']['modules']:
@@ -87,3 +114,7 @@ if 'subscription' in dump['cluster'] and dump['cluster']['subscription']:
 # Restore update policy, if present
 if 'apply_updates' in dump['cluster'] and dump['cluster']['apply_updates']:
     rdb.hset('cluster/apply_updates', mapping=dump['cluster']['apply_updates'])
+
+# NOTE: reload of rclone-gateway is implicitly blocking, to avoid races
+# with read-backup-repositories
+agent.run_helper("systemctl", "reload-or-restart", "rclone-gateway.service")
