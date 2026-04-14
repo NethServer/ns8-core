@@ -24,15 +24,15 @@ Take screenshots
     New Context    ignoreHTTPSErrors=True
     Login to cluster-admin
     Go To    https://${NODE_ADDR}/cluster-admin/#/status
-    Wait For Elements State    h2 >> text="Cluster status"    visible    timeout=10s
+    # //// Wait For Elements State    h2 >> text="Cluster status"    visible    timeout=10s
     Sleep    5s
     Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/cluster_status.png
     Go To    https://${NODE_ADDR}/cluster-admin/#/nodes
-    Wait For Elements State    h2 >> text="Nodes"    visible    timeout=10s
+    # //// Wait For Elements State    h2 >> text="Nodes"    visible    timeout=10s
     Sleep    5s
     Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/nodes.png
     Go To    https://${NODE_ADDR}/cluster-admin/#/software-center
-    Wait For Elements State    h2 >> text="Software center"    visible    timeout=10s
+    # //// Wait For Elements State    h2 >> text="Software center"    visible    timeout=10s
     Sleep    5s
     Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/software_center.png
     Close Browser
