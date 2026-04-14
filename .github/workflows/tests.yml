@@ -44,6 +44,7 @@ jobs:
           echo "list=${modules_list}" >> $GITHUB_OUTPUT
 
   check_ui_tests_needed:
+    name: Check UI tests needed
     # //// use @v1 instead of @refactor-testing
     uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@refactor-testing
     with:
@@ -54,6 +55,7 @@ jobs:
       build_script: core/build-image.sh
 
   run_tests:
+    name: "Run tests"
     needs: [ns8, check_ui_tests_needed]
     # //// use @v1 instead of @refactor-testing
     uses: NethServer/ns8-github-actions/.github/workflows/test-on-digitalocean-infra.yml@refactor-testing
