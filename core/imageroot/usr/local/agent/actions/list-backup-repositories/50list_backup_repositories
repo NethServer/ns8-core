@@ -10,69 +10,37 @@ import json
 import agent
 import requests
 import agent.backup
+import cluster.backup
 import os
-from xml.etree import ElementTree as ET
-from email.utils import parsedate_to_datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 #
 # Return a list of Restic repositories from available backup destinations
 #
 
-DAV_NS = "DAV:"
-
-class TimeoutSession(requests.Session):
-    def __init__(self, timeout=10):
-        super().__init__()
-        self.timeout = timeout  # (connect, read) or single float
-        self.auth = (os.environ["REDIS_USER"], os.environ["REDIS_PASSWORD"])
-
-    def request(self, method, url, **kwargs):
-        kwargs.setdefault("timeout", self.timeout)
-        return super().request(method, url, **kwargs)
-
-def propfind(session, base_url, path, depth="0"):
-    url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
-    body = """<?xml version="1.0"?>
-    <d:propfind xmlns:d="DAV:">
-      <d:prop>
-        <d:getlastmodified/>
-        <d:getcontentlength/>
-        <d:resourcetype/>
-      </d:prop>
-    </d:propfind>"""
-    r = session.request("PROPFIND", url,
-                        data=body,
-                        headers={"Depth": depth,
-                                 "Content-Type": "application/xml"})
-    if r.status_code == 404:
+def probe_destination(rdb, dest_id, config_path):
+    """Probe gateway, check for restic repo, and fetch metadata.
+    Returns a dict with repo info or None."""
+    try:
+        webdav_url = cluster.backup.probe_webdav_gateway(rdb, dest_id, config_path)
+    except agent.backup.GatewayProbeException as ex:
+        print(ex, file=sys.stderr)
         return None
-    r.raise_for_status()
-    return r
-
-def get_mtime(session, base_url, path):
-    r = propfind(session, base_url, path)
-    if r is None:
-        return None  # file does not exist
-
-    # Parse DAV getlastmodified
-    ns = {"d": DAV_NS}
-    root = ET.fromstring(r.content)
-    lm = root.findtext(".//d:getlastmodified", namespaces={"d": DAV_NS})
-    if lm:
-        return parsedate_to_datetime(lm)
-
-    # Last resort: HEAD + Last-Modified header
-    url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
-    head = session.head(url)
-    head.raise_for_status()
-    lm_header = head.headers.get("Last-Modified")
-    return parsedate_to_datetime(lm_header) if lm_header else None
-
-def read_json(session, base_url, path):
-    url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
-    r = session.get(url)
-    r.raise_for_status()
-    return r.json()
+    with agent.backup.TimeoutSession(timeout=(3, 10)) as s:
+        try:
+            mtime = cluster.backup.webdav_get_mtime(s, webdav_url, config_path)
+        except Exception as ex:
+            print('webdav_get_mtime:', ex, file=sys.stderr)
+            return None
+        if mtime is None:
+            return None
+        result = {"mtime": mtime, "webdav_url": webdav_url}
+        try:
+            result["meta"] = cluster.backup.webdav_read_json(s, webdav_url, config_path.removesuffix("/config") + ".json")
+        except Exception as ex:
+            print("webdav_read_json:", ex, file=sys.stderr)
+            result["meta"] = {}
+    return result
 
 def main():
     rdb = agent.redis_connect()
@@ -81,6 +49,7 @@ def main():
     module_ui_name = rdb.get(f'module/{module_id}/ui_name') or ""
     image_name = agent.get_image_name_from_url(os.environ["IMAGE_URL"])
     cluster_uuid = rdb.get("cluster/uuid") or ""
+    config_path = f"{image_name}/{module_uuid}/config"
 
     base_info = {
         "module_id": module_id,
@@ -102,36 +71,26 @@ def main():
     destination_id_list = [r.removeprefix("cluster/backup_repository/") for r in rdb.keys("cluster/backup_repository/*")]
 
     destinations = []
-    with TimeoutSession(timeout=(3, 30)) as s:
-        for dest_id in destination_id_list:
-            for webdav_url, webdav_node_id in agent.backup.resolve_gateway_address(rdb, dest_id, protocol='webdav'):
-                # A Restic repo has a ./config file
-                try:
-                    mtime = get_mtime(s, webdav_url, f"{image_name}/{module_uuid}/config")
-                except Exception as ex:
-                    print('get_mtime:', ex, file=sys.stderr)
-                    continue
-                if mtime is None:
-                    continue # Not a Restic repo
-                info = base_info.copy()
-                info["path"] = f"{image_name}/{module_uuid}"
-                info["timestamp"] = int(mtime.timestamp())
-                orepo = rdb.hgetall("cluster/backup_repository/" + dest_id)
-                info["repository_id"] = dest_id
-                info["repository_name"] = orepo["name"]
-                info["repository_provider"] = orepo["provider"]
-                info["repository_url"] = orepo["url"]
-                try:
-                    result_meta = read_json(s, webdav_url, f"{image_name}/{module_uuid}.json")
-                except Exception as ex:
-                    print("read_json:", ex, file=sys.stderr)
-                    result_meta = {}
-                if "cluster_uuid" in result_meta and result_meta["cluster_uuid"] == cluster_uuid:
-                    info['is_generated_locally'] = True
-                info.update(result_meta) # merge two dictionaries
-                destinations.append(info)
-                agent.backup.update_gateway_resolver_cache(dest_id, webdav_node_id)
-                break
+    with ThreadPoolExecutor() as pool:
+        futures = {pool.submit(probe_destination, rdb, dest_id, config_path): dest_id for dest_id in destination_id_list}
+        for future in as_completed(futures):
+            dest_id = futures[future]
+            result = future.result()
+            if result is None:
+                continue
+            info = base_info.copy()
+            info["path"] = f"{image_name}/{module_uuid}"
+            info["timestamp"] = int(result["mtime"].timestamp())
+            orepo = rdb.hgetall("cluster/backup_repository/" + dest_id)
+            info["repository_id"] = dest_id
+            info["repository_name"] = orepo["name"]
+            info["repository_provider"] = orepo["provider"]
+            info["repository_url"] = orepo["url"]
+            result_meta = result["meta"]
+            if "cluster_uuid" in result_meta and result_meta["cluster_uuid"] == cluster_uuid:
+                info['is_generated_locally'] = True
+            info.update(result_meta)
+            destinations.append(info)
 
     json.dump(destinations, fp=sys.stdout)
 

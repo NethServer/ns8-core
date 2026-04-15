@@ -26,10 +26,14 @@ import uuid
 import os
 import time
 import agent
+import agent.backup
 import configparser
 import tempfile
 import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import requests
+from xml.etree import ElementTree as ET
+from email.utils import parsedate_to_datetime
 
 def get_default_backup_repository_name(provider, url, rid=""):
     """Suggest a default name for a backup repository"""
@@ -251,3 +255,64 @@ def rclone_reveal(obscured: str) -> str:
     cipher = Cipher(algorithms.AES(_CRYPT_KEY), modes.CTR(iv))
     decryptor = cipher.decryptor()
     return (decryptor.update(ciphertext) + decryptor.finalize()).decode()
+
+def probe_webdav_gateway(rdb, dest_id, probe_path, http_auth=None):
+    """Return a working WebDAV backend URL by trying different
+    rclone-gateway instances running on each cluster node."""
+    probe_results = {}
+    with agent.backup.TimeoutSession(timeout=(3, 10), auth=http_auth) as rses:
+        for webdav_url, node_id in agent.backup.resolve_gateway_address(rdb, dest_id, protocol='webdav'):
+            try:
+                req = rses.head(webdav_url + '/' + probe_path)
+                if req.status_code in [404, 200]:
+                    agent.backup.update_gateway_resolver_cache(dest_id, node_id)
+                    return webdav_url
+                else:
+                    req.raise_for_status()
+            except requests.RequestException as ex:
+                probe_results[node_id] = ex
+    raise agent.backup.GatewayProbeException(probe_results)
+
+def webdav_propfind(session, base_url, path, depth="0"):
+    url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
+    body = """<?xml version="1.0"?>
+    <d:propfind xmlns:d="DAV:">
+      <d:prop>
+        <d:getlastmodified/>
+        <d:getcontentlength/>
+        <d:resourcetype/>
+      </d:prop>
+    </d:propfind>"""
+    r = session.request("PROPFIND", url,
+                        data=body,
+                        headers={"Depth": depth,
+                                 "Content-Type": "application/xml"})
+    if r.status_code == 404:
+        return None
+    r.raise_for_status()
+    return r
+
+def webdav_get_mtime(session, base_url, path):
+    r = webdav_propfind(session, base_url, path)
+    if r is None:
+        return None  # file does not exist
+
+    # Parse DAV getlastmodified
+    ns = {"d": "DAV:"}
+    root = ET.fromstring(r.content)
+    lm = root.findtext(".//d:getlastmodified", namespaces={"d": "DAV:"})
+    if lm:
+        return parsedate_to_datetime(lm)
+
+    # Last resort: HEAD + Last-Modified header
+    url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
+    head = session.head(url)
+    head.raise_for_status()
+    lm_header = head.headers.get("Last-Modified")
+    return parsedate_to_datetime(lm_header) if lm_header else None
+
+def webdav_read_json(session, base_url, path):
+    url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
+    r = session.get(url)
+    r.raise_for_status()
+    return r.json()
