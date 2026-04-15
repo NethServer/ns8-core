@@ -10,6 +10,10 @@ set -e -a
 # ////
 _script_start=$(date +%s)
 
+# Resolve the directory containing this script so volume mounts are correct
+# regardless of the working directory from which the script is invoked.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 SSH_KEYFILE=${SSH_KEYFILE:-$HOME/.ssh/id_rsa}
 LEADER_NODE="${1:?missing LEADER_NODE argument}"
 shift
@@ -36,7 +40,7 @@ fi
 
 podman run -i \
     --network=host \
-    --volume=.:/srv/source:z \
+    --volume="${SCRIPT_DIR}":/srv/source:z \
     --volume=${cache_volume}:${venvroot}:z \
     --replace --name=rftest \
     --env=ssh_key \
