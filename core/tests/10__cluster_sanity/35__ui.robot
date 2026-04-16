@@ -27,6 +27,9 @@ Take screenshots
     Wait For Elements State    h2 >> text="Cluster status"    visible    timeout=10s
     Sleep    5s
     Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/cluster_status.png
+    Click    button[aria-label="Application launcher"]
+    Sleep    1s
+    Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/application_launcher.png
     Go To    https://${NODE_ADDR}/cluster-admin/#/nodes
     Wait For Elements State    h2 >> text="Nodes"    visible    timeout=10s
     Sleep    5s
