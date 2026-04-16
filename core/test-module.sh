@@ -14,27 +14,36 @@ _script_start=$(date +%s)
 # regardless of the working directory from which the script is invoked.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-SSH_KEYFILE=${SSH_KEYFILE:-$HOME/.ssh/id_rsa}
+# Path to the SSH private key used to connect to the NS8 leader node
+SSH_KEYFILE=${SSH_KEYFILE:-$HOME/.ssh/id_ecdsa}
+
 LEADER_NODE="${1:?missing LEADER_NODE argument}"
 shift
 
+# Read SSH key contents so they can be injected into the container via an env var
 ssh_key="$(< $SSH_KEYFILE)"
+
+# The venv is stored in a named volume to cache pip/rfbrowser installs across runs
 venvroot=/usr/local/venv
 
 echo "Test! RUN_UI_TESTS=${RUN_UI_TESTS} ////"
 
-# Select the container image and Python requirements file based on whether UI tests are enabled.
+# Select the container image and Python packages based on whether UI tests are enabled.
 # UI tests require the Playwright image (Debian-based, includes browser binaries).
 # Non-UI tests use a lightweight Alpine Python image.
 if [ "${RUN_UI_TESTS}" = "true" ]; then
-    container_image="mcr.microsoft.com/playwright:v1.51.0-noble"
+    # NOTE: the Playwright container image version and the robotframework-browser package
+    # version must be compatible with each other. If one is upgraded, the other must be
+    # upgraded accordingly. Each release notes the Playwright version it was tested with:
+    # https://github.com/MarketSquare/robotframework-browser/releases
+    container_image="mcr.microsoft.com/playwright:v1.59.0-noble"
     container_shell="bash"
-    pythonreq="/srv/source/tests/pythonreq-ui.txt"
+    packages="robotframework robotframework-sshlibrary robotframework-browser==19.14.2"
     cache_volume="rftest-cache-ui"
 else
     container_image="docker.io/python:3.11-alpine"
     container_shell="ash"
-    pythonreq="/srv/source/tests/pythonreq.txt"
+    packages="robotframework robotframework-sshlibrary"
     cache_volume="rftest-cache"
 fi
 
@@ -48,19 +57,20 @@ podman run -i \
     --env=LEADER_NODE \
     --env=COREMODULES \
     --env=RUN_UI_TESTS \
-    --env=pythonreq \
+    --env=packages \
     --env=_script_start \
     "${container_image}" \
     ${container_shell} -l -s -- "${@}" <<'EOF'
 set -e
 
+# Write the SSH private key to a temp file for use by Robot Framework tests
 echo "$ssh_key" > /tmp/idssh
 
 # Install the Python venv and Robot Framework dependencies if not already cached.
-# Cache is invalidated when the MD5 checksum of the requirements file changes, ensuring
-# that dependency updates are always picked up even on reused (self-hosted) runners.
+# Cache is invalidated when the package list changes, ensuring that dependency
+# updates are always picked up even on reused (self-hosted) runners.
 pythonreq_checksum_file="${venvroot}/.pythonreq.md5"
-pythonreq_current_checksum=$(md5sum "${pythonreq}" | cut -d' ' -f1)
+pythonreq_current_checksum=$(echo "${packages}" | md5sum | cut -d' ' -f1)
 pythonreq_cached_checksum=$(cat "${pythonreq_checksum_file}" 2>/dev/null || true)
 
 if [ ! -x "${venvroot}/bin/robot" ] || [ "${pythonreq_current_checksum}" != "${pythonreq_cached_checksum}" ] ; then
@@ -73,7 +83,8 @@ if [ ! -x "${venvroot}/bin/robot" ] || [ "${pythonreq_current_checksum}" != "${p
         # Alpine image already has Python; --upgrade refreshes pip/setuptools in-place
         python3 -mvenv "${venvroot}" --upgrade
     fi
-    ${venvroot}/bin/pip3 install -q -r "${pythonreq}"
+    # Install the Robot Framework packages
+    ${venvroot}/bin/pip3 install -q ${packages}
     # Save the checksum so future runs can detect requirement changes
     echo "${pythonreq_current_checksum}" > "${pythonreq_checksum_file}"
     # Invalidate the rfbrowser sentinel so it is re-initialized with the new packages
