@@ -62,6 +62,6 @@ trx.delete(f"cluster/backup_repository/{rid}")
 trx.hdel('private/nodes/backup_destination/rclone_conf', rid)
 trx.hdel('private/agents/backup_destination/restic_password', rid)
 trx.publish(f"cluster/event/backup-destination-changed", json.dumps({
-    "destination_id": rid,
+    "destination_ids": [rid],
 }))
 trx.execute()

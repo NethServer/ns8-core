@@ -119,7 +119,7 @@ if len(trx_changes) > 0:
         # At least one destination was migrated: trigger rclone-webdav
         # restart on all nodes:
         rdb.publish(f"cluster/event/backup-destination-changed", json.dumps({
-            "destination_id": destination_uuid,
+            "destination_ids": [destination_uuid],
         }))
     # Migrate backup schedules: populate instances field from module/*/backups SET keys
     module_node = rdb.hgetall("cluster/module_node")
