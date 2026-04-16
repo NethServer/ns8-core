@@ -69,8 +69,9 @@ echo "$ssh_key" > /tmp/idssh
 # Install the Python venv and Robot Framework dependencies if not already cached.
 # Cache is invalidated when the package list changes, ensuring that dependency
 # updates are always picked up even on reused (self-hosted) runners.
+module_pythonreq="/srv/source/tests/pythonreq.txt"
 pythonreq_checksum_file="${venvroot}/.pythonreq.md5"
-pythonreq_current_checksum=$(echo "${packages}" | md5sum | cut -d' ' -f1)
+pythonreq_current_checksum=$(echo "${packages}" | cat - "${module_pythonreq}" 2>/dev/null | md5sum | cut -d' ' -f1)
 pythonreq_cached_checksum=$(cat "${pythonreq_checksum_file}" 2>/dev/null || true)
 
 if [ ! -x "${venvroot}/bin/robot" ] || [ "${pythonreq_current_checksum}" != "${pythonreq_cached_checksum}" ] ; then
@@ -85,6 +86,8 @@ if [ ! -x "${venvroot}/bin/robot" ] || [ "${pythonreq_current_checksum}" != "${p
     fi
     # Install the Robot Framework packages
     ${venvroot}/bin/pip3 install -q ${packages}
+    # Install ns8-core-specific Python requirements if present
+    [ -f "${module_pythonreq}" ] && ${venvroot}/bin/pip3 install -q -r "${module_pythonreq}"
     # Save the checksum so future runs can detect requirement changes
     echo "${pythonreq_current_checksum}" > "${pythonreq_checksum_file}"
     # Invalidate the rfbrowser sentinel so it is re-initialized with the new packages
