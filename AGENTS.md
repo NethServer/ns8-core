@@ -106,11 +106,11 @@ cd core/agent && bash test-agent.sh
 **Integration tests** (Robot Framework, requires a live node):
 
 ```bash
-cd core && bash test-module.sh <ssh-address>
+cd core && bash test-core.sh <leader_node>
 ```
 
 Robot Framework tests are in `core/tests/` with numbered directories
-(`10__cluster_sanity/`, `20__cluster_ui/`) and shared `keywords.resource`.
+(`10__cluster_sanity/`) and shared `keywords.resource`.
 
 ## Conventions
 

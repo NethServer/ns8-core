@@ -62,7 +62,7 @@ jobs:
     with:
       setup_cluster: false
       path: core/
-      script: test-module.sh
+      script: test-core.sh
       coremodules: ${{ join(fromJSON(needs.ns8.outputs.modules), ' ' ) }}
       # run_ui_tests: ${{ needs.check_ui_tests_needed.outputs.ui_tests_needed == 'true' }} //// uncomment
       run_ui_tests: true
