@@ -1,0 +1,27 @@
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+[Unit]
+Description=Support tunnel client
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/var/lib/nethserver/support-tunnel/support.env
+ExecStart=/usr/local/bin/tunnel-client \
+    --url ${SUPPORT_URL} \
+    --key ${SYSTEM_KEY} \
+    --secret ${SYSTEM_SECRET} \
+    --node-id ${NODE_ID} \
+    --redis-addr ${REDIS_ADDR} \
+    --users-dir ${USERS_DIR} \
+    --diagnostics-dir ${DIAGNOSTICS_DIR} \
+    --exclude ${EXCLUDE_PATTERNS} \
+    --tls-insecure=${TLS_INSECURE} \
+    --users-state-file /var/lib/nethserver/support-tunnel/users-state.json
+Restart=no
+RuntimeMaxSec=7d
+SyslogIdentifier=support-tunnel
