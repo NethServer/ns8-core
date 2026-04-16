@@ -1,2 +1,0 @@
--r pythonreq.txt
-robotframework-browser
