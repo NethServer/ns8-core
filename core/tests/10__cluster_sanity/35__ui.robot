@@ -27,19 +27,19 @@ Take screenshots
     Go To    https://${NODE_ADDR}/cluster-admin/#/status
     Wait For Elements State    h2 >> text="Cluster status"    visible    timeout=10s
     Sleep    5s
-    Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/1._cluster_status.png
+    Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/1._Cluster_status.png
     # Nodes
     Go To    https://${NODE_ADDR}/cluster-admin/#/nodes
     Wait For Elements State    h2 >> text="Nodes"    visible    timeout=10s
     Sleep    5s
-    Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/2._nodes.png
+    Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/2._Nodes.png
     # Software center
     Go To    https://${NODE_ADDR}/cluster-admin/#/software-center
     Wait For Elements State    h2 >> text="Software center"    visible    timeout=10s
     Sleep    5s
-    Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/3._software_center.png
+    Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/3._Software_center.png
     # Application launcher
     Click    button[aria-label="Application launcher"]
     Sleep    1s
-    Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/4._application_launcher.png
+    Take Screenshot    filename=${OUTPUT DIR}/browser/screenshot/4._Application_launcher.png
     Close Browser
