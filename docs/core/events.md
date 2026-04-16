@@ -45,8 +45,8 @@ Events fired by the `cluster` agent (i.e. channel is `cluster/event/<event name>
 - `leader-changed`: a node was promoted to leader. The `node_id` attribute
   indicates the new leader, and `endpoint` its public Wireguard VPN endpoint address
 - `backup-destination-changed`: a backup destination was
-  added/altered/removed. See `destination_id` event argument to identify
-  it.
+  added/altered/removed. JSON parameter format is
+  `{"destination_ids": LIST[STRING]}`.
 
 ## Node events
 
