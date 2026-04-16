@@ -12,14 +12,20 @@ import gzip
 import subprocess
 import sys
 import agent
+import cluster.backup
 
 def import_destinations(cluster_backup):
     """Import backup destination configurations into Redis"""
     rdb = agent.redis_connect(privileged=True)
-    imported_count = 0
+    imported_ids = []
     skipped_count = 0
     local_cluster_uuid = rdb.get("cluster/uuid") or "unknown_local"
     import_cluster_uuid = cluster_backup["cluster"].get("uuid", "unknown_import")
+    try:
+        dump_version = int(cluster_backup["version"])
+    except (KeyError, ValueError):
+        dump_version = 3
+    trx = rdb.pipeline()
     for dkey, odest in cluster_backup["cluster"]["backup_repository"].items():
         # Check if the destination UUID key exists. Historically, a backup
         # destination was named "backup repository".
@@ -30,10 +36,26 @@ def import_destinations(cluster_backup):
             skipped_count += 1
             continue
         print("Importing backup destination", dkey, odest["name"], file=sys.stderr)
-        # FIXME: validate configuration before storing odest in Redis
-        rdb.hset(f"cluster/backup_repository/{dkey}", mapping=odest)
-        imported_count += 1
-    return imported_count, skipped_count
+        if dump_version > 3:
+            rclone_conf = odest["rclone_conf"]
+            restic_password = odest["restic_password"]
+        else:
+            rclone_conf = cluster.backup.generate_rclone_conf(dkey, odest["url"], odest["provider"], odest)
+            restic_password = odest["password"]
+        trx.hset(f"cluster/backup_repository/{dkey}", mapping={
+            "provider": odest["provider"],
+            "url": odest["url"],
+            "name": odest["name"],
+        })
+        trx.hset("private/agents/backup_destination/restic_password", dkey, restic_password)
+        trx.hset("private/nodes/backup_destination/rclone_conf", dkey, rclone_conf)
+        imported_ids.append(dkey)
+    if imported_ids:
+        trx.publish("cluster/event/backup-destination-changed", json.dumps({
+            "destination_ids": imported_ids,
+        }))
+    trx.execute()
+    return len(imported_ids), skipped_count
 
 def main():
     request = json.load(sys.stdin)
