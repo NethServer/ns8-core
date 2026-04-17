@@ -30,19 +30,17 @@ echo "Test! RUN_UI_TESTS=${RUN_UI_TESTS} ////"
 
 # Select the container image and Python packages based on whether UI tests are enabled.
 # UI tests require the Playwright image (Debian-based, includes browser binaries).
-# Non-UI tests use a lightweight Alpine Python image.
+# Non-UI tests use a lightweight Debian slim Python image.
 if [ "${RUN_UI_TESTS}" = "true" ]; then
     # NOTE: the Playwright container image version and the robotframework-browser package
     # version must be compatible with each other. If one is upgraded, the other must be
     # upgraded accordingly. Each release notes the Playwright version it was tested with:
     # https://github.com/MarketSquare/robotframework-browser/releases
     container_image="mcr.microsoft.com/playwright:v1.59.0-noble"
-    container_shell="bash"
     packages="robotframework robotframework-sshlibrary robotframework-browser==19.14.2"
     cache_volume="rftest-cache-ui"
 else
-    container_image="docker.io/python:3.11-alpine"
-    container_shell="ash"
+    container_image="docker.io/python:3.11-slim"
     packages="robotframework robotframework-sshlibrary"
     cache_volume="rftest-cache"
 fi
@@ -60,7 +58,7 @@ podman run -i \
     --env=packages \
     --env=_script_start \
     "${container_image}" \
-    ${container_shell} -l -s -- "${@}" <<'EOF'
+    bash -l -s -- "${@}" <<'EOF'
 set -e
 
 # Write the SSH private key to a temp file for use by Robot Framework tests
@@ -75,15 +73,12 @@ pythonreq_current_checksum=$(echo "${packages}" | cat - "${module_pythonreq}" 2>
 pythonreq_cached_checksum=$(cat "${pythonreq_checksum_file}" 2>/dev/null || true)
 
 if [ ! -x "${venvroot}/bin/robot" ] || [ "${pythonreq_current_checksum}" != "${pythonreq_cached_checksum}" ] ; then
-    if command -v apt-get > /dev/null 2>&1; then
-        # mcr.microsoft.com/playwright:*-noble has npm pre-installed but no Python
+    if ! python3 -c "import ensurepip" > /dev/null 2>&1; then
+        # Playwright image has Python without venv support; install the missing package
         apt-get update -q
         apt-get install -y -q python3 python3-venv
-        python3 -mvenv "${venvroot}"
-    else
-        # Alpine image already has Python; --upgrade refreshes pip/setuptools in-place
-        python3 -mvenv "${venvroot}" --upgrade
     fi
+    python3 -mvenv "${venvroot}"
     # Install the Robot Framework packages
     ${venvroot}/bin/pip3 install -q ${packages}
     # Install ns8-core-specific Python requirements if present
