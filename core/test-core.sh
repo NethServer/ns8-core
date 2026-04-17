@@ -38,11 +38,11 @@ if [ "${RUN_UI_TESTS}" = "true" ]; then
     # https://github.com/MarketSquare/robotframework-browser/releases
     container_image="mcr.microsoft.com/playwright:v1.59.0-noble"
     packages="robotframework robotframework-sshlibrary robotframework-browser==19.14.2"
-    cache_volume="rftest-cache-ui"
+    cache_volume="rftest-core-cache-ui"
 else
     container_image="docker.io/python:3.11-slim"
     packages="robotframework robotframework-sshlibrary"
-    cache_volume="rftest-cache"
+    cache_volume="rftest-core-cache"
 fi
 
 podman run -i \
