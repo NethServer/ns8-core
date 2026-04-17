@@ -12,12 +12,11 @@ if [[ -d rclone ]] ; then
     systemctl restart rclone-gateway.service
 else
     # Run once this procedure:
-    mkdir -vp rclone
+    mkdir -vp rclone haproxy
     # Replace rclone-webdav with the gateway service:
-    systemctl disable --now rclone-webdav.service
+    systemctl stop rclone-webdav.service
     rm -vf /etc/systemd/system/rclone-webdav.service \
         /etc/systemd/system/default.target.wants/rclone-webdav.service
-    systemctl enable rclone-gateway.service
 
     # Remove old per-module backup timer/service units (rootfull)
     rm -vf /etc/systemd/system/backup[0-9]*-*.timer /etc/systemd/system/backup[0-9]*-*.service
@@ -31,4 +30,8 @@ else
                "${homedir}/.config/systemd/user"/backup[0-9]*.service
         systemctl --user -M "${username}@" daemon-reload
     done < /etc/passwd
+
+    # Enable the service, but start it later by acl-changed event handler,
+    # ensuring that new Redis ACLs are present.
+    systemctl enable rclone-gateway.service
 fi
