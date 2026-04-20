@@ -27,6 +27,7 @@ import os
 import time
 import agent
 import configparser
+import io
 import tempfile
 import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -89,21 +90,94 @@ def extract_rclone_basepath(url):
         upath = urllib.parse.urlparse(upath).path
     return upath
 
-def generate_rclone_conf(dest_uuid, url, provider, params):
+def sanitize_rclone_conf(destination_uuid, params):
+    """Return the rclone_conf string and its UI-url value from the given
+    input parameters. This function may raise decode and parse errors."""
+
+    if params['rclone_conf_secret'] is None:
+        b64payload = params['rclone_conf_b64_secret']
+        rclone_conf = base64.b64decode(b64payload).decode('utf-8')
+    else:
+        rclone_conf = params['rclone_conf_secret']
+
+    rclone_conf, cfg = _normalize_rclone_conf(destination_uuid, rclone_conf)
+
+    if not cfg:
+        raise Exception("Rclone configuration is empty")
+
+    path = params.get('basepath', '').strip('/')
+    for host_field in ['host', 'endpoint']:
+        if host_field in cfg:
+            try:
+                parsed = urllib.parse.urlparse(cfg[host_field])
+                hostname = (parsed.hostname or parsed.path).rstrip('/')
+                break
+            except Exception as ex:
+                print(ex, file=sys.stderr)
+    else:
+        # Fallback to a configuration hash
+        hostname = stable_uuid_v5(cfg)[0:5]
+
+    if 'type' not in cfg:
+        raise Exception("Rclone configuration is missing the 'type' field")
+
+    # Build the url as a rclone_conf human-readable identifier
+    url = f"rclone:{cfg['type']}:{hostname}:{path}"
+    return rclone_conf, url
+
+def _normalize_rclone_conf(destination_uuid, rclone_conf):
+    """Parse an rclone.conf string, ensure it has a single section header
+    named after destination_uuid, and return the normalized config text along
+    with a dict of its key-value pairs."""
+
+    cp = configparser.ConfigParser()
+
+    # Make sure a section header exists and is set to destination_uuid:
+    try:
+        cp.read_string(rclone_conf)
+        old_section = cp.sections()[0]
+        if old_section != destination_uuid:
+            cp[destination_uuid] = cp[old_section]
+            cp.remove_section(old_section)
+    except configparser.MissingSectionHeaderError:
+        cp.read_string(f"[{destination_uuid}]\n" + rclone_conf)
+
+    cfg = dict(cp[destination_uuid])
+    buf = io.StringIO()
+    cp.write(buf)
+    rclone_conf = buf.getvalue()
+
+    return rclone_conf, cfg
+
+def generate_rclone_conf(dest_uuid, url, provider, params, fallback_conf=None):
     """Translate the input arguments in a rclone.conf-compatible string"""
+
+    if fallback_conf:
+        _, fbcfg = _normalize_rclone_conf(dest_uuid, fallback_conf)
+    else:
+        fbcfg = {}
+
     uschema, upath = url.split(':', 1)
     if uschema == 'b2':
+        if params['b2_account_key'] == "":
+            secret = fbcfg.get('key', '')
+        else:
+            secret = params['b2_account_key']
         rclone_conf = (
             f"type = b2\n"
             f"account = {params['b2_account_id']}\n"
-            f"key = {params['b2_account_key']}\n"
+            f"key = {secret}\n"
         )
     elif uschema == 's3':
+        if params['aws_secret_access_key'] == "":
+            secret = fbcfg.get('secret_access_key')
+        else:
+            secret = params['aws_secret_access_key']
         rclone_conf = (
             f"type = s3\n"
             f"env_auth = true\n"
             f"access_key_id = {params['aws_access_key_id']}\n"
-            f"secret_access_key = {params['aws_secret_access_key']}\n"
+            f"secret_access_key = {secret}\n"
         )
         s3_endpoint = ""
         if '/' in upath:
@@ -141,13 +215,20 @@ def generate_rclone_conf(dest_uuid, url, provider, params):
         else:
             rclone_conf += f"provider = Other\n"
     elif uschema == 'azure':
+        if params['azure_account_key'] == "":
+            secret = fbcfg.get('key', '')
+        else:
+            secret = params['azure_account_key']
         rclone_conf = (
             f"type = azureblob\n"
             f"account = {params['azure_account_name']}\n"
-            f"key = {params['azure_account_key']}\n"
+            f"key = {secret}\n"
         )
     elif uschema == 'smb':
-        obscured_pass = rclone_obscure(params['smb_pass'])
+        if params['smb_pass'] == "":
+            obscured_pass = fbcfg.get('pass', '')
+        else:
+            obscured_pass = rclone_obscure(params['smb_pass'])
         rclone_conf = (
             f"type = smb\n"
             f"host = {params['smb_host']}\n"
@@ -174,7 +255,7 @@ def stable_uuid_v5(data: dict) -> str:
     ).encode("utf-8")
     return str(uuid.uuid5(uuid.NAMESPACE_URL, payload.decode("utf-8")))
 
-def parse_rclone_params(rclone_conf):
+def parse_rclone_params(rclone_conf, hide_secrets=False):
     """Parse a rclone remote configuration string and return a flat dictionary.
 
     The returned dictionary contains the raw rclone keys from the first
@@ -186,25 +267,45 @@ def parse_rclone_params(rclone_conf):
     cp = configparser.ConfigParser()
     cp.read_string(rclone_conf)
     section = cp.sections()[0]
-    result = dict(cp[section])
+    dsection = dict(cp[section])
 
-    rtype = result.get('type', '')
+    rtype = dsection.get('type', '')
+    result = {
+        "type": rtype,
+    }
     if rtype == 'b2':
-        result['b2_account_id'] = result.get('account', '')
-        result['b2_account_key'] = result.pop('key', '')
+        result['b2_account_id'] = dsection.get('account', '')
+        if hide_secrets:
+            result['b2_account_key'] = ""
+        else:
+            result['b2_account_key'] = dsection.get('key', '')
     elif rtype == 's3':
-        result['aws_access_key_id'] = result.get('access_key_id', '')
-        result['aws_secret_access_key'] = result.get('secret_access_key', '')
-        if 'region' in result:
-            result['aws_default_region'] = result['region']
+        result['aws_access_key_id'] = dsection.get('access_key_id', '')
+        if hide_secrets:
+            result['aws_secret_access_key'] = ""
+        else:
+            result['aws_secret_access_key'] = dsection.get('secret_access_key', '')
+        if 'region' in dsection:
+            result['aws_default_region'] = dsection['region']
     elif rtype == 'azureblob':
-        result['azure_account_name'] = result.get('account', '')
-        result['azure_account_key'] = result.pop('key', '')
+        result['azure_account_name'] = dsection.get('account', '')
+        if hide_secrets:
+            result['azure_account_key'] = ""
+        else:
+            result['azure_account_key'] = dsection.get('key', '')
     elif rtype == 'smb':
-        result['smb_host'] = result.get('host', '')
-        result['smb_user'] = result.get('user', '')
-        result['smb_pass'] = rclone_reveal(result.pop('pass'))
-        result['smb_domain'] = result.get('domain', '')
+        result['smb_host'] = dsection.get('host', '')
+        result['smb_user'] = dsection.get('user', '')
+        if hide_secrets:
+            result['smb_pass'] = ""
+        else:
+            result['smb_pass'] = rclone_reveal(dsection.get('pass'))
+        result['smb_domain'] = dsection.get('domain', '')
+    else:
+        if hide_secrets:
+            result = {k: v for k,v in dsection.items() if k in ['type']}
+        else:
+            result = dsection
 
     return result
 

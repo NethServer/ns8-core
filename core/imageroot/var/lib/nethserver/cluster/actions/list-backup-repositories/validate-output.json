@@ -11,10 +11,10 @@
           "provider": "backblaze",
           "name": "BackBlaze repo1",
           "url": "b2:backupex1",
-          "password": "d59a90ec7ad2b2967257a7a308c82c96ac006efd138254bc1e58c8ea07c18400",
+          "password": "",
           "parameters": {
             "b2_account_id": "xxxxxxxxxxxxxx",
-            "b2_account_key": "yyyyyyyyyyyyyyyyyyyyyy"
+            "b2_account_key": ""
           }
         }
       ],
