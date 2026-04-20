@@ -24,7 +24,7 @@ Install the core
     Save the journal begin timestamp
     ${COREMODULES} =    Replace String    ${COREMODULES}    ,    ${SPACE}
     # ////
-    Log To Console DEBUG: Installing core with modules: ${COREMODULES}
+    Log To Console    DEBUG: Installing core with modules: ${COREMODULES}
     Put File    install.sh    .    mode=0644
     ${rc} =    Execute Command    bash install.sh ${COREMODULES}
     ...    return_stdout=False
