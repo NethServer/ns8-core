@@ -109,6 +109,7 @@ if len(trx_changes) > 0:
                 "name": odest.get('name', destination_uuid),
                 "url": odest['url'],
                 "provider": odest['provider'],
+                "basepath": "",
             })
             mgx.execute()
         except Exception as ex:

@@ -39,13 +39,16 @@ def import_destinations(cluster_backup):
         if dump_version > 3:
             rclone_conf = odest["rclone_conf"]
             restic_password = odest["restic_password"]
+            destination_basepath = odest["basepath"]
         else:
             rclone_conf = cluster.backup.generate_rclone_conf(dkey, odest["url"], odest["provider"], odest)
             restic_password = odest["password"]
+            destination_basepath = "" # value ignored, it's derived from url at runtime
         trx.hset(f"cluster/backup_repository/{dkey}", mapping={
             "provider": odest["provider"],
             "url": odest["url"],
             "name": odest["name"],
+            "basepath": destination_basepath,
         })
         trx.hset("private/agents/backup_destination/restic_password", dkey, restic_password)
         trx.hset("private/nodes/backup_destination/rclone_conf", dkey, rclone_conf)

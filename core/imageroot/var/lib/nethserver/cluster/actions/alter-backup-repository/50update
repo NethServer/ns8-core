@@ -36,6 +36,19 @@ def main():
         rclone_conf = f"[{destination_uuid}]\ntype=local\n"
         destination_basepath = '/srv/repo'
         validation_nodes = set(cluster.backup.lookup_node_from_webdav_url(rdb, url) or '0')
+    elif provider == 'rclone':
+        if parameters.get('rclone_conf') == "":
+            # Configuration Unchanged, replace empty string with the full value read from DB:
+            parameters['rclone_conf'] = rdb.hget('private/nodes/backup_destination/rclone_conf', destination_uuid)
+        try:
+            rclone_conf, url = cluster.backup.sanitize_rclone_conf(destination_uuid, parameters)
+        except Exception as ex:
+            print(ex, file=sys.stderr)
+            agent.set_status('validation-failed')
+            json.dump([{'field':'parameters','parameter':'parameters','value':'***','error':'rclone_conf_error'}], fp=sys.stdout)
+            sys.exit(2)
+        destination_basepath = parameters.get('basepath', rdb.hget(f'cluster/backup_repository/{destination_uuid}', 'basepath') or '')
+        validation_nodes = set(rdb.hvals('cluster/module_node'))
     else:
         rclone_conf = cluster.backup.generate_rclone_conf(destination_uuid, url, provider, parameters)
         destination_basepath = cluster.backup.extract_rclone_basepath(url)
@@ -71,7 +84,13 @@ def main():
     if not rname:
         rname = cluster.backup.get_default_backup_repository_name(provider, url, destination_uuid)
 
-    public_data = {'url': url, 'name': rname, 'provider': request['provider']}
+    if provider != 'rclone':
+        # Only rclone provider stores basepath in Redis HASH. Other
+        # providers derive its value from the url field and the Redis
+        # field is kept as an empty string.
+        destination_basepath = ''
+
+    public_data = {'url': url, 'name': rname, 'provider': provider, 'basepath': destination_basepath}
     trx = rdb.pipeline()
     trx.hdel('private/nodes/backup_destination/rclone_conf', destination_uuid)
     trx.hset('private/nodes/backup_destination/rclone_conf', destination_uuid, rclone_conf)
