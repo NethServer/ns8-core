@@ -9,7 +9,6 @@ on:
       - 'docs/**'
       - 'infra/**'
       - 'core/tests/**'
-      - 'core/test-core.sh'
   workflow_dispatch:
 
 jobs:

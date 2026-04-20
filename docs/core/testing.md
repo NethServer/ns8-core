@@ -49,64 +49,128 @@ core/tests/
 
 ## Tests execution
 
-NS8 core has a script named `test-core.sh` that can be used to setup and launch the tests related to the core modules. All the tests logs can be found in the directory `tests/outputs`.
+NS8 core uses Robot Framework for integration testing. Tests run inside a Podman container against a machine of your choice using the `test-ns8-module` script. The standard tooling is provided by the [ns8-github-actions](https://github.com/NethServer/ns8-github-actions) repository.
+
+### Requirements
+
+- [Podman](https://podman.io/) available in `PATH`
+- An SSH private key with access to the target NS8 leader node
+
+### Installation
+
+Download the script, make it executable, and place it in your `PATH`:
+
+```bash
+curl -o test-ns8-module \
+  https://raw.githubusercontent.com/NethServer/ns8-github-actions/refs/heads/refactor-testing/scripts/test-module.sh
+chmod +x test-ns8-module
+sudo mv test-ns8-module /usr/local/bin/
+```
 
 ### Usage
 
-    ./test-core.sh <leader_node> [robot_options...]
+Enter the core directory, then run tests:
 
-When launching the script, make sure the specified `SSH_KEYFILE` is accessible without password, otherwise the connection
-to remote host will fail.
+```bash
+cd core/
+test-ns8-module <LEADER_NODE> [robot_options...]
+```
 
-#### Parameters
+| Argument | Description |
+|---|---|
+| `<LEADER_NODE>` | Hostname or IP of the NS8 leader node |
+| `[robot_options...]` | Extra arguments forwarded to the `robot` command (e.g. `--include`, `--exclude`) |
 
-* `<leader_node>`: The host of the leader node.
-* `[robot_options...]`: Any additional arguments are forwarded directly to the `robot` command (e.g. `--include`, `--exclude`).
+### Environment variables
 
-#### Environment variables
+| Variable | Default | Description |
+|---|---|---|
+| `SSH_KEYFILE` | `~/.ssh/id_ecdsa` | SSH private key to use for cluster connection |
+| `RUN_UI_TESTS` | _(unset)_ | Set to `true` to enable UI/browser test cases |
+| `COREMODULES` | _(unset)_ | Space-separated or comma-separated list of core modules to install during cluster setup |
 
-* `SSH_KEYFILE`: SSH private key to use for connection to the NS8 cluster, default `~/.ssh/id_ecdsa`.
-* `COREMODULES`: list of space-separated module URL to pull and use during the NS8 installation process.
-* `RUN_UI_TESTS`: set to `true` to enable UI test cases. UI tests are excluded by default.
+### Test tags
 
-The `COREMODULES` have the same meaning as the [`install.sh`](docs/quickstart.md#install-a-development-branch) parameters.
+Test cases can be marked with [Robot Framework tags](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#tagging-test-cases) to include or exclude tests during execution:
 
-#### Include/exclude test cases
+- `backend` — All tests in `10__cluster_sanity` suite
+- `ui` — UI test cases (excluded by default, enable with `RUN_UI_TESTS=true`)
+- `install` — Tests related to NS8 installation and cluster creation
+- `uninstall` — Tests related to NS8 removal
+- `unstable` — Tests automatically skipped on failure
 
-Test cases can be marked with [Robot Framework tags](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#tagging-test-cases) to allow the inclusion and/or exclusion of test cases during tests execution.
+To skip installation and uninstallation tests (useful for testing an already-installed cluster):
 
-All tests in the `10__cluster_sanity` suite carry the `backend` force tag. Individual UI test cases within the suite carry the `ui` tag and are skipped by default; set `RUN_UI_TESTS=true` to include them:
+```bash
+test-ns8-module <LEADER_NODE> --exclude install --exclude uninstall
+```
 
-    RUN_UI_TESTS=true ./test-core.sh <leader_node>
+To enable UI tests:
 
-Some test cases of core module are marked with `install` or `uninstall` tag. More precisely:
+```bash
+RUN_UI_TESTS=true test-ns8-module <LEADER_NODE>
+```
 
-- test cases related to NS8 installation and cluster creation are marked with `install` tag
-- test cases related to NS8 removal are marked with `uninstall` tag
+### Examples
 
-This pair of tags make it easy to quickly execute tests on a machine with NS8 already installed and configured. Skipping installation, cluster creation and uninstallation drastically reduces tests execution time. Pass extra `robot` arguments to `test-core.sh` to exclude them:
+Basic run (substitute with your leader node hostname):
 
-    ./test-core.sh <leader_node> --exclude install --exclude uninstall
+```bash
+test-ns8-module rl1.leader.cluster0.test.nethserver.org
+```
 
-Tests marked `unstable` are automatically skipped on failure and do not block the suite.
+Using a custom SSH key:
+
+```bash
+SSH_KEYFILE=~/.ssh/id_ecdsa test-ns8-module rl1.leader.cluster0.test.nethserver.org
+```
+
+With UI tests enabled:
+
+```bash
+RUN_UI_TESTS=true test-ns8-module rl1.leader.cluster0.test.nethserver.org
+```
+
+With specific core modules:
+
+```bash
+COREMODULES="ghcr.io/nethserver/core:latest ghcr.io/nethserver/traefik:feat-7544" test-ns8-module rl1.leader.cluster0.test.nethserver.org
+```
+
+Skipping installation and uninstallation tests:
+
+```bash
+test-ns8-module rl1.leader.cluster0.test.nethserver.org --exclude install --exclude uninstall
+```
 
 ## Testing environment
 
-A `terraform` configuration for create a clean infrastucture for the tests execution can be found in the [`ns8-terraform-infra`](https://github.com/NethServer/ns8-terraform-infra) repository.
+A Terraform configuration is available in the [`ns8-terraform-infra`](https://github.com/NethServer/ns8-terraform-infra) repository to provision a clean infrastructure for test execution.
 
-If you want to use the key generated by Terraform scripts, remember to [export it](https://github.com/NethServer/ns8-terraform-infra#default-ssh-keys-pair) and set `SSH_KEYFILE`
-accordingly:
+### Setup
 
-    SSH_KEYFILE=../../ns8-terraform-infra/key ./test-core.sh <leader_node>
+1. Clone the repository and follow its setup instructions
+2. [Export the generated SSH keys](https://github.com/NethServer/ns8-terraform-infra#default-ssh-keys-pair)
+3. Set `SSH_KEYFILE` to point to the generated key
 
-To access the leader and the nodes with the generated key, use:
+### Usage
 
-    ssh -i ../../ns8-terraform-infra/key <leader_node>
+Running tests with the Terraform-generated key:
 
-**Example**
+```bash
+SSH_KEYFILE=../../ns8-terraform-infra/key test-ns8-module <LEADER_NODE>
+```
 
-Given a domain named `test.nethserver.org`, running on CentOS Stream 9 on `cluster0` workspace, the command to launch the test suites
-should be:
+Accessing nodes with the generated key:
 
-    SSH_KEYFILE=../../ns8-terraform-infra/key ./test-core.sh cs1.leader.cluster0.test.nethserver.org
+```bash
+ssh -i ../../ns8-terraform-infra/key <leader_node>
+```
 
+### Example
+
+For a domain named `test.nethserver.org` running on Rocky Linux 9 in the `cluster0` workspace:
+
+```bash
+SSH_KEYFILE=../../ns8-terraform-infra/key test-ns8-module rl1.leader.cluster0.test.nethserver.org
+```
