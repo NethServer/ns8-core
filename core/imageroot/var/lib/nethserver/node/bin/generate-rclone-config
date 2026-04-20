@@ -115,7 +115,10 @@ def write_rclonecfg(fileo, rdb):
         if conf:
             try:
                 backup_conf = rdb.hgetall('cluster/backup_repository/' + key)
-                destination_basepath = cluster.backup.extract_rclone_basepath(backup_conf['url'])
+                if backup_conf['provider'] == 'rclone':
+                    destination_basepath = backup_conf['basepath']
+                else:
+                    destination_basepath = cluster.backup.extract_rclone_basepath(backup_conf['url'])
             except Exception as ex:
                 print(agent.SD_WARNING + f"Backup destination {key} config parse failed:", ex, file=sys.stderr)
                 continue

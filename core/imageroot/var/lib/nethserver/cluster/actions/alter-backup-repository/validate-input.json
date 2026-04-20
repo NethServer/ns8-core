@@ -16,9 +16,24 @@
         {
             "name": "repository 6",
             "provider": "cluster",
-            "password": "",
             "url": "webdav:http://10.5.4.2:4694",
             "parameters": {}
+        },
+        {
+            "name": "destination 7",
+            "provider": "rclone",
+            "parameters": {
+                "rclone_conf": "type = s3\naccess_key_id = 45dc5e09346648fa9fed2a0267f58708\nsecret_access_key = db6b04c924f249fdbd86938b19959be0\nendpoint = s3.example.org\nprovider = Other\n",
+                "basepath": "mybucket/subfolder"
+            }
+        },
+        {
+            "name": "destination 7 - change path",
+            "provider": "rclone",
+            "parameters": {
+                "rclone_conf": "",
+                "basepath": "mybucket/subfolder2"
+            }
         }
     ],
     "type": "object",
@@ -47,6 +62,22 @@
         "provider"
     ],
     "anyOf": [
+        {
+            "allOf": [
+                {
+                    "title": "Rclone schema",
+                    "properties": {
+                        "provider": {
+                            "title": "Raw Rclone Config provider",
+                            "const": "rclone"
+                        },
+                        "parameters": {
+                            "$ref": "#/$defs/rclone_parameters"
+                        }
+                    }
+                }
+            ]
+        },
         {
             "allOf": [
                 {
@@ -135,6 +166,27 @@
         }
     ],
     "$defs": {
+        "rclone_parameters": {
+            "title": "Rclone raw configuration",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "rclone_conf": {
+                    "type": ["null", "string"],
+                    "maxLength": 100000,
+                    "description": "Basic INI-like string validation",
+                    "pattern": "^(\\[[^\\]]+\\]\\n)?(\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*[^\\n]*\\n)*$"
+                },
+                "rclone_conf_b64": {
+                    "type": "string",
+                    "maxLength": 100000
+                },
+                "basepath": {
+                    "type": "string",
+                    "maxLength": 512
+                }
+            }
+        },
         "b2_parameters": {
             "title": "B2 (Backblaze) protocol parameters",
             "type": "object",

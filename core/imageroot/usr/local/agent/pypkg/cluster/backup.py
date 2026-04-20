@@ -28,6 +28,7 @@ import time
 import agent
 import agent.backup
 import configparser
+import io
 import tempfile
 import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -89,6 +90,65 @@ def extract_rclone_basepath(url):
     elif uschema == 'webdav':
         upath = urllib.parse.urlparse(upath).path
     return upath
+
+def sanitize_rclone_conf(destination_uuid, params):
+    """Return the rclone_conf string and its UI-url value from the given
+    input parameters. This function may raise decode and parse errors."""
+
+    if params['rclone_conf'] is None:
+        b64payload = params['rclone_conf_b64']
+        rclone_conf = base64.b64decode(b64payload).decode('utf-8')
+    else:
+        rclone_conf = params['rclone_conf']
+
+    rclone_conf, cfg = _normalize_rclone_conf(destination_uuid, rclone_conf)
+
+    if not cfg:
+        raise Exception("Rclone configuration is empty")
+
+    path = params.get('basepath', '').strip('/')
+    for host_field in ['host', 'endpoint']:
+        if host_field in cfg:
+            try:
+                parsed = urllib.parse.urlparse(cfg[host_field])
+                hostname = (parsed.hostname or parsed.path).rstrip('/')
+                break
+            except Exception as ex:
+                print(ex, file=sys.stderr)
+    else:
+        # Fallback to a configuration hash
+        hostname = stable_uuid_v5(cfg)[0:5]
+
+    if 'type' not in cfg:
+        raise Exception("Rclone configuration is missing the 'type' field")
+
+    # Build the url as a rclone_conf human-readable identifier
+    url = f"rclone:{cfg['type']}:{hostname}:{path}"
+    return rclone_conf, url
+
+def _normalize_rclone_conf(destination_uuid, rclone_conf):
+    """Parse an rclone.conf string, ensure it has a single section header
+    named after destination_uuid, and return the normalized config text along
+    with a dict of its key-value pairs."""
+
+    cp = configparser.ConfigParser()
+
+    # Make sure a section header exists and is set to destination_uuid:
+    try:
+        cp.read_string(rclone_conf)
+        old_section = cp.sections()[0]
+        if old_section != destination_uuid:
+            cp[destination_uuid] = cp[old_section]
+            cp.remove_section(old_section)
+    except configparser.MissingSectionHeaderError:
+        cp.read_string(f"[{destination_uuid}]\n" + rclone_conf)
+
+    cfg = dict(cp[destination_uuid])
+    buf = io.StringIO()
+    cp.write(buf)
+    rclone_conf = buf.getvalue()
+
+    return rclone_conf, cfg
 
 def generate_rclone_conf(dest_uuid, url, provider, params):
     """Translate the input arguments in a rclone.conf-compatible string"""
