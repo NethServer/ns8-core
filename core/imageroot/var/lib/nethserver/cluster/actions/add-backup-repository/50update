@@ -44,11 +44,24 @@ def main():
         name = request['name']
     else:
         name = cluster.backup.get_default_backup_repository_name(provider, url, destination_uuid)
-    public_data = {'url': url, 'name': name, 'provider': provider}
+    public_data = {'url': url, 'name': name, 'provider': provider, 'basepath': ''}
     if provider == 'cluster':
         rclone_conf = f"[{destination_uuid}]\ntype=local\n"
         destination_basepath = '/srv/repo'
         validation_nodes = set(cluster.backup.lookup_node_from_webdav_url(rdb, url) or '0')
+    elif provider == 'rclone':
+        # Ignore url from input, and derive its value from request parameters:
+        try:
+            rclone_conf, url = cluster.backup.sanitize_rclone_conf(destination_uuid, request['parameters'])
+        except Exception as ex:
+            print(ex, file=sys.stderr)
+            agent.set_status('validation-failed')
+            json.dump([{'field':'parameters','parameter':'parameters','value':'***','error':'rclone_conf_error'}], fp=sys.stdout)
+            sys.exit(2)
+        destination_basepath = request['parameters'].get('basepath', '')
+        public_data['basepath'] = destination_basepath
+        public_data['url'] = url
+        validation_nodes = set(rdb.hvals('cluster/module_node'))
     else:
         rclone_conf = cluster.backup.generate_rclone_conf(destination_uuid, url, provider, request['parameters'])
         destination_basepath = cluster.backup.extract_rclone_basepath(url)
