@@ -31,6 +31,8 @@ runs are fast.
 
 Download the script, make it executable, and place it in your `PATH`:
 
+<!-- fix curl url //// -->
+
 ```bash
 curl -o test-ns8-module \
   https://raw.githubusercontent.com/NethServer/ns8-github-actions/refs/heads/refactor-testing/scripts/test-module.sh

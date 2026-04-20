@@ -45,7 +45,7 @@ jobs:
 
   check_ui_tests_needed:
     name: Check UI tests needed
-    # //// use @v1 instead of @refactor-testing
+    # //// use @v2 instead of @refactor-testing
     uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@refactor-testing
     with:
       ui_tests_strategy: on_renovate_ui_change
@@ -57,14 +57,13 @@ jobs:
   run_tests:
     name: "Run tests"
     needs: [ns8, check_ui_tests_needed]
-    # //// use @v1 instead of @refactor-testing
+    # //// use @v2 instead of @refactor-testing
     uses: NethServer/ns8-github-actions/.github/workflows/test-on-digitalocean-infra.yml@refactor-testing
     with:
       setup_cluster: false
       path: core/
       coremodules: ${{ join(fromJSON(needs.ns8.outputs.modules), ' ' ) }}
-      # run_ui_tests: ${{ needs.check_ui_tests_needed.outputs.ui_tests_needed == 'true' }} //// uncomment
-      run_ui_tests: true
+      run_ui_tests: ${{ needs.check_ui_tests_needed.outputs.ui_tests_needed == 'true' }}
     secrets:
       do_token: ${{ secrets.do_token }}
   remove_label:
