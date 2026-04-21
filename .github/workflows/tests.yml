@@ -45,8 +45,7 @@ jobs:
 
   check_ui_tests_needed:
     name: Check UI tests needed
-    # //// use @v2 instead of @refactor-testing
-    uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@refactor-testing
+    uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@v1
     with:
       ui_tests_strategy: on_renovate_ui_change
       head_sha: ${{ github.sha }}
@@ -57,8 +56,7 @@ jobs:
   run_tests:
     name: "Run tests"
     needs: [ns8, check_ui_tests_needed]
-    # //// use @v2 instead of @refactor-testing
-    uses: NethServer/ns8-github-actions/.github/workflows/test-on-digitalocean-infra.yml@refactor-testing
+    uses: NethServer/ns8-github-actions/.github/workflows/test-on-digitalocean-infra.yml@v1
     with:
       setup_cluster: false
       path: core/
