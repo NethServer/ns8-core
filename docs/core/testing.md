@@ -60,11 +60,9 @@ NS8 core uses Robot Framework for integration testing. Tests run inside a Podman
 
 Download the script, make it executable, and place it in your `PATH`:
 
-<!-- fix curl url //// -->
-
 ```bash
 curl -o test-ns8-module \
-  https://raw.githubusercontent.com/NethServer/ns8-github-actions/refs/heads/v1/scripts/test-module.sh
+  https://raw.githubusercontent.com/NethServer/ns8-github-actions/refs/heads/refactor-testing/scripts/test-module.sh
 chmod +x test-ns8-module
 sudo mv test-ns8-module /usr/local/bin/
 ```
