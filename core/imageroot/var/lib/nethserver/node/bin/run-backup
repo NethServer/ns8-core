@@ -13,6 +13,7 @@ import sys
 import time
 
 import agent
+import cluster.backup
 
 EXIT_ALREADY_RUNNING = 3
 RETRY_INTERVAL = 60   # seconds between retries
@@ -68,7 +69,7 @@ def collect_backup_stats(rdb, repository, repopath, start_time):
         stats_proc = agent.run_restic(rdb, repository, repopath, [], ["stats", "--json", "latest"], text=True, stdout=subprocess.PIPE, check=True)
         status.update(json.loads(stats_proc.stdout))
     except Exception as ex:
-        print(f"[ERROR] restic stats failed for {repopath}: {ex}", file=sys.stderr)
+        print(f"[ERROR] restic stats failed for {repository}/{repopath}: {ex}", file=sys.stderr)
         status["errors"] += 1
     status["end"] = int(time.time())
     return status
@@ -103,9 +104,9 @@ def run_retention(rdb, repository, repopath, retention):
     except Exception as ex:
         # Backup is OK, but retention failed. We assume the error
         # condition is temporary and will be recovered by next backup run.
-        print(f"[WARNING] retention policy failed for {repopath}: {ex}", file=sys.stderr)
+        print(f"[WARNING] retention policy failed for {repository}/{repopath}: {ex}", file=sys.stderr)
 
-def update_repopath_json(rdb, backup_id, module_id, repopath, success):
+def update_repopath_json(rdb, repository, backup_id, module_id, repopath, success):
     """Upload {repopath}.json metadata to the remote destination."""
     ometa = {
         "module_id": module_id,
@@ -116,18 +117,14 @@ def update_repopath_json(rdb, backup_id, module_id, repopath, success):
         "timestamp": int(time.time()),
         "success": success,
     }
+    json_path = f"{repository}/{repopath}.json"
     try:
-        subprocess.run(
-            ["rclone-wrapper", str(backup_id), "rcat", f"REMOTE_PATH/{repopath}.json"],
-            stdout=sys.stderr,
-            input="\n" + json.dumps(ometa, separators=(",", ":")) + "\n",
-            text=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as ex:
-        print(f"[ERROR] rclone-wrapper failed for {repopath}.json: {ex}", file=sys.stderr)
+        with cluster.backup.TimeoutSession(timeout=(3, 10)) as ses:
+            cluster.backup.webdav_write_file(ses, cluster.backup.GATEWAY_URL, json_path, json.dumps(ometa).encode('utf-8'), 'application/json')
+    except Exception as ex:
+        print(f"[ERROR] upload of JSON manifest failed: {ex}", file=sys.stderr)
 
-def upload_cluster_backup(backup_id, cluster_uuid):
+def upload_cluster_backup(rdb, repository, backup_id, cluster_uuid):
     """Generate and upload the cluster backup to the remote destination."""
     dump_path = "/var/lib/nethserver/cluster/state/backup/dump.json.gz.gpg"
     if not os.path.isfile(dump_path):
@@ -136,18 +133,15 @@ def upload_cluster_backup(backup_id, cluster_uuid):
         except subprocess.CalledProcessError as ex:
             print(f"[ERROR] cluster-backup failed: {ex}", file=sys.stderr)
             return
-    remote_name = f"cluster-backup-{cluster_uuid}.json.gz.gpg"
+    remote_name = f"{repository}/cluster-backup-{cluster_uuid}.json.gz.gpg"
     try:
         with open(dump_path, "rb") as f:
-            subprocess.run(
-                ["rclone-wrapper", str(backup_id), "rcat", f"REMOTE_PATH/{remote_name}"],
-                stdin=f,
-                stdout=sys.stderr,
-                check=True,
-            )
+            gpg_data = f.read()
+        with cluster.backup.TimeoutSession(timeout=(3, 10)) as ses:
+            cluster.backup.webdav_write_file(ses, cluster.backup.GATEWAY_URL, remote_name, gpg_data)
         print(f"Cluster backup uploaded as {remote_name}", file=sys.stderr)
-    except subprocess.CalledProcessError as ex:
-        print(f"[ERROR] rclone-wrapper failed for cluster backup: {ex}", file=sys.stderr)
+    except Exception as ex:
+        print(f"[ERROR] upload of cluster backup GPG file failed: {ex}", file=sys.stderr)
 
 def process_module(rdb, module_id, backup_id, node_id, repository, retention):
     """Run backup for one module, handle post-backup tasks. Returns exit code."""
@@ -169,7 +163,7 @@ def process_module(rdb, module_id, backup_id, node_id, repository, retention):
     if success:
         run_retention(rdb, repository, repopath, retention)
 
-    update_repopath_json(rdb, backup_id, module_id, repopath, success)
+    update_repopath_json(rdb, repository, backup_id, module_id, repopath, success)
     return rc
 
 def main():
@@ -204,7 +198,7 @@ def main():
     leader_id = rdb.hget("cluster/environment", "NODE_ID")
     if node_id == leader_id:
         cluster_uuid = rdb.get("cluster/uuid") or ""
-        upload_cluster_backup(backup_id, cluster_uuid)
+        upload_cluster_backup(rdb, repository, backup_id, cluster_uuid)
 
     # Keep only modules that belong to this node
     local_modules = [m for m in instances if module_node.get(m) == node_id]
