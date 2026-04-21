@@ -50,7 +50,8 @@ jobs:
     name: Check UI tests needed
     uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@refactor-testing
     with:
-      ui_tests_strategy: on_renovate_ui_change
+      # ui_tests_strategy: on_renovate_ui_change ////
+      ui_tests_strategy: always
       head_sha: ${{ github.sha }}
       head_branch: ${{ github.head_ref || github.ref_name }}
       ui_dir: core/ui
