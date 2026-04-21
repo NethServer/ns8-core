@@ -13,6 +13,8 @@ import sys
 import time
 
 import agent
+import agent.backup
+import cluster.backup
 
 EXIT_ALREADY_RUNNING = 3
 RETRY_INTERVAL = 60   # seconds between retries
@@ -105,7 +107,7 @@ def run_retention(rdb, repository, repopath, retention):
         # condition is temporary and will be recovered by next backup run.
         print(f"[WARNING] retention policy failed for {repopath}: {ex}", file=sys.stderr)
 
-def update_repopath_json(rdb, backup_id, module_id, repopath, success):
+def update_repopath_json(rdb, repository, backup_id, module_id, repopath, success):
     """Upload {repopath}.json metadata to the remote destination."""
     ometa = {
         "module_id": module_id,
@@ -116,18 +118,15 @@ def update_repopath_json(rdb, backup_id, module_id, repopath, success):
         "timestamp": int(time.time()),
         "success": success,
     }
+    json_path = repopath + '.json'
     try:
-        subprocess.run(
-            ["rclone-wrapper", str(backup_id), "rcat", f"REMOTE_PATH/{repopath}.json"],
-            stdout=sys.stderr,
-            input="\n" + json.dumps(ometa, separators=(",", ":")) + "\n",
-            text=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as ex:
-        print(f"[ERROR] rclone-wrapper failed for {repopath}.json: {ex}", file=sys.stderr)
+        webdav_url = cluster.backup.probe_webdav_gateway(rdb, repository, json_path)
+        with agent.backup.TimeoutSession(timeout=(3, 10)) as ses:
+            cluster.backup.webdav_write_file(ses, webdav_url, json_path, json.dumps(ometa).encode('utf-8'), 'application/json')
+    except Exception as ex:
+        print(f"[ERROR] upload of JSON manifest failed: {ex}", file=sys.stderr)
 
-def upload_cluster_backup(backup_id, cluster_uuid):
+def upload_cluster_backup(rdb, repository, backup_id, cluster_uuid):
     """Generate and upload the cluster backup to the remote destination."""
     dump_path = "/var/lib/nethserver/cluster/state/backup/dump.json.gz.gpg"
     if not os.path.isfile(dump_path):
@@ -139,15 +138,13 @@ def upload_cluster_backup(backup_id, cluster_uuid):
     remote_name = f"cluster-backup-{cluster_uuid}.json.gz.gpg"
     try:
         with open(dump_path, "rb") as f:
-            subprocess.run(
-                ["rclone-wrapper", str(backup_id), "rcat", f"REMOTE_PATH/{remote_name}"],
-                stdin=f,
-                stdout=sys.stderr,
-                check=True,
-            )
+            gpg_data = f.read()
+        webdav_url = cluster.backup.probe_webdav_gateway(rdb, repository, remote_name)
+        with agent.backup.TimeoutSession(timeout=(3, 10)) as ses:
+            cluster.backup.webdav_write_file(ses, webdav_url, remote_name, gpg_data)
         print(f"Cluster backup uploaded as {remote_name}", file=sys.stderr)
-    except subprocess.CalledProcessError as ex:
-        print(f"[ERROR] rclone-wrapper failed for cluster backup: {ex}", file=sys.stderr)
+    except Exception as ex:
+        print(f"[ERROR] upload of cluster backup GPG file failed: {ex}", file=sys.stderr)
 
 def process_module(rdb, module_id, backup_id, node_id, repository, retention):
     """Run backup for one module, handle post-backup tasks. Returns exit code."""
@@ -169,7 +166,7 @@ def process_module(rdb, module_id, backup_id, node_id, repository, retention):
     if success:
         run_retention(rdb, repository, repopath, retention)
 
-    update_repopath_json(rdb, backup_id, module_id, repopath, success)
+    update_repopath_json(rdb, repository, backup_id, module_id, repopath, success)
     return rc
 
 def main():
@@ -204,7 +201,7 @@ def main():
     leader_id = rdb.hget("cluster/environment", "NODE_ID")
     if node_id == leader_id:
         cluster_uuid = rdb.get("cluster/uuid") or ""
-        upload_cluster_backup(backup_id, cluster_uuid)
+        upload_cluster_backup(rdb, repository, backup_id, cluster_uuid)
 
     # Keep only modules that belong to this node
     local_modules = [m for m in instances if module_node.get(m) == node_id]

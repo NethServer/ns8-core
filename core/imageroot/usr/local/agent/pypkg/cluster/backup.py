@@ -376,3 +376,12 @@ def webdav_read_json(session, base_url, path):
     r = session.get(url)
     r.raise_for_status()
     return r.json()
+
+def webdav_write_file(session, base_url, path, data: bytes, content_type="application/octet-stream"):
+    url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
+    # Make sure parent exists:
+    parent = '/'.join(url.split('/')[:-1])
+    session.request("MKCOL", parent)
+    r = session.put(url, data=data, headers={"Content-Type": content_type})
+    r.raise_for_status()
+    return r.status_code  # 201 Created or 204 No Content
