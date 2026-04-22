@@ -653,7 +653,7 @@
     "action": {
         "configure-module": "Configura applicazione",
         "list-backups": "Elenca backup",
-        "list-backup-repositories": "Elenca repository di backup",
+        "list-backup-repositories": "Elenca i repository di backup",
         "add-backup-repository": "Aggiungi destinazione backup",
         "set-certificate": "Imposta certificato",
         "set-default-certificate": "Richiedi certificato",
