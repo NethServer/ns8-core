@@ -49,7 +49,7 @@ core/tests/
 
 ## Tests execution
 
-NS8 core uses Robot Framework for integration testing. Tests run inside a Podman container against a machine of your choice using the `test-ns8-module` script. The standard tooling is provided by the [ns8-github-actions](https://github.com/NethServer/ns8-github-actions) repository.
+NS8 core uses Robot Framework for integration testing. Tests run inside a Podman container against a machine of your choice using the `run-ns8-tests` script. The standard tooling is provided by the [ns8-github-actions](https://github.com/NethServer/ns8-github-actions) repository.
 
 ### Requirements
 
@@ -61,10 +61,9 @@ NS8 core uses Robot Framework for integration testing. Tests run inside a Podman
 Download the script, make it executable, and place it in your `PATH`:
 
 ```bash
-curl -o test-ns8-module \
+curl -o /tmp/run-ns8-tests \
   https://raw.githubusercontent.com/NethServer/ns8-github-actions/refs/heads/v1/scripts/test-module.sh
-chmod +x test-ns8-module
-sudo mv test-ns8-module /usr/local/bin/
+install -m 0755 -Z /tmp/run-ns8-tests ~/.local/bin
 ```
 
 ### Usage
@@ -72,8 +71,8 @@ sudo mv test-ns8-module /usr/local/bin/
 Enter the core directory, then run tests:
 
 ```bash
-cd core/
-test-ns8-module <LEADER_NODE> [robot_options...]
+cd /path/to/ns8-core/core
+run-ns8-tests <LEADER_NODE> [robot_options...]
 ```
 
 | Argument | Description |
@@ -102,13 +101,13 @@ Test cases can be marked with [Robot Framework tags](https://robotframework.org/
 To skip installation and uninstallation tests (useful for testing an already-installed cluster):
 
 ```bash
-test-ns8-module <LEADER_NODE> --exclude install --exclude uninstall
+run-ns8-tests <LEADER_NODE> --exclude install --exclude uninstall
 ```
 
 To enable UI tests:
 
 ```bash
-RUN_UI_TESTS=true test-ns8-module <LEADER_NODE>
+RUN_UI_TESTS=true run-ns8-tests <LEADER_NODE>
 ```
 
 ### Examples
@@ -116,31 +115,31 @@ RUN_UI_TESTS=true test-ns8-module <LEADER_NODE>
 Basic run (substitute with your leader node hostname):
 
 ```bash
-test-ns8-module rl1.leader.cluster0.test.nethserver.org
+run-ns8-tests rl1.leader.cluster0.test.nethserver.org
 ```
 
 Using a custom SSH key:
 
 ```bash
-SSH_KEYFILE=~/.ssh/id_ecdsa test-ns8-module rl1.leader.cluster0.test.nethserver.org
+SSH_KEYFILE=~/.ssh/id_ecdsa run-ns8-tests rl1.leader.cluster0.test.nethserver.org
 ```
 
 With UI tests enabled:
 
 ```bash
-RUN_UI_TESTS=true test-ns8-module rl1.leader.cluster0.test.nethserver.org
+RUN_UI_TESTS=true run-ns8-tests rl1.leader.cluster0.test.nethserver.org
 ```
 
 With specific core modules:
 
 ```bash
-COREMODULES="ghcr.io/nethserver/core:latest ghcr.io/nethserver/traefik:feat-7544" test-ns8-module rl1.leader.cluster0.test.nethserver.org
+COREMODULES="ghcr.io/nethserver/core:latest ghcr.io/nethserver/traefik:feat-7544" run-ns8-tests rl1.leader.cluster0.test.nethserver.org
 ```
 
 Skipping installation and uninstallation tests:
 
 ```bash
-test-ns8-module rl1.leader.cluster0.test.nethserver.org --exclude install --exclude uninstall
+run-ns8-tests rl1.leader.cluster0.test.nethserver.org --exclude install --exclude uninstall
 ```
 
 ## Testing environment
@@ -158,7 +157,7 @@ A Terraform configuration is available in the [`ns8-terraform-infra`](https://gi
 Running tests with the Terraform-generated key:
 
 ```bash
-SSH_KEYFILE=../../ns8-terraform-infra/key test-ns8-module <LEADER_NODE>
+SSH_KEYFILE=../../ns8-terraform-infra/key run-ns8-tests <LEADER_NODE>
 ```
 
 Accessing nodes with the generated key:
@@ -172,5 +171,5 @@ ssh -i ../../ns8-terraform-infra/key <leader_node>
 For a domain named `test.nethserver.org` running on Rocky Linux 9 in the `cluster0` workspace:
 
 ```bash
-SSH_KEYFILE=../../ns8-terraform-infra/key test-ns8-module rl1.leader.cluster0.test.nethserver.org
+SSH_KEYFILE=../../ns8-terraform-infra/key run-ns8-tests rl1.leader.cluster0.test.nethserver.org
 ```

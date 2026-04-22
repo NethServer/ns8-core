@@ -11,10 +11,10 @@ NS8 modules use [Robot Framework](https://robotframework.org/) for integration
 testing. Tests live in the `tests/` directory of each module repository and run
 against a live NS8 cluster. The standard tooling is provided by the
 [ns8-github-actions](https://github.com/NethServer/ns8-github-actions) repository,
-which includes reusable CI/CD workflows and the `test-ns8-module` script described
+which includes reusable CI/CD workflows and the `run-ns8-tests` script described
 below.
 
-The `test-ns8-module` script runs any NS8 module's `tests/` directory with
+The `run-ns8-tests` script runs any NS8 module's `tests/` directory with
 Robot Framework inside a Podman container, directly from your workstation
 against a live NS8 cluster. The venv is cached in a named volume so repeated
 runs are fast.
@@ -32,10 +32,9 @@ runs are fast.
 Download the script, make it executable, and place it in your `PATH`:
 
 ```bash
-curl -o test-ns8-module \
+curl -o /tmp/run-ns8-tests \
   https://raw.githubusercontent.com/NethServer/ns8-github-actions/refs/heads/v1/scripts/test-module.sh
-chmod +x test-ns8-module
-sudo mv test-ns8-module /usr/local/bin/
+install -m 0755 -Z /tmp/run-ns8-tests ~/.local/bin
 ```
 
 ## Usage
@@ -44,7 +43,7 @@ Enter the NS8 module directory and run the script:
 
 ```bash
 cd /path/to/ns8-<module>
-test-ns8-module <LEADER_NODE> <IMAGE_URL> [robot options...]
+run-ns8-tests <LEADER_NODE> <IMAGE_URL> [robot options...]
 ```
 
 | Argument | Description |
@@ -66,49 +65,49 @@ Basic run:
 
 ```bash
 cd ~/git/ns8-mail
-test-ns8-module rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:bug-6977
+run-ns8-tests rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:bug-6977
 ```
 
 Using a custom SSH key:
 
 ```bash
 cd ~/git/ns8-mail
-SSH_KEYFILE=~/.ssh/id_ecdsa test-ns8-module rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:bug-6977
+SSH_KEYFILE=~/.ssh/id_ecdsa run-ns8-tests rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:bug-6977
 ```
 
 With UI tests enabled:
 
 ```bash
 cd ~/git/ns8-nextcloud
-RUN_UI_TESTS=true test-ns8-module rl1.leader.cluster0.test.org ghcr.io/nethserver/nextcloud:latest
+RUN_UI_TESTS=true run-ns8-tests rl1.leader.cluster0.test.org ghcr.io/nethserver/nextcloud:latest
 ```
 
 With UI tests and a custom SSH key:
 
 ```bash
 cd ~/git/ns8-nextcloud
-SSH_KEYFILE=~/.ssh/id_ecdsa RUN_UI_TESTS=true test-ns8-module rl1.leader.cluster0.test.org ghcr.io/nethserver/nextcloud:latest
+SSH_KEYFILE=~/.ssh/id_ecdsa RUN_UI_TESTS=true run-ns8-tests rl1.leader.cluster0.test.org ghcr.io/nethserver/nextcloud:latest
 ```
 
 Passing extra Robot Framework options (e.g. run a single test suite):
 
 ```bash
 cd ~/git/ns8-mail
-test-ns8-module rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:latest --suite "Sending mail"
+run-ns8-tests rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:latest --suite "Sending mail"
 ```
 
 Run only tests with a specific tag:
 
 ```bash
 cd ~/git/ns8-mail
-test-ns8-module rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:latest --include smoke
+run-ns8-tests rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:latest --include smoke
 ```
 
 Run a single test by name:
 
 ```bash
 cd ~/git/ns8-mail
-test-ns8-module rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:latest --test "Send an email"
+run-ns8-tests rl1.leader.cluster0.test.org ghcr.io/nethserver/mail:latest --test "Send an email"
 ```
 
 ## How it works

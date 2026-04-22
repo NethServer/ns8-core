@@ -107,12 +107,12 @@ cd core/agent && bash test-agent.sh
 
 ```bash
 cd core
-test-ns8-module <LEADER_NODE> [robot_options...]
+run-ns8-tests <LEADER_NODE> [robot_options...]
 ```
 
 Robot Framework tests are in `core/tests/` with numbered directories
 (`10__cluster_sanity/`) and shared `keywords.resource`. The
-`test-ns8-module` helper is provided by the `ns8-github-actions` repository;
+`run-ns8-tests` helper is provided by the `ns8-github-actions` repository;
 you also need Podman in `PATH` and an SSH private key that can access the
 target leader node.
 
