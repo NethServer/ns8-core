@@ -5,9 +5,26 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+#
+# Upload the encrypted cluster backup to the subscription provider.
+#
+# Enterprise clusters (provider=nsent) post to the my collect
+# endpoint with native my credentials. migrate-to-my runs up front
+# so a cluster upgraded from the legacy path transparently flips
+# over on the first successful rotation.
+#
+# Community clusters (provider=nscom) keep posting to
+# backupd.nethesis.it exactly as before — that infrastructure has
+# no counterpart on the new my and is out of scope for the
+# migration.
+#
+
 set -e
 
-# Parse subscription configuration from Redis
+# Opportunistically rotate enterprise credentials before we use them.
+# A no-op for nscom or already-migrated nsent clusters.
+migrate-to-my
+
 while IFS='=' read -r key value; do
     declare "${key}"="${value}"
 done < <(redis-hgetall cluster/subscription)
@@ -17,14 +34,6 @@ function exit_error ()
     echo "[ERROR]" "${@}" 1>&2
     exit 1
 }
-
-if [[ $provider == "nsent" ]]; then
-    type="enterprise"
-elif [[ $provider == "nscom" ]]; then
-    type="community"
-else
-    exit_error "Unsupported provider: ${provider}"
-fi
 
 if [[ -z "${system_id}" || -z "${auth_token}" ]]; then
     exit_error "Missing system_id or auth_token for provider"
@@ -43,13 +52,37 @@ backup_hash=$(md5sum "${backup_file}" | awk '{ print $1 }')
 if [[ "${prev_backup_hash}" == "${backup_hash}" ]]; then
     echo "Backup file already uploaded, nothing to do" 1>&2
 elif [[ -f "${encrypted_file}" ]]; then
-    curl \
-        --silent \
-        --location-trusted \
-        --user "${system_id}:${auth_token}" \
-        "https://backupd.nethesis.it/${type}/api/v2/backup/" \
-        --upload-file "${encrypted_file}" >/dev/null
-    # Backup upload successful, update the reference file
+    case "${provider}" in
+        nsent)
+            if [[ -z "${collect_url:-}" ]]; then
+                exit_error "Pre-migration cluster: collect_url not set; migrate-to-my will retry on next schedule"
+            fi
+            curl \
+                --silent \
+                --location-trusted \
+                --fail-with-body \
+                --max-time 900 \
+                --retry 3 \
+                --user "${system_id}:${auth_token}" \
+                -X POST \
+                -H "Content-Type: application/octet-stream" \
+                -H "X-Filename: $(basename "${encrypted_file}")" \
+                --data-binary "@${encrypted_file}" \
+                "${collect_url}/backups" >/dev/null
+            ;;
+        nscom)
+            curl \
+                --silent \
+                --location-trusted \
+                --user "${system_id}:${auth_token}" \
+                "https://backupd.nethesis.it/community/api/v2/backup/" \
+                --upload-file "${encrypted_file}" >/dev/null
+            ;;
+        *)
+            exit_error "Unsupported provider: ${provider}"
+            ;;
+    esac
+
     echo "${backup_hash}" > backup/dump.md5
     echo "Backup uploaded to provider ${provider} with hash ${backup_hash}" 1>&2
 else
