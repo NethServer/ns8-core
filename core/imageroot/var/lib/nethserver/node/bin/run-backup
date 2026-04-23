@@ -18,6 +18,34 @@ EXIT_ALREADY_RUNNING = 3
 RETRY_INTERVAL = 60   # seconds between retries
 RETRY_TIMEOUT = 3600  # total retry window in seconds
 
+PROM_DIR = "/run/node_exporter"
+PROM_UNKNOWN = -1
+PROM_FAILED = 0
+PROM_SUCCESS = 1
+PROM_CONFLICT = 2
+
+def prometheus_escape_label_value(value: str) -> str:
+    return (
+        value
+        .replace("\\", "\\\\")
+        .replace("\n", "\\n")
+        .replace('"', '\\"')
+    )
+
+def write_backup_prom(backup_id, backup_name, status):
+    """Write a Prometheus .prom file for this backup's status."""
+    output_file = os.path.join(PROM_DIR, f"backup{backup_id}.prom")
+    content = (
+        '# HELP node_backup_status Status of the backup (0 = failure, 1 = success, 2 = conflict, -1 = unknown)\n'
+        '# TYPE node_backup_status gauge\n'
+        f'node_backup_status{{id="{backup_id}",name="{prometheus_escape_label_value(backup_name)}"}} {status}\n'
+    )
+    os.makedirs(PROM_DIR, exist_ok=True)
+    tmp_file = f"{output_file}-{os.getpid()}.tmp"
+    with open(tmp_file, "w") as f:
+        f.write(content)
+    os.rename(tmp_file, output_file)
+
 def get_module_repopath(rdb, module_id):
     """Compute the restic repository path for a module."""
     env = rdb.hgetall(f"module/{module_id}/environment")
@@ -36,14 +64,11 @@ def run_module_backup(module_id, backup_id):
 def collect_backup_stats(rdb, repository, repopath, start_time):
     """Collect restic stats for a module's backup. Returns status dict."""
     status = {"start": start_time, "total_size": 0, "total_file_count": 0, "snapshots_count": 0, "errors": 0}
-    stats_proc = agent.run_restic(rdb, repository, repopath, [], ["stats", "--json", "latest"], text=True, stdout=subprocess.PIPE)
-    if stats_proc.returncode == 0:
-        try:
-            status.update(json.loads(stats_proc.stdout))
-        except json.JSONDecodeError:
-            status["errors"] += 1
-    else:
-        print(f"[ERROR] restic stats failed for {repopath}", file=sys.stderr)
+    try:
+        stats_proc = agent.run_restic(rdb, repository, repopath, [], ["stats", "--json", "latest"], text=True, stdout=subprocess.PIPE, check=True)
+        status.update(json.loads(stats_proc.stdout))
+    except Exception as ex:
+        print(f"[ERROR] restic stats failed for {repopath}: {ex}", file=sys.stderr)
         status["errors"] += 1
     status["end"] = int(time.time())
     return status
@@ -74,9 +99,11 @@ def run_retention(rdb, repository, repopath, retention):
     try:
         agent.run_restic(rdb, repository, repopath, [], [
             "forget", "--prune", f"--keep-last={retention}",
-        ]).check_returncode()
-    except subprocess.CalledProcessError as ex:
-        print(f"[ERROR] retention policy failed for {repopath}: {ex}", file=sys.stderr)
+        ], check=True)
+    except Exception as ex:
+        # Backup is OK, but retention failed. We assume the error
+        # condition is temporary and will be recovered by next backup run.
+        print(f"[WARNING] retention policy failed for {repopath}: {ex}", file=sys.stderr)
 
 def update_repopath_json(rdb, backup_id, module_id, repopath, success):
     """Upload {repopath}.json metadata to the remote destination."""
@@ -148,6 +175,7 @@ def main():
 
     repository = battrs.get("repository", "")
     retention = battrs.get("retention", "3")
+    backup_name = battrs.get("name", "")
     instances = battrs.get("instances", "").split()
     module_node = rdb.hgetall("cluster/module_node")
 
@@ -156,6 +184,9 @@ def main():
     if not local_modules:
         print(f"No local modules for backup {backup_id}", file=sys.stderr)
         return
+
+    # Initialize prom file to UNKNOWN
+    write_backup_prom(backup_id, backup_name, PROM_UNKNOWN)
 
     failed = []
     retry_queue = []
@@ -166,9 +197,12 @@ def main():
         if rc == 0:
             print(f"{module_id}: backup {backup_id} completed", file=sys.stderr)
         elif rc == EXIT_ALREADY_RUNNING:
+            if len(failed) == len(retry_queue) == 0:
+                write_backup_prom(backup_id, backup_name, PROM_CONFLICT)
             print(f"{module_id}: already running, queued for retry", file=sys.stderr)
             retry_queue.append(module_id)
         else:
+            write_backup_prom(backup_id, backup_name, PROM_FAILED)
             print(f"{module_id}: backup {backup_id} failed (exit code {rc})", file=sys.stderr)
             failed.append(module_id)
 
@@ -186,6 +220,8 @@ def main():
                 print(f"{module_id}: still running, will retry", file=sys.stderr)
                 still_busy.append(module_id)
             else:
+                # A run failure must be recorded in prom file immediately
+                write_backup_prom(backup_id, backup_name, PROM_FAILED)
                 print(f"{module_id}: backup {backup_id} failed on retry (exit code {rc})", file=sys.stderr)
                 failed.append(module_id)
         retry_queue = still_busy
@@ -199,6 +235,7 @@ def main():
         print(f"Backup {backup_id} finished with failures: {', '.join(failed)}", file=sys.stderr)
         sys.exit(1)
 
+    write_backup_prom(backup_id, backup_name, PROM_SUCCESS)
     print(f"Backup {backup_id} completed successfully", file=sys.stderr)
 
 if __name__ == "__main__":
