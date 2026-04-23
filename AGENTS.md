@@ -106,11 +106,15 @@ cd core/agent && bash test-agent.sh
 **Integration tests** (Robot Framework, requires a live node):
 
 ```bash
-cd core && bash test-module.sh <ssh-address>
+cd core
+run-ns8-tests <LEADER_NODE> [robot_options...]
 ```
 
 Robot Framework tests are in `core/tests/` with numbered directories
-(`10__cluster_sanity/`, `20__cluster_ui/`) and shared `keywords.resource`.
+(`10__cluster_sanity/`) and shared `keywords.resource`. The
+`run-ns8-tests` helper is provided by the `ns8-github-actions` repository;
+you also need Podman in `PATH` and an SSH private key that can access the
+target leader node.
 
 ## Conventions
 

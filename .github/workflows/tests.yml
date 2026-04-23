@@ -12,7 +12,7 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event.label.name == 'testing'
-    name: Find NS8 cluster informations
+    name: Find NS8 cluster information
     runs-on: ubuntu-latest
     outputs:
       modules: ${{ steps.modules.outputs.list }}
@@ -42,17 +42,33 @@ jobs:
             fi
           done
           echo "list=${modules_list}" >> $GITHUB_OUTPUT
+
+  check_ui_tests_needed:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.label.name == 'testing'
+    name: Check UI tests needed
+    uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@v1
+    with:
+      ui_tests_strategy: on_renovate_ui_change
+      head_sha: ${{ github.sha }}
+      head_branch: ${{ github.head_ref || github.ref_name }}
+      ui_dir: core/ui
+      build_script: core/build-image.sh
+
   run_tests:
-    needs: ns8
-    uses: NethServer/ns8-github-actions/.github/workflows/test-on-digitalocean-infra.yml@main
+    name: "Run tests"
+    needs: [ns8, check_ui_tests_needed]
+    uses: NethServer/ns8-github-actions/.github/workflows/test-on-digitalocean-infra.yml@v1
     with:
       setup_cluster: false
       path: core/
       coremodules: ${{ join(fromJSON(needs.ns8.outputs.modules), ' ' ) }}
+      run_ui_tests: ${{ needs.check_ui_tests_needed.outputs.ui_tests_needed == 'true' }}
     secrets:
       do_token: ${{ secrets.do_token }}
   remove_label:
-    name: "Cleaup PR label"
+    name: "Cleanup PR label"
     runs-on: ubuntu-latest
     needs: run_tests
     if: |
