@@ -26,20 +26,49 @@ def _get_http_session():
     return osession
 
 def fetch_subscription_info_nsent(rdb, attributes):
+    system_id = attributes['system_id']
     auth_token = attributes['auth_token']
+    collect_url = attributes.get('collect_url')
 
+    if not collect_url:
+        # Pre-migration cluster — migrate-to-my hasn't rotated yet.
+        # Return a minimal "unknown" snapshot rather than raising, so
+        # the UI still shows the system_id row instead of a 500.
+        return {
+            "auth_token": "********",
+            "system_url": f"https://my.nethesis.it/systems/{system_id}",
+            "plan_name": "-",
+            "expires": False,
+            "expire_date": "",
+            "status": "pending",
+            "with_remote_support": True,
+        }
+
+    # The new my data model no longer exposes a subscription_plan or
+    # a valid_until per system: plan / expiration are an organization-
+    # level concern and are not surfaced by collect's /info yet. We
+    # fall back to "-" / "" / no expiration so the UI keeps rendering
+    # the usual row layout without hitting a KeyError.
     psession = _get_http_session()
-    myresp = psession.post("https://my.nethesis.it/api/systems/info", data={"secret":auth_token})
+    myresp = psession.get(
+        f"{collect_url}/info",
+        auth=(system_id, auth_token),
+        headers={"Accept": "application/json"},
+    )
     myresp.raise_for_status()
-    dinfo = myresp.json()
+    sinfo = myresp.json().get("data", {})
+
+    registered = bool(sinfo.get("registered"))
+    suspended = bool(sinfo.get("suspended"))
+    org_name = (sinfo.get("organization") or {}).get("name") or "-"
 
     info = {
         "auth_token": "********",
-        "system_url": f"https://my.nethesis.it/#/server/{dinfo['id']}",
-        "plan_name": dinfo['subscription']['subscription_plan']['name'],
-        "expires": dinfo['subscription']['valid_until'] > 0,
-        "expire_date": str(dinfo['subscription']['valid_until']),
-        "status": "active",
+        "system_url": f"https://my.nethesis.it/systems/{sinfo.get('system_id', '')}",
+        "plan_name": org_name,
+        "expires": False,
+        "expire_date": "",
+        "status": "active" if registered and not suspended else "inactive",
         "with_remote_support": True,
     }
     return info
