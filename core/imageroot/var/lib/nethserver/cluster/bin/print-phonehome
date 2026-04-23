@@ -167,6 +167,20 @@ def node_facts(rdb):
 
     return ret
 
+def migration_facts(rdb):
+    """Fingerprint of the my migration state.
+
+    Populated only on nsent clusters that rotated through the
+    translation proxy or subscribed directly against the new my; used
+    by my to track fleet migration progress and decide when the proxy
+    can be decommissioned. Nscom clusters leave both fields null.
+    """
+    sub = rdb.hgetall('cluster/subscription') or {}
+    return {
+        'from_legacy_system_id': sub.get('legacy_system_id') or None,
+        'migrated_at': sub.get('migrated_at') or None,
+    }
+
 def main():
     rdb = agent.redis_connect(privileged=True)
     if not rdb.get("cluster/anon_seed"):
@@ -183,6 +197,7 @@ def main():
             'cluster': cluster_facts(),
             'nodes': node_facts(rdb),
             'modules': modules_facts(rdb),
+            'migration': migration_facts(rdb),
         }
     }
     print(json.dumps(facts))
