@@ -78,18 +78,27 @@ def terminate_subscription(rdb):
     return output
 
 def terminate_nsent(rdb, attributes):
-    psession = _get_http_session()
-
-    freekeyresp = psession.post("https://my.nethesis.it/api/Utils/freekey", data={
-        "lk": attributes["system_id"],
-        "secret":attributes["auth_token"],
-    })
-    try:
-        ofreekey = freekeyresp.json()
-    except:
-        ofreekey = {} # Ignore remote request failures and disable client services, always.
-
-    return ofreekey
+    # my collect does not expose an appliance-side unregister;
+    # destroying the subscription is an admin-driven action on the
+    # my UI. For clusters that came from a legacy rotation we still
+    # have the pre-rotation pair under legacy_system_id /
+    # legacy_auth_token — call the my-old /api/Utils/freekey so the
+    # old dashboard records the unit as gone. Native clusters have
+    # no legacy slot to release and skip this. The outer caller
+    # (terminate_subscription) clears cluster/subscription and
+    # publishes the event either way.
+    legacy_id = attributes.get("legacy_system_id")
+    legacy_secret = attributes.get("legacy_auth_token")
+    if legacy_id and legacy_secret:
+        psession = _get_http_session()
+        try:
+            psession.post(
+                "https://my.nethesis.it/api/Utils/freekey",
+                data={"lk": legacy_id, "secret": legacy_secret},
+            )
+        except Exception:
+            pass  # best-effort; local cleanup still happens below
+    return {}
 
 def terminate_nscom(rdb, attributes):
     return {}
@@ -97,18 +106,35 @@ def terminate_nscom(rdb, attributes):
 def subscribe_nsent(rdb, osubscription):
     auth_token = osubscription['auth_token']
 
+    # New enterprise subscriptions go straight to the my collect
+    # registration endpoint. The my token the customer pastes is the
+    # full "my_<public>.<secret>" string: /systems/register validates
+    # it and returns the matching system_key, which we store as the
+    # system_id for compatibility with downstream callers (cluster
+    # events, send-* scripts, UI). Since the cluster now lands on
+    # the new my natively, migrated='1' is set from the start so the
+    # migrate-to-my helper never attempts a rotation through the
+    # translation proxy with credentials it cannot map.
     psession = _get_http_session()
-    myresp = psession.post("https://my.nethesis.it/api/systems/info", data={"secret": auth_token})
+    myresp = psession.post(
+        "https://my.nethesis.it/backend/api/systems/register",
+        json={"system_secret": auth_token},
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+    )
     myresp.raise_for_status()
     dinfo = myresp.json()
 
-    system_id = dinfo['uuid']
+    system_id = dinfo.get("data", {}).get("system_key")
+    if not system_id:
+        raise KeyError("system_key")
 
     trx = rdb.pipeline()
     trx.hset("cluster/subscription", mapping={
         "provider": "nsent",
         'system_id': system_id,
         'auth_token': auth_token,
+        'collect_url': "https://my.nethesis.it/collect/api/systems",
+        'migrated': "1",
         'vpn_cert_cn': "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
         'support_user': 'nethsupport',
     })
