@@ -27,7 +27,7 @@
     "mark.js": "^8.11.1",
     "papaparse": "^5.5.3",
     "qrcode.vue": "^1.7.0",
-    "uuid": "^3.4.0",
+    "uuid": "^14.0.0",
     "vue": "^2.6.11",
     "vue-axios": "^3.2.4",
     "vue-clipboard2": "^0.3.3",
