@@ -325,7 +325,6 @@ def probe_webdav_gateway(rdb, dest_id, probe_path, http_auth=None):
             try:
                 req = rses.head(webdav_url + '/' + probe_path)
                 if req.status_code in [404, 200]:
-                    agent.backup.update_gateway_resolver_cache(dest_id, node_id)
                     return webdav_url
                 else:
                     req.raise_for_status()
