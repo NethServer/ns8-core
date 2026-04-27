@@ -1,0 +1,81 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Idempotent migration from legacy my.nethesis.it / backupd credentials
+# to my collect native credentials, so the cluster can authenticate
+# directly against the new my collect endpoints.
+#
+# Only nsent subscriptions are migrated. Community (nscom) has its own
+# infrastructure (my.nethserver.com) and keeps using the legacy
+# endpoints — no credential rotation is applicable there.
+#
+# cluster/subscription migrated='1' is the persistent marker. It is
+# written by this script after a successful rotation, and also by
+# set-subscription when a cluster subscribes with a brand-new my
+# token (in that case no rotation is needed — the cluster lands on
+# the new my directly).
+#
+# The HSET is a single call, so a partial write cannot leave the
+# cluster in a half-migrated state.
+#
+
+export REDIS_USER="default"
+export REDIS_PASSWORD="default"
+export REDIS_ADDRESS="127.0.0.1:6379"
+
+while IFS='=' read -r key value; do
+    declare "${key}"="${value}"
+done < <(redis-hgetall cluster/subscription)
+
+# Already migrated — exit before touching the network.
+[ "${migrated:-}" = "1" ] && exit 0
+
+# Only enterprise subscriptions go through the my collect rotation.
+[ "${provider:-}" = "nsent" ] || exit 0
+
+# Unsubscribed clusters have nothing to rotate yet.
+if [[ -z "${system_id:-}" || -z "${auth_token:-}" ]]; then
+    exit 0
+fi
+
+# Fetch mapped my credentials via the translation proxy.
+resp=$(curl --silent --location-trusted --fail-with-body \
+    --max-time 30 --retry 2 \
+    --user "${system_id}:${auth_token}" \
+    https://my.nethesis.it/proxy/credentials 2>/dev/null) || {
+    logger -t migrate-to-my "credential fetch failed; will retry on next run"
+    exit 0
+}
+
+new_key=$(echo "$resp" | jq -r '.data.system_key // empty')
+new_secret=$(echo "$resp" | jq -r '.data.system_secret // empty')
+if [[ -z "$new_key" || -z "$new_secret" ]]; then
+    logger -t migrate-to-my "credentials missing in response"
+    exit 0
+fi
+
+# Timestamp the rotation so print-phonehome can publish the event and
+# my can plot the fleet migration curve / decide when the translation
+# proxy can be decommissioned.
+migrated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+# Rotate atomically; legacy pair preserved for audit / rollback.
+redis-exec hset cluster/subscription \
+    legacy_system_id "${system_id}" \
+    legacy_auth_token "${auth_token}" \
+    system_id "$new_key" \
+    auth_token "$new_secret" \
+    collect_url "https://my.nethesis.it/collect/api/systems" \
+    migrated "1" \
+    migrated_at "$migrated_at" >/dev/null || {
+    logger -t migrate-to-my "redis hset failed; will retry on next run"
+    exit 0
+}
+
+logger -t migrate-to-my "migrated to my collect credentials"
+exit 0
