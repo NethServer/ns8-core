@@ -56,7 +56,7 @@ results = agent.tasks.runp(ptasks,
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(2,98)
 )
-berrors = len([r for r in results if r['exit_code'] != 0])
+berrors = len([r for r in results if isinstance(r, Exception) or r['exit_code'] != 0])
 if berrors > 0:
     print(agent.SD_ERR + f"run-backup {bid} failed on {berrors} node(s)", file=sys.stderr)
     sys.exit(1)
