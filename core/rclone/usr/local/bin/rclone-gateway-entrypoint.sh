@@ -10,7 +10,7 @@
 
 set -eu
 
-HAPROXY_CFG=/usr/local/haproxy/haproxy.cfg
+HAPROXY_CFG=/etc/haproxy/haproxy.cfg
 
 RCLONE_WEBDAV_SOCK=/var/lib/rclone/backend-webdav.sock
 RCLONE_REST_SOCK=/var/lib/rclone/backend-rest.sock
@@ -45,6 +45,7 @@ start_rclone() {
     log "Starting rclone webdav backend"
     rm -f "$RCLONE_WEBDAV_SOCK"
     rclone serve webdav combined: \
+        --vfs-cache-mode off \
         --fs-cache-expire-duration=0 \
         --addr="unix://$RCLONE_WEBDAV_SOCK" &
     RCLONE_WEBDAV_PID=$!
@@ -58,6 +59,7 @@ start_rclone() {
         --addr="unix://$RCLONE_REST_SOCK" &
     RCLONE_REST_PID=$!
     log "restic pid=$RCLONE_REST_PID"
+    sleep 2 # XXX
 }
 
 # ---------------------------
@@ -84,17 +86,17 @@ log "Container ready"
 # ----------------------------------------
 wait -n || exit_code=$?
 while [[ ${PROCESS_RELOAD} == 1 ]] ; do
-    log "Reloading haproxy"
-    kill -USR2 "$HAPROXY_MASTER_PID" || {
-        log "haproxy master not responding, starting fresh"
-        start_haproxy
-    }
     if [[ -n ${RCLONE_WEBDAV_PID} ]] && [[ -n ${RCLONE_REST_PID} ]]; then
         log "Reloading rclone backends"
         kill "$RCLONE_WEBDAV_PID" 2>/dev/null && wait "$RCLONE_WEBDAV_PID" 2>/dev/null || true
         kill "$RCLONE_REST_PID" 2>/dev/null && wait "$RCLONE_REST_PID" 2>/dev/null || true
     fi
     start_rclone
+    if [[ -n ${HAPROXY_MASTER_PID} ]]; then
+        log "Reloading haproxy"
+        kill -USR2 "$HAPROXY_MASTER_PID" 2>/dev/null && wait "$HAPROXY_MASTER_PID" 2>/dev/null || true
+    fi
+    start_haproxy
     PROCESS_RELOAD=0
     wait -n || exit_code=$?
 done
