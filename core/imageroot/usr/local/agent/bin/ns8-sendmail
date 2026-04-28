@@ -13,6 +13,7 @@ import ssl
 import sys
 import agent
 import smtplib
+import syslog
 import argparse
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -85,20 +86,6 @@ def main():
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
 
-    # Setup connection based on encrypt_smtp value.
-    # Possible values: none, starttls, tls
-    if smtp_config['encrypt_smtp'] == 'tls':
-        smtp = smtplib.SMTP_SSL(smtp_config['host'], smtp_config['port'], context=ctx)
-    elif smtp_config['encrypt_smtp'] == 'starttls':
-        smtp = smtplib.SMTP(smtp_config['host'], smtp_config['port'])
-        smtp.starttls(context=ctx)
-    else:
-        smtp = smtplib.SMTP(smtp_config['host'], smtp_config['port'])
-
-    # Authenticate if needed
-    if smtp_config['username'] and smtp_config['password']:
-        smtp.login(smtp_config['username'], smtp_config['password'])
-
     # Create a multipart message and set headers
     message = MIMEMultipart()
     message["From"] = args.from_addr
@@ -109,9 +96,44 @@ def main():
     type = get_content_type(body)
     message.attach(MIMEText(body, type))
 
-    # Send the message via the configured SMTP server
-    smtp.sendmail(args.from_addr, ','.join(args.recipients), message.as_string())
-    smtp.quit()
+    syslog.openlog('ns8-sendmail', syslog.LOG_PID, syslog.LOG_MAIL)
+    log_context = (
+        f"from={args.from_addr} to={args.recipients[0]}"
+        f" subject=\"{args.subject}\""
+        f" server={smtp_config['host']}:{smtp_config['port']}"
+    )
+    try:
+        # Setup connection based on encrypt_smtp value.
+        # Possible values: none, starttls, tls
+        if smtp_config['encrypt_smtp'] == 'tls':
+            smtp = smtplib.SMTP_SSL(smtp_config['host'], smtp_config['port'], context=ctx)
+        elif smtp_config['encrypt_smtp'] == 'starttls':
+            smtp = smtplib.SMTP(smtp_config['host'], smtp_config['port'])
+            smtp.starttls(context=ctx)
+        else:
+            smtp = smtplib.SMTP(smtp_config['host'], smtp_config['port'])
+
+        # Authenticate if needed
+        if smtp_config['username'] and smtp_config['password']:
+            smtp.login(smtp_config['username'], smtp_config['password'])
+
+        # Send the message via the configured SMTP server
+        smtp.sendmail(args.from_addr, ','.join(args.recipients), message.as_string())
+        smtp.quit()
+        syslog.syslog(syslog.LOG_INFO, f"status=sent {log_context} code=250")
+    except smtplib.SMTPException as e:
+        code = getattr(e, 'smtp_code', -1)
+        raw = getattr(e, 'smtp_error', str(e))
+        msg = raw.decode('utf-8', errors='replace') if isinstance(raw, bytes) else str(raw)
+        syslog.syslog(syslog.LOG_ERR, f"status=error {log_context} code={code} message=\"{msg}\"")
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        syslog.syslog(syslog.LOG_ERR, f"status=error {log_context} code=-1 message=\"{e}\"")
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        syslog.closelog()
 
 
 main()
