@@ -13694,7 +13694,7 @@ __metadata:
     sass: ^1.34.1
     sass-loader: ^10.1.1
     style-loader: ^2.0.0
-    uuid: ^3.4.0
+    uuid: ^10.0.0
     vue: ^2.6.11
     vue-axios: ^3.2.4
     vue-clipboard2: ^0.3.3
@@ -18542,7 +18542,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^3.3.2, uuid@npm:^3.4.0":
+"uuid@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "uuid@npm:10.0.0"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: 4b81611ade2885d2313ddd8dc865d93d8dccc13ddf901745edca8f86d99bc46d7a330d678e7532e7ebf93ce616679fb19b2e3568873ac0c14c999032acb25869
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^3.3.2":
   version: 3.4.0
   resolution: "uuid@npm:3.4.0"
   bin:
