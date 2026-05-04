@@ -470,7 +470,7 @@
         "smb": "Windows File Share (SMB2/3)",
         "cluster": "Local storage",
         "generic-s3": "S3 compatible provider",
-        "azure": "Microsoft Azure blob storage",
+        "rclone": "Rclone compatible provider",
         "backblaze_short": "B2",
         "aws_short": "S3",
         "genericS3_short": "Generic S3",
