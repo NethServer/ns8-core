@@ -626,7 +626,6 @@
         "smb_domain": "Domain name (NT/Workgroup)",
         "samba": "Windows file share",
         "smb_short": "SMB",
-        "samba_tooltips": "Only shares with SMB2/3 protocols are supported. Deprecated SMB1/CIFS shares are not secure and cannot be accessed.",
         "cluster_short": "Local storage",
         "select_cluster_node": "Select a cluster node",
         "cluster_placeholder": "Choose a node in the cluster",
