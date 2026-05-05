@@ -147,6 +147,13 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
+            v-if="error.listDefaultDiskInfo"
+            kind="error"
+            :title="$t('action.list-mountpoints')"
+            :description="error.listDefaultDiskInfo"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
             v-if="
               clusterNodesCount == disabledNodes.length && !isLoadingNodeData
             "
@@ -156,6 +163,7 @@
           />
           <NodeSelector
             :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
+            :nodesDefaultDiskInfo="nodesDefaultDiskInfo"
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"
             :loading="isLoadingNodeData"
@@ -249,6 +257,7 @@ export default {
       nodesList: [],
       selectedVolume: {},
       modules: [],
+      nodesDefaultDiskInfo: {},
       loading: {
         readBackupRepositories: true,
         restoreModule: false,
@@ -258,6 +267,7 @@ export default {
         listMountPoints: false,
         listModules: true,
         nodesList: true,
+        listDefaultDiskInfo: false,
       },
       error: {
         readBackupRepositories: "",
@@ -267,6 +277,7 @@ export default {
         getClusterStatus: "",
         listMountPoints: "",
         listModules: "",
+        listDefaultDiskInfo: "",
       },
     };
   },
@@ -277,7 +288,8 @@ export default {
         this.loading.determineRestoreEligibility ||
         this.loading.nodesList ||
         this.loading.listModules ||
-        this.loading.getClusterStatus
+        this.loading.getClusterStatus ||
+        this.loading.listDefaultDiskInfo
       );
     },
     clusterNodesCount() {
@@ -466,10 +478,12 @@ export default {
         this.selectedSnapshot = null;
         this.readBackupSnapshots();
       } else if (this.step == "node") {
+        this.nodesDefaultDiskInfo = {};
         this.determineRestoreEligibility();
         this.listNodes();
         this.listModules();
         this.getClusterStatus();
+        this.listDefaultDiskInfo();
       } else if (this.step == "volumes") {
         this.listMountPoints();
       }
@@ -971,6 +985,57 @@ export default {
     getClusterStatusCompleted(taskContext, taskResult) {
       this.clusterStatus = taskResult.output.nodes;
       this.loading.getClusterStatus = false;
+    },
+    async listDefaultDiskInfo() {
+      this.loading.listDefaultDiskInfo = true;
+      this.error.listDefaultDiskInfo = "";
+      // Fetch storage info (default_disk) for each node
+      for (const node of this.clusterNodes) {
+        const taskAction = "list-mountpoints";
+        const eventId = this.getUuid();
+
+        // register to task error
+        this.$root.$once(
+          `${taskAction}-aborted-${eventId}`,
+          (taskResult, taskContext) =>
+            this.listDefaultDiskInfoAborted(taskResult, taskContext, node.id)
+        );
+
+        // register to task completion
+        this.$root.$once(
+          `${taskAction}-completed-${eventId}`,
+          (taskContext, taskResult) =>
+            this.listDefaultDiskInfoCompleted(taskContext, taskResult, node.id)
+        );
+
+        const res = await to(
+          this.createNodeTask(node.id, {
+            action: taskAction,
+            extra: {
+              title: this.$t("action." + taskAction),
+              isNotificationHidden: true,
+              eventId,
+            },
+          })
+        );
+        const err = res[0];
+
+        if (err) {
+          console.error(`error creating task ${taskAction} for node ${node.id}`, err);
+          this.error.listDefaultDiskInfo = this.getErrorMessage(err);
+          this.loading.listDefaultDiskInfo = false;
+        }
+      }
+      this.loading.listDefaultDiskInfo = false;
+    },
+    listDefaultDiskInfoAborted(taskResult, taskContext, nodeId) {
+      console.error(`${taskContext.action} aborted for node ${nodeId}`, taskResult);
+      this.loading.listDefaultDiskInfo = false;
+    },
+    listDefaultDiskInfoCompleted(taskContext, taskResult, nodeId) {
+      if (taskResult.output.default_disk) {
+        this.$set(this.nodesDefaultDiskInfo, nodeId, taskResult.output.default_disk);
+      }
     },
   },
 };
