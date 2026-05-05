@@ -284,16 +284,81 @@
             ></cv-text-input>
           </template>
           <!-- rclone -->
+
           <template v-if="isRcloneSelected">
+            <div>
+              <label for="filter" :class="`${carbonPrefix}--label`">{{
+                $t("backup.rclone_configuration_source")
+              }}</label>
+              <cv-radio-group
+                :vertical="true"
+                :disabled="loading.addBackupRepository"
+              >
+                <cv-radio-button
+                  ref="paste_configuration"
+                  :label="
+                    $t('backup.rclone_configuration_source_paste_configuration')
+                  "
+                  value="paste"
+                  v-model="rclone.configuration_source"
+                />
+                <cv-radio-button
+                  ref="upload_configuration"
+                  :label="
+                    $t(
+                      'backup.rclone_configuration_source_upload_configuration'
+                    )
+                  "
+                  value="upload"
+                  v-model="rclone.configuration_source"
+                />
+              </cv-radio-group>
+            </div>
+            <div
+              v-if="rclone.configuration_source == 'paste'"
+              class="mg-top-md"
+            >
+              <cv-text-area
+                :label="$t('backup.rclone_configuration_content')"
+                v-model.trim="rclone.configuration_content"
+                :invalid-message="error.rclone.configuration_content"
+                :helper-text="
+                  $t(
+                    'backup.rclone_configuration_content_single_destination_helper_text'
+                  )
+                "
+                :value="rclone.configuration_content"
+                rows="5"
+                class="maxwidth"
+                ref="rclone_configuration_content"
+                :disabled="loading.addBackupRepository"
+              >
+              </cv-text-area>
+            </div>
+            <div v-else>
+              <cv-file-uploader
+                :key="componentKey"
+                :label="$t('backup.cluster_backup_file')"
+                :multiple="false"
+                :removable="true"
+                :clear-on-reselect="true"
+                :drop-target-label="
+                  $t('common.drag_and_drop_or_click_to_upload')
+                "
+                v-model="rclone.configuration_uploaded_file"
+                accept=".conf,.txt"
+                ref="backup_file"
+              ></cv-file-uploader>
+            </div>
             <cv-text-input
-              :label="$t('backup.rclone_url_label')"
-              v-model.trim="url"
-              :invalid-message="error.url"
+              :label="$t('backup.rclone_destination_name')"
+              v-model.trim="rclone.destination_name"
+              :invalid-message="error.rclone.destination_name"
               :disabled="loading.addBackupRepository"
-              ref="url"
+              ref="rclone_destination_name"
             >
             </cv-text-input>
-            <cv-text-input
+            <!-- <cv-text-input
               :label="$t('backup.rclone_account_name')"
               v-model.trim="rclone.rclone_account_name"
               :invalid-message="error.rclone.rclone_account_name"
@@ -312,7 +377,7 @@
               :password-show-label="$t('password.show_password')"
               autocomplete="new-password"
               ref="rclone_account_key"
-            ></cv-text-input>
+            ></cv-text-input> -->
           </template>
           <!-- generic s3 -->
           <template v-if="isGenericS3Selected">
@@ -512,9 +577,13 @@ export default {
         repoPrefix: "s3:",
       },
       rclone: {
-        rclone_account_key: "",
-        rclone_account_name: "",
-        repoPrefix: "rclone:",
+        // rclone_account_key: "",
+        // rclone_account_name: "",
+        // repoPrefix: "rclone:",
+        configuration_source: "paste",
+        configuration_content: "",
+        destination_name: "",
+        configuration_uploaded_file: null,
       },
       cluster: {
         repoPrefix: "",
@@ -553,8 +622,11 @@ export default {
           aws_default_region: "",
         },
         rclone: {
-          rclone_account_key: "",
-          rclone_account_name: "",
+          // rclone_account_key: "",
+          // rclone_account_name: "",
+          configuration_content: "",
+          destination_name: "",
+          configuration_source: "",
         },
         //// handle all providers
       },
@@ -1454,5 +1526,9 @@ export default {
 .provider-icon img {
   width: 100%;
   height: 100%;
+}
+
+.maxwidth {
+  max-width: 38rem;
 }
 </style>
