@@ -55,6 +55,13 @@
             :description="error.nodesList"
             :showCloseButton="false"
           />
+          <NsInlineNotification
+            v-if="error.listDefaultDiskInfo"
+            kind="error"
+            :title="$t('action.list-mountpoints')"
+            :description="error.listDefaultDiskInfo"
+            :showCloseButton="false"
+          />
           <div>{{ $t("software_center.select_destination_node") }}:</div>
           <NsInlineNotification
             v-if="clusterNodesCount == disabledNodes.length && !isLoading"
@@ -72,6 +79,7 @@
             :disabledNodes="disabledNodes"
             :loading="isLoading"
             :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
+            :nodesDefaultDiskInfo="nodesDefaultDiskInfo"
           >
             <template v-for="(nodeMessages, nodeId) in nodesInfo">
               <template :slot="`node-${nodeId}`">
@@ -169,24 +177,27 @@ export default {
       nodesList: [],
       additionalVolumes: [],
       selectedVolume: {},
+      nodesDefaultDiskInfo: {},
       loading: {
         cloneModule: false,
         getClusterStatus: true,
         listMountPoints: false,
         nodesList: true,
+        listDefaultDiskInfo: false,
       },
       error: {
         cloneModule: "",
         getClusterStatus: "",
         nodesList: "",
         listMountPoints: "",
+        listDefaultDiskInfo: "",
       },
     };
   },
   computed: {
     ...mapState(["clusterNodes"]),
     isLoading() {
-      return this.loading.getClusterStatus || this.loading.nodesList;
+      return this.loading.getClusterStatus || this.loading.nodesList || this.loading.listDefaultDiskInfo;
     },
     clusterNodesCount() {
       return this.clusterNodes.length;
@@ -402,14 +413,16 @@ export default {
       this.selectedNode = null;
       this.selectedVolume = {};
       this.clusterStatus = [];
+      this.nodesDefaultDiskInfo = {};
       // Force selection to node 1 if only available
       if (this.clusterNodesCount == 1) {
         const firstNode = this.clusterNodes[0];
         this.selectedNode = { ...firstNode, selected: true };
       }
-      // start both task concurrently
+      // start tasks
       this.listNodes();
       this.getClusterStatus();
+      this.listDefaultDiskInfo();
     },
     onModalHidden() {
       this.$emit("hide");
@@ -510,6 +523,57 @@ export default {
     getClusterStatusCompleted(taskContext, taskResult) {
       this.clusterStatus = taskResult.output.nodes;
       this.loading.getClusterStatus = false;
+    },
+    async listDefaultDiskInfo() {
+      this.loading.listDefaultDiskInfo = true;
+      this.error.listDefaultDiskInfo = "";
+      // Fetch storage info (default_disk) for each node
+      for (const node of this.clusterNodes) {
+        const taskAction = "list-mountpoints";
+        const eventId = this.getUuid();
+
+        // register to task error
+        this.$root.$once(
+          `${taskAction}-aborted-${eventId}`,
+          (taskResult, taskContext) =>
+            this.listDefaultDiskInfoAborted(taskResult, taskContext, node.id)
+        );
+
+        // register to task completion
+        this.$root.$once(
+          `${taskAction}-completed-${eventId}`,
+          (taskContext, taskResult) =>
+            this.listDefaultDiskInfoCompleted(taskContext, taskResult, node.id)
+        );
+
+        const res = await to(
+          this.createNodeTask(node.id, {
+            action: taskAction,
+            extra: {
+              title: this.$t("action." + taskAction),
+              isNotificationHidden: true,
+              eventId,
+            },
+          })
+        );
+        const err = res[0];
+
+        if (err) {
+          console.error(`error creating task ${taskAction} for node ${node.id}`, err);
+          this.error.listDefaultDiskInfo = this.getErrorMessage(err);
+          this.loading.listDefaultDiskInfo = false;
+        }
+      }
+      this.loading.listDefaultDiskInfo = false;
+    },
+    listDefaultDiskInfoAborted(taskResult, taskContext, nodeId) {
+      console.error(`${taskContext.action} aborted for node ${nodeId}`, taskResult);
+      this.loading.listDefaultDiskInfo = false;
+    },
+    listDefaultDiskInfoCompleted(taskContext, taskResult, nodeId) {
+      if (taskResult.output.default_disk) {
+        this.$set(this.nodesDefaultDiskInfo, nodeId, taskResult.output.default_disk);
+      }
     },
     async listMountPoints() {
       this.error.listMountPoints = "";
