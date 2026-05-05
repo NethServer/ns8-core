@@ -23,4 +23,12 @@ module.exports = {
       },
     },
   },
+  chainWebpack: (config) => {
+    // Development-only optimizations (no impact on production build)
+    if (process.env.NODE_ENV === "development") {
+      // Remove prefetch/preload plugins, useless in dev
+      config.plugins.delete("prefetch");
+      config.plugins.delete("preload");
+    }
+  },
 };
