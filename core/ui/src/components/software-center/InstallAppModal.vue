@@ -75,6 +75,13 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
+            v-if="error.listDefaultDiskInfo"
+            kind="error"
+            :title="$t('action.list-mountpoints')"
+            :description="error.listDefaultDiskInfo"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
             v-if="clusterNodesCount == disabledNodes.length && !isLoading"
             kind="info"
             :title="$t('software_center.no_node_eligible_for_app_installation')"
@@ -84,6 +91,7 @@
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"
             :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
+            :nodesDefaultDiskInfo="nodesDefaultDiskInfo"
             :loading="isLoading"
             class="mg-top-lg"
           >
@@ -184,23 +192,26 @@ export default {
         getClusterStatus: true,
         listMountPoints: false,
         nodesList: true,
+        listDefaultDiskInfo: false,
       },
       clusterStatus: [],
       nodesList: [],
       selectedVolume: {},
       additionalVolumes: [],
+      nodesDefaultDiskInfo: {},
       error: {
         addModule: "",
         getClusterStatus: "",
         nodesList: "",
         listMountPoints: "",
+        listDefaultDiskInfo: "",
       },
     };
   },
   computed: {
     ...mapState(["clusterNodes"]),
     isLoading() {
-      return this.loading.getClusterStatus || this.loading.nodesList;
+      return this.loading.getClusterStatus || this.loading.nodesList || this.loading.listDefaultDiskInfo;
     },
     clusterNodesCount() {
       return this.clusterNodes.length;
@@ -399,6 +410,7 @@ export default {
       this.clusterStatus = [];
       this.nodesList = [];
       this.selectedVolume = {};
+      this.nodesDefaultDiskInfo = {};
       // Force selection to node 1 if only available
       if (this.clusterNodesCount == 1 && this.canInstallOnSingleNode) {
         this.selectedNode = { ...this.clusterNodes[0], selected: true };
@@ -409,6 +421,7 @@ export default {
       // start both task concurrently
       this.listNodes();
       this.getClusterStatus();
+      this.listDefaultDiskInfo();
     },
     async getClusterStatus() {
       this.loading.getClusterStatus = true;
@@ -553,6 +566,57 @@ export default {
       }
       this.additionalVolumes = additionalVolumes;
       this.loading.listMountPoints = false;
+    },
+    async listDefaultDiskInfo() {
+      this.loading.listDefaultDiskInfo = true;
+      this.error.listDefaultDiskInfo = "";
+      // Fetch storage info (default_disk) for each node
+      for (const node of this.clusterNodes) {
+        const taskAction = "list-mountpoints";
+        const eventId = this.getUuid();
+
+        // register to task error
+        this.$root.$once(
+          `${taskAction}-aborted-${eventId}`,
+          (taskResult, taskContext) =>
+            this.listDefaultDiskInfoAborted(taskResult, taskContext, node.id)
+        );
+
+        // register to task completion
+        this.$root.$once(
+          `${taskAction}-completed-${eventId}`,
+          (taskContext, taskResult) =>
+            this.listDefaultDiskInfoCompleted(taskContext, taskResult, node.id)
+        );
+
+        const res = await to(
+          this.createNodeTask(node.id, {
+            action: taskAction,
+            extra: {
+              title: this.$t("action." + taskAction),
+              isNotificationHidden: true,
+              eventId,
+            },
+          })
+        );
+        const err = res[0];
+
+        if (err) {
+          console.error(`error creating task ${taskAction} for node ${node.id}`, err);
+          this.error.listDefaultDiskInfo = this.getErrorMessage(err);
+          this.loading.listDefaultDiskInfo = false;
+        }
+      }
+      this.loading.listDefaultDiskInfo = false;
+    },
+    listDefaultDiskInfoAborted(taskResult, taskContext, nodeId) {
+      console.error(`${taskContext.action} aborted for node ${nodeId}`, taskResult);
+      this.loading.listDefaultDiskInfo = false;
+    },
+    listDefaultDiskInfoCompleted(taskContext, taskResult, nodeId) {
+      if (taskResult.output.default_disk) {
+        this.nodesDefaultDiskInfo[nodeId] = taskResult.output.default_disk;
+      }
     },
     async installInstance(volumes) {
       this.error.addModule = "";
