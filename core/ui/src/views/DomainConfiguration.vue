@@ -1175,6 +1175,7 @@ export default {
     setPasswordPolicyCompleted() {
       this.hideisShownPasswordPolicyModal();
       this.listUserDomains();
+      this.$root.$emit("password-policy-updated");
     },
 
     showAddProviderModal() {
