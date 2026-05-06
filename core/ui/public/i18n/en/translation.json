@@ -1157,6 +1157,8 @@
         "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
         "additional_storage_available": "Additional volumes available",
         "volume_usage": "{available} free of {total} ({percentage}% used)",
+        "node_volume_usage_line1": "{available} free of {total}",
+        "node_volume_usage_line2": "({percentage}% used)",
         "default_storage": "Default volume",
         "no_volumes_to_restore": "No volumes to restore"
     },

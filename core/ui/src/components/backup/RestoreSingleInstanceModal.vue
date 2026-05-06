@@ -147,6 +147,13 @@
             :showCloseButton="false"
           />
           <NsInlineNotification
+            v-if="error.listMountPoints"
+            kind="error"
+            :title="$t('action.list-mountpoints')"
+            :description="error.listMountPoints"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
             v-if="
               clusterNodesCount == disabledNodes.length && !isLoadingNodeData
             "
@@ -156,6 +163,7 @@
           />
           <NodeSelector
             :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
+            :nodesDefaultDiskInfo="nodesDefaultDiskInfo"
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"
             :loading="isLoadingNodeData"
@@ -174,13 +182,6 @@
           </NodeSelector>
         </template>
         <template v-else-if="step == 'volumes' && selectedNode">
-          <NsInlineNotification
-            v-if="error.listMountPoints"
-            kind="error"
-            :title="$t('action.list-mountpoints')"
-            :description="error.listMountPoints"
-            :showCloseButton="false"
-          />
           <div>
             {{
               $t("software_center.select_node_volume_for_installation", {
@@ -192,7 +193,6 @@
           <AdditionalVolumesSelector
             @selectVolume="onSelectVolume"
             :volumes="additionalVolumes"
-            :loading="loading.listMountPoints"
             :light="true"
             class="mg-top-lg"
           />
@@ -245,17 +245,17 @@ export default {
       replaceExistingApp: false,
       installDestinations: [],
       clusterStatus: [],
-      additionalVolumes: [],
       nodesList: [],
       selectedVolume: {},
       modules: [],
+      nodesDefaultDiskInfo: {},
+      nodesAdditionalDiskInfo: {},
       loading: {
         readBackupRepositories: true,
         restoreModule: false,
         readBackupSnapshots: false,
         determineRestoreEligibility: false,
         getClusterStatus: true,
-        listMountPoints: false,
         listModules: true,
         nodesList: true,
       },
@@ -312,8 +312,7 @@ export default {
             (this.clusterNodesCount == this.disabledNodes.length &&
               !this.shouldShowRestoreLabel))) ||
         (this.step == "volumes" &&
-          (this.loading.listMountPoints ||
-            !this.selectedNode ||
+          (!this.selectedNode ||
             !this.selectedVolume ||
             Object.keys(this.selectedVolume).length === 0))
       );
@@ -329,6 +328,15 @@ export default {
       return this.modules.find(
         (module) => module.id === this.selectedInstance.name
       );
+    },
+    additionalVolumes() {
+      const output = this.nodesAdditionalDiskInfo[this.selectedNode?.id];
+      if (!output) return [];
+      const volumes = [...output.mountpoints];
+      if (output.default_disk) {
+        volumes.push({ ...output.default_disk, default: true });
+      }
+      return volumes;
     },
     appVolumes() {
       if (
@@ -466,12 +474,12 @@ export default {
         this.selectedSnapshot = null;
         this.readBackupSnapshots();
       } else if (this.step == "node") {
+        this.nodesDefaultDiskInfo = {};
+        this.nodesAdditionalDiskInfo = {};
         this.determineRestoreEligibility();
         this.listNodes();
         this.listModules();
         this.getClusterStatus();
-      } else if (this.step == "volumes") {
-        this.listMountPoints();
       }
     },
   },
@@ -515,7 +523,7 @@ export default {
       this.selectedSnapshot = null;
       this.replaceExistingApp = false;
       this.installDestinations = [];
-      this.additionalVolumes = [];
+      this.nodesAdditionalDiskInfo = {};
       if (this.clusterNodesCount == 1) {
         const firstNode = this.clusterNodes[0];
         this.selectedNode = { ...firstNode, selected: true };
@@ -617,26 +625,22 @@ export default {
       this.nodesList = taskResult.output.nodes;
       this.loading.nodesList = false;
     },
-    async listMountPoints() {
-      this.error.listMountPoints = "";
-      this.loading.listMountPoints = true;
+    async listMountPoints(nodeId) {
       const taskAction = "list-mountpoints";
       const eventId = this.getUuid();
 
-      // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
         this.listMountPointsAborted
       );
-
-      // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.listMountPointsCompleted
+        (taskContext, taskResult) =>
+          this.listMountPointsCompleted(taskContext, taskResult, nodeId)
       );
 
       const res = await to(
-        this.createNodeTask(this.selectedNode.id, {
+        this.createNodeTask(nodeId, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -648,28 +652,21 @@ export default {
       const err = res[0];
 
       if (err) {
-        console.error(`error creating task ${taskAction}`, err);
+        console.error(`error creating task ${taskAction} for node ${nodeId}`, err);
         this.error.listMountPoints = this.getErrorMessage(err);
-        this.loading.listMountPoints = false;
         return;
       }
     },
     listMountPointsAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.listMountPoints = this.$t("error.generic_error");
-      this.loading.listMountPoints = false;
     },
-    listMountPointsCompleted(taskContext, taskResult) {
-      const additionalVolumes = taskResult.output.mountpoints;
-      // Add default disk at the end, push default property
-      if (taskResult.output.default_disk) {
-        additionalVolumes.push({
-          ...taskResult.output.default_disk,
-          default: true, // mark as default disk
-        });
+    listMountPointsCompleted(taskContext, taskResult, nodeId) {
+      const output = taskResult.output;
+      this.$set(this.nodesAdditionalDiskInfo, nodeId, output);
+      if (output.default_disk) {
+        this.$set(this.nodesDefaultDiskInfo, nodeId, output.default_disk);
       }
-      this.additionalVolumes = additionalVolumes;
-      this.loading.listMountPoints = false;
     },
     async readBackupRepositories() {
       this.error.readBackupRepositories = "";
@@ -970,6 +967,10 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       this.clusterStatus = taskResult.output.nodes;
+      // Fetch default disk info for online nodes only
+      for (const node of this.clusterStatus.filter((n) => n.online)) {
+        this.listMountPoints(node.id);
+      }
       this.loading.getClusterStatus = false;
     },
   },

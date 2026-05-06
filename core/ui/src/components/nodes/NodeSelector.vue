@@ -18,31 +18,51 @@
         class="min-height-card"
         :disabled="loading || disabledNodes.includes(node.id)"
       >
-        <h6>
-          <span v-if="node.ui_name">
-            {{ node.ui_name }} ({{ $t("common.node") }} {{ node.id }})
-          </span>
-          <span v-else> {{ $t("common.node") }} {{ node.id }} </span>
-        </h6>
-        <cv-skeleton-text
-          v-if="loading"
-          :paragraph="true"
-          :line-count="2"
-          class="mg-top-lg"
-        ></cv-skeleton-text>
-        <div v-else class="mg-top-md"></div>
-        <div v-if="!loading && $slots[`node-${node.id}`]" class="mg-top-md">
-          <slot :name="`node-${node.id}`"></slot>
-        </div>
-        <div v-if="!loading" class="mg-top-md">
-          <div
-            v-if="nodesWithAdditionalStorage.includes(node.id)"
-            class="icon-text-container"
-          >
-            <VmdkDisk20 class="icon-spacing" />
-            {{ $t("software_center.additional_storage_available") }}
+        <div class="node-tile-header">
+            <h6>
+              <span v-if="node.ui_name">
+                {{ node.ui_name }} ({{ $t("common.node") }} {{ node.id }})
+              </span>
+              <span v-else> {{ $t("common.node") }} {{ node.id }} </span>
+            </h6>
+            <cv-skeleton-text
+              v-if="loading"
+              :paragraph="true"
+              :line-count="2"
+              class="mg-top-lg"
+            ></cv-skeleton-text>
+            <div v-if="!loading && $slots[`node-${node.id}`]" class="mg-top-md">
+              <slot :name="`node-${node.id}`"></slot>
+            </div>
           </div>
-        </div>
+          <div
+            v-if="!loading && nodesWithAdditionalStorage.includes(node.id)"
+            class="node-tile-footer node-tile-footer-additional"
+          >
+            <div class="icon-text-container">
+              <VmdkDisk20 />
+              {{ $t("software_center.additional_storage_available") }}
+            </div>
+          </div>
+          <div
+            v-if="!loading && nodesDefaultDiskInfo[node.id] && !nodesWithAdditionalStorage.includes(node.id)"
+            class="node-tile-footer"
+          >
+            <div class="storage-usage-text">
+              {{ $t("software_center.node_volume_usage_line1", getStorageInfo(nodesDefaultDiskInfo[node.id])) }}
+            </div>
+            <div class="storage-usage-text storage-percentage">
+              {{ $t("software_center.node_volume_usage_line2", getStorageInfo(nodesDefaultDiskInfo[node.id])) }}
+            </div>
+            <NsProgressBar
+              :value="(nodesDefaultDiskInfo[node.id].used / nodesDefaultDiskInfo[node.id].size) * 100"
+              :loading="loading"
+              :warningThreshold="70"
+              :dangerThreshold="90"
+              :height="'5px'"
+              :useHealthyColor="false"
+            />
+          </div>
       </NsTile>
     </div>
   </div>
@@ -68,6 +88,10 @@ export default {
     nodesWithAdditionalStorage: {
       type: Array,
       default: () => [],
+    },
+    nodesDefaultDiskInfo: {
+      type: Object,
+      default: () => ({}),
     },
     loading: {
       type: Boolean,
@@ -117,6 +141,14 @@ export default {
         }
       }
     },
+    getStorageInfo(storage) {
+      return {
+        available: this.$options.filters.byteFormat(storage.available),
+        used: this.$options.filters.byteFormat(storage.used),
+        total: this.$options.filters.byteFormat(storage.size),
+        percentage: Math.round((storage.used / storage.size) * 100),
+      };
+    },
   },
 };
 </script>
@@ -124,15 +156,35 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
+.node-tile-header {
+  flex: 1;
+  margin-top: 0.75rem;
+  padding-bottom: 5rem;
+}
+
+.node-tile-footer {
+  position: absolute;
+  bottom: 3.2rem;
+  left: 1rem;
+  right: 1rem;
+}
+
+.node-tile-footer-additional {
+  bottom: 5.5rem;
+}
+
 .icon-text-container {
   display: flex;
   align-items: flex-start;
-  gap: 0.2rem;
+  gap: 0.5rem;
   line-height: 1.5;
 }
 
-.icon-spacing {
-  flex-shrink: 0;
+.storage-usage-text {
   margin-bottom: 0.25rem;
+}
+
+.storage-percentage {
+  margin-bottom: 0.5rem;
 }
 </style>
