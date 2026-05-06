@@ -49,6 +49,21 @@ elif [[ -f "${encrypted_file}" ]]; then
         --user "${system_id}:${auth_token}" \
         "https://backupd.nethesis.it/${type}/api/v2/backup/" \
         --upload-file "${encrypted_file}" >/dev/null
+
+    # Temporary dual-send to new my.nethesis.it via the translation
+    # proxy, same pattern used by send-heartbeat / send-inventory.
+    # Enterprise only; best-effort (|| :) so a proxy outage does not
+    # block the primary upload already completed above.
+    # To be removed once the migration is complete.
+    if [[ "${provider}" == "nsent" ]]; then
+        /usr/bin/curl -m 900 --retry 3 -L -s -X POST \
+            --user "${system_id}:${auth_token}" \
+            -H "Content-Type: application/octet-stream" \
+            -H "X-Filename: $(basename "${encrypted_file}")" \
+            --data-binary "@${encrypted_file}" \
+            https://my.nethesis.it/proxy/backup >/dev/null || :
+    fi
+
     # Backup upload successful, update the reference file
     echo "${backup_hash}" > backup/dump.md5
     echo "Backup uploaded to provider ${provider} with hash ${backup_hash}" 1>&2
