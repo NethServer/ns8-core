@@ -129,7 +129,7 @@ restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
         "replace": replace_requested,
     },
     endpoint="redis://cluster-leader",
-    on_sigterm_tasks=[remove_module_on_sigterm],
+    on_sigterm_tasks=[remove_module_on_sigterm] if image_name != "traefik" else [],
     progress_callback=agent.get_progress_callback(16, 99 if len(remove_modules) == 0 else 94),
 )
 
