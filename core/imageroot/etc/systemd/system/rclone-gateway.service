@@ -21,6 +21,7 @@ ExecStart=/usr/bin/podman run \
     --cidfile=%t/%N.cid \
     --cgroups=no-conmon \
     --detach \
+    --init \
     --log-opt=tag=%N \
     --replace --name=%N \
     --network=host \

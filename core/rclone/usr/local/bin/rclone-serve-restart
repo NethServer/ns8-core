@@ -1,0 +1,137 @@
+#!/usr/bin/python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import json
+import re
+import subprocess
+
+RCLONE_LOW_LEVEL_RETRIES = 1
+RCLONE_CONNECT_TIMEOUT = 5 * 1_000_000_000 # = 5 seconds
+
+def serve_combined_remote():
+    """Some rclone remote types, like sftp, fail to start on connection
+    errors. When they are combined with other remotes they block the whole
+    server. This function monitors the "combined:" remote startup, and
+    discards failing remotes. It ensures a minimal set of remotes is
+    served properly."""
+
+    try:
+        joutput = subprocess.check_output(['rclone', 'rc', 'config/get', 'name=combined'])
+        upstreams = json.loads(joutput)["upstreams"]
+    except Exception:
+        log("No upstream defined, server not started")
+        return
+
+    while upstreams:
+        start_webdav_input = {
+            "type": "webdav",
+            "addr": "unix:///var/lib/rclone/backend-webdav.sock",
+            "vfs_cache_mode": "off",
+            "fs-cache-expire-duration": "0",
+            "fs": f":combine,upstreams='{upstreams.replace("'","''")}':",
+            "_config": {
+                "LowLevelRetries": RCLONE_LOW_LEVEL_RETRIES,
+                "ConnectTimeout": RCLONE_CONNECT_TIMEOUT,
+            },
+        }
+        proc_start = subprocess.run(['rclone', 'rc', 'serve/start', '--json', json.dumps(start_webdav_input)], stdout=subprocess.PIPE, text=True)
+        if proc_start.returncode == 0:
+            break
+        else:
+            joutput = proc_start.stdout
+            oerror = json.loads(joutput)
+            failed_upstream = extract_failed_upstream_remote(oerror)
+            if not failed_upstream:
+                raise Exception(joutput["error"])
+            upstreams = remove_upstream(upstreams, failed_upstream)
+            log(f"Remote {failed_upstream} has been discarded. Reason:", oerror["error"])
+    else:
+        log("No upstream left, server not started")
+        return
+
+    # Start the rest backend with the same upstreams:
+    start_rest_input = {
+        "type": "restic",
+        "addr": "unix:///var/lib/rclone/backend-restic.sock",
+        "vfs_cache_mode": "off",
+        "fs-cache-expire-duration": "0",
+        "fs": f":combine,upstreams='{upstreams.replace("'","''")}':",
+        "_config": {
+            "LowLevelRetries": RCLONE_LOW_LEVEL_RETRIES,
+            "ConnectTimeout": RCLONE_CONNECT_TIMEOUT,
+        },
+    }
+    subprocess.run(['rclone', 'rc', 'serve/start', '--json', json.dumps(start_rest_input)], stdout=subprocess.DEVNULL, text=True, check=True)
+
+def log(*args):
+    print("[rclone-serve-start]", *args, file=sys.stderr)
+
+def extract_failed_upstream_remote(data: dict) -> str | None:
+    if data.get("status") != 500:
+        return None
+    error = data.get("error", "")
+    if not error.startswith("failed to create upstream "):
+        return None
+    m = re.search(r'([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', error)
+    return m.group(1) if m else None
+
+def parse_upstreams(upstreams: str) -> list[str]:
+    """Parse the rclone combine upstreams string into a list of raw upstream tokens."""
+    tokens = []
+    i = 0
+    s = upstreams
+    while i < len(s):
+        if s[i] == ' ':
+            i += 1
+            continue
+        if s[i] == '"':
+            i += 1  # skip opening quote
+            token = []
+            while i < len(s):
+                if s[i] == '"':
+                    if i + 1 < len(s) and s[i + 1] == '"':
+                        token.append('"')  # escaped quote
+                        i += 2
+                    else:
+                        i += 1  # skip closing quote
+                        break
+                else:
+                    token.append(s[i])
+                    i += 1
+            tokens.append(''.join(token))
+        else:
+            raise ValueError(f"Unexpected character at position {i}: {s[i]!r}")
+    return tokens
+
+def format_upstreams(tokens: list[str]) -> str:
+    """Serialize a list of upstream tokens back to the rclone combine upstreams string."""
+    parts = []
+    for token in tokens:
+        escaped = token.replace('"', '""')
+        parts.append(f'"{escaped}"')
+    return ' '.join(parts)
+
+def remove_upstream(upstreams: str, remote_uuid: str) -> str:
+    """Remove the upstream entry matching the given UUID from the upstreams string."""
+    tokens = parse_upstreams(upstreams)
+    filtered = [t for t in tokens if not t.startswith(f"{remote_uuid}=")]
+    return format_upstreams(filtered)
+
+def stop_all_remotes():
+    subprocess.check_output(['rclone', 'rc', 'serve/stopall'])
+
+def main():
+    try:
+        stop_all_remotes()
+        serve_combined_remote()
+    except Exception as ex:
+        log(ex)
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()

@@ -146,7 +146,7 @@ buildah add "${container}" rclone/ /
 buildah run ${container} sh <<'EOF'
 addgroup -S rclone -g 101
 adduser -u 100 -S -D -h /var/lib/rclone -s /sbin/nologin -G rclone rclone
-apk add --no-cache rclone haproxy bash
+apk add --no-cache rclone haproxy python3
 EOF
 buildah config \
     --user=rclone:rclone \
@@ -154,6 +154,7 @@ buildah config \
     --entrypoint='["/usr/bin/rclone"]' \
     --env=RCLONE_CACHE_DIR=/var/cache/rclone \
     --env=RCLONE_CONFIG=/etc/rclone/rclone.conf \
+    --env=RCLONE_UNIX_SOCKET=/var/lib/rclone/rclone.sock \
     ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"

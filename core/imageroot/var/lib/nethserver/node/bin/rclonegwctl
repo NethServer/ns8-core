@@ -79,7 +79,7 @@ def write_haproxy_cfg(file_path, rdb):
         if backup_conf['provider'] == 'cluster':
             dest_fe_cfg, dest_be_cfg = generate_haproxy_internal_cfg(dtype, dest_uuid, oconf, durl, mnode_addr)
         else:
-            dest_fe_cfg, dest_be_cfg = generate_haproxy_remote_cfg(dtype, dest_uuid, mnode_addr)
+            dest_fe_cfg, dest_be_cfg = generate_haproxy_remote_cfg(rdb, dtype, dest_uuid, mnode_addr)
 
         frontend_data += dest_fe_cfg
         backends_data += dest_be_cfg
@@ -117,7 +117,7 @@ def generate_haproxy_internal_cfg(dtype, dest_uuid, oconf, durl, mnode_addr):
         )
     return frontend_data, backends_data
 
-def generate_haproxy_remote_cfg(dtype, dest_uuid, mnode_addr):
+def generate_haproxy_remote_cfg(rdb, dtype, dest_uuid, mnode_addr):
     suuid = dest_uuid[0:8]
     frontend_data = (
         f"    acl route_{suuid} path_beg /{dest_uuid}/\n"
@@ -129,7 +129,7 @@ def generate_haproxy_remote_cfg(dtype, dest_uuid, mnode_addr):
         f"backend rest_{dtype}_{suuid}\n"
         f"    option httpchk GET /{dest_uuid}/_probe_rest_404\n"
         f"    http-check expect status 404\n"
-        f"    server rest0 unix@/var/lib/rclone/backend-rest.sock check observe layer7 on-error mark-down\n"
+        f"    server rest0 unix@/var/lib/rclone/backend-restic.sock check observe layer7 on-error mark-down\n"
         "\n"
         f"backend gw_{dtype}_{suuid}\n"
         f"    option httpchk\n"
@@ -137,11 +137,14 @@ def generate_haproxy_remote_cfg(dtype, dest_uuid, mnode_addr):
         f"    http-check expect status 404\n"
     )
 
+    leader_id = rdb.hget('cluster/environment', 'NODE_ID')
     for node_id, node_addr in mnode_addr.items():
         if node_id == os.environ["NODE_ID"]:
             continue # skip local node
         backends_data += "    "
         backends_data += f"server gw{node_id} {node_addr}:4694 "
+        if node_id != leader_id and leader_id != os.environ["NODE_ID"]:
+            backends_data += "backup "
         backends_data += "check observe layer7 on-error mark-down\n"
     else:
         backends_data += "\n"
@@ -225,7 +228,12 @@ def write_rclonecfg(file_path, rdb):
                         destination_basepath = "/srv/repo"
                     else:
                         continue
-                destinations.append(f"{key}={key}:{destination_basepath.rstrip('/')}")
+                destination_basepath = destination_basepath.rstrip('/')
+                # Double-quote escape 
+                # - https://rclone.org/docs/#connection-strings
+                # - https://rclone.org/combine/#combine-upstreams
+                destination_basepath = destination_basepath.replace('"', '""')
+                destinations.append(f'"{key}={key}:{destination_basepath}"')
                 print(conf, file=fileo)
         # The "combined" remote merges all other destinations in a unique
         # logical tree, where root-level elements correspond to destination
