@@ -53,10 +53,18 @@
           :description="error.listModules"
           :showCloseButton="false"
         />
+        <NsInlineNotification
+          v-if="error.listMountPoints"
+          kind="error"
+          :title="$t('action.list-mountpoints')"
+          :description="error.listMountPoints"
+          :showCloseButton="false"
+        />
         <NodeSelector
           v-else
           :disabledNodes="disabledNodes"
           :nodesWithAdditionalStorage="nodesWithAdditionalStorage"
+          :nodesDefaultDiskInfo="nodesDefaultDiskInfo"
           @selectNode="onSelectNode"
           :loading="
             loading.listModules || loading.nodesList || loading.getClusterStatus
@@ -100,14 +108,7 @@
           :description="error.listMountPoints"
           :showCloseButton="false"
         />
-        <cv-skeleton-text
-          v-if="loading.listMountPoints"
-          :paragraph="true"
-          :line-count="5"
-          heading
-          class="mg-top-xlg"
-        ></cv-skeleton-text>
-        <div v-else>
+        <div>
           <NsInlineNotification
             kind="info"
             :title="$t('domains.nodes_with_additional_storage_info')"
@@ -123,11 +124,13 @@
               })
             }}
           </div>
+          <div>
+            {{ $t("domains.other_files_remain_on_default_volume") }}
+          </div>
           <!-- additional volumes -->
           <AdditionalVolumesSelector
             @selectVolume="onSelectVolume"
             :volumes="additionalVolumes"
-            :loading="loading.listMountPoints"
             :light="true"
             class="mg-top-lg"
           />
@@ -365,7 +368,8 @@ export default {
       modules: [],
       nodesList: [],
       clusterStatus: [],
-      additionalVolumes: [],
+      nodesAdditionalDiskInfo: {},
+      nodesDefaultDiskInfo: {},
       selectedVolume: {},
       openldap: {
         admuser: "",
@@ -384,7 +388,6 @@ export default {
         listModules: false,
         nodesList: false,
         getClusterStatus: false,
-        listMountPoints: false,
         openldap: {
           getDefaults: false,
           configureModule: false,
@@ -582,6 +585,15 @@ export default {
 
       return info;
     },
+    additionalVolumes() {
+      const output = this.nodesAdditionalDiskInfo[this.selectedNode?.id];
+      if (!output) return [];
+      const volumes = [...output.mountpoints];
+      if (output.default_disk) {
+        volumes.push({ ...output.default_disk, default: true });
+      }
+      return volumes;
+    },
     sambaModule() {
       return this.modules.find((module) => module.id === "samba");
     },
@@ -631,8 +643,6 @@ export default {
       if (this.step == "node") {
         // load eligible nodes for both providers
         this.getClusterStatus(); // retrieve cluster nodes online status
-      } else if (this.step == "volumes" && !this.isOpenLdap) {
-        this.listMountPoints(); // retrieve additional volumes for selected node
       }
     },
   },
@@ -717,6 +727,10 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       this.clusterStatus = taskResult.output.nodes;
+      // Fetch default disk info for online nodes only
+      for (const node of this.clusterStatus.filter((n) => n.online)) {
+        this.listMountPoints(node.id);
+      }
       this.loading.getClusterStatus = false;
     },
     async listNodes() {
@@ -764,26 +778,22 @@ export default {
       this.nodesList = taskResult.output.nodes;
       this.loading.nodesList = false;
     },
-    async listMountPoints() {
-      this.error.listMountPoints = "";
-      this.loading.listMountPoints = true;
+    async listMountPoints(nodeId) {
       const taskAction = "list-mountpoints";
       const eventId = this.getUuid();
 
-      // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
         this.listMountPointsAborted
       );
-
-      // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.listMountPointsCompleted
+        (taskContext, taskResult) =>
+          this.listMountPointsCompleted(taskContext, taskResult, nodeId)
       );
 
       const res = await to(
-        this.createNodeTask(this.selectedNode.id, {
+        this.createNodeTask(nodeId, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -794,28 +804,24 @@ export default {
       );
       const err = res[0];
       if (err) {
-        console.error(`error creating task ${taskAction}`, err);
+        console.error(
+          `error creating task ${taskAction} for node ${nodeId}`,
+          err
+        );
         this.error.listMountPoints = this.getErrorMessage(err);
-        this.loading.listMountPoints = false;
         return;
       }
     },
     listMountPointsAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.listMountPoints = this.$t("error.generic_error");
-      this.loading.listMountPoints = false;
     },
-    listMountPointsCompleted(taskContext, taskResult) {
-      const additionalVolumes = taskResult.output.mountpoints;
-      // Add default disk at the end, push default property
-      if (taskResult.output.default_disk) {
-        additionalVolumes.push({
-          ...taskResult.output.default_disk,
-          default: true, // mark as default disk
-        });
+    listMountPointsCompleted(taskContext, taskResult, nodeId) {
+      const output = taskResult.output;
+      this.$set(this.nodesAdditionalDiskInfo, nodeId, output);
+      if (output.default_disk) {
+        this.$set(this.nodesDefaultDiskInfo, nodeId, output.default_disk);
       }
-      this.additionalVolumes = additionalVolumes;
-      this.loading.listMountPoints = false;
     },
     async installProvider(volumes) {
       this.error.addInternalProvider = "";
