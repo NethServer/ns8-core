@@ -18,22 +18,20 @@
         class="min-height-card"
         :disabled="loading || disabledNodes.includes(node.id)"
       >
-        <div class="node-tile-header">
-          <h6>
-            <span v-if="node.ui_name">
-              {{ node.ui_name }} ({{ $t("common.node") }} {{ node.id }})
-            </span>
-            <span v-else> {{ $t("common.node") }} {{ node.id }} </span>
-          </h6>
-          <cv-skeleton-text
-            v-if="loading"
-            :paragraph="true"
-            :line-count="2"
-            class="mg-top-lg"
-          ></cv-skeleton-text>
-          <div v-if="!loading && $slots[`node-${node.id}`]" class="mg-top-md">
-            <slot :name="`node-${node.id}`"></slot>
-          </div>
+        <h6>
+          <span v-if="node.ui_name">
+            {{ node.ui_name }} ({{ $t("common.node") }} {{ node.id }})
+          </span>
+          <span v-else> {{ $t("common.node") }} {{ node.id }} </span>
+        </h6>
+        <cv-skeleton-text
+          v-if="loading"
+          :paragraph="true"
+          :line-count="2"
+          class="mg-top-lg"
+        ></cv-skeleton-text>
+        <div v-if="!loading && $slots[`node-${node.id}`]" class="mg-top-md">
+          <slot :name="`node-${node.id}`"></slot>
         </div>
         <div
           v-if="!loading && nodesWithAdditionalStorage.includes(node.id)"
@@ -176,50 +174,6 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
-// .min-height-card {
-//   display: flex;
-//   flex-direction: column;
-//   height: 100%;
-// }
-
-// .node-tile-header {
-//   flex: 1;
-//   margin-top: 0.75rem;
-//   padding-bottom: 0;
-//   padding-left: 1rem;
-//   padding-right: 1rem;
-// }
-
-// .node-tile-footer {
-//   /* Let footer flow naturally; push to bottom when header grows */
-//   margin-top: 0.75rem;
-//   padding: 0 1rem 1rem;
-//   display: flex;
-//   flex-direction: column;
-//   align-items: flex-start;
-//   width: 100%;
-// }
-
-// .node-tile-footer-additional {
-//   margin-top: 0.75rem;
-// }
-
-// .icon-text-container {
-//   display: flex;
-//   align-items: flex-start;
-//   gap: 0.5rem;
-//   line-height: 1.5;
-//   width: 100%;
-//   align-items: center;
-// }
-
-// .storage-usage-text {
-//   margin-bottom: 0.25rem;
-// }
-
-// .storage-percentage {
-//   margin-bottom: 0.5rem;
-// }
 .icon-text-container {
   display: flex;
   align-items: flex-start;
