@@ -100,10 +100,7 @@
               $t("software_center.select_node_volume_for_installation", {
                 node: this.getNodeLabel(selectedNode) || "",
               })
-            }}
-          </div>
-          <div>
-            {{ $t("software_center.other_files_remain_on_default_volume") }}
+            }}. {{ $t("software_center.other_files_remain_on_default_volume") }}
           </div>
           <!-- additional volumes -->
           <AdditionalVolumesSelector
