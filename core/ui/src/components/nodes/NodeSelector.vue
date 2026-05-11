@@ -39,7 +39,7 @@
           v-if="!loading && nodesWithAdditionalStorage.includes(node.id)"
           class="node-tile-footer node-tile-footer-additional"
         >
-          <div class="icon-text-container">
+          <div class="icon-text-container mg-top-sm">
             <VmdkDisk20 />
             {{ $t("software_center.additional_storage_available") }}
           </div>
@@ -52,7 +52,7 @@
           "
           class="node-tile-footer"
         >
-          <div class="storage-usage-text">
+          <div class="mg-top-sm">
             {{
               $t(
                 "software_center.node_volume_usage_free_vs_total",
@@ -60,7 +60,7 @@
               )
             }}
           </div>
-          <div class="storage-usage-text storage-percentage">
+          <div class="mg-top-sm">
             {{
               $t(
                 "software_center.node_volume_usage_percentage_used",
@@ -68,18 +68,20 @@
               )
             }}
           </div>
-          <NsProgressBar
-            :value="
-              (nodesDefaultDiskInfo[node.id].used /
-                nodesDefaultDiskInfo[node.id].size) *
-              100
-            "
-            :loading="loading"
-            :warningThreshold="70"
-            :dangerThreshold="90"
-            :height="'5px'"
-            :useHealthyColor="false"
-          />
+          <div class="mg-top-sm">
+            <NsProgressBar
+              :value="
+                (nodesDefaultDiskInfo[node.id].used /
+                  nodesDefaultDiskInfo[node.id].size) *
+                100
+              "
+              :loading="loading"
+              :warningThreshold="70"
+              :dangerThreshold="90"
+              :height="'5px'"
+              :useHealthyColor="false"
+            />
+          </div>
         </div>
       </NsTile>
     </div>
@@ -174,35 +176,54 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
-.node-tile-header {
-  flex: 1;
-  margin-top: 0.75rem;
-  padding-bottom: 5rem;
-}
+// .min-height-card {
+//   display: flex;
+//   flex-direction: column;
+//   height: 100%;
+// }
 
-.node-tile-footer {
-  position: absolute;
-  bottom: 3.2rem;
-  left: 1rem;
-  right: 1rem;
-}
+// .node-tile-header {
+//   flex: 1;
+//   margin-top: 0.75rem;
+//   padding-bottom: 0;
+//   padding-left: 1rem;
+//   padding-right: 1rem;
+// }
 
-.node-tile-footer-additional {
-  bottom: 5.5rem;
-}
+// .node-tile-footer {
+//   /* Let footer flow naturally; push to bottom when header grows */
+//   margin-top: 0.75rem;
+//   padding: 0 1rem 1rem;
+//   display: flex;
+//   flex-direction: column;
+//   align-items: flex-start;
+//   width: 100%;
+// }
 
+// .node-tile-footer-additional {
+//   margin-top: 0.75rem;
+// }
+
+// .icon-text-container {
+//   display: flex;
+//   align-items: flex-start;
+//   gap: 0.5rem;
+//   line-height: 1.5;
+//   width: 100%;
+//   align-items: center;
+// }
+
+// .storage-usage-text {
+//   margin-bottom: 0.25rem;
+// }
+
+// .storage-percentage {
+//   margin-bottom: 0.5rem;
+// }
 .icon-text-container {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
+  gap: 0.2rem;
   line-height: 1.5;
-}
-
-.storage-usage-text {
-  margin-bottom: 0.25rem;
-}
-
-.storage-percentage {
-  margin-bottom: 0.5rem;
 }
 </style>
