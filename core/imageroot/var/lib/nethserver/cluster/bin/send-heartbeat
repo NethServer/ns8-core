@@ -5,6 +5,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+#
+# Send the cluster heartbeat to the subscription provider.
+#
+# Enterprise clusters (provider=nsent) post to the my collect
+# endpoint with native my credentials; see send-cluster-backup for
+# the migrate-to-my flow. Community clusters (provider=nscom) keep
+# hitting my.nethserver.com's dartagnan_url as before.
+#
+
 set -e
 
 period="${1:-0}"
@@ -13,7 +22,9 @@ export REDIS_USER="default"
 export REDIS_PASSWORD="default"
 export REDIS_ADDRESS="127.0.0.1:6379"
 
-# Parse subscription configuration from Redis
+# Opportunistically rotate enterprise credentials.
+migrate-to-my
+
 while IFS='=' read -r key value; do
     declare "${key}"="${value}"
 done < <(redis-hgetall cluster/subscription)
@@ -26,18 +37,14 @@ function exit_error ()
 
 function send_heartbeat_nsent ()
 {
-    jq -n -c --arg system_id "${system_id:?}" '{"lk":$system_id}' | \
-    curl -m 180 --retry 3 -L -s \
-        --header "Accept: application/json"  \
-        --header "Authorization: token ${auth_token:?}"  \
-        --header "Content-Type: application/json" \
-        --data @- \
-        "https://my.nethesis.it/isa/heartbeats/store" >/dev/null || :
+    if [[ -z "${collect_url:-}" ]]; then
+        # Pre-migration — migrate-to-my will retry on the next tick.
+        return 0
+    fi
 
-    # Temporary send data to new endpoint
-    # To be removed when the migration to new my.nethesis.it will be completed
-    /usr/bin/curl -m 180 --retry 3 -L -s -X POST \
-       --user "${system_id:?}:${auth_token:?}" https://my.nethesis.it/proxy/heartbeat >/dev/null || :
+    curl -m 30 --retry 3 -L -s -X POST \
+        --user "${system_id:?}:${auth_token:?}" \
+        "${collect_url}/heartbeat" >/dev/null || :
 }
 
 function send_heartbeat_nscom ()
