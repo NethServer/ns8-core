@@ -45,8 +45,8 @@
             {{ volume.label ? volume.label : volume.ui_name }}
           </strong>
         </div>
-        <div class="mg-bottom-xs">{{ volume.path }}</div>
-        <div class="mg-bottom-md">
+        <div class="mg-bottom-sm">{{ volume.path }}</div>
+        <div class="mg-bottom-sm">
           {{ $t("software_center.volume_usage", getVolumeInfo(volume)) }}
         </div>
         <NsProgressBar
