@@ -41,7 +41,13 @@ if pret.returncode == 0:
     snapshots = []
     for el in json.loads(pret.stdout):
         time = int(datetime.fromisoformat(el['time']).timestamp())
-        snapshots.append({'timestamp': time, 'id': el['id']})
+        snapshots.append({
+            'timestamp': time,
+            'id': el['id'],
+            'total_bytes': el.get('summary', {}).get('total_bytes_processed', -1),
+            'backup_start': el.get('summary', {}).get('backup_start', ""),
+            'backup_end': el.get('summary', {}).get('backup_end', "")
+        })
     print(json.dumps(snapshots))
 else:
     # Restic error message is sent through stderr as-is (in JSON format).
