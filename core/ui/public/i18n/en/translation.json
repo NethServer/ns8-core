@@ -1400,7 +1400,6 @@
         "password_does_not_expire": "Password never expires",
         "nodes_with_additional_storage_info": "Additional volume for shared folders",
         "nodes_with_additional_storage_info_description": "Shared folders can be enabled in the next step. Only one provider per domain can host them.",
-        "other_files_remain_on_default_volume": "Other application files remain on the default volume",
         "select_node_volume_for_installation": "Select the volume for shared folders data on {node}"
     },
     "samba": {
