@@ -46,7 +46,7 @@
           </strong>
         </div>
         <div class="mg-bottom-xs">{{ volume.path }}</div>
-        <div class="mg-bottom-sm">
+        <div class="mg-bottom-md">
           {{ $t("software_center.volume_usage", getVolumeInfo(volume)) }}
         </div>
         <NsProgressBar
