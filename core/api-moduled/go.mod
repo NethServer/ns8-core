@@ -3,7 +3,7 @@ module github.com/NethServer/ns8-core/core/api-moduled
 go 1.25.0
 
 require (
-	github.com/appleboy/gin-jwt/v2 v2.9.2
+	github.com/appleboy/gin-jwt/v2 v2.10.3
 	github.com/gin-contrib/cors v1.6.0
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/static v1.1.6
@@ -49,6 +49,7 @@ require (
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
+	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
