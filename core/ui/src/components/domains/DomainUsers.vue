@@ -299,6 +299,12 @@ export default {
       this.listDomainUsers();
     }
   },
+  mounted() {
+    this.$root.$on("password-policy-updated", this.listDomainUsers);
+  },
+  beforeDestroy() {
+    this.$root.$off("password-policy-updated", this.listDomainUsers);
+  },
   methods: {
     async listPasswordPolicy() {
       this.loading.listPasswordPolicy = true;
