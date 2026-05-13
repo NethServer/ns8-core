@@ -30,17 +30,55 @@
           :line-count="2"
           class="mg-top-lg"
         ></cv-skeleton-text>
-        <div v-else class="mg-top-md"></div>
         <div v-if="!loading && $slots[`node-${node.id}`]" class="mg-top-md">
           <slot :name="`node-${node.id}`"></slot>
         </div>
-        <div v-if="!loading" class="mg-top-md">
-          <div
-            v-if="nodesWithAdditionalStorage.includes(node.id)"
-            class="icon-text-container"
-          >
-            <VmdkDisk20 class="icon-spacing" />
+        <div
+          v-if="!loading && nodesWithAdditionalStorage.includes(node.id)"
+          class="node-tile-footer node-tile-footer-additional"
+        >
+          <div class="icon-text-container mg-top-sm">
+            <VmdkDisk20 />
             {{ $t("software_center.additional_storage_available") }}
+          </div>
+        </div>
+        <div
+          v-if="
+            !loading &&
+            nodesDefaultDiskInfo[node.id] &&
+            !nodesWithAdditionalStorage.includes(node.id)
+          "
+          class="node-tile-footer"
+        >
+          <div class="mg-top-sm">
+            {{
+              $t(
+                "software_center.node_volume_usage_free_vs_total",
+                getStorageInfo(nodesDefaultDiskInfo[node.id])
+              )
+            }}
+          </div>
+          <div class="mg-top-sm">
+            {{
+              $t(
+                "software_center.node_volume_usage_percentage_used",
+                getStorageInfo(nodesDefaultDiskInfo[node.id])
+              )
+            }}
+          </div>
+          <div class="mg-top-sm">
+            <NsProgressBar
+              :value="
+                (nodesDefaultDiskInfo[node.id].used /
+                  nodesDefaultDiskInfo[node.id].size) *
+                100
+              "
+              :loading="loading"
+              :warningThreshold="70"
+              :dangerThreshold="90"
+              :height="'5px'"
+              :useHealthyColor="false"
+            />
           </div>
         </div>
       </NsTile>
@@ -68,6 +106,10 @@ export default {
     nodesWithAdditionalStorage: {
       type: Array,
       default: () => [],
+    },
+    nodesDefaultDiskInfo: {
+      type: Object,
+      default: () => ({}),
     },
     loading: {
       type: Boolean,
@@ -117,6 +159,14 @@ export default {
         }
       }
     },
+    getStorageInfo(storage) {
+      return {
+        available: this.$options.filters.byteFormat(storage.available),
+        used: this.$options.filters.byteFormat(storage.used),
+        total: this.$options.filters.byteFormat(storage.size),
+        percentage: Math.round((storage.used / storage.size) * 100),
+      };
+    },
   },
 };
 </script>
@@ -129,10 +179,5 @@ export default {
   align-items: flex-start;
   gap: 0.2rem;
   line-height: 1.5;
-}
-
-.icon-spacing {
-  flex-shrink: 0;
-  margin-bottom: 0.25rem;
 }
 </style>

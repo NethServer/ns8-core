@@ -1046,6 +1046,7 @@
         "choose_node_for_installation": "Select installation node for {app} {version}",
         "installation_node_for_app": "Installation node for {app} {version}",
         "select_node_volume_for_installation": "Select the volume on {node} to store application data",
+        "other_files_remain_on_default_volume": "Other application files remain on the default volume",
         "installing_on_node": "Installing on {node}",
         "instance_installed_on_node": "{module_id} installed on {node}",
         "app_instances": "{app} instances",
@@ -1157,6 +1158,8 @@
         "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
         "additional_storage_available": "Additional volumes available",
         "volume_usage": "{available} free of {total} ({percentage}% used)",
+        "node_volume_usage_free_vs_total": "{available} free of {total}",
+        "node_volume_usage_percentage_used": "({percentage}% used)",
         "default_storage": "Default volume",
         "no_volumes_to_restore": "No volumes to restore"
     },
