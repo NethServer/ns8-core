@@ -26,6 +26,19 @@ import sys
 import os
 import signal
 import subprocess
+import fcntl
+
+# Protect update-module from multiple concurrent runs. If the lock cannot
+# be acquired the action fails immediately.
+LOCK_FILE = ".update-module.lock"
+try:
+    # This lock is released by the OS when the process completes (no
+    # matter its exit code):
+    fcntl.flock(os.open(LOCK_FILE, os.O_WRONLY | os.O_CREAT, 0o644), fcntl.LOCK_EX | fcntl.LOCK_NB)
+except OSError:
+    agent.set_status('validation-failed')
+    json.dump([{'field':'','parameter':'','value':'','error':'action_already_running'}],fp=sys.stdout)
+    sys.exit(3)
 
 agent_id = os.environ['AGENT_ID']
 

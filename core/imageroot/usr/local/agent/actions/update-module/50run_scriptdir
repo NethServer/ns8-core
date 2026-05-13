@@ -23,6 +23,13 @@
 set -e
 exec 1>&2
 
+# Prevent concurrent execution of this script with a lock file opened with
+# an arbitrary high FD number, like 201.
+exec 201>.update-module.lock
+# This lock is released by the OS when the process completes (no matter
+# its exit code). Execution is blocked until lock is acquired:
+flock --verbose 201
+
 # B1-UPGRADE: clean up legacy log_tag.conf before restarting the module
 # containers. A system reboot is recommended, anyway.
 if [[ $EUID != 0 ]]; then
