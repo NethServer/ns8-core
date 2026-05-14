@@ -33,9 +33,8 @@ ExecStart=/usr/bin/podman run \
     --volume=./rclone:/etc/rclone:ro,Z \
     --volume=./haproxy:/etc/haproxy:ro,Z \
     --volume=${BACKUP_VOLUME}:/srv/repo:z \
-    --mount=type=tmpfs,tmpfs-size=10M,destination=/var/lib/rclone,chown=true \
     --volume=/dev/log:/dev/log \
-    --volume=rclone-cache:/var/cache/rclone:Z \
+    --volume=rclone-cache:/var/cache/rclone:z \
     --entrypoint=rclone-gateway-entrypoint.sh \
     --env-file=rclone-webdav.env \
     ${RCLONE_IMAGE}

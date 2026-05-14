@@ -43,7 +43,6 @@ trx = rdb.pipeline()
 # Drop related backup objects
 #
 related_backups = []
-# XXX use an index instead of scan
 for kbid in rdb.scan_iter('cluster/backup/*'):
     repo_id = rdb.hget(kbid, 'repository')
     if repo_id != rid:

@@ -55,6 +55,40 @@ and a procedure tailored for single node cluster disaster recovery.
   jobs (Restic) access their repository through the REST endpoint. See
   also the [module backup documentation]({{site.baseurl}}/modules/backup_restore).
 
+## Inspect the rclone-gateway configuration
+
+Cluster actions never return saved passwords. To see the full rclone
+remote configuration run this command:
+
+    podman exec rclone-gateway rclone config show
+
+As an alternative, run
+
+    runagent -m node cat rclone/rclone.conf
+
+Some rclone remotes, like `smb`, do not accept a clear-text password in
+the configuration file. In those cases decrypt the password with a command
+like this:
+
+    podman exec rclone-gateway rclone reveal <secret>
+
+## Rclone interactive sessions
+
+To manually operate on backup destination contents get an interactive
+shell in the `rclone-gateway` container and execute `rclone` commands.
+This is an example session that lists a remote's contents.
+
+    [root@rl1]# podman exec -ti rclone-gateway ash -l
+    rl1:/$ rclone config show
+    [prints rclone configuration]
+    rl1:/$ rclone lsd --max-depth=3 dac5d576-ed62-5c4b-b028-c5e97022b27b:
+    [prints up to three levels of directories in the backup destination]
+
+This command copies a file in the remote backup destination into the local
+`rclone-webdav` Podman volume, where `/srv/repo` is mounted:
+
+    rl1:/$ rclone copy dac5d576-ed62-5c4b-b028-c5e97022b27b:ns8-davidep/cluster-backup-0c0aae59-2b1a-4a69-aa89-a460141e1572.json.gz.gpg /srv/repo/
+
 
 ## Execute a backup
 
