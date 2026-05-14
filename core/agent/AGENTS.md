@@ -49,12 +49,18 @@ bash test-agent.sh           # run Robot Framework tests (requires buildah and p
 
 ## Exit codes
 
-- **0**: success
-- **1**: validation infrastructure fault / output validation error
-- **8**: action not defined
-- **10**: validation failed
-- **11**: agent overloaded (max concurrency reached)
-- **2–7, 32–255**: action-specific
+- `0` - success
+- `1` - **available to use** for generic errors
+- `2-7` - **available to use** for action-specific error numbers
+- `8` - the invoked action is not defined or has 0 steps (the directory is empty)
+- `9` - OS `exec()` error, like "file is not executable" and similar
+- `10` - default exit code once `validation-failed` status is set. It
+  can be overridden by terminating the step with a non-zero exit code.
+- `11` - error "Agent is busy" is returned if the number of running
+  actions or events has reached `MAX_CONCURRENCY` (32) and after waiting
+  `OVERLOAD_SLEEP` (500ms) that number did not decrease.
+- `12-31` - reserved to the agent implementation
+- `32-255` - **available to use** for action-specific error numbers
 
 ## Environment variables
 
