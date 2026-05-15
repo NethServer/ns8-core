@@ -40,6 +40,7 @@
           >
           </cv-text-input>
           <cv-text-input
+            :placeholder="$t('common.unchanged_password')"
             :label="$t('backup.b2_account_key')"
             v-model.trim="backblaze.b2_account_key"
             :invalid-message="$t(error.backblaze.b2_account_key)"
@@ -70,6 +71,7 @@
           >
           </cv-text-input>
           <cv-text-input
+            :placeholder="$t('common.unchanged_password')"
             :label="$t('backup.aws_secret_access_key')"
             v-model.trim="aws.aws_secret_access_key"
             :invalid-message="$t(error.aws.aws_secret_access_key)"
@@ -108,6 +110,7 @@
           >
           </cv-text-input>
           <cv-text-input
+            :placeholder="$t('common.unchanged_password')"
             :label="$t('backup.smb_pass')"
             type="password"
             v-model.trim="smb.smb_pass"
@@ -129,6 +132,7 @@
           >
           </cv-text-input>
           <cv-text-input
+            :placeholder="$t('common.unchanged_password')"
             :label="$t('backup.genericS3_secret_access_key')"
             v-model.trim="genericS3.aws_secret_access_key"
             :invalid-message="$t(error.genericS3.aws_secret_access_key)"
@@ -151,6 +155,7 @@
           >
           </cv-text-input>
           <cv-text-input
+            :placeholder="$t('common.unchanged_password')"
             :label="$t('backup.azure_account_key')"
             v-model.trim="azure.azure_account_key"
             :invalid-message="$t(error.azure.azure_account_key)"
@@ -370,15 +375,6 @@ export default {
         }
       }
 
-      if (!this.backblaze.b2_account_key) {
-        this.error.backblaze.b2_account_key = "common.required";
-
-        if (isValidationOk) {
-          this.focusElement("b2_account_key");
-          isValidationOk = false;
-        }
-      }
-
       if (!this.name) {
         this.error.name = "common.required";
 
@@ -414,15 +410,6 @@ export default {
 
         if (isValidationOk) {
           this.focusElement("aws_default_region");
-          isValidationOk = false;
-        }
-      }
-
-      if (!this.aws.aws_secret_access_key) {
-        this.error.aws.aws_secret_access_key = "common.required";
-
-        if (isValidationOk) {
-          this.focusElement("aws_secret_access_key");
           isValidationOk = false;
         }
       }
@@ -477,15 +464,6 @@ export default {
         }
       }
 
-      if (!this.smb.smb_pass) {
-        this.error.smb.smb_pass = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("smb_pass");
-          isValidationOk = false;
-        }
-      }
-
       if (!this.name) {
         this.error.name = this.$t("common.required");
 
@@ -515,15 +493,6 @@ export default {
         }
       }
 
-      if (!this.genericS3.aws_secret_access_key) {
-        this.error.genericS3.aws_secret_access_key = "common.required";
-
-        if (isValidationOk) {
-          this.focusElement("genericS3_secret_access_key");
-          isValidationOk = false;
-        }
-      }
-
       if (!this.name) {
         this.error.name = "common.required";
 
@@ -549,15 +518,6 @@ export default {
 
         if (isValidationOk) {
           this.focusElement("azure_account_name");
-          isValidationOk = false;
-        }
-      }
-
-      if (!this.azure.azure_account_key) {
-        this.error.azure.azure_account_key = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("azure_account_key");
           isValidationOk = false;
         }
       }
