@@ -202,3 +202,76 @@ First, make sure the tag is created in the repository and pushed to the remote. 
 3. Attach the SBOM file:
     - For stable releases, attach the Software Bill of Materials (SBOM) file to the release by respecting conventions describe in the [SBOM generation](https://handbook.nethserver.org/security/#sbom-software-bill-of-materials) page.
     You can find the SBOM files as artifacts of the GitHub Actions workflow.
+
+## NethVoice release procedure addendum
+
+The following procedure is used by the NethVoice project. It relies on the
+`gh ns8-release-module` extension from
+[NethServer/gh-ns8-release-module](https://github.com/NethServer/gh-ns8-release-module).
+
+Before using the extension, install it if needed:
+
+```bash
+gh extension install NethServer/gh-ns8-release-module
+```
+
+1. Run the pre-release checks to verify that all linked issues are in the
+   `verified` state:
+
+       gh ns8-release-module check
+
+2. Create the GitHub release and tag, automatically linking closed issues to
+   the release notes:
+
+       gh ns8-release-module create --release-name <version> --with-linked-issues
+
+3. Open the newly created GitHub release and review or edit the generated
+   release message to ensure it is accurate and complete.
+
+4. If the release includes changes from external components that are not
+   tracked as NS8 module repositories, append their current `HEAD` commit
+   references to the release notes. This step is temporary and currently
+   applies to `nethesis/nethcti-server`. Use the following helper script to
+   retrieve the commit SHAs and format them for inclusion:
+
+   ```bash
+   #!/bin/bash
+
+   declare -A repositories=(
+       ["nethesis/nethcti-server"]="ns8"
+   )
+
+   get_last_commit_sha() {
+       repo=$1
+       branch=$2
+       last_commit_sha=$(gh api repos/"$repo"/commits/"$branch" --jq '.sha')
+       echo -n "* https://github.com/$repo/commit/$last_commit_sha"
+   }
+
+   if ! command -v gh &> /dev/null; then
+       echo "GitHub CLI (gh) is not installed. Please install it first."
+       exit 1
+   fi
+
+   echo "### External components \`HEAD\`"
+   for repo in "${!repositories[@]}"; do
+       branch=${repositories[$repo]}
+       get_last_commit_sha "$repo" "$branch"
+       echo
+   done
+   ```
+
+   Copy the script output and paste it into the release notes.
+
+5. Remove intermediate testing releases that were created during
+   the QA cycle:
+
+       gh ns8-release-module clean --release-name <version>
+
+6. Post a comment on each linked issue to notify that the issue
+   has been included in the release:
+
+       gh ns8-release-module comment --release-name <version>
+
+7. Notify the `~nethvoice` channel that the release has been
+   published.
