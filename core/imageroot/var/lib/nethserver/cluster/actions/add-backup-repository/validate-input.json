@@ -118,6 +118,9 @@
         {
             "allOf": [
                 {
+                    "$ref": "#/$defs/safe_parameters"
+                },
+                {
                     "title": "BackBlaze schema",
                     "properties": {
                         "provider": {
@@ -133,6 +136,9 @@
         },
         {
             "allOf": [
+                {
+                    "$ref": "#/$defs/safe_parameters"
+                },
                 {
                     "title": "S3-based provider schema",
                     "properties": {
@@ -153,6 +159,9 @@
         {
             "allOf": [
                 {
+                    "$ref": "#/$defs/safe_parameters"
+                },
+                {
                     "title": "Azure schema",
                     "properties": {
                         "provider": {
@@ -168,6 +177,9 @@
         },
         {
             "allOf": [
+                {
+                    "$ref": "#/$defs/safe_parameters"
+                },
                 {
                     "title": "SMB schema",
                     "properties": {
@@ -188,6 +200,9 @@
         {
             "allOf": [
                 {
+                    "$ref": "#/$defs/safe_parameters"
+                },
+                {
                     "title": "Local storage",
                     "properties": {
                         "provider": {
@@ -206,6 +221,19 @@
         }
     ],
     "$defs": {
+        "safe_parameters": {
+            "title": "Safe values for parameters object",
+            "properties": {
+                "parameters": {
+                    "patternProperties": {
+                        ".*": {
+                            "description": "Strings without forbidden control chars",
+                            "pattern": "^[^\\n\\r\\t]*$"
+                        }
+                    }
+                }
+            }
+        },
         "rclone_parameters": {
             "title": "Rclone raw configuration",
             "type": "object",
