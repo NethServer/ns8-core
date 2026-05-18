@@ -56,6 +56,7 @@ def validate_schedule(schedule):
     return subprocess.run(['/usr/bin/systemd-analyze', 'calendar', schedule], stdout=subprocess.DEVNULL).returncode != 0
 
 def run_rclone(rclone_args, temp_config=None, podman_args=[], **runargs):
+    podman_args = podman_args.copy() # do not modify the original list
     with tempfile.NamedTemporaryFile(suffix='.conf', prefix="tmp", dir='rclone') as tfile:
         if temp_config:
             tfile_name = os.path.basename(tfile.name)
@@ -298,8 +299,10 @@ def parse_rclone_params(rclone_conf, hide_secrets=False):
         result['smb_user'] = dsection.get('user', '')
         if hide_secrets:
             result['smb_pass'] = ""
+        elif dsection.get('pass'):
+            result['smb_pass'] = rclone_reveal(dsection['pass'])
         else:
-            result['smb_pass'] = rclone_reveal(dsection.get('pass'))
+            result['smb_pass'] = ""
         result['smb_domain'] = dsection.get('domain', '')
     else:
         if hide_secrets:

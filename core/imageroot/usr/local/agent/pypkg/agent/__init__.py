@@ -228,13 +228,11 @@ def prepare_restic_command(rdb, repository, repo_path, podman_args, restic_args)
         # cluster credentials are not known to rclone-gateway, use node
         # creds instead.
         node_env = read_envfile('/var/lib/nethserver/node/state/agent.env')
-        http_auth = (node_env['REDIS_USER'], node_env['REDIS_PASSWORD'])
         restic_rest_username = node_env['REDIS_USER']
         restic_rest_password = node_env['REDIS_PASSWORD']
     else:
         # default authentication is based on agent environment and suits
         # node and modules as-is.
-        http_auth = None
         restic_rest_username = os.environ['REDIS_USER']
         restic_rest_password = os.environ['REDIS_PASSWORD']
 
@@ -247,6 +245,7 @@ def prepare_restic_command(rdb, repository, repo_path, podman_args, restic_args)
         restic_password = rdbrw.hget('private/agents/backup_destination/restic_password', repository)
 
     # Build the environment to run Restic against the given repository+repo_path
+    assert_exp(restic_password) # guard against DB integrity issues
     restic_env = {
         "RESTIC_PASSWORD": restic_password,
         "RESTIC_CACHE_DIR": "/var/cache/restic",
