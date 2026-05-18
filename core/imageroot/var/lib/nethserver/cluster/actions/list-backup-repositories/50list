@@ -33,12 +33,13 @@ password_exists = os.path.isfile('backup/passphrase') and os.stat('backup/passph
 
 for repoid, rclone_conf in rdb.hgetall('private/nodes/backup_destination/rclone_conf').items():
     parameters = rdb.hgetall(f'cluster/backup_repository/{repoid}')
+    restic_password = rdb.hget(f'private/agents/backup_destination/restic_password', repoid) or ""
     orepo = {
         "id": repoid,
         "provider": parameters.pop('provider'),
         "name": parameters.pop('name', ''),
         "url": parameters.pop('url'),
-        "password": "", # restic password is hidden
+        "password": restic_password,
         "parameters": cluster.backup.parse_rclone_params(rclone_conf, hide_secrets=True),
     }
     brepos.append(orepo)
