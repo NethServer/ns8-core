@@ -36,7 +36,7 @@ ExecStart=/usr/bin/podman run \
     --volume=/dev/log:/dev/log \
     --volume=rclone-cache:/var/cache/rclone:z \
     --entrypoint=rclone-gateway-entrypoint.sh \
-    --env-file=rclone-webdav.env \
+    --env-file=rclone-gateway.env \
     ${RCLONE_IMAGE}
 ExecStartPost=bash -c '{ while ! exec 3<>/dev/tcp/127.0.0.1/4694; do sleep 5 ; done } &>/dev/null'
 ExecReload=runagent -m node rclonegwctl write-configuration --rclonedir=rclone --haproxydir=haproxy

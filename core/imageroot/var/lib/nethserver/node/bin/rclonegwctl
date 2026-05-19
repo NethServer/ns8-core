@@ -25,7 +25,7 @@ def main():
     args = rootp.parse_args()
     rdb = agent.redis_connect(privileged=True, use_replica=True)
     if args.cmd == 'write-configuration':
-        write_config_env("rclone-webdav.env", rdb)
+        write_config_env("rclone-gateway.env", rdb)
         if args.rclonedir:
             rclone_conf = args.rclonedir + '/rclone.conf'
             write_rclonecfg(rclone_conf, rdb)
