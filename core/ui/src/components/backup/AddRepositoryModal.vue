@@ -338,7 +338,7 @@
             <div v-else>
               <cv-file-uploader
                 :key="componentKey"
-                :label="$t('backup.cluster_backup_file')"
+                :label="$t('backup.rclone_configuration_file')"
                 :multiple="false"
                 :removable="true"
                 :clear-on-reselect="true"
@@ -350,14 +350,19 @@
                 ref="backup_file"
               ></cv-file-uploader>
             </div>
-            <cv-text-input
+
+
+            
+            <!-- <cv-text-input
               :label="$t('backup.rclone_destination_name')"
               v-model.trim="rclone.destination_name"
               :invalid-message="error.rclone.destination_name"
               :disabled="loading.addBackupRepository"
               ref="rclone_destination_name"
             >
-            </cv-text-input>
+            </cv-text-input> -->
+
+
             <!-- <cv-text-input
               :label="$t('backup.rclone_account_name')"
               v-model.trim="rclone.rclone_account_name"
@@ -489,6 +494,7 @@
                   "
                   v-model="password"
                   :helper-text="$t('backup.repository_password_helper')"
+                  :placeholder="$t('backup.data_encryption_key_placeholder')"
                   :invalid-message="error.password"
                   :disabled="loading.addBackupRepository"
                   autocomplete="new-password"
@@ -757,29 +763,8 @@ export default {
           this.getClusterStatus();
         }
       } else if (this.step == "settings") {
-        // prefill repository name
-        let repoName = this.$t("backup.default_repository_name", {
-          provider: this.getProviderShortName(),
-        });
-
-        // ensure we don't generate an already existing repo name
-        let isRepoNameDuplicated = this.repositories.find(
-          (b) => b.name == repoName
-        );
-        let repoNameSuffix = 2;
-
-        while (isRepoNameDuplicated) {
-          repoName =
-            this.$t("backup.default_repository_name", {
-              provider: `${this.getProviderShortName()}`,
-            }) + ` (${repoNameSuffix})`;
-
-          isRepoNameDuplicated = this.repositories.find(
-            (b) => b.name == repoName
-          );
-          repoNameSuffix++;
-        }
-        this.name = repoName;
+        // do not prefill repository name — leave input empty
+        this.name = "";
         if (this.selectedProvider == "smb") {
           this.focusElement("smb_host");
         } else if (this.selectedProvider != "cluster") {
@@ -1430,9 +1415,7 @@ export default {
       this.$emit("repoCreated");
       this.$emit("hide");
     },
-    getProviderShortName() {
-      return this.$t(`backup.${this.selectedProvider}_short`);
-    },
+    
     async listBackupEndpoints() {
       this.loading.listBackupEndpoints = true;
       this.error.listBackupEndpoints = "";
