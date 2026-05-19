@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"set-label input","$id":"http://schema.nethserver.org/agent/set-label-input.json","description":"Assign a user-defined name to the module instance. The name is shown in the UI.","examples":[{"name":"Nextcloud Milan"}],"type":"object","required":["name"],"properties":{"name":{"type":"string","maxLength":24}}}
