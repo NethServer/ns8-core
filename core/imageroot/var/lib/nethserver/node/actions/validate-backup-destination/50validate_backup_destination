@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+import agent
 import os
 import sys
 import json
@@ -24,8 +25,10 @@ def main():
             reason = "no_delete_permission"
         else:
             reason = 'unknown'
-        print(f"node {os.environ['NODE_ID']}: {reason} on destination {request['id']}", file=sys.stderr)
-        sys.exit(ex.returncode)
+        print(f"node {os.environ['NODE_ID']}: {reason} on destination {request['id']} (code={ex.returncode})", file=sys.stderr)
+        agent.set_status('validation-failed')
+        json.dump([{'field':'','parameter':'','value':{},'error':reason}], fp=sys.stdout)
+        sys.exit(2)
 
 def run_validation(request):
     rclone_args = [

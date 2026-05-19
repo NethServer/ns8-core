@@ -73,8 +73,22 @@ def main():
     )
     # Fail if all nodes cannot reach the backup repository:
     if all(ntr["exit_code"] != 0 for ntr in node_task_results):
+        print(*(ntr['error'] for ntr in node_task_results), file=sys.stderr, sep='\n')
+        # Extract the most important failure reason
+        try:
+            failure_reasons = set(ntr['output'][0]['error'] for ntr in node_task_results if ntr["exit_code"] == 2)
+        except (KeyError, IndexError):
+            failure_reasons = set()
+        if 'no_write_permission' in failure_reasons:
+            important_reason = 'no_write_permission'
+        elif 'no_delete_permission' in failure_reasons:
+            important_reason = 'no_delete_permission'
+        elif 'no_read_permission' in failure_reasons:
+            important_reason = 'no_read_permission'
+        else:
+            important_reason = 'backup_repository_not_accessible'
         agent.set_status('validation-failed')
-        json.dump([{'field':'parameters','parameter':'parameters','value':'','error':'backup_repository_not_accessible'}], fp=sys.stdout)
+        json.dump([{'field':'parameters','parameter':'parameters','value':'','error':important_reason}], fp=sys.stdout)
         sys.exit(4)
 
     if 'name' in request:
