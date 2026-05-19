@@ -1,5 +1,6 @@
 {
     "common": {
+        "unchanged_password": "Unchanged",
         "details": "Details",
         "see_details": "See details",
         "copy_to_clipboard": "Copy to clipboard",

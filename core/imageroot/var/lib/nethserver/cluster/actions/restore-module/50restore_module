@@ -26,6 +26,7 @@ import os
 import agent.tasks
 import json
 import tempfile
+import uuid
 
 request = json.load(sys.stdin)
 
@@ -39,7 +40,7 @@ replace_requested = request.get('replace', False)
 node_id = int(request['node'])
 mvolumes = request.get('volumes', {})
 
-rdb = agent.redis_connect()
+rdb = agent.redis_connect(privileged=True)
 
 # Write the output to a named temporary file, 
 # to parse it with the existing read_envfile() function
@@ -66,27 +67,40 @@ if image_name == 'traefik':
     #   merge-like strategy, implemented by the module as wanted.
     # - Build fake add-module result to maintain consistent action output format.
     # - Never schedule Traefik for removal to avoid breaking cluster connectivity.
+    # - Authorize access to source module's repository.
     module_id = agent.resolve_agent_id("traefik@node", node_id=str(node_id)).removeprefix("module/")
+    new_module_uuid = rdb.hget("cluster/module_uuid", module_id)
+    agent.assert_exp(new_module_uuid) # Cannot restore without destination UUID
     add_module_result = {
         "output": {
             "module_id": module_id,
             "image_name": image_name,
             "image_url": image_url,
-            "module_uuid": rdb.hget("cluster/module_uuid", module_id),
+            "module_uuid": new_module_uuid,
         },
         "error": "",
         "exit_code": 0,
     }
     remove_modules = set()
+    trx = rdb.pipeline()
+    trx.hset('private/nodes/restore_uuid', new_module_uuid, source_module_uuid)
+    trx.publish('cluster/event/backup-destination-changed', json.dumps({"destination_ids":[repository]}))
+    trx.execute()
 else:
-    force_uuid = source_module_uuid and (replace_requested or len(remove_modules) == 0)
+    if source_module_uuid and (replace_requested or len(remove_modules) == 0):
+        # Force assignment of UUID from the restored environment:
+        new_module_uuid = source_module_uuid
+    else:
+        # Generate a new random UUID:
+        new_module_uuid = str(uuid.uuid4())
+        # Grant access to source module's repository for restoration:
+        rdb.hset('private/nodes/restore_uuid', new_module_uuid, source_module_uuid)
     add_module_result = agent.tasks.run("cluster", "add-module",
         data={
             "image": image_url,
             "node": node_id,
             **({"volumes": mvolumes} if mvolumes else {}),
-            # Force assignment of UUID from the restored environment:
-            **({"module_uuid": source_module_uuid} if force_uuid else {}),
+            "module_uuid": new_module_uuid,
         },
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(2, 15)
@@ -115,7 +129,7 @@ restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
         "replace": replace_requested,
     },
     endpoint="redis://cluster-leader",
-    on_sigterm_tasks=[remove_module_on_sigterm],
+    on_sigterm_tasks=[remove_module_on_sigterm] if image_name != "traefik" else [],
     progress_callback=agent.get_progress_callback(16, 99 if len(remove_modules) == 0 else 94),
 )
 
@@ -141,5 +155,28 @@ if replace_requested and remove_modules:
         progress_callback=agent.get_progress_callback(95, 99)
     )
     agent.assert_exp(remove_modules_errors == 0)
+
+# Check if the new_module_uuid was previously referenced by some scheduled
+# backup. If so, rebuild the reference in the backup schedule data model.
+new_module_uuid = add_module_result['output']['module_uuid']
+changed_backup_ids = []
+trx = rdb.pipeline()
+for kbackup in rdb.scan_iter('cluster/backup/*'):
+    obackup = rdb.hgetall(kbackup)
+    uinstances = set(obackup.get("uinstances", "").split())
+    if new_module_uuid in uinstances:
+        # The UUID is known, update the references for the new module
+        # instance:
+        minstances = set(obackup.get("instances", "").split())
+        minstances.add(module_id)
+        uinstances.remove(new_module_uuid)
+        trx.hset(kbackup, mapping={
+            "instances": " ".join(sorted(minstances)),
+            "uinstances": " ".join(sorted(uinstances)),
+        })
+        changed_backup_ids.append(kbackup.removeprefix("cluster/backup/"))
+if changed_backup_ids:
+    trx.publish('cluster/event/backup-schedule-changed', json.dumps({"backup_ids":changed_backup_ids}))
+    trx.execute()
 
 json.dump(add_module_result['output'], fp=sys.stdout)

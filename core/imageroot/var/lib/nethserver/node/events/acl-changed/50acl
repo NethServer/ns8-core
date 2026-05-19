@@ -23,6 +23,10 @@
 set -e
 exec 1>&2
 
+if [[ ${AGENT_EVENT_SOURCE} != cluster ]] ; then
+    exit 0 # invalid source, skip restart
+fi
+
 #
 # Reload ACLs
 #

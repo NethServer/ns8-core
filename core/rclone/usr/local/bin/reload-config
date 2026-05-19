@@ -1,0 +1,16 @@
+#!/bin/ash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# shellcheck shell=dash
+
+echo "Restarting backends..."
+rclone-serve-restart
+rclone_rc=$?
+echo "Reloading frontend..."
+# shellcheck disable=SC2046
+[ -f /var/lib/rclone/haproxy.pid ] && kill -HUP $(cat /var/lib/rclone/haproxy.pid)
+exit "${rclone_rc}"

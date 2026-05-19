@@ -31,6 +31,8 @@ Well known events:
   has been changed. The JSON parameter format is `{"domains":[DOMAIN1,
   DOMAIN2 ...], "modules":[MODULE_ID1, MODULE_ID2...]}` and reflects the
   domains and modules affected by the latest change.
+- `backup-schedule-changed`: some backup schedules were changed, JSON parameter
+  format is `{"backup_ids": LIST[STRING]}`.
 - `backup-status-changed`: the HASH key containing backup status was
   updated. JSON parameter format is
   `{"node_id":INT, "module_id":STRING, "backup_id":INT}`
@@ -42,6 +44,9 @@ Events fired by the `cluster` agent (i.e. channel is `cluster/event/<event name>
 - `module-removed`: the event is fired at the end of the remove-module process to inform other modules that a module has been removed on the cluster
 - `leader-changed`: a node was promoted to leader. The `node_id` attribute
   indicates the new leader, and `endpoint` its public Wireguard VPN endpoint address
+- `backup-destination-changed`: a backup destination was
+  added/altered/removed. JSON parameter format is
+  `{"destination_ids": LIST[STRING]}`.
 
 ## Node events
 

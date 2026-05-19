@@ -16,9 +16,24 @@
         {
             "name": "repository 6",
             "provider": "cluster",
-            "password": "",
             "url": "webdav:http://10.5.4.2:4694",
             "parameters": {}
+        },
+        {
+            "name": "destination 7",
+            "provider": "rclone",
+            "parameters": {
+                "rclone_conf_secret": "type = s3\naccess_key_id = 45dc5e09346648fa9fed2a0267f58708\nsecret_access_key = db6b04c924f249fdbd86938b19959be0\nendpoint = s3.example.org\nprovider = Other\n",
+                "basepath": "mybucket/subfolder"
+            }
+        },
+        {
+            "name": "destination 7 - change path",
+            "provider": "rclone",
+            "parameters": {
+                "rclone_conf_secret": "",
+                "basepath": "mybucket/subfolder2"
+            }
         }
     ],
     "type": "object",
@@ -50,6 +65,25 @@
         {
             "allOf": [
                 {
+                    "title": "Rclone schema",
+                    "properties": {
+                        "provider": {
+                            "title": "Raw Rclone Config provider",
+                            "const": "rclone"
+                        },
+                        "parameters": {
+                            "$ref": "#/$defs/rclone_parameters"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/safe_parameters"
+                },
+                {
                     "title": "BackBlaze schema",
                     "properties": {
                         "provider": {
@@ -65,6 +99,9 @@
         },
         {
             "allOf": [
+                {
+                    "$ref": "#/$defs/safe_parameters"
+                },
                 {
                     "title": "S3-based provider schema",
                     "properties": {
@@ -82,8 +119,11 @@
                 }
             ]
         },
-                {
+        {
             "allOf": [
+                {
+                    "$ref": "#/$defs/safe_parameters"
+                },
                 {
                     "title": "Azure schema",
                     "properties": {
@@ -101,6 +141,9 @@
         {
             "allOf": [
                 {
+                    "$ref": "#/$defs/safe_parameters"
+                },
+                {
                     "title": "SMB schema",
                     "properties": {
                         "provider": {
@@ -116,6 +159,9 @@
         },
         {
             "allOf": [
+                {
+                    "$ref": "#/$defs/safe_parameters"
+                },
                 {
                     "title": "Local storage",
                     "properties": {
@@ -135,6 +181,40 @@
         }
     ],
     "$defs": {
+        "safe_parameters": {
+            "title": "Safe values for parameters object",
+            "properties": {
+                "parameters": {
+                    "patternProperties": {
+                        ".*": {
+                            "description": "Strings without forbidden control chars",
+                            "pattern": "^[^\\n\\r\\t]*$"
+                        }
+                    }
+                }
+            }
+        },
+        "rclone_parameters": {
+            "title": "Rclone raw configuration",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "rclone_conf_secret": {
+                    "type": ["null", "string"],
+                    "maxLength": 100000,
+                    "description": "Basic INI-like string validation",
+                    "pattern": "^(\\[[^\\]]+\\]\\n)?(\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*[^\\n]*\\n)*$"
+                },
+                "rclone_conf_b64_secret": {
+                    "type": "string",
+                    "maxLength": 100000
+                },
+                "basepath": {
+                    "type": "string",
+                    "maxLength": 512
+                }
+            }
+        },
         "b2_parameters": {
             "title": "B2 (Backblaze) protocol parameters",
             "type": "object",

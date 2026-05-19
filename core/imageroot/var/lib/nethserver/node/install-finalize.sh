@@ -84,7 +84,7 @@ ACL SETUSER cluster ON #${cluster_pwhash} ~* &* +@all
 AUTH cluster "${cluster_password}"
 ACL SETUSER default ON nopass resetkeys ~cluster/* ~node/* ~module/* resetchannels &* nocommands +@read +@connection +subscribe +psubscribe -@admin
 ACL SETUSER api-server ON #${apiserver_pwhash} ~* &* nocommands +@read +@pubsub +lpush +@transaction +@connection +role +hset
-ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* ~task/node/1/* resetchannels &progress/node/1/* &node/1/event/* nocommands +@read +@write +@transaction +@connection +publish -@admin +psync +replconf
+ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* ~task/node/1/* %R~private/nodes/* %R~private/agents/* %R~cluster/* %R~node/* %R~module/* resetchannels &progress/node/1/* &node/1/event/* nocommands +@read +@write +@transaction +@connection +publish -@admin +psync +replconf
 ACL SAVE
 SAVE
 CONFIG SET masteruser node/1
@@ -97,7 +97,11 @@ EOF
 ) | redis-cli
 
 echo "Start API server and core agents:"
-systemctl enable --now api-server.service agent@cluster.service agent@node.service rclone-webdav.service
+systemctl enable --now \
+    api-server.service \
+    agent@cluster.service \
+    agent@node.service \
+    # end of service list
 
 echo "Start node timers"
 systemctl enable --now password-warning.timer

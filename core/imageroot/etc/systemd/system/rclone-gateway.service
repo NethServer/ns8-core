@@ -1,0 +1,49 @@
+[Unit]
+Description=Rclone Gateway server
+After=redis.service
+Wants=redis.service backup-timers.service
+StartLimitIntervalSec=10s
+StartLimitBurst=3
+ConditionPathExists=/etc/wireguard/wg0.conf
+
+[Service]
+Type=forking
+WorkingDirectory=/var/lib/nethserver/node/state
+PIDFile=%t/%N.pid
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Environment=BACKUP_VOLUME=rclone-webdav
+EnvironmentFile=/etc/nethserver/core.env
+EnvironmentFile=-/var/lib/nethserver/node/state/rclone-webdav.env
+Restart=always
+TimeoutStopSec=120
+TimeoutStartSec=120
+SuccessExitStatus=143
+ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
+ExecStartPre=mkdir -vp rclone haproxy
+ExecStartPre=-runagent -m node rclonegwctl write-configuration --rclonedir=rclone --haproxydir=haproxy
+ExecStart=/usr/bin/podman run \
+    --conmon-pidfile=%t/%N.pid \
+    --cidfile=%t/%N.cid \
+    --cgroups=no-conmon \
+    --detach \
+    --init \
+    --log-opt=tag=%N \
+    --replace --name=%N \
+    --network=host \
+    --volume=./rclone:/etc/rclone:ro,Z \
+    --volume=./haproxy:/etc/haproxy:ro,Z \
+    --volume=${BACKUP_VOLUME}:/srv/repo:z \
+    --volume=/dev/log:/dev/log \
+    --volume=rclone-cache:/var/cache/rclone:z \
+    --entrypoint=rclone-gateway-entrypoint.sh \
+    --env-file=rclone-webdav.env \
+    ${RCLONE_IMAGE}
+ExecStartPost=bash -c '{ while ! exec 3<>/dev/tcp/127.0.0.1/4694; do sleep 5 ; done } &>/dev/null'
+ExecReload=runagent -m node rclonegwctl write-configuration --rclonedir=rclone --haproxydir=haproxy
+ExecReload=runagent -m node podman exec %N reload-config
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 115
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
+
+[Install]
+WantedBy=default.target
+Alias=rclone-webdav.service

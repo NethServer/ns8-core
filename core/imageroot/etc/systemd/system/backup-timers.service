@@ -1,0 +1,11 @@
+[Unit]
+Description=Backup timers (from Redis state)
+After=redis.service
+Requires=redis.service
+ConditionPathExists=/var/lib/nethserver/node/state/rclone
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=runagent -m node schedule-backup start-timers
+ExecStop=runagent -m node schedule-backup stop-timers

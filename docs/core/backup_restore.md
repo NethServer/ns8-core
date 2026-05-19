@@ -1,134 +1,94 @@
 ---
 layout: default
-title: Backup & Restore
+title: Backup and Restore
 nav_order: 10
 parent: Core
 ---
 
-# Backup & Restore
+# Backup and Restore
 
-The backup and restore is a procedure for disaster-recovery scenario: it can be used to save the data of an installed
-module and restore it to a different node or cluster.
+NS8 core provides a backup and restore infrastructure for applications,
+and a procedure tailored for single node cluster disaster recovery.
 
 * TOC
 {:toc}
 
-## Design
+## Core architecture
 
-The backup engine is [Restic](https://restic.net/) which runs inside a
-container along with [Rclone](https://rclone.org/) used to inspect the
-backup repository contents.
+- A backup **destination** is a remote filesystem accessible with Rclone,
+  where backup data is saved. It's a cluster object persisted in Redis,
+  under the restricted `private/nodes/*` key space: only nodes can read
+  its contents. Secrets and configurations are stored in Rclone-format in
+  the HASH key `private/nodes/backup_destination/rclone_conf`, indexed by
+  destination ID. Other HASH keys are `cluster/backup_repository/<destination
+  ID>`, with public backup destination attributes, and the HASH key
+  `private/agents/backup_destination/restic_password`, indexed by
+  destination ID: it contains the encryption password of all Restic
+  repositories in the backup destination, shared among the applications
+  that use it.
 
-Backups are saved inside *backup destinations*, remote spaces where data
-are stored. A backup destination can contain multiple backup instances,
-each module instance has its own sub-directory to avoid conflicts. This
-sub-directory is the root of the module instance Restic repository.
+- A **backup** is the relation between a periodic schedule of the
+  backup, a backup destination, and a set of applications to backup. It
+  also has auxiliary attributes, like the backup snapshot retention. It's
+  a cluster object persisted in Redis in HASH keys in the form
+  `cluster/backup/<backup ID>`. The backup ID is generated from a
+  sequence: `cluster/backup_sequence`.
 
-The system implements the common logic for backup inside the agent with `module-backup` command.
-Each module can implement `module-dump-state` and `module-cleanup-state` to prepare/cleanup the data that has to be included in the backup.
-The `state/environment` file is always included inside the backup, as it is required by the `cluster/restore-module` action.
-The restore is implemented using a `restore-module` action inside the module agent, each module can extend it to implement specific restore steps.
-The basic `10restore` step actually runs the Restic restore procedure in a temporary container.
+- Every cluster node manages a pool of Systemd timers with the
+  `backup-timers.service` unit, to start the backups at the scheduled
+  times. The node `run-backup` helper command iterates over the configured
+  applications and executes their `module-backup` procedure, by `runagent`
+  impersonation. The `run-backup` command also updates the backup status
+  of every application in Redis key `node/<node ID>/backup_status/<backup
+  ID>`, and writes an overall backup status into
+  `/run/node_exporter/backup<backup ID>.prom` files. It also uploads
+  `.json` files with backup repositories metadata. When executed on the
+  leader node, uploads a copy of the encrypted cluster backup.
 
-All backups are scheduled by systemd timers. Given a backup with id `1`, it is possible to retrieve the time status with:
-- rootless containers, eg. `dokuwiki1`, executed by `dokuwiki1` user: `systemctl --user status backup1.timer`
-- rootfull containers, eg. `dnsmasq1`, executed by `root` user: `systemctl status backup1-dnsmasq1.timer`
+- Every cluster node runs a `rclone-gateway` service, an authenticated
+  HTTP proxy server. Access is granted to nodes and cluster applications
+  providing their Redis credentials (environment variables `REDIS_USER`,
+  `REDIS_PASSWORD`). The HTTP proxy server is a frontend to two internal
+  `rclone serve` backends: `webdav` and `rest`. Nodes can access both,
+  whilst applications can access a restricted set of operations of the
+  Restic Rest server, and only on the data they own. Application backup
+  jobs (Restic) access their repository through the REST endpoint. See
+  also the [module backup documentation]({{site.baseurl}}/modules/backup_restore).
 
-## Include and exclude files
+## Inspect the rclone-gateway configuration
 
-Whenever possible, containers should use volumes to avoid UID/GID
-namespace mappings and SELinux issues during backup an restore.
+Cluster actions never return saved passwords. To see the full rclone
+remote configuration run this command:
 
-Includes can be added to the `state-include.conf` file saved inside `AGENT_INSTALL_DIR/etc/`.
-In the [source tree](modules/images/#source-tree), the file should be placed under `<module>/imageroot/etc/state-include.conf`.
-On installed modules, the file will appear on different paths:
-- rootless containers, eg. `dokuwiki1`, full path will be `/home/dokuwiki1/.config/etc/state-include.conf`
-- rootfull containers, eg. `dnsmasq1`,  full path will be  `/var/lib/nethserver/dnsmasq1/etc/state-include.conf`
+    podman exec rclone-gateway rclone config show
 
-Lines are interpreted as path patterns. Only patterns referring to
-volumes and the agent `state/` directory are considered.
+As an alternative, run
 
-Lines starting with `state/` refer to `AGENT_STATE_DIR` contents. Eg. to
-include `mykey.dump` under the `AGENT_STATE_DIR` add
+    runagent -m node cat rclone/rclone.conf
 
-    state/mykey.dump
+Some rclone remotes, like `smb`, do not accept a clear-text password in
+the configuration file. In those cases decrypt the password with a command
+like this:
 
-Lines starting with `volumes/` will be mapped to a volume name. Eg. to
-include the whole `dokuwiki-data` volume add
+    podman exec rclone-gateway rclone reveal <secret>
 
-    volumes/dokuwiki-data
+## Rclone interactive sessions
 
-Internally, volumes will be mapped as:
+To manually operate on backup destination contents get an interactive
+shell in the `rclone-gateway` container and execute `rclone` commands.
+This is an example session that lists a remote's contents.
 
-- `<volume_name>` (1-1) for rootless containers; eg. for module
-  `dokuwiki1`, line prefix `volumes/dokuwiki-data` maps to volume name
-  `dokuwiki-data`
+    [root@rl1]# podman exec -ti rclone-gateway ash -l
+    rl1:/$ rclone config show
+    [prints rclone configuration]
+    rl1:/$ rclone lsd --max-depth=3 dac5d576-ed62-5c4b-b028-c5e97022b27b:
+    [prints up to three levels of directories in the backup destination]
 
-- `<module_id>-<volume_name>` for rootfull containers; eg. for module
-  `dnsmasq1`, line prefix `volumes/ data` maps to volume name `dnsmasq1-data`
+This command copies a file in the remote backup destination into the local
+`rclone-webdav` Podman volume, where `/srv/repo` is mounted:
 
-Volumes listed in `state-include.conf` are automatically mounted (and
-created if necessary) by the basic `10restore` step of the
-`restore-module` action.
+    rl1:/$ rclone copy dac5d576-ed62-5c4b-b028-c5e97022b27b:ns8-davidep/cluster-backup-0c0aae59-2b1a-4a69-aa89-a460141e1572.json.gz.gpg /srv/repo/
 
-Excludes can be added to `state-exclude.conf` file saved inside the `AGENT_INSTALL_DIR`.
-
-For a complete explanation of the patterns, like wildcard characters, see
-the official Restic documentation to
-[include](https://restic.readthedocs.io/en/stable/040_backup.html#including-files)
-and
-[exclude](https://restic.readthedocs.io/en/stable/040_backup.html#excluding-files)
-files. Note that include and exclude patterns have a slight different
-syntax.
-
-## Save and restore Redis keys
-
-### Dump key and state
-
-To save a Redis key, you should:
-- dump the key inside the `module-dump-state` command
-- include the dump inside the backup
-
-Given a module named `mymodule`, create the file `mymodule/imageroot/bin/module-dump-state` inside the module source tree:
-```
-#!/bin/bash
-redis-dump module/mymodule1/mykey > mykey.dump
-```
-
-Make sure also `module-dump-state` is executable:
-```
-chmod a+x mymodule/imageroot/bin/module-dump-state
-```
-
-Then, add the key dump path to `mymodule/imageroot/etc/state-include.conf`:
-```
-state/mykey.dump
-```
-
-### Cleanup state
-
-As best practice, the dump should be removed when the backup has completed.
-
-Given a module named `mymodule`, create the file `mymodule/imageroot/bin/module-cleanup-state` inside the module source tree:
-```
-#!/bin/bash
-rm -f mykey.dump
-```
-
-Make sure also `module-cleanup-state` is executable:
-```
-chmod a+x mymodule/imageroot/bin/module-cleanup-state
-```
-
-### Restore key
-
-To restore a Redis key, you should add a step inside the `restore-module` action, after index 10.
-
-Given a module named `mymodule`, create a file named `mymodule/imageroot/actions/restore-module/20loadkey` inside the module source tree:
-```
-#!/bin/bash
-redis-restore mymodule1/mykey < mykey.dump
-```
 
 ## Execute a backup
 
@@ -141,54 +101,48 @@ The flow to execute a backup will be something like:
 - execute the backup
 
 1. Create the repository:
-```
-api-cli run add-backup-repository --data '{"name":"BackBlaze repo1","url":"b2:backupns8","parameters":{"b2_account_id":"xxxxxxxxxxxxxxxxxxxxxxxxx","b2_account_key":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"},"provider":"backblaze","password":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}'
-```
+
+       api-cli run add-backup-repository --data '{"name":"BackBlaze repo1","url":"b2:backupns8","parameters":{"b2_account_id":"xxxxxxxxxxxxxxxxxxxxxxxxx","b2_account_key":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"},"provider":"backblaze","password":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}'
 
 2. The output will be something like, please note the `id` field:
-```json
-{"password": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "id": "48ce000a-79b7-5fe6-8558-177fd70c27b4"}
-```
 
-3. Create a new daily backup named `mybackup` with a retention of 3 snapshots (3 days) which includes `dokuwiki1` and `dnsmasq1` instances:
-```
-api-cli run add-backup --data '{"repository":"48ce000a-79b7-5fe6-8558-177fd70c27b4","schedule":"daily","retention":3,"instances":["dokuwiki1","dnsmasq1"],"enabled":true, "name":"mybackup"}'
-```
+       {"password": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "id": "48ce000a-79b7-5fe6-8558-177fd70c27b4"}
 
-4. The output will the id of the backup:
-```
-1
-```
+3. Create a new daily backup named `mybackup` with a retention of 3
+   snapshots (3 days) which includes `dokuwiki1` and `dnsmasq1` instances:
+
+       api-cli run add-backup --data '{"repository":"48ce000a-79b7-5fe6-8558-177fd70c27b4","schedule":"daily","retention":3,"instances":["dokuwiki1","dnsmasq1"],"enabled":true, "name":"mybackup"}'
+
+
+4. The output will the id of the backup, e.g. `1`
 
 5. Run the backup with id `1`:
-```
-api-cli run run-backup --data '{"id":1}'
-```
 
-For debugging purposes, you can also launch systemd units:
-- rootless container, eg. `dokuwiki1`: `runagent -m dokuwiki1 systemctl --user start backup1.service`
-- rootfull container, eg. `dnsmasq1`: systemctl start backup1-dnsmasq1.service
+       runagent -m node run-backup --backup 1
 
 To remove the backup use:
-```
-api-cli run remove-backup --data '{"id":1}'
-```
+
+    api-cli run remove-backup --data '{"id":1}'
+
 
 To remove the backup repository:
-```
-api-cli run remove-backup-repository --data '{"id":"c7a9cfea-303c-5104-8ab7-39ac9f9842bd"}'
-```
+
+    api-cli run remove-backup-repository --data '{"id":"c7a9cfea-303c-5104-8ab7-39ac9f9842bd"}'
 
 ## Execute a restore
 
 Before executing a restore, the backup repository should already be configured.
 
-Restore the `dokuwiki1` instance at node `1` from repository `48ce000a-79b7-5fe6-8558-177fd70c27b4`:
-```
-api-cli run cluster/restore-module --data '{"node":1, "repository":"48ce000a-79b7-5fe6-8558-177fd70c27b4", "path":"dokuwiki/dokuwiki1@3792c7db-9450-4bd3-84a3-034cd0087839","snapshot":""}'
-```
+Restore latest snapshot of the `dokuwiki1` module on node `1` from
+repository `48ce000a-79b7-5fe6-8558-177fd70c27b4`:
+
+    api-cli run cluster/restore-module --data '{"node":1, "repository":"48ce000a-79b7-5fe6-8558-177fd70c27b4", "path":"dokuwiki/3792c7db-9450-4bd3-84a3-034cd0087839","snapshot":""}'
 
 ## Cluster configuration backup
+
+The `run-backup` command on the leader node automatically uploads an
+encrypted copy of the cluster backup to each backup destination,
+alongside the application backups.
 
 The `cluster/download-cluster-backup` API returns a random URL path where an encrypted
 archive is available for download.
@@ -209,9 +163,10 @@ installation: upload the file and specify the password from the UI.
 
 ## The `restic-wrapper` command
 
-The Restic binary is not installed in the host system. NS8 runs Restic
-within a core container, preparing environment variables with values read
-from the Redis DB and properly mounting the application Podman volumes.
+The Restic binary is not provided by the Linux distribution. Instead, NS8
+runs Restic within a core container, preparing environment variables with
+values read from the Redis DB and properly mounting the application Podman
+volumes.
 
 The `restic-wrapper` command is designed to manually run Restic from the
 command line. It can help to restore individual files and directories, or

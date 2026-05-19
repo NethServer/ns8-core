@@ -246,6 +246,8 @@ The attribute of a backup schedule are stored in an HASH key under the
 |cluster/backup/{id} retention             |INTEGER |Number of snapshots to keep|
 |cluster/backup/{id} schedule              |STRING  |Schedule time using `onCalendar` systemd syntax|
 |cluster/backup/{id} schedule_hint         |STRING  |Schedule in JSON format for the UI|
+|cluster/backup/{id} instances             |STRING  |Space-separated list of module IDs|
+|cluster/backup/{id} uinstances            |STRING  |Space-separated list of UUIDs used to rebuild the `instances` field reference after module restoration|
 
 #### cluster/user_domain/
 
@@ -293,6 +295,7 @@ of the node (e.g. `node/1/...`).
 |node/{id}/default_instance/{image} |STRING     |A module ID for the given image ID|
 |node/{id}/environment              |HASH       |Node environment variables|
 |node/{id}/ui_name                  |STRING     |UI label for the node|
+|node/{id}/backup_status/{bkid}     |HASH       |Backup status information with Restic output for each module |
 
 
 ### module/
@@ -305,10 +308,8 @@ access to its keys under `module/{id}/`, where `{id}` is the module
 |---|----|-----------|
 |module/{id}/environment            |HASH|
 |module/{id}/roles/{role}           |SET        |glob patterns matching the actions that {role} can run. {role} is one of "owner", "reader"...|
-|module/{id}/backups                |SET        |List of backup numeric IDs|
 |module/{id}/flags                  |SET        |Images flags copied from `org.nethserver.flags` image label|
 |module/{id}/srv/{transport}/{service} | HASH   |Service discovery information for other modules. See [Service providers]({{site.baseurl}}/modules/service_providers) |
-|module/{id}/backup_status/{backup_id} | HASH   |Backup status information with Restic output |
 
 ### task/
 
@@ -384,3 +385,23 @@ For instance
   "data": ["cancel-task", "list-actions"]
 }
 ```
+
+### private/agents/
+
+Access to keys under the `private/agents/` prefix is restricted to cluster
+agent (read + write) and other authenticated agents (read-only).
+
+|key|type|description|
+|---|----|-----------|
+|private/agents/backup_destination/restic_password | HASH | Maps a backup destination ID to its restic password |
+
+
+### private/nodes/
+
+Access to keys under the `private/nodes/` prefix is restricted to cluster
+agent (read + write) and node agents (read-only).
+
+|key|type|description|
+|---|----|-----------|
+|private/nodes/backup_destination/rclone_conf | HASH | Maps a backup destination ID to its raw rclone configuration, that typically contains secret credentials |
+|private/nodes/restore_uuid | HASH | Maps a destination module UUID to a source module UUID. During module restoration the destination module must read the source module backup repository and this map establish the required trust between them, which is enforced by rclone-gateway.|
