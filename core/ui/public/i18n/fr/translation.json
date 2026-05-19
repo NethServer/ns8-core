@@ -520,7 +520,10 @@
         "additional_storage_available": "Additional volumes available",
         "select_node_volume_for_installation": "Select the volume installation on {node} for application data",
         "installation_node_for_app": "Installation node for {app} {version}",
-        "restart_application": "Restart application"
+        "restart_application": "Restart application",
+        "other_files_remain_on_default_volume": "Other application files remain on the default volume",
+        "node_volume_usage_percentage_used": "({percentage}% used)",
+        "node_volume_usage_free_vs_total": "{available} free of {total}"
     },
     "system_logs": {
         "dump": "Dump",
@@ -1183,7 +1186,8 @@
         "eg_value": "e.g. {value}",
         "not_configured": "Not configured",
         "go_to_page": "Go to {page}",
-        "core_app": "Core app"
+        "core_app": "Core app",
+        "unchanged_password": "Unchanged"
     },
     "error": {
         "403": "Operation not authorized",

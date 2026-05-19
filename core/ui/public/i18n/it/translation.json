@@ -169,7 +169,10 @@
         "additional_storage_available": "Volumi aggiuntivi disponibili",
         "select_node_volume_for_installation": "Selezionare il volume su {node} per memorizzare i dati dell'applicazione",
         "installation_node_for_app": "Nodo di installazione per {app} {version}",
-        "restart_application": "Riavvio applicazione"
+        "restart_application": "Riavvio applicazione",
+        "other_files_remain_on_default_volume": "Other application files remain on the default volume",
+        "node_volume_usage_percentage_used": "({percentage}% used)",
+        "node_volume_usage_free_vs_total": "{available} free of {total}"
     },
     "nodes": {
         "title": "Nodi",
@@ -653,7 +656,7 @@
     "action": {
         "configure-module": "Configura applicazione",
         "list-backups": "Elenca backup",
-        "list-backup-repositories": "Elenca repository di backup",
+        "list-backup-repositories": "Elenca i repository di backup",
         "add-backup-repository": "Aggiungi destinazione backup",
         "set-certificate": "Imposta certificato",
         "set-default-certificate": "Richiedi certificato",
@@ -1115,12 +1118,13 @@
         "eg_value": "es. {value}",
         "go_to_page": "Vai a {page}",
         "not_configured": "Non configurato",
-        "core_app": "App core"
+        "core_app": "App core",
+        "unchanged_password": "Unchanged"
     },
     "error": {
         "error": "Errore",
         "validation_error": "Errore di validazione",
-        "network_error": "Errore di rete",
+        "network_error": "Errore di rete. Controlla la connessione e ricarica la pagina.",
         "404": "Risorsa non trovata",
         "network_timeout": "Timeout di rete",
         "generic_error": "Qualcosa è andato storto",
