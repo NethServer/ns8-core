@@ -271,9 +271,7 @@ def parse_rclone_params(rclone_conf, hide_secrets=False):
     dsection = dict(cp[section])
 
     rtype = dsection.get('type', '')
-    result = {
-        "type": rtype,
-    }
+    result = {}
     if rtype == 'b2':
         result['b2_account_id'] = dsection.get('account', '')
         if hide_secrets:

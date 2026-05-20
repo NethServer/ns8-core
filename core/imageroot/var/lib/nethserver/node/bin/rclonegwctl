@@ -73,8 +73,8 @@ def write_haproxy_cfg(file_path, rdb):
             print(f"[WARNING] Failed to obtain configuration of {dest_uuid}!", ex, file=sys.stderr)
             continue
 
-        dtype = oconf.get('type', 'ty')
         durl = backup_conf.get('url', '')
+        dtype = oconf.get('type', durl.split(':', 1)[0]) or "ty"
 
         if backup_conf['provider'] == 'cluster':
             dest_fe_cfg, dest_be_cfg = generate_haproxy_internal_cfg(dtype, dest_uuid, oconf, durl, mnode_addr)
