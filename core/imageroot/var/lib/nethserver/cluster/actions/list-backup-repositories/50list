@@ -42,6 +42,7 @@ for repoid, rclone_conf in rdb.hgetall('private/nodes/backup_destination/rclone_
         "password": restic_password,
         "parameters": cluster.backup.parse_rclone_params(rclone_conf, hide_secrets=True),
     }
+    orepo['basepath'] = parameters.get('basepath', '')
     brepos.append(orepo)
 
 

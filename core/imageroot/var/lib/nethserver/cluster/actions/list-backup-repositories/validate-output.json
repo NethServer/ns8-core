@@ -12,6 +12,7 @@
           "name": "BackBlaze repo1",
           "url": "b2:backupex1",
           "password": "",
+          "basepath": "",
           "parameters": {
             "b2_account_id": "xxxxxxxxxxxxxx",
             "b2_account_key": ""
