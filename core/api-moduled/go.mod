@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.3
-	github.com/gin-contrib/cors v1.6.0
+	github.com/gin-contrib/cors v1.7.7
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/static v1.1.6
 	github.com/gin-gonic/gin v1.12.0
@@ -53,7 +53,7 @@ require (
 	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/arch v0.22.0 // indirect
+	golang.org/x/arch v0.23.0 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.51.0 // indirect
