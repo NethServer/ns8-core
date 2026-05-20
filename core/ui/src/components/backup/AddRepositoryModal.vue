@@ -41,6 +41,75 @@
           </div>
           <cv-grid>
             <cv-row>
+              <!-- Cluster -->
+              <cv-column :md="4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isClusterSelected"
+                  value="providerValue"
+                  @click="selectCluster()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/node_storage.png')"
+                        alt="cluster logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.cluster") }}
+                    </h6>
+                  </div>
+                </NsTile>
+              </cv-column>
+              <!-- samba -->
+              <cv-column :md="4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isSambaSelected"
+                  value="providerValue"
+                  @click="selectSamba()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/samba.png')"
+                        alt="samba logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.samba") }}
+                    </h6>
+                  </div>
+                </NsTile>
+              </cv-column>
+              <!-- amazon s3 -->
+              <cv-column :md="4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isAmazonS3Selected"
+                  value="providerValue"
+                  @click="selectAmazonS3()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/aws.png')"
+                        alt="amazon s3 logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.aws") }}
+                    </h6>
+                  </div>
+                </NsTile>
+              </cv-column>
               <!-- backblaze -->
               <cv-column :md="4">
                 <NsTile
@@ -60,52 +129,6 @@
                     </div>
                     <h6>
                       {{ $t("backup.backblaze") }}
-                    </h6>
-                  </div>
-                </NsTile>
-              </cv-column>
-              <!-- azure -->
-              <cv-column :md="4">
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  v-model="isAzureSelected"
-                  value="providerValue"
-                  @click="selectAzure()"
-                  class="provider-card"
-                >
-                  <div class="provider-card-content">
-                    <div class="provider-icon">
-                      <img
-                        :src="require('@/assets/azure.png')"
-                        alt="azure logo"
-                      />
-                    </div>
-                    <h6>
-                      {{ $t("backup.azure") }}
-                    </h6>
-                  </div>
-                </NsTile>
-              </cv-column>
-              <!-- amazon s3 -->
-              <cv-column :md="4">
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  v-model="isAmazonS3Selected"
-                  value="providerValue"
-                  @click="selectAmazonS3()"
-                  class="provider-card"
-                >
-                  <div class="provider-card-content">
-                    <div class="provider-icon">
-                      <img
-                        :src="require('@/assets/s3.png')"
-                        alt="amazon s3 logo"
-                      />
-                    </div>
-                    <h6>
-                      {{ $t("backup.aws") }}
                     </h6>
                   </div>
                 </NsTile>
@@ -133,57 +156,25 @@
                   </div>
                 </NsTile>
               </cv-column>
-              <!-- samba -->
+              <!-- rclone -->
               <cv-column :md="4">
                 <NsTile
                   :light="true"
                   kind="selectable"
-                  v-model="isSambaSelected"
+                  v-model="isRcloneSelected"
                   value="providerValue"
-                  @click="selectSamba()"
+                  @click="selectRclone()"
                   class="provider-card"
                 >
                   <div class="provider-card-content">
                     <div class="provider-icon">
                       <img
-                        :src="require('@/assets/samba.png')"
-                        alt="samba logo"
+                        :src="require('@/assets/rclone.png')"
+                        alt="rclone logo"
                       />
                     </div>
                     <h6>
-                      {{ $t("backup.samba") }}
-                      <cv-interactive-tooltip
-                        alignment="center"
-                        direction="bottom"
-                        class="info"
-                      >
-                        <template slot="content">
-                          {{ $t("backup.samba_tooltips") }}
-                        </template>
-                      </cv-interactive-tooltip>
-                    </h6>
-                  </div>
-                </NsTile>
-              </cv-column>
-              <!-- Cluster -->
-              <cv-column :md="4">
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  v-model="isClusterSelected"
-                  value="providerValue"
-                  @click="selectCluster()"
-                  class="provider-card"
-                >
-                  <div class="provider-card-content">
-                    <div class="provider-icon">
-                      <img
-                        :src="require('@/assets/logo.png')"
-                        alt="cluster logo"
-                      />
-                    </div>
-                    <h6>
-                      {{ $t("backup.cluster") }}
+                      {{ $t("backup.rclone") }}
                     </h6>
                   </div>
                 </NsTile>
@@ -292,36 +283,106 @@
               ref="aws_secret_access_key"
             ></cv-text-input>
           </template>
-          <!-- azure -->
-          <template v-if="isAzureSelected">
-            <cv-text-input
-              :label="$t('backup.azure_url_label')"
-              v-model.trim="url"
-              :invalid-message="error.url"
-              :disabled="loading.addBackupRepository"
-              ref="url"
+          <!-- rclone -->
+
+          <template v-if="isRcloneSelected">
+            <div>
+              <label for="filter" :class="`${carbonPrefix}--label`">{{
+                $t("backup.rclone_configuration_source")
+              }}</label>
+              <cv-radio-group
+                :vertical="true"
+                :disabled="loading.addBackupRepository"
+              >
+                <cv-radio-button
+                  ref="paste_configuration"
+                  :label="
+                    $t('backup.rclone_configuration_source_paste_configuration')
+                  "
+                  value="paste"
+                  v-model="rclone.configuration_source"
+                />
+                <cv-radio-button
+                  ref="upload_configuration"
+                  :label="
+                    $t(
+                      'backup.rclone_configuration_source_upload_configuration'
+                    )
+                  "
+                  value="upload"
+                  v-model="rclone.configuration_source"
+                />
+              </cv-radio-group>
+            </div>
+            <div
+              v-if="rclone.configuration_source == 'paste'"
+              class="mg-top-md"
             >
-            </cv-text-input>
-            <cv-text-input
-              :label="$t('backup.azure_account_name')"
-              v-model.trim="azure.azure_account_name"
-              :invalid-message="error.azure.azure_account_name"
+              <cv-text-area
+                :label="$t('backup.rclone_configuration_content')"
+                v-model.trim="rclone.configuration_content"
+                :invalid-message="error.rclone.configuration_content"
+                :helper-text="
+                  $t(
+                    'backup.rclone_configuration_content_single_destination_helper_text'
+                  )
+                "
+                :value="rclone.configuration_content"
+                rows="5"
+                class="maxwidth"
+                ref="rclone_configuration_content"
+                :disabled="loading.addBackupRepository"
+              >
+              </cv-text-area>
+            </div>
+            <div v-else>
+              <cv-file-uploader
+                :key="componentKey"
+                :label="$t('backup.rclone_configuration_file')"
+                :multiple="false"
+                :removable="true"
+                :clear-on-reselect="true"
+                :drop-target-label="
+                  $t('common.drag_and_drop_or_click_to_upload')
+                "
+                v-model="rclone.configuration_uploaded_file"
+                accept=".conf,.txt"
+                ref="backup_file"
+              ></cv-file-uploader>
+            </div>
+
+
+            
+            <!-- <cv-text-input
+              :label="$t('backup.rclone_destination_name')"
+              v-model.trim="rclone.destination_name"
+              :invalid-message="error.rclone.destination_name"
+              :disabled="loading.addBackupRepository"
+              ref="rclone_destination_name"
+            >
+            </cv-text-input> -->
+
+
+            <!-- <cv-text-input
+              :label="$t('backup.rclone_account_name')"
+              v-model.trim="rclone.rclone_account_name"
+              :invalid-message="error.rclone.rclone_account_name"
               :disabled="loading.addBackupRepository"
               autocomplete="off"
-              ref="azure_account_name"
+              ref="rclone_account_name"
             >
             </cv-text-input>
             <cv-text-input
-              :label="$t('backup.azure_account_key')"
+              :label="$t('backup.rclone_account_key')"
               type="password"
-              v-model.trim="azure.azure_account_key"
+              v-model.trim="rclone.rclone_account_key"
               :disabled="loading.addBackupRepository"
-              :invalid-message="error.aws.azure_account_key"
+              :invalid-message="error.aws.rclone_account_key"
               :password-hide-label="$t('password.hide_password')"
               :password-show-label="$t('password.show_password')"
               autocomplete="new-password"
-              ref="azure_account_key"
-            ></cv-text-input>
+              ref="rclone_account_key"
+            ></cv-text-input> -->
           </template>
           <!-- generic s3 -->
           <template v-if="isGenericS3Selected">
@@ -433,6 +494,7 @@
                   "
                   v-model="password"
                   :helper-text="$t('backup.repository_password_helper')"
+                  :placeholder="$t('backup.data_encryption_key_placeholder')"
                   :invalid-message="error.password"
                   :disabled="loading.addBackupRepository"
                   autocomplete="new-password"
@@ -483,11 +545,11 @@ export default {
     return {
       BACKBLAZE_PROTOCOL: "b2:",
       AWS_PROTOCOL: "s3:",
-      AZURE_PROTOCOL: "azure:",
+      AZURE_PROTOCOL: "rclone:",
       step: "",
       steps: ["provider", "nodes", "settings"],
       isBackblazeSelected: false,
-      isAzureSelected: false,
+      isRcloneSelected: false,
       isAmazonS3Selected: false,
       isGenericS3Selected: false,
       isSambaSelected: false,
@@ -520,10 +582,14 @@ export default {
         aws_secret_access_key: "",
         repoPrefix: "s3:",
       },
-      azure: {
-        azure_account_key: "",
-        azure_account_name: "",
-        repoPrefix: "azure:",
+      rclone: {
+        // rclone_account_key: "",
+        // rclone_account_name: "",
+        // repoPrefix: "rclone:",
+        configuration_source: "paste",
+        configuration_content: "",
+        destination_name: "",
+        configuration_uploaded_file: null,
       },
       cluster: {
         repoPrefix: "",
@@ -561,9 +627,12 @@ export default {
           aws_access_key_id: "",
           aws_default_region: "",
         },
-        azure: {
-          azure_account_key: "",
-          azure_account_name: "",
+        rclone: {
+          // rclone_account_key: "",
+          // rclone_account_name: "",
+          configuration_content: "",
+          destination_name: "",
+          configuration_source: "",
         },
         //// handle all providers
       },
@@ -596,8 +665,8 @@ export default {
         return "aws";
       } else if (this.isGenericS3Selected) {
         return "genericS3";
-      } else if (this.isAzureSelected) {
-        return "azure";
+      } else if (this.isRcloneSelected) {
+        return "rclone";
       } else if (this.isSambaSelected) {
         return "smb";
       } else if (this.isClusterSelected) {
@@ -694,29 +763,8 @@ export default {
           this.getClusterStatus();
         }
       } else if (this.step == "settings") {
-        // prefill repository name
-        let repoName = this.$t("backup.default_repository_name", {
-          provider: this.getProviderShortName(),
-        });
-
-        // ensure we don't generate an already existing repo name
-        let isRepoNameDuplicated = this.repositories.find(
-          (b) => b.name == repoName
-        );
-        let repoNameSuffix = 2;
-
-        while (isRepoNameDuplicated) {
-          repoName =
-            this.$t("backup.default_repository_name", {
-              provider: `${this.getProviderShortName()}`,
-            }) + ` (${repoNameSuffix})`;
-
-          isRepoNameDuplicated = this.repositories.find(
-            (b) => b.name == repoName
-          );
-          repoNameSuffix++;
-        }
-        this.name = repoName;
+        // do not prefill repository name — leave input empty
+        this.name = "";
         if (this.selectedProvider == "smb") {
           this.focusElement("smb_host");
         } else if (this.selectedProvider != "cluster") {
@@ -780,7 +828,7 @@ export default {
     clearFields() {
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
       this.isSambaSelected = false;
       this.isClusterSelected = false;
       this.name = "";
@@ -797,8 +845,8 @@ export default {
       this.genericS3.aws_access_key_id = "";
       this.genericS3.aws_secret_access_key = "";
 
-      this.azure.azure_account_name = "";
-      this.azure.azure_account_key = "";
+      this.rclone.rclone_account_name = "";
+      this.rclone.rclone_account_key = "";
 
       this.smb.smb_host = "";
       this.smb.smb_user = "";
@@ -835,7 +883,7 @@ export default {
     },
     selectBackblaze() {
       //// handle ALL providers
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
       this.isSambaSelected = false;
@@ -844,7 +892,7 @@ export default {
     selectAmazonS3() {
       //// handle ALL providers
       this.isBackblazeSelected = false;
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
       this.isGenericS3Selected = false;
       this.isSambaSelected = false;
       this.isClusterSelected = false;
@@ -852,7 +900,7 @@ export default {
     selectSamba() {
       //// handle ALL providers
       this.isBackblazeSelected = false;
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
       this.isGenericS3Selected = false;
       this.isAmazonS3Selected = false;
       this.isClusterSelected = false;
@@ -860,12 +908,12 @@ export default {
     selectGenericS3() {
       //// handle ALL providers
       this.isBackblazeSelected = false;
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
       this.isAmazonS3Selected = false;
       this.isSambaSelected = false;
       this.isClusterSelected = false;
     },
-    selectAzure() {
+    selectRclone() {
       //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
@@ -879,7 +927,7 @@ export default {
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
       this.isSambaSelected = false;
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
     },
     buildRepositoryParameters() {
       switch (this.selectedProvider) {
@@ -899,10 +947,10 @@ export default {
             aws_access_key_id: this.genericS3.aws_access_key_id,
             aws_secret_access_key: this.genericS3.aws_secret_access_key,
           };
-        case "azure":
+        case "rclone":
           return {
-            azure_account_name: this.azure.azure_account_name,
-            azure_account_key: this.azure.azure_account_key,
+            rclone_account_name: this.rclone.rclone_account_name,
+            rclone_account_key: this.rclone.rclone_account_key,
           };
         case "smb":
           return {
@@ -1095,14 +1143,14 @@ export default {
       }
       return isValidationOk;
     },
-    validateAddAzureRepository() {
+    validateAddRcloneRepository() {
       // clear errors
       this.error.name = "";
       this.error.url = "";
       this.error.repoConnection = "";
 
-      this.error.azure.azure_account_name = "";
-      this.error.azure.azure_account_key = "";
+      this.error.rclone.rclone_account_name = "";
+      this.error.rclone.rclone_account_key = "";
 
       let isValidationOk = true;
 
@@ -1123,20 +1171,20 @@ export default {
         }
       }
 
-      if (!this.azure.azure_account_name) {
-        this.error.azure.azure_account_name = this.$t("common.required");
+      if (!this.rclone.rclone_account_name) {
+        this.error.rclone.rclone_account_name = this.$t("common.required");
 
         if (isValidationOk) {
-          this.focusElement("azure_account_name");
+          this.focusElement("rclone_account_name");
           isValidationOk = false;
         }
       }
 
-      if (!this.azure.azure_account_key) {
-        this.error.azure.azure_account_key = this.$t("common.required");
+      if (!this.rclone.rclone_account_key) {
+        this.error.rclone.rclone_account_key = this.$t("common.required");
 
         if (isValidationOk) {
-          this.focusElement("azure_account_key");
+          this.focusElement("rclone_account_key");
           isValidationOk = false;
         }
       }
@@ -1266,8 +1314,8 @@ export default {
       switch (this.selectedProvider) {
         case "backblaze":
           return this.validateAddBackblazeRepository();
-        case "azure":
-          return this.validateAddAzureRepository();
+        case "rclone":
+          return this.validateAddRcloneRepository();
         case "aws":
           return this.validateAmazonS3Repository();
         case "genericS3":
@@ -1367,9 +1415,7 @@ export default {
       this.$emit("repoCreated");
       this.$emit("hide");
     },
-    getProviderShortName() {
-      return this.$t(`backup.${this.selectedProvider}_short`);
-    },
+    
     async listBackupEndpoints() {
       this.loading.listBackupEndpoints = true;
       this.error.listBackupEndpoints = "";
@@ -1463,5 +1509,9 @@ export default {
 .provider-icon img {
   width: 100%;
   height: 100%;
+}
+
+.maxwidth {
+  max-width: 38rem;
 }
 </style>
