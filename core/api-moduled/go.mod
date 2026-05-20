@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.3
 	github.com/gin-contrib/cors v1.6.0
-	github.com/gin-contrib/gzip v0.0.6
+	github.com/gin-contrib/gzip v1.2.6
 	github.com/gin-contrib/static v1.1.6
 	github.com/gin-gonic/gin v1.12.0
 	github.com/spf13/viper v1.17.0
