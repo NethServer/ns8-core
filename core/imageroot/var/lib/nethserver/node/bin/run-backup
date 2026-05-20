@@ -128,12 +128,11 @@ def update_repopath_json(rdb, repository, backup_id, module_id, repopath, succes
 def upload_cluster_backup(rdb, repository, backup_id, cluster_uuid):
     """Generate and upload the cluster backup to the remote destination."""
     dump_path = "/var/lib/nethserver/cluster/state/backup/dump.json.gz.gpg"
-    if not os.path.isfile(dump_path):
-        try:
-            subprocess.run(["runagent", "-m", "cluster", "cluster-backup"], check=True)
-        except subprocess.CalledProcessError as ex:
-            print(f"[ERROR] cluster-backup failed: {ex}", file=sys.stderr)
-            return
+    try:
+        subprocess.run(["runagent", "-m", "cluster", "cluster-backup"], check=True)
+    except subprocess.CalledProcessError as ex:
+        print(f"[ERROR] cluster-backup failed: {ex}", file=sys.stderr)
+        return
     remote_name = f"{repository}/cluster-backup-{cluster_uuid}.json.gz.gpg"
     try:
         with open(dump_path, "rb") as f:
