@@ -129,7 +129,7 @@ class LdapclientRfc2307(LdapclientBase):
     def list_users(self, extra_info=False):
         attributes = ['displayName', 'uid', 'pwdAccountLockedTime']
         if extra_info:
-            attributes += ['mail', 'pwdChangedTime', 'createTimestamp']
+            attributes += ['mail', 'pwdChangedTime', 'createTimestamp', 'pwdPolicySubentry']
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson){self._get_users_search_filter_clause()})',
             attributes=self.filter_schema_attributes(attributes),
         )[2]
@@ -147,7 +147,10 @@ class LdapclientRfc2307(LdapclientBase):
 
             if extra_info:
                 pwd_changed_time = entry['attributes'].get('pwdChangedTime', entry['attributes'].get('createTimestamp', None))
-                if pwd_changed_time and max_pwd_age:
+                pwd_policy_subentry = entry['attributes'].get('pwdPolicySubentry') or ''
+                # ldap3 returns '' for single-valued attributes when present, [] when missing
+                has_neverexpires = pwd_policy_subentry.startswith('cn=neverexpires,ou=PPolicy,')
+                if not has_neverexpires and pwd_changed_time and max_pwd_age:
                     expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age)
                     user["expired"] = datetime.datetime.now(datetime.timezone.utc) > expiry_date
                     user["password_expiration"] = int(expiry_date.timestamp())
