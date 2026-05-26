@@ -120,12 +120,14 @@ export default {
       // select the first additional volume by default
       additionalVolumes.forEach((volume, index) => {
         volume.selected = index === 0;
-        // Compute usage percentage (handles both list-mountpoints "size" and list-nodes "total")
+        // Compute usage percentage using (total - available) / total,
+        // consistent with NodeDetail which uses (total - free) / total via Prometheus.
+        // This correctly accounts for filesystem reserved blocks (e.g. ext4 5% reserve).
         const total = Number(volume.size || volume.total);
-        const used = Number(volume.used);
+        const avail = Number(volume.available);
         volume.usage =
-          total > 0 && Number.isFinite(used)
-            ? Math.round((used / total) * 100)
+          total > 0 && Number.isFinite(avail)
+            ? Math.round(((total - avail) / total) * 100)
             : 0;
       });
       this.additionalVolumes = additionalVolumes;
