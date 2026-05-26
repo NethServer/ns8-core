@@ -8,27 +8,18 @@
     :visible="isShown"
     @modal-hidden="$emit('hide')"
     @primary-click="alterBackupRepository"
-    :primary-button-disabled="loading.alterBackupRepository"
+    :primary-button-disabled="loading.alterBackupRepository || loading.fileReading"
   >
-    <template slot="title">{{ $t("backup.edit_backup_repository") }}</template>
+    <template slot="title">{{ $t("backup.edit_destination") }}</template>
     <template slot="content">
       <cv-form @submit.prevent="alterBackupRepository">
         <NsInlineNotification
           v-if="error.repoConnection"
           kind="error"
-          :title="$t('backup.backup_repository_auth_error')"
-          :description="$t('backup.backup_repository_auth_error_description')"
-          @click="goToNotificationDrawer"
-          :actionLabel="$t('backup.go_to_notification_drawer')"
+          :title="$t('backup.backup_repository_connection_error')"
+          :description="$t('backup.' + error.repoConnection)"
           :showCloseButton="false"
         />
-        <cv-text-input
-          :label="$t('backup.url')"
-          v-model.trim="repository.url"
-          disabled
-          ref="url"
-        >
-        </cv-text-input>
         <!-- backblaze -->
         <template v-if="repository.provider == 'backblaze'">
           <cv-text-input
@@ -144,38 +135,125 @@
           >
           </cv-text-input>
         </template>
-        <!-- azure -->
-        <template v-if="repository.provider == 'azure'">
+        <!-- rclone -->
+        <template v-if="repository.provider == 'rclone'">
+          <div>
+            <label class="bx--label">{{
+              $t("backup.rclone_configuration_source")
+            }}</label>
+            <cv-radio-group
+              :vertical="true"
+              :disabled="loading.alterBackupRepository"
+            >
+              <cv-radio-button
+                :label="
+                  $t('backup.rclone_configuration_source_keep_configuration')
+                "
+                value="keep"
+                v-model="rclone.configuration_source"
+              />
+              <cv-radio-button
+                :label="
+                  $t('backup.rclone_configuration_source_paste_configuration')
+                "
+                value="paste"
+                v-model="rclone.configuration_source"
+              />
+              <cv-radio-button
+                :label="
+                  $t('backup.rclone_configuration_source_upload_configuration')
+                "
+                value="upload"
+                v-model="rclone.configuration_source"
+              />
+            </cv-radio-group>
+          </div>
+          <template v-if="rclone.configuration_source == 'paste'">
+            <cv-text-area
+              class="mg-top-md maxwidth"
+              :label="$t('backup.rclone_configuration_content')"
+              v-model.trim="rclone.rclone_conf_secret"
+              :invalid-message="error.rclone.rclone_conf_secret"
+              :helper-text="
+                $t(
+                  'backup.rclone_configuration_content_single_destination_helper_text'
+                )
+              "
+              :value="rclone.rclone_conf_secret"
+              rows="5"
+              ref="rclone_conf_secret"
+              :disabled="loading.alterBackupRepository"
+            ></cv-text-area>
+          </template>
+          <template v-else-if="rclone.configuration_source == 'upload'">
+            <div
+              :class="{
+                'file-uploader-error': error.rclone.configuration_file,
+              }"
+            >
+              <cv-file-uploader
+                :key="componentKey"
+                :label="$t('backup.rclone_configuration_file')"
+                :helper-text="$t('backup.rclone_configuration_file_helper')"
+                :multiple="false"
+                :removable="true"
+                :clear-on-reselect="true"
+                :drop-target-label="
+                  $t('common.drag_and_drop_or_click_to_upload')
+                "
+                v-model="rclone.configuration_uploaded_file"
+                accept=".conf,.txt"
+                ref="backup_file"
+              ></cv-file-uploader>
+              <div
+                v-if="error.rclone.configuration_file"
+                class="validation-failed-invalid-message"
+              >
+                {{ error.rclone.configuration_file }}
+              </div>
+            </div>
+          </template>
           <cv-text-input
-            :label="$t('backup.azure_account_name')"
-            v-model.trim="azure.azure_account_name"
-            :invalid-message="$t(error.azure.azure_account_name)"
+            :label="$t('backup.rclone_base_path') + ' (' + $t('common.optional') + ')'"
+            v-model.trim="rclone.base_path"
+            :invalid-message="error.rclone.base_path"
             :disabled="loading.alterBackupRepository"
-            ref="azure_account_name"
-          >
-          </cv-text-input>
-          <cv-text-input
-            :placeholder="$t('common.unchanged_password')"
-            :label="$t('backup.azure_account_key')"
-            v-model.trim="azure.azure_account_key"
-            :invalid-message="$t(error.azure.azure_account_key)"
-            :disabled="loading.alterBackupRepository"
-            type="password"
-            :password-hide-label="$t('password.hide_password')"
-            :password-show-label="$t('password.show_password')"
-            ref="azure_account_key"
-          >
-          </cv-text-input>
+            ref="rclone_base_path"
+          ></cv-text-input>
         </template>
         <cv-text-input
           :label="$t('backup.repository_name')"
           v-model.trim="name"
           :helper-text="$t('backup.repository_name_helper')"
-          :invalid-message="$t(error.name)"
+          :invalid-message="error.name"
           :disabled="loading.alterBackupRepository"
           ref="name"
         >
         </cv-text-input>
+        <!-- advanced options (read-only) -->
+        <cv-accordion>
+          <cv-accordion-item :open="false">
+            <template slot="title">{{ $t("common.advanced") }}</template>
+            <template slot="content">
+              <NsTextInput
+                :label="
+                  $t('backup.data_encryption_key') +
+                  ' (' +
+                  $t('common.optional') +
+                  ')'
+                "
+                :value="repository.password"
+                :helper-text="$t('backup.repository_password_helper')"
+                :placeholder="$t('backup.data_encryption_key_placeholder')"
+                disabled
+              >
+                <template slot="tooltip">
+                  {{ $t("backup.data_encryption_key_tooltip") }}
+                </template>
+              </NsTextInput>
+            </template>
+          </cv-accordion-item>
+        </cv-accordion>
         <NsInlineNotification
           v-if="error.addBackupRepository"
           kind="error"
@@ -193,7 +271,6 @@
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import { mapActions } from "vuex";
 
 export default {
   name: "EditRepositoryModal",
@@ -224,10 +301,6 @@ export default {
         aws_access_key_id: "",
         aws_secret_access_key: "",
       },
-      azure: {
-        azure_account_name: "",
-        azure_account_key: "",
-      },
       cluster: {},
       smb: {
         smb_host: "",
@@ -235,9 +308,17 @@ export default {
         smb_pass: "",
         smb_domain: "",
       },
+      rclone: {
+        configuration_source: "keep",
+        rclone_conf_secret: "",
+        base_path: "",
+        configuration_uploaded_file: null,
+      },
+      componentKey: Date.now(),
       //// handle all providers
       loading: {
         alterBackupRepository: false,
+        fileReading: false,
       },
       error: {
         name: "",
@@ -255,16 +336,17 @@ export default {
           aws_access_key_id: "",
           aws_secret_access_key: "",
         },
-        azure: {
-          azure_account_name: "",
-          azure_account_key: "",
-        },
         cluster: {},
         smb: {
           smb_host: "",
           smb_user: "",
           smb_pass: "",
           smb_domain: "",
+        },
+        rclone: {
+          rclone_conf_secret: "",
+          base_path: "",
+          configuration_file: "",
         },
         //// handle all providers
       },
@@ -281,46 +363,53 @@ export default {
             case "backblaze":
               this.backblaze.b2_account_id =
                 this.repository.parameters.b2_account_id;
-              this.backblaze.b2_account_key =
-                this.repository.parameters.b2_account_key;
+              this.backblaze.b2_account_key = "";
               break;
             case "aws":
               this.aws.aws_access_key_id =
                 this.repository.parameters.aws_access_key_id;
               this.aws.aws_default_region =
                 this.repository.parameters.aws_default_region;
-              this.aws.aws_secret_access_key =
-                this.repository.parameters.aws_secret_access_key;
+              this.aws.aws_secret_access_key = "";
               break;
             case "generic-s3":
               this.genericS3.aws_access_key_id =
                 this.repository.parameters.aws_access_key_id;
-              this.genericS3.aws_secret_access_key =
-                this.repository.parameters.aws_secret_access_key;
+              this.genericS3.aws_secret_access_key = "";
               break;
             case "smb":
               this.smb.smb_host = this.repository.parameters.smb_host;
               this.smb.smb_domain = this.repository.parameters.smb_domain;
               this.smb.smb_user = this.repository.parameters.smb_user;
-              this.smb.smb_pass = this.repository.parameters.smb_pass;
+              this.smb.smb_pass = "";
               break;
-            case "azure":
-              this.azure.azure_account_name =
-                this.repository.parameters.azure_account_name;
-              this.azure.azure_account_key =
-                this.repository.parameters.azure_account_key;
+            case "rclone":
+              this.rclone.configuration_source = "keep";
+              this.rclone.rclone_conf_secret = "";
+              this.rclone.base_path = this.repository.basepath || "";
+              this.rclone.configuration_uploaded_file = null;
+              this.componentKey = Date.now();
               break;
           }
         });
       }
     },
+    "rclone.configuration_uploaded_file": function (newFiles) {
+      if (newFiles && newFiles.length > 0 && newFiles[0].file) {
+        const reader = new FileReader();
+        this.loading.fileReading = true;
+        reader.onload = (e) => {
+          this.rclone.rclone_conf_secret = e.target.result.trim();
+          this.loading.fileReading = false;
+        };
+        reader.readAsText(newFiles[0].file);
+      } else {
+        this.rclone.rclone_conf_secret = "";
+        this.loading.fileReading = false;
+      }
+    },
   },
   methods: {
-    ...mapActions(["setNotificationDrawerShownInStore"]),
-    goToNotificationDrawer() {
-      this.$emit("hide");
-      this.setNotificationDrawerShownInStore(true);
-    },
     buildRepositoryParameters() {
       switch (this.repository.provider) {
         case "backblaze":
@@ -339,11 +428,14 @@ export default {
             aws_access_key_id: this.genericS3.aws_access_key_id,
             aws_secret_access_key: this.genericS3.aws_secret_access_key,
           };
-        case "azure":
+        case "rclone": {
+          const secret = this.rclone.rclone_conf_secret;
           return {
-            azure_account_name: this.azure.azure_account_name,
-            azure_account_key: this.azure.azure_account_key,
+            rclone_conf_secret:
+              secret && !secret.endsWith("\n") ? secret + "\n" : secret,
+            basepath: this.rclone.base_path,
           };
+        }
         case "cluster":
           return {};
         case "smb":
@@ -376,7 +468,7 @@ export default {
       }
 
       if (!this.name) {
-        this.error.name = "common.required";
+        this.error.name = this.$t("common.required");
 
         if (isValidationOk) {
           this.focusElement("name");
@@ -415,7 +507,7 @@ export default {
       }
 
       if (!this.name) {
-        this.error.name = "common.required";
+        this.error.name = this.$t("common.required");
 
         if (isValidationOk) {
           this.focusElement("name");
@@ -427,7 +519,6 @@ export default {
     validateAlterSambaRepository() {
       // clear errors
       this.error.name = "";
-      this.error.url = "";
       this.error.repoConnection = "";
 
       this.error.smb.smb_host = "";
@@ -494,35 +585,6 @@ export default {
       }
 
       if (!this.name) {
-        this.error.name = "common.required";
-
-        if (isValidationOk) {
-          this.focusElement("name");
-          isValidationOk = false;
-        }
-      }
-      return isValidationOk;
-    },
-    validateAlterAzureRepository() {
-      // clear errors
-      this.error.name = "";
-      this.error.repoConnection = "";
-
-      this.error.azure.azure_account_name = "";
-      this.error.azure.azure_account_key = "";
-
-      let isValidationOk = true;
-
-      if (!this.azure.azure_account_name) {
-        this.error.azure.azure_account_name = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("azure_account_name");
-          isValidationOk = false;
-        }
-      }
-
-      if (!this.name) {
         this.error.name = this.$t("common.required");
 
         if (isValidationOk) {
@@ -535,10 +597,54 @@ export default {
     validateAlterClusterRepository() {
       // clear errors
       this.error.name = "";
-      this.error.url = "";
       this.error.repoConnection = "";
 
       let isValidationOk = true;
+
+      if (!this.name) {
+        this.error.name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    validateAlterRcloneRepository() {
+      // clear errors
+      this.error.name = "";
+      this.error.repoConnection = "";
+      this.error.rclone.rclone_conf_secret = "";
+      this.error.rclone.base_path = "";
+      this.error.rclone.configuration_file = "";
+
+      let isValidationOk = true;
+
+      if (this.rclone.configuration_source === "paste") {
+        if (!this.rclone.rclone_conf_secret) {
+          this.error.rclone.rclone_conf_secret = this.$t("common.required");
+
+          if (isValidationOk) {
+            this.$nextTick(() => {
+              const el = this.$refs["rclone_conf_secret"];
+              if (el && el.$el) {
+                const textarea = el.$el.querySelector("textarea");
+                if (textarea) textarea.focus();
+              }
+            });
+            isValidationOk = false;
+          }
+        }
+      } else if (this.rclone.configuration_source === "upload") {
+        if (
+          !this.rclone.configuration_uploaded_file ||
+          this.rclone.configuration_uploaded_file.length === 0
+        ) {
+          this.error.rclone.configuration_file = this.$t("common.required");
+          isValidationOk = false;
+        }
+      }
 
       if (!this.name) {
         this.error.name = this.$t("common.required");
@@ -554,8 +660,6 @@ export default {
       switch (this.repository.provider) {
         case "backblaze":
           return this.validateAlterBackblazeRepository();
-        case "azure":
-          return this.validateAlterAzureRepository();
         case "aws":
           return this.validateAmazonS3Repository();
         case "generic-s3":
@@ -564,6 +668,8 @@ export default {
           return this.validateAlterSambaRepository();
         case "cluster":
           return this.validateAlterClusterRepository();
+        case "rclone":
+          return this.validateAlterRcloneRepository();
       }
     },
     async alterBackupRepository() {
@@ -598,7 +704,6 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
           },
         })
       );
@@ -617,15 +722,48 @@ export default {
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
 
-        if (validationError.error == "backup_repository_not_accessible") {
+        const connectionErrors = [
+          "backup_repository_not_accessible",
+          "no_read_permission",
+          "no_write_permission",
+          "no_delete_permission",
+        ];
+        if (connectionErrors.includes(validationError.error)) {
           // show error notification
-          this.error.repoConnection = "error";
+          this.error.repoConnection = validationError.error;
         } else {
-          // set i18n error message
-          this.error[param] = "backup." + validationError.error;
+          // set i18n error message for rclone nested fields
+          if (
+            this.repository.provider === "rclone" &&
+            (param === "rclone_conf_secret" || param === "basepath" || param === "parameters")
+          ) {
+            const key = param === "basepath" ? "base_path" : param === "parameters" ? "rclone_conf_secret" : param;
+            // use generic rclone_conf_error for any error on rclone_conf_secret
+            // (anyOf schema branches produce untranslatable codes like parameters_pattern)
+            const translationKey = key === "rclone_conf_secret" ? "rclone_conf_error" : validationError.error;
+            // show error on upload widget or paste textarea depending on active mode
+            const errorKey = key === "rclone_conf_secret" && this.rclone.configuration_source === "upload" ? "configuration_file" : key;
+            this.error.rclone[errorKey] = this.$t("backup." + translationKey);
+          } else if (param !== "provider" && param !== "(root)") {
+            this.error[param] = this.$t("backup." + validationError.error);
+          }
 
           if (!focusAlreadySet) {
-            this.focusElement(param);
+            const refKey =
+              this.repository.provider === "rclone" && param === "basepath"
+                ? "rclone_base_path"
+                : param;
+            this.$nextTick(() => {
+              const el = this.$refs[refKey];
+              if (el) {
+                if (typeof el.focus === "function") {
+                  el.focus();
+                } else if (el.$el) {
+                  const focusable = el.$el.querySelector("input, textarea");
+                  if (focusable) focusable.focus();
+                }
+              }
+            });
             focusAlreadySet = true;
           }
         }
@@ -642,4 +780,38 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+// Full width and white background for the rclone file uploader
+::v-deep .bx--file {
+  width: 100%;
+  max-width: 38rem;
+}
+::v-deep .bx--file__drop-container {
+  width: 100%;
+  max-width: 38rem;
+}
+::v-deep .bx--file-container {
+  width: 100%;
+  max-width: 38rem;
+}
+::v-deep .bx--file__selected-file {
+  background-color: #ffffff;
+  max-width: 38rem;
+}
+
+.file-uploader-error ::v-deep .bx--file__drop-container {
+  outline: 2px solid #da1e28;
+  outline-offset: -2px;
+}
+
+.file-uploader-error .validation-failed-invalid-message {
+  margin-top: -0.75rem;
+  margin-bottom: 0.75rem;
+  color: #da1e28;
+  font-size: 0.75rem;
+}
+
+.maxwidth {
+  max-width: 38rem;
+}
 </style>
