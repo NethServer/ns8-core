@@ -282,15 +282,6 @@
                             class="top-right-overflow-menu"
                           >
                             <cv-overflow-menu-item
-                              @click="showEditRepoModal(repo)"
-                            >
-                              <NsMenuItem
-                                :icon="Edit20"
-                                :label="$t('common.edit')"
-                              />
-                            </cv-overflow-menu-item>
-                            <NsMenuDivider />
-                            <cv-overflow-menu-item
                               danger
                               @click="showDeleteRepoModal(repo)"
                             >
@@ -312,9 +303,9 @@
                             <div class="row actions">
                               <NsButton
                                 kind="ghost"
-                                :icon="ArrowRight20"
-                                @click="showRepoDetailsModal(repo)"
-                                >{{ $t("common.see_details") }}
+                                :icon="Edit20"
+                                @click="showEditRepoModal(repo)"
+                                >{{ $t("common.edit") }}
                               </NsButton>
                             </div>
                           </div>
@@ -689,13 +680,14 @@
     <NsDangerDeleteModal
       :isShown="isShownDeleteRepoModal"
       :name="currentRepo.name"
-      :title="$t('backup.delete_backup_repository')"
+      :title="$t('backup.delete_destination')"
       :warning="$t('common.please_read_carefully')"
       :description="
         $t('backup.delete_repository_confirm', {
           name: currentRepo.name,
         })
       "
+      :deleteLabel="$t('common.delete')"
       :typeToConfirm="$t('common.type_to_confirm', { name: currentRepo.name })"
       @hide="hideDeleteRepoModal"
       @confirmDelete="deleteRepo(currentRepo)"
@@ -759,12 +751,6 @@
         <p class="mg-top-sm">{{ $t("backup.delete_backup_explanation_2") }}</p>
       </template>
     </NsDangerDeleteModal>
-    <!-- repo details modal -->
-    <RepoDetailsModal
-      :isShown="isShownRepoDetailsModal"
-      :repository="currentRepo"
-      @hide="hideRepoDetailsModal"
-    />
     <!-- edit repo modal -->
     <EditRepositoryModal
       :isShown="isShownEditRepoModal"
@@ -812,7 +798,6 @@ import {
 import { mapGetters } from "vuex";
 import AddRepositoryModal from "@/components/backup/AddRepositoryModal";
 import CreateOrEditBackupModal from "@/components/backup/CreateOrEditBackupModal";
-import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
 import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
 import RestoreSingleInstanceModal from "@/components/backup/RestoreSingleInstanceModal";
@@ -827,7 +812,6 @@ export default {
   components: {
     AddRepositoryModal,
     CreateOrEditBackupModal,
-    RepoDetailsModal,
     BackupDetailsModal,
     EditRepositoryModal,
     RestoreSingleInstanceModal,
@@ -855,7 +839,6 @@ export default {
       Upload20,
       isShownCreateOrEditBackupModal: false,
       isShownDeleteRepoModal: false,
-      isShownRepoDetailsModal: false,
       isShownEditRepoModal: false,
       isShownDeleteBackupModal: false,
       isShownBackupDetailsModal: false,
@@ -1066,13 +1049,6 @@ export default {
     },
     hideDeleteRepoModal() {
       this.isShownDeleteRepoModal = false;
-    },
-    showRepoDetailsModal(repo) {
-      this.currentRepo = repo;
-      this.isShownRepoDetailsModal = true;
-    },
-    hideRepoDetailsModal() {
-      this.isShownRepoDetailsModal = false;
     },
     showEditRepoModal(repo) {
       this.currentRepo = repo;
