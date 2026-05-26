@@ -359,7 +359,12 @@
               </div>
             </template>
             <cv-text-input
-              :label="$t('backup.rclone_base_path') + ' (' + $t('common.optional') + ')'"
+              :label="
+                $t('backup.rclone_base_path') +
+                ' (' +
+                $t('common.optional') +
+                ')'
+              "
               v-model.trim="rclone.base_path"
               :invalid-message="error.rclone.base_path"
               :disabled="loading.addBackupRepository"
@@ -628,7 +633,8 @@ export default {
       return this.stepIndex == this.steps.length - 1;
     },
     isNextButtonDisabled() {
-      const isLoading = this.loading.addBackupRepository || this.loading.fileReading;
+      const isLoading =
+        this.loading.addBackupRepository || this.loading.fileReading;
       const isNoProvider = !this.selectedProvider;
 
       // Only check for node selection on the nodes step when cluster is selected
@@ -1421,7 +1427,8 @@ export default {
           // use generic rclone_conf_error for any error on rclone_conf_secret
           // (anyOf schema branches produce untranslatable codes like parameters_pattern)
           const translationKey =
-            this.selectedProvider === "rclone" && errorField === "rclone_conf_secret"
+            this.selectedProvider === "rclone" &&
+            errorField === "rclone_conf_secret"
               ? "rclone_conf_error"
               : validationError.error;
           // show error on upload widget or paste textarea depending on active mode

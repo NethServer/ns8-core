@@ -8,7 +8,9 @@
     :visible="isShown"
     @modal-hidden="$emit('hide')"
     @primary-click="alterBackupRepository"
-    :primary-button-disabled="loading.alterBackupRepository || loading.fileReading"
+    :primary-button-disabled="
+      loading.alterBackupRepository || loading.fileReading
+    "
   >
     <template slot="title">{{ $t("backup.edit_destination") }}</template>
     <template slot="content">
@@ -214,7 +216,9 @@
             </div>
           </template>
           <cv-text-input
-            :label="$t('backup.rclone_base_path') + ' (' + $t('common.optional') + ')'"
+            :label="
+              $t('backup.rclone_base_path') + ' (' + $t('common.optional') + ')'
+            "
             v-model.trim="rclone.base_path"
             :invalid-message="error.rclone.base_path"
             :disabled="loading.alterBackupRepository"
@@ -735,14 +739,28 @@ export default {
           // set i18n error message for rclone nested fields
           if (
             this.repository.provider === "rclone" &&
-            (param === "rclone_conf_secret" || param === "basepath" || param === "parameters")
+            (param === "rclone_conf_secret" ||
+              param === "basepath" ||
+              param === "parameters")
           ) {
-            const key = param === "basepath" ? "base_path" : param === "parameters" ? "rclone_conf_secret" : param;
+            const key =
+              param === "basepath"
+                ? "base_path"
+                : param === "parameters"
+                ? "rclone_conf_secret"
+                : param;
             // use generic rclone_conf_error for any error on rclone_conf_secret
             // (anyOf schema branches produce untranslatable codes like parameters_pattern)
-            const translationKey = key === "rclone_conf_secret" ? "rclone_conf_error" : validationError.error;
+            const translationKey =
+              key === "rclone_conf_secret"
+                ? "rclone_conf_error"
+                : validationError.error;
             // show error on upload widget or paste textarea depending on active mode
-            const errorKey = key === "rclone_conf_secret" && this.rclone.configuration_source === "upload" ? "configuration_file" : key;
+            const errorKey =
+              key === "rclone_conf_secret" &&
+              this.rclone.configuration_source === "upload"
+                ? "configuration_file"
+                : key;
             this.error.rclone[errorKey] = this.$t("backup." + translationKey);
           } else if (param !== "provider" && param !== "(root)") {
             this.error[param] = this.$t("backup." + validationError.error);
