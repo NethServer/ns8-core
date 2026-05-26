@@ -406,6 +406,10 @@ export default {
           this.rclone.rclone_conf_secret = e.target.result.trim();
           this.loading.fileReading = false;
         };
+        reader.onerror = () => {
+          this.loading.fileReading = false;
+          this.error.rclone.configuration_file = this.$t("backup.rclone_conf_error");
+        };
         reader.readAsText(newFiles[0].file);
       } else {
         this.rclone.rclone_conf_secret = "";
