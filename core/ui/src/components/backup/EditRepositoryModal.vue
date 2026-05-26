@@ -822,14 +822,14 @@ export default {
 }
 
 .file-uploader-error ::v-deep .bx--file__drop-container {
-  outline: 2px solid #da1e28;
+  outline: 2px solid $danger-01;
   outline-offset: -2px;
 }
 
 .file-uploader-error .validation-failed-invalid-message {
   margin-top: -0.75rem;
   margin-bottom: 0.75rem;
-  color: #da1e28;
+  color: $danger-01;
   font-size: 0.75rem;
 }
 
