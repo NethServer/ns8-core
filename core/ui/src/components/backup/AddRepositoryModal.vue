@@ -409,6 +409,12 @@
           </template>
           <!-- samba -->
           <template v-if="isSambaSelected">
+            <NsInlineNotification
+              kind="info"
+              :title="$t('backup.smb_protocol_warning_title')"
+              :description="$t('backup.smb_protocol_warning_description')"
+              :showCloseButton="false"
+            />
             <cv-text-input
               :label="$t('backup.smb_host')"
               v-model.trim="smb.smb_host"

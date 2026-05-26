@@ -494,6 +494,8 @@
         "genericS3_url_tooltip": "Enter an address with format 'serverfqdn/bucketname'. Note: the server must have a valid TLS certificate",
         "genericS3_placeholder": "e.g. myminio.example.com/mybucket",
         "smb_url_label": "Share name",
+        "smb_protocol_warning_title": "Unsupported file share protocol",
+        "smb_protocol_warning_description": "Only file shares using SMB2 or SMB3 are supported. SMB1/CIFS shares are deprecated, insecure and cannot be accessed.",
         "backup_repository_exists": "A backup destination with this URL already exists",
         "choose_destination_repository": "Choose backup destination",
         "select_by_category": "Select by category",
