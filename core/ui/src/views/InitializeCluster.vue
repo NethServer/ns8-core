@@ -186,6 +186,16 @@
               <WelcomeLogo />
             </cv-column>
           </cv-row>
+          <cv-row v-if="error.networkCheckCreateCluster">
+            <cv-column>
+              <NsInlineNotification
+                kind="error"
+                :title="$t('action.create-cluster')"
+                :description="error.networkCheckCreateCluster"
+                :showCloseButton="false"
+              />
+            </cv-column>
+          </cv-row>
           <cv-row v-if="!isCreatingCluster">
             <cv-column>
               <NsInlineNotification
@@ -994,6 +1004,7 @@ export default {
         readBackupRepositories: "",
         restoreModules: "",
         createCluster: "",
+        networkCheckCreateCluster: "",
         getDefaults: "",
         restore: {
           url: "",
@@ -1140,6 +1151,8 @@ export default {
     onFqdnSet() {
       const action = this.$route.query.action; // "create" or "join"
 
+      this.error.networkCheckCreateCluster = "";
+      this.error.createCluster = "";
       this.$router.push({
         path: "/init",
         query: { page: action, action: action },
@@ -1459,6 +1472,8 @@ export default {
       const taskAction = "create-cluster";
       const eventId = this.getUuid();
       this.createClusterProgress = 0;
+      this.error.networkCheckCreateCluster = "";
+      this.error.createCluster = "";
 
       // register to task validation
       this.$root.$once(
@@ -1521,16 +1536,19 @@ export default {
 
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
-
-        // set i18n error message
-        this.error[param] = this.getI18nStringWithFallback(
+        const errorMessage = this.getI18nStringWithFallback(
           "init." + validationError.error,
           "error." + validationError.error
         );
+        if (validationError.error === "network_check_failed") {
+          this.error.networkCheckCreateCluster = errorMessage;
+        } else if (param) {
+          this.error[param] = errorMessage;
 
-        if (!focusAlreadySet) {
-          this.focusElement(param);
-          focusAlreadySet = true;
+          if (!focusAlreadySet) {
+            this.focusElement(param);
+            focusAlreadySet = true;
+          }
         }
       }
     },
