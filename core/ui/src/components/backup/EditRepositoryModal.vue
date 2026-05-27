@@ -245,22 +245,38 @@
           <cv-accordion-item :open="false">
             <template slot="title">{{ $t("common.advanced") }}</template>
             <template slot="content">
-              <NsTextInput
-                :label="
-                  $t('backup.data_encryption_key') +
-                  ' (' +
-                  $t('common.optional') +
-                  ')'
-                "
-                :value="repository.password"
-                :helper-text="$t('backup.repository_password_helper')"
-                :placeholder="$t('backup.data_encryption_key_placeholder')"
-                disabled
-              >
-                <template slot="tooltip">
-                  {{ $t("backup.data_encryption_key_tooltip") }}
-                </template>
-              </NsTextInput>
+              <div>
+                <label class="bx--label">
+                  <span>
+                    {{ $t("backup.data_encryption_key") }}
+                  </span>
+                  <cv-interactive-tooltip
+                    alignment="center"
+                    direction="right"
+                    class="info"
+                  >
+                    <template slot="content">
+                      <div>
+                        {{ $t("backup.data_encryption_key_tooltip") }}
+                      </div>
+                    </template>
+                  </cv-interactive-tooltip>
+                </label>
+                <NsCodeSnippet
+                  light
+                  copyTipPosition="left"
+                  copyTipAlignment="center"
+                  :copyTooltip="$t('common.copy_to_clipboard')"
+                  :copy-feedback="$t('common.copied_to_clipboard')"
+                  :feedback-aria-label="$t('common.copied_to_clipboard')"
+                  :wrap-text="true"
+                  :moreText="$t('common.show_more')"
+                  :lessText="$t('common.show_less')"
+                  hideExpandButton
+                  class="mg-top-sm"
+                  >{{ repository.password }}</NsCodeSnippet
+                >
+              </div>
             </template>
           </cv-accordion-item>
         </cv-accordion>
@@ -414,7 +430,9 @@ export default {
         };
         reader.onerror = () => {
           this.loading.fileReading = false;
-          this.error.rclone.configuration_file = this.$t("backup.rclone_conf_error");
+          this.error.rclone.configuration_file = this.$t(
+            "backup.rclone_conf_error"
+          );
         };
         reader.readAsText(newFiles[0].file);
       } else {
