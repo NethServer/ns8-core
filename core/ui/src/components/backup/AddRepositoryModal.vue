@@ -487,7 +487,9 @@
                   "
                   v-model="password"
                   :helper-text="$t('backup.repository_password_helper')"
-                  :placeholder="$t('common.eg_value', { value: 'a76917c4522...' })"
+                  :placeholder="
+                    $t('common.eg_value', { value: 'a76917c4522...' })
+                  "
                   :invalid-message="error.password"
                   :disabled="loading.addBackupRepository"
                   autocomplete="new-password"
@@ -1592,5 +1594,4 @@ export default {
   width: 100%;
   height: 100%;
 }
-
 </style>
