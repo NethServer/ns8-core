@@ -804,7 +804,9 @@ export default {
         };
         reader.onerror = () => {
           this.loading.fileReading = false;
-          this.error.rclone.configuration_file = this.$t("backup.rclone_conf_error");
+          this.error.rclone.configuration_file = this.$t(
+            "backup.rclone_conf_error"
+          );
         };
         reader.readAsText(newFiles[0].file);
       } else {
