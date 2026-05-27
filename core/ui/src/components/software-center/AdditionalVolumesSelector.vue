@@ -50,7 +50,7 @@
           {{ $t("software_center.volume_usage", getVolumeInfo(volume)) }}
         </div>
         <NsProgressBar
-          :value="loading ? 0 : (volume.used / volume.size) * 100"
+          :value="loading ? 0 : volume.usage"
           :loading="loading"
           :warningThreshold="70"
           :dangerThreshold="90"
@@ -110,8 +110,8 @@ export default {
       return {
         available: this.$options.filters.byteFormat(volume.available),
         used: this.$options.filters.byteFormat(volume.used),
-        total: this.$options.filters.byteFormat(volume.size),
-        percentage: Math.round((volume.used / volume.size) * 100),
+        total: this.$options.filters.byteFormat(volume.size || volume.total),
+        percentage: volume.usage,
       };
     },
     updateInternalVolumes() {
@@ -120,6 +120,15 @@ export default {
       // select the first additional volume by default
       additionalVolumes.forEach((volume, index) => {
         volume.selected = index === 0;
+        // Compute usage percentage using (total - available) / total,
+        // consistent with NodeDetail which uses (total - free) / total via Prometheus.
+        // This correctly accounts for filesystem reserved blocks (e.g. ext4 5% reserve).
+        const total = Number(volume.size || volume.total);
+        const avail = Number(volume.available);
+        volume.usage =
+          total > 0 && Number.isFinite(avail)
+            ? Math.round(((total - avail) / total) * 100)
+            : 0;
       });
       this.additionalVolumes = additionalVolumes;
     },

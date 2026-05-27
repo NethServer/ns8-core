@@ -55,7 +55,7 @@ def get_configuration(module_id:str) -> dict:
 
 def get_base_paths() -> list:
     home_basedir = os.getenv("HOME_BASEDIR", "/home")
-    with subprocess.Popen(["findmnt", "--real", "--json", "--bytes", "--output", "SOURCE,TARGET,SIZE,USED,LABEL", "--nofsroot", "--type", "nofat,novfat"], stdout=subprocess.PIPE) as hproc:
+    with subprocess.Popen(["findmnt", "--real", "--json", "--bytes", "--output", "SOURCE,TARGET,SIZE,USED,AVAIL,LABEL", "--nofsroot", "--type", "nofat,novfat"], stdout=subprocess.PIPE) as hproc:
         ofindmnt = json.load(hproc.stdout)
     orootfs = ofindmnt["filesystems"][0]
     paths = []
@@ -75,7 +75,7 @@ def get_base_paths() -> list:
         if "size" in ofs:
             opath["size"] = ofs["size"]
             opath["used"] = ofs["used"]
-            opath["available"] = ofs["size"] - ofs["used"]
+            opath["available"] = ofs["avail"]
         paths.append(opath)
     return paths
 

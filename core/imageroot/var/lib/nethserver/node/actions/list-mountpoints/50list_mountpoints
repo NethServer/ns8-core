@@ -17,7 +17,7 @@ def fetch_home_disk() -> dict:
     # HOME_BASEDIR (/home by default) is mounted.
     findmnt_proc = subprocess.run([
             'findmnt', '--json', '--bytes',
-            '--output=size,used,label,target',
+            '--output=size,used,avail,label,target',
             '--target', os.getenv("HOME_BASEDIR", "/home"),
         ],
         stdout=subprocess.PIPE)
@@ -25,7 +25,7 @@ def fetch_home_disk() -> dict:
     return {
         "size": mp["size"],
         "used": mp["used"],
-        "available": mp["size"] - mp["used"],
+        "available": mp["avail"],
         "path": mp["target"],
         "label": mp["label"] or "",
         "ui_name": mp["label"] or os.path.basename(mp["target"]),
