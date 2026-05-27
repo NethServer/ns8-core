@@ -19,9 +19,9 @@ def main():
     except subprocess.CalledProcessError as ex:
         if 'lsd' in ex.cmd:
             reason = "no_read_permission"
-        elif 'mkdir' in ex.cmd:
+        elif 'rcat' in ex.cmd:
             reason = "no_write_permission"
-        elif 'rmdir' in ex.cmd:
+        elif 'deletefile' in ex.cmd:
             reason = "no_delete_permission"
         else:
             reason = 'unknown'
@@ -44,10 +44,16 @@ def run_validation(request):
     # Test if connection and read-access is successfull
     cluster.backup.run_rclone(['lsd', rpath] + rclone_args, temp_config=request['rclone_conf_secret'], stdout=subprocess.DEVNULL, check=True)
 
-    # Test write access, by creating and deleting a directory
-    remote_test_dir = rpath + '/' + os.environ["AGENT_TASK_ID"] + '.tmp'
-    cluster.backup.run_rclone(['mkdir', remote_test_dir] + rclone_args, temp_config=request['rclone_conf_secret'], stdout=subprocess.DEVNULL, check=True)
-    cluster.backup.run_rclone(['rmdir', remote_test_dir] + rclone_args, temp_config=request['rclone_conf_secret'], stdout=subprocess.DEVNULL, check=True)
+    # Test write access, by creating and deleting a temporary file
+    remote_test_file = rpath + '/' + os.environ["AGENT_TASK_ID"] + '.tmp'
+    cluster.backup.run_rclone(
+        ['rcat', remote_test_file] + rclone_args,
+        temp_config=request['rclone_conf_secret'],
+        input=b'ns8 backup destination validation\n',
+        stdout=subprocess.DEVNULL,
+        check=True,
+    )
+    cluster.backup.run_rclone(['deletefile', remote_test_file] + rclone_args, temp_config=request['rclone_conf_secret'], stdout=subprocess.DEVNULL, check=True)
     json.dump({"node_id":int(os.environ["NODE_ID"]),"id": request["id"]}, fp=sys.stdout)
 
 if __name__ == "__main__":
