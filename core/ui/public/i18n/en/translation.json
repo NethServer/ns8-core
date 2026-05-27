@@ -525,7 +525,7 @@
         "app_instances_not_backed_up_description": "{numInstances} application is not included in any backup. Edit an existing schedule or add a new one.| {numInstances} applications are not included in any backup. Edit an existing schedule or add a new one.",
         "disabled_backups": "Disabled backups",
         "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
-        "repository_password_helper": "If empty, a random key is generated. Otherwise, enter the key previously used for this backup destination. The key cannot be changed later.",
+        "repository_password_helper": "Enter the encryption key previously used for this backup destination, or leave empty to generate one automatically. The key cannot be changed later.",
         "not_backed_up": "Not backed up",
         "search_instances": "Search applications",
         "not_backed_up_instances_selected": "Instances not backed up are currently selected",
