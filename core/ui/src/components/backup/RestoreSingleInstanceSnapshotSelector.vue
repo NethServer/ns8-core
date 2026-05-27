@@ -36,7 +36,7 @@
         @click="deselectOtherSnapshots(snapshot)"
         class="snapshot-tile"
       >
-        <div class="snapshot-header">
+        <div class="flex items-center gap-2">
           <span>{{ formatSnapshotTimestamp(snapshot.timestamp) }}</span>
           <cv-tag
             v-if="index == 0"
@@ -176,12 +176,6 @@ export default {
 .ns-tile.snapshot-tile,
 .cv-tile.snapshot-tile {
   margin-bottom: $spacing-03;
-}
-
-.snapshot-header {
-  display: flex;
-  align-items: center;
-  gap: $spacing-03;
 }
 
 .secondary-row {
