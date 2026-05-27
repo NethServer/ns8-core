@@ -681,7 +681,7 @@
       :isShown="isShownDeleteRepoModal"
       :name="currentRepo.name"
       :title="$t('backup.delete_destination')"
-      :warning="$t('common.please_read_carefully')"
+      :isWarningShown="false"
       :description="
         $t('backup.delete_repository_confirm', {
           name: currentRepo.name,
@@ -692,6 +692,28 @@
       @hide="hideDeleteRepoModal"
       @confirmDelete="deleteRepo(currentRepo)"
     >
+      <template slot="description">
+        <NsInlineNotification
+          kind="info"
+          :title="$t('backup.delete_repo_notice_title')"
+          :showCloseButton="false"
+          :loading="loading.downloadClusterBackupNotice"
+          v-if="currentRepo.password"
+          @action="downloadClusterConfigurationBackup(false, true)"
+          :actionLabel="$t('backup.download_cluster_configuration_backup')"
+          :description="$t('backup.delete_repo_notice_description')"
+        />
+        <p class="mg-top-sm">
+          {{
+            $t("backup.delete_repository_confirm", {
+              name: currentRepo.name,
+            })
+          }}
+        </p>
+        <p class="mg-bottom-sm">
+          {{ $t("backup.delete_repo_scheduled_warning") }}
+        </p>
+      </template>
       <template slot="explanation">
         <p class="mg-top-sm">{{ $t("backup.delete_repo_explanation_1") }}</p>
       </template>
@@ -866,6 +888,7 @@ export default {
         listBackups: true,
         alterBackup: false,
         downloadClusterBackup: false,
+        downloadClusterBackupNotice: false,
         passwordClusterBackup: false,
       },
       error: {
@@ -1389,8 +1412,16 @@ export default {
       this.loading.alterBackup = false;
       this.listBackups();
     },
-    async downloadClusterConfigurationBackup() {
-      this.loading.downloadClusterBackup = true;
+    async downloadClusterConfigurationBackup(
+      showLoading = true,
+      showNoticeLoading = false
+    ) {
+      if (showLoading) {
+        this.loading.downloadClusterBackup = true;
+      }
+      if (showNoticeLoading) {
+        this.loading.downloadClusterBackupNotice = true;
+      }
       const taskAction = "download-cluster-backup";
       const eventId = this.getUuid();
 
@@ -1422,16 +1453,30 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.downloadClusterBackup = this.getErrorMessage(err);
+        this.loading.downloadClusterBackup = false;
+        this.loading.downloadClusterBackupNotice = false;
         return;
       }
     },
     downloadClusterBackupAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.downloadClusterBackup = false;
+      this.loading.downloadClusterBackupNotice = false;
     },
     downloadClusterBackupCompleted(taskContext, taskResult) {
       this.loading.downloadClusterBackup = false;
-      const downloadUrl = `${window.location.protocol}//${window.location.hostname}/cluster-admin/backup/${taskResult.output.path}`;
+      this.loading.downloadClusterBackupNotice = false;
+      const path = taskResult && taskResult.output && taskResult.output.path;
+
+      if (!path) {
+        this.error.downloadClusterBackup = this.$t(
+          "error.cannot_retrieve_task_status"
+        );
+        return;
+      }
+
+      const apiBase = this.$root.apiUrl.replace(/\/api$/, "");
+      const downloadUrl = `${apiBase}/backup/${path}`;
 
       const fileName =
         "cluster-configuration-backup " +
@@ -1442,14 +1487,22 @@ export default {
         url: downloadUrl,
         method: "GET",
         responseType: "blob",
-      }).then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-      });
+        timeout: 60000,
+      })
+        .then((response) => {
+          const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.setAttribute("download", fileName);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(blobUrl);
+        })
+        .catch((err) => {
+          console.error("downloadClusterBackupCompleted", err);
+          this.error.downloadClusterBackup = this.getErrorMessage(err);
+        });
     },
     reloadBackupRepositories() {
       this.isSetClusterBackupPassword = true;
