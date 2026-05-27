@@ -88,7 +88,7 @@
             :label="$t('backup.smb_host')"
             v-model.trim="smb.smb_host"
             :invalid-message="error.smb.smb_host"
-            :disabled="loading.addBackupRepository"
+            :disabled="loading.alterBackupRepository"
             ref="smb_host"
           >
           </cv-text-input>
@@ -96,7 +96,7 @@
             :label="$t('backup.smb_domain')"
             v-model.trim="smb.smb_domain"
             :invalid-message="error.smb.smb_domain"
-            :disabled="loading.addBackupRepository"
+            :disabled="loading.alterBackupRepository"
             ref="smb_domain"
           >
           </cv-text-input>
@@ -104,7 +104,7 @@
             :label="$t('backup.smb_user')"
             v-model.trim="smb.smb_user"
             :invalid-message="error.smb.smb_user"
-            :disabled="loading.addBackupRepository"
+            :disabled="loading.alterBackupRepository"
             ref="smb_user"
           >
           </cv-text-input>
@@ -113,7 +113,7 @@
             :label="$t('backup.smb_pass')"
             type="password"
             v-model.trim="smb.smb_pass"
-            :disabled="loading.addBackupRepository"
+            :disabled="loading.alterBackupRepository"
             :invalid-message="error.smb.smb_pass"
             :password-hide-label="$t('password.hide_password')"
             :password-show-label="$t('password.show_password')"
@@ -281,7 +281,7 @@
           </cv-accordion-item>
         </cv-accordion>
         <NsInlineNotification
-          v-if="error.addBackupRepository"
+          v-if="error.alterBackupRepository"
           kind="error"
           :title="$t('action.add-backup-repository')"
           :description="error.alterBackupRepository"
