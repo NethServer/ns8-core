@@ -178,7 +178,7 @@
           </div>
           <template v-if="rclone.configuration_source == 'paste'">
             <cv-text-area
-              class="mg-top-md maxwidth"
+              class="mg-top-md"
               :label="$t('backup.rclone_configuration_content')"
               v-model.trim="rclone.rclone_conf_secret"
               :invalid-message="error.rclone.rclone_conf_secret"
@@ -658,13 +658,7 @@ export default {
           this.error.rclone.rclone_conf_secret = this.$t("common.required");
 
           if (isValidationOk) {
-            this.$nextTick(() => {
-              const el = this.$refs["rclone_conf_secret"];
-              if (el && el.$el) {
-                const textarea = el.$el.querySelector("textarea");
-                if (textarea) textarea.focus();
-              }
-            });
+            this.focusElement("rclone_conf_secret");
             isValidationOk = false;
           }
         }
@@ -855,9 +849,5 @@ export default {
   margin-bottom: 0.75rem;
   color: $danger-01;
   font-size: 0.75rem;
-}
-
-.maxwidth {
-  max-width: 38rem;
 }
 </style>
