@@ -314,7 +314,7 @@
             </div>
             <template v-if="rclone.configuration_source == 'paste'">
               <cv-text-area
-                class="mg-top-md maxwidth"
+                class="mg-top-md"
                 :label="$t('backup.rclone_configuration_content')"
                 v-model.trim="rclone.rclone_conf_secret"
                 :invalid-message="error.rclone.rclone_conf_secret"
@@ -464,7 +464,6 @@
               ref="smb_pass"
             ></cv-text-input>
           </template>
-          <!-- //// handle ALL providers -->
           <cv-text-input
             :label="$t('backup.repository_name')"
             v-model.trim="name"
@@ -488,7 +487,7 @@
                   "
                   v-model="password"
                   :helper-text="$t('backup.repository_password_helper')"
-                  :placeholder="$t('backup.data_encryption_key_placeholder')"
+                  :placeholder="$t('common.eg_value', { value: 'a76917c4522...' })"
                   :invalid-message="error.password"
                   :disabled="loading.addBackupRepository"
                   autocomplete="new-password"
@@ -584,7 +583,6 @@ export default {
         repoPrefix: "",
       },
       clusterStatus: [],
-      //// handle all providers
       loading: {
         addBackupRepository: false,
         listBackupEndpoints: false,
@@ -624,7 +622,6 @@ export default {
           configuration_source: "",
           configuration_file: "",
         },
-        //// handle all providers
       },
     };
   },
@@ -665,7 +662,6 @@ export default {
       } else {
         return null;
       }
-      //// handle all providers
     },
     selectedProviderPrefix() {
       return this[this.selectedProvider].repoPrefix;
@@ -892,7 +888,6 @@ export default {
       this.rclone.rclone_conf_secret = "";
       this.rclone.base_path = "";
       this.rclone.configuration_uploaded_file = null;
-      //// handle ALL providers
     },
     nextStep() {
       if (this.isNextButtonDisabled) {
@@ -921,7 +916,6 @@ export default {
       }
     },
     selectBackblaze() {
-      //// handle ALL providers
       this.isRcloneSelected = false;
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
@@ -929,7 +923,6 @@ export default {
       this.isClusterSelected = false;
     },
     selectAmazonS3() {
-      //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isRcloneSelected = false;
       this.isGenericS3Selected = false;
@@ -937,7 +930,6 @@ export default {
       this.isClusterSelected = false;
     },
     selectSamba() {
-      //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isRcloneSelected = false;
       this.isGenericS3Selected = false;
@@ -945,7 +937,6 @@ export default {
       this.isClusterSelected = false;
     },
     selectGenericS3() {
-      //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isRcloneSelected = false;
       this.isAmazonS3Selected = false;
@@ -953,7 +944,6 @@ export default {
       this.isClusterSelected = false;
     },
     selectRclone() {
-      //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
@@ -961,7 +951,6 @@ export default {
       this.isClusterSelected = false;
     },
     selectCluster() {
-      //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
@@ -1001,7 +990,6 @@ export default {
         case "cluster":
           return {};
       }
-      //// handle all providers
     },
     validateAddBackblazeRepository() {
       // clear errors
@@ -1197,13 +1185,7 @@ export default {
           this.error.rclone.rclone_conf_secret = this.$t("common.required");
 
           if (isValidationOk) {
-            this.$nextTick(() => {
-              const el = this.$refs["rclone_conf_secret"];
-              if (el && el.$el) {
-                const textarea = el.$el.querySelector("textarea");
-                if (textarea) textarea.focus();
-              }
-            });
+            this.focusElement("rclone_conf_secret");
             isValidationOk = false;
           }
         }
@@ -1611,7 +1593,4 @@ export default {
   height: 100%;
 }
 
-.maxwidth {
-  max-width: 38rem;
-}
 </style>
