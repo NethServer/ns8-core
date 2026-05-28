@@ -341,7 +341,6 @@ export default {
         configuration_uploaded_file: null,
       },
       componentKey: Date.now(),
-      //// handle all providers
       loading: {
         alterBackupRepository: false,
         fileReading: false,
@@ -374,7 +373,6 @@ export default {
           base_path: "",
           configuration_file: "",
         },
-        //// handle all providers
       },
     };
   },
@@ -478,7 +476,6 @@ export default {
             smb_domain: this.smb.smb_domain,
           };
       }
-      //// handle all providers
     },
     validateAlterBackblazeRepository() {
       // clear errors
