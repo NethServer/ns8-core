@@ -697,7 +697,7 @@
           kind="warning"
           :title="$t('backup.delete_repo_notice_title')"
           :showCloseButton="false"
-          :loading="loading.downloadClusterBackupNotice"
+          :loadingAction="loading.downloadClusterBackupNotice"
           v-if="currentRepo.password"
           @action="downloadClusterConfigurationBackup(false, true)"
           :actionLabel="$t('backup.download_cluster_configuration_backup')"
