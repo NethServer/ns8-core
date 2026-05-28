@@ -694,7 +694,7 @@
     >
       <template slot="description">
         <NsInlineNotification
-          kind="info"
+          kind="warning"
           :title="$t('backup.delete_repo_notice_title')"
           :showCloseButton="false"
           :loading="loading.downloadClusterBackupNotice"
@@ -709,9 +709,6 @@
               name: currentRepo.name,
             })
           }}
-        </p>
-        <p class="mg-bottom-sm">
-          {{ $t("backup.delete_repo_scheduled_warning") }}
         </p>
       </template>
       <template slot="explanation">
