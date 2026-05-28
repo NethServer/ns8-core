@@ -236,8 +236,8 @@ async def _retry_request(request_procedure, *args, **kwargs):
             return retval
         except aioredis.ConnectionError as exredis:
             retry_error = str(exredis)
-        except TaskRetryPubSubDisconnect as extask:
-            retry_error = str(exredis)
+        except (TaskRetryPubSubDisconnect, TaskStatusNotFound) as extask:
+            retry_error = str(extask)
         except Exception as ex:
             if attempt > 1:
                 frameback = sys.exc_info()[2].tb_frame.f_back
