@@ -270,6 +270,7 @@
         "review_worker_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster worker",
         "not_a_private_network": "Must be included in the private IPv4 network addresses: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
         "not_a_valid_ipv4_network": "Invalid IPv4 network address",
+        "network_check_failed": "Network connectivity check failed. Ensure the node can access Internet and DNS resolution is working",
         "network_pattern": "Invalid network format",
         "domain_format": "Invalid domain format",
         "hostname_format": "Invalid hostname format",

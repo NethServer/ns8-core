@@ -9,6 +9,8 @@ import json
 import sys
 import agent
 import ipaddress
+import socket
+import concurrent.futures
 
 request = json.load(sys.stdin)
 
@@ -39,4 +41,35 @@ def is_valid_and_private(ip):
 if not is_valid_and_private(network):
     agent.set_status('validation-failed')
     json.dump([{'field':'network', 'parameter':'network','value': request['network'], 'error':'not_a_private_network'}], fp=sys.stdout)
+    sys.exit(2)
+
+def network_sanity_check():
+    """Check the system DNS and gateway settings with a bunch of network
+    connection attempts to external web sites. If at least one succeeds the
+    check passes. If all fail, the check fails."""
+    hosts = [
+        "phonehome.nethserver.org",
+        "ghcr.io",
+        "docker.io",
+        "quay.io",
+    ]
+    def try_connect(host):
+        try:
+            for af, socktype, proto, _, sockaddr in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)[:2]:
+                try:
+                    with socket.socket(af, socktype, proto) as sock:
+                        sock.settimeout(3)
+                        sock.connect(sockaddr)
+                    return True
+                except OSError as ex:
+                    print(f"Connection {host} {sockaddr} check error:", ex, file=sys.stderr)
+        except OSError as ex:
+            print(f"Connection {host} check error:", ex, file=sys.stderr)
+        return False
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        return any(executor.map(try_connect, hosts))
+
+if not network_sanity_check():
+    agent.set_status('validation-failed')
+    json.dump([{'field':'', 'parameter':'','value': '', 'error':'network_check_failed'}], fp=sys.stdout)
     sys.exit(2)
