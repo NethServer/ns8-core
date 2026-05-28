@@ -8,6 +8,9 @@ export default {
       options: ["error", "info", "warning", "success"],
       control: { type: "radio" },
     },
+    loadingAction: {
+      control: { type: "boolean" },
+    },
   },
 };
 
@@ -24,6 +27,7 @@ Default.args = {
   kind: "info",
   showCloseButton: false,
   actionLabel: "",
+  loadingAction: false,
   closeAriaLabel: "Dismiss notification",
   lowContrast: true,
   loading: false,
@@ -47,6 +51,7 @@ TitleSlot.args = {
   kind: "info",
   showCloseButton: false,
   actionLabel: "",
+  loadingAction: false,
   closeAriaLabel: "Dismiss notification",
   lowContrast: false,
   loading: false,
@@ -70,6 +75,7 @@ DescriptionSlot.args = {
   kind: "info",
   showCloseButton: false,
   actionLabel: "",
+  loadingAction: false,
   closeAriaLabel: "Dismiss notification",
   lowContrast: false,
   loading: false,
@@ -83,6 +89,7 @@ Action.args = {
   actionLabel: "Action button",
   kind: "info",
   showCloseButton: false,
+  loadingAction: false,
   closeAriaLabel: "Dismiss notification",
   lowContrast: false,
   loading: false,
@@ -97,6 +104,21 @@ Loading.args = {
   loading: true,
   kind: "info",
   showCloseButton: false,
+  loadingAction: false,
+  closeAriaLabel: "Dismiss notification",
+  lowContrast: false,
+  timer: null,
+};
+
+export const LoadingAction = Template.bind({});
+LoadingAction.args = {
+  title: "Preparing download",
+  description: "Please wait while the backup is generated...",
+  actionLabel: "Download backup",
+  loading: false,
+  loadingAction: true,
+  kind: "info",
+  showCloseButton: false,
   closeAriaLabel: "Dismiss notification",
   lowContrast: false,
   timer: null,
@@ -108,6 +130,7 @@ Timer.args = {
   description: "Something will happen in a moment...",
   actionLabel: "Cancel",
   loading: false,
+  loadingAction: false,
   kind: "info",
   showCloseButton: false,
   closeAriaLabel: "Dismiss notification",
