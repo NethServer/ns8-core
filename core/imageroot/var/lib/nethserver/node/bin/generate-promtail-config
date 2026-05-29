@@ -115,6 +115,16 @@ relabel_rules.append("""
     }
 """)
 
+# Work around samba log flooding from NethServer/dev#7375
+# Drop "Decryption has failed" messages from samba-dc container
+relabel_rules.append("""
+    rule {
+        source_labels = ["__journal_syslog_identifier", "__journal_message"]
+        regex         = "samba-dc;.*TLS source4/lib/tls/tls_tstream.c:1449 - Decryption has failed.*"
+        action        = "drop"
+    }
+""")
+
 # Set label category=security for messages from sshd, PAM, Polkit, etc.
 # that are often written to /var/log/secure or equivalent.
 # Regex matches RFC3164 Syslog facility codes for security events
