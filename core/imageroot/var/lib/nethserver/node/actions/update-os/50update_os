@@ -33,6 +33,6 @@ if hsubscription:
 
 # Apply DNF updates before restarting core services
 try:
-    agent.run_helper("/usr/bin/dnf", "update", "-y", *dnfargs).check_returncode()
+    agent.run_helper("/usr/bin/dnf", "update", "-y", *dnfargs, log_command=False).check_returncode()
 except (FileNotFoundError, PermissionError):
     print(agent.SD_INFO + "Cannot update the node OS: dnf was not found on this system", file=sys.stderr)
