@@ -53,7 +53,7 @@ TitleSlot.args = {
   actionLabel: "",
   loadingAction: false,
   closeAriaLabel: "Dismiss notification",
-  lowContrast: false,
+  lowContrast: true,
   loading: false,
   timer: null,
 };
@@ -77,7 +77,7 @@ DescriptionSlot.args = {
   actionLabel: "",
   loadingAction: false,
   closeAriaLabel: "Dismiss notification",
-  lowContrast: false,
+  lowContrast: true,
   loading: false,
   timer: null,
 };
@@ -91,7 +91,7 @@ Action.args = {
   showCloseButton: false,
   loadingAction: false,
   closeAriaLabel: "Dismiss notification",
-  lowContrast: false,
+  lowContrast: true,
   loading: false,
   timer: null,
 };
@@ -106,7 +106,7 @@ Loading.args = {
   showCloseButton: false,
   loadingAction: false,
   closeAriaLabel: "Dismiss notification",
-  lowContrast: false,
+  lowContrast: true,
   timer: null,
 };
 
@@ -120,7 +120,7 @@ LoadingAction.args = {
   kind: "info",
   showCloseButton: false,
   closeAriaLabel: "Dismiss notification",
-  lowContrast: false,
+  lowContrast: true,
   timer: null,
 };
 
@@ -134,6 +134,6 @@ Timer.args = {
   kind: "info",
   showCloseButton: false,
   closeAriaLabel: "Dismiss notification",
-  lowContrast: false,
+  lowContrast: true,
   timer: 5000,
 };
