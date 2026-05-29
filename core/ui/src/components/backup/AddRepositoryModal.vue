@@ -41,6 +41,75 @@
           </div>
           <cv-grid>
             <cv-row>
+              <!-- Cluster -->
+              <cv-column :md="4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isClusterSelected"
+                  value="providerValue"
+                  @click="selectCluster()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/node_storage.png')"
+                        alt="cluster logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.cluster") }}
+                    </h6>
+                  </div>
+                </NsTile>
+              </cv-column>
+              <!-- samba -->
+              <cv-column :md="4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isSambaSelected"
+                  value="providerValue"
+                  @click="selectSamba()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/samba.png')"
+                        alt="samba logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.samba") }}
+                    </h6>
+                  </div>
+                </NsTile>
+              </cv-column>
+              <!-- amazon s3 -->
+              <cv-column :md="4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isAmazonS3Selected"
+                  value="providerValue"
+                  @click="selectAmazonS3()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/aws.png')"
+                        alt="amazon s3 logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.aws") }}
+                    </h6>
+                  </div>
+                </NsTile>
+              </cv-column>
               <!-- backblaze -->
               <cv-column :md="4">
                 <NsTile
@@ -60,52 +129,6 @@
                     </div>
                     <h6>
                       {{ $t("backup.backblaze") }}
-                    </h6>
-                  </div>
-                </NsTile>
-              </cv-column>
-              <!-- azure -->
-              <cv-column :md="4">
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  v-model="isAzureSelected"
-                  value="providerValue"
-                  @click="selectAzure()"
-                  class="provider-card"
-                >
-                  <div class="provider-card-content">
-                    <div class="provider-icon">
-                      <img
-                        :src="require('@/assets/azure.png')"
-                        alt="azure logo"
-                      />
-                    </div>
-                    <h6>
-                      {{ $t("backup.azure") }}
-                    </h6>
-                  </div>
-                </NsTile>
-              </cv-column>
-              <!-- amazon s3 -->
-              <cv-column :md="4">
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  v-model="isAmazonS3Selected"
-                  value="providerValue"
-                  @click="selectAmazonS3()"
-                  class="provider-card"
-                >
-                  <div class="provider-card-content">
-                    <div class="provider-icon">
-                      <img
-                        :src="require('@/assets/s3.png')"
-                        alt="amazon s3 logo"
-                      />
-                    </div>
-                    <h6>
-                      {{ $t("backup.aws") }}
                     </h6>
                   </div>
                 </NsTile>
@@ -133,57 +156,25 @@
                   </div>
                 </NsTile>
               </cv-column>
-              <!-- samba -->
+              <!-- rclone -->
               <cv-column :md="4">
                 <NsTile
                   :light="true"
                   kind="selectable"
-                  v-model="isSambaSelected"
+                  v-model="isRcloneSelected"
                   value="providerValue"
-                  @click="selectSamba()"
+                  @click="selectRclone()"
                   class="provider-card"
                 >
                   <div class="provider-card-content">
                     <div class="provider-icon">
                       <img
-                        :src="require('@/assets/samba.png')"
-                        alt="samba logo"
+                        :src="require('@/assets/rclone.png')"
+                        alt="rclone logo"
                       />
                     </div>
                     <h6>
-                      {{ $t("backup.samba") }}
-                      <cv-interactive-tooltip
-                        alignment="center"
-                        direction="bottom"
-                        class="info"
-                      >
-                        <template slot="content">
-                          {{ $t("backup.samba_tooltips") }}
-                        </template>
-                      </cv-interactive-tooltip>
-                    </h6>
-                  </div>
-                </NsTile>
-              </cv-column>
-              <!-- Cluster -->
-              <cv-column :md="4">
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  v-model="isClusterSelected"
-                  value="providerValue"
-                  @click="selectCluster()"
-                  class="provider-card"
-                >
-                  <div class="provider-card-content">
-                    <div class="provider-icon">
-                      <img
-                        :src="require('@/assets/logo.png')"
-                        alt="cluster logo"
-                      />
-                    </div>
-                    <h6>
-                      {{ $t("backup.cluster") }}
+                      {{ $t("backup.rclone") }}
                     </h6>
                   </div>
                 </NsTile>
@@ -216,11 +207,9 @@
           <NsInlineNotification
             v-if="error.repoConnection"
             kind="error"
-            :title="$t('backup.backup_repository_auth_error')"
-            :description="$t('backup.backup_repository_auth_error_description')"
+            :title="$t('backup.backup_repository_connection_error')"
+            :description="$t('backup.' + error.repoConnection)"
             :showCloseButton="false"
-            @click="goToNotificationDrawer"
-            :actionLabel="$t('backup.go_to_notification_drawer')"
           />
           <!-- backblaze -->
           <template v-if="isBackblazeSelected">
@@ -292,36 +281,96 @@
               ref="aws_secret_access_key"
             ></cv-text-input>
           </template>
-          <!-- azure -->
-          <template v-if="isAzureSelected">
+          <!-- rclone -->
+
+          <template v-if="isRcloneSelected">
+            <div>
+              <label class="bx--label">{{
+                $t("backup.rclone_configuration_source")
+              }}</label>
+              <cv-radio-group
+                :vertical="true"
+                :disabled="loading.addBackupRepository"
+              >
+                <cv-radio-button
+                  ref="paste_configuration"
+                  :label="
+                    $t('backup.rclone_configuration_source_paste_configuration')
+                  "
+                  value="paste"
+                  v-model="rclone.configuration_source"
+                />
+                <cv-radio-button
+                  ref="upload_configuration"
+                  :label="
+                    $t(
+                      'backup.rclone_configuration_source_upload_configuration'
+                    )
+                  "
+                  value="upload"
+                  v-model="rclone.configuration_source"
+                />
+              </cv-radio-group>
+            </div>
+            <template v-if="rclone.configuration_source == 'paste'">
+              <cv-text-area
+                class="mg-top-md"
+                :label="$t('backup.rclone_configuration_content')"
+                v-model.trim="rclone.rclone_conf_secret"
+                :invalid-message="error.rclone.rclone_conf_secret"
+                :helper-text="
+                  $t(
+                    'backup.rclone_configuration_content_single_destination_helper_text'
+                  )
+                "
+                :value="rclone.rclone_conf_secret"
+                rows="5"
+                ref="rclone_conf_secret"
+                :disabled="loading.addBackupRepository"
+              >
+              </cv-text-area>
+            </template>
+            <template v-else>
+              <div
+                :class="{
+                  'file-uploader-error': error.rclone.configuration_file,
+                }"
+              >
+                <cv-file-uploader
+                  :key="componentKey"
+                  :label="$t('backup.rclone_configuration_file')"
+                  :helper-text="$t('backup.rclone_configuration_file_helper')"
+                  :multiple="false"
+                  :removable="true"
+                  :clear-on-reselect="true"
+                  :drop-target-label="
+                    $t('common.drag_and_drop_or_click_to_upload')
+                  "
+                  v-model="rclone.configuration_uploaded_file"
+                  accept=".conf,.txt"
+                  ref="backup_file"
+                ></cv-file-uploader>
+                <div
+                  v-if="error.rclone.configuration_file"
+                  class="validation-failed-invalid-message"
+                >
+                  {{ error.rclone.configuration_file }}
+                </div>
+              </div>
+            </template>
             <cv-text-input
-              :label="$t('backup.azure_url_label')"
-              v-model.trim="url"
-              :invalid-message="error.url"
+              :label="
+                $t('backup.rclone_base_path') +
+                ' (' +
+                $t('common.optional') +
+                ')'
+              "
+              v-model.trim="rclone.base_path"
+              :invalid-message="error.rclone.base_path"
               :disabled="loading.addBackupRepository"
-              ref="url"
+              ref="rclone_base_path"
             >
             </cv-text-input>
-            <cv-text-input
-              :label="$t('backup.azure_account_name')"
-              v-model.trim="azure.azure_account_name"
-              :invalid-message="error.azure.azure_account_name"
-              :disabled="loading.addBackupRepository"
-              autocomplete="off"
-              ref="azure_account_name"
-            >
-            </cv-text-input>
-            <cv-text-input
-              :label="$t('backup.azure_account_key')"
-              type="password"
-              v-model.trim="azure.azure_account_key"
-              :disabled="loading.addBackupRepository"
-              :invalid-message="error.aws.azure_account_key"
-              :password-hide-label="$t('password.hide_password')"
-              :password-show-label="$t('password.show_password')"
-              autocomplete="new-password"
-              ref="azure_account_key"
-            ></cv-text-input>
           </template>
           <!-- generic s3 -->
           <template v-if="isGenericS3Selected">
@@ -360,6 +409,12 @@
           </template>
           <!-- samba -->
           <template v-if="isSambaSelected">
+            <NsInlineNotification
+              kind="info"
+              :title="$t('backup.smb_protocol_warning_title')"
+              :description="$t('backup.smb_protocol_warning_description')"
+              :showCloseButton="false"
+            />
             <cv-text-input
               :label="$t('backup.smb_host')"
               v-model.trim="smb.smb_host"
@@ -409,7 +464,6 @@
               ref="smb_pass"
             ></cv-text-input>
           </template>
-          <!-- //// handle ALL providers -->
           <cv-text-input
             :label="$t('backup.repository_name')"
             v-model.trim="name"
@@ -433,6 +487,9 @@
                   "
                   v-model="password"
                   :helper-text="$t('backup.repository_password_helper')"
+                  :placeholder="
+                    $t('common.eg_value', { value: 'a76917c4522...' })
+                  "
                   :invalid-message="error.password"
                   :disabled="loading.addBackupRepository"
                   autocomplete="new-password"
@@ -463,7 +520,6 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import last from "lodash/last";
 import NodeSelector from "@/components/nodes/NodeSelector";
-import { mapActions } from "vuex";
 
 export default {
   name: "AddRepositoryModal",
@@ -481,13 +537,10 @@ export default {
   },
   data() {
     return {
-      BACKBLAZE_PROTOCOL: "b2:",
-      AWS_PROTOCOL: "s3:",
-      AZURE_PROTOCOL: "azure:",
       step: "",
       steps: ["provider", "nodes", "settings"],
       isBackblazeSelected: false,
-      isAzureSelected: false,
+      isRcloneSelected: false,
       isAmazonS3Selected: false,
       isGenericS3Selected: false,
       isSambaSelected: false,
@@ -497,6 +550,7 @@ export default {
       name: "",
       url: "",
       password: "",
+      componentKey: Date.now(), // used to reset file uploader
       backblaze: {
         b2_account_id: "",
         b2_account_key: "",
@@ -520,20 +574,22 @@ export default {
         aws_secret_access_key: "",
         repoPrefix: "s3:",
       },
-      azure: {
-        azure_account_key: "",
-        azure_account_name: "",
-        repoPrefix: "azure:",
+      rclone: {
+        configuration_source: "paste",
+        rclone_conf_secret: "",
+        base_path: "",
+        configuration_uploaded_file: null,
+        repoPrefix: "",
       },
       cluster: {
         repoPrefix: "",
       },
       clusterStatus: [],
-      //// handle all providers
       loading: {
         addBackupRepository: false,
         listBackupEndpoints: false,
         getClusterStatus: false,
+        fileReading: false,
       },
       error: {
         getClusterStatus: "",
@@ -560,12 +616,14 @@ export default {
         genericS3: {
           aws_access_key_id: "",
           aws_default_region: "",
+          aws_secret_access_key: "",
         },
-        azure: {
-          azure_account_key: "",
-          azure_account_name: "",
+        rclone: {
+          rclone_conf_secret: "",
+          base_path: "",
+          configuration_source: "",
+          configuration_file: "",
         },
-        //// handle all providers
       },
     };
   },
@@ -580,7 +638,8 @@ export default {
       return this.stepIndex == this.steps.length - 1;
     },
     isNextButtonDisabled() {
-      const isLoading = this.loading.addBackupRepository;
+      const isLoading =
+        this.loading.addBackupRepository || this.loading.fileReading;
       const isNoProvider = !this.selectedProvider;
 
       // Only check for node selection on the nodes step when cluster is selected
@@ -596,8 +655,8 @@ export default {
         return "aws";
       } else if (this.isGenericS3Selected) {
         return "genericS3";
-      } else if (this.isAzureSelected) {
-        return "azure";
+      } else if (this.isRcloneSelected) {
+        return "rclone";
       } else if (this.isSambaSelected) {
         return "smb";
       } else if (this.isClusterSelected) {
@@ -605,7 +664,6 @@ export default {
       } else {
         return null;
       }
-      //// handle all providers
     },
     selectedProviderPrefix() {
       return this[this.selectedProvider].repoPrefix;
@@ -682,6 +740,7 @@ export default {
       if (this.isShown) {
         // show first step
         this.step = this.steps[0];
+        this.componentKey = Date.now(); // reset file uploader
         this.clearFields();
         this.clearErrors();
         this.listBackupEndpoints();
@@ -694,39 +753,67 @@ export default {
           this.getClusterStatus();
         }
       } else if (this.step == "settings") {
-        // prefill repository name
-        let repoName = this.$t("backup.default_repository_name", {
-          provider: this.getProviderShortName(),
-        });
-
-        // ensure we don't generate an already existing repo name
-        let isRepoNameDuplicated = this.repositories.find(
-          (b) => b.name == repoName
-        );
-        let repoNameSuffix = 2;
-
-        while (isRepoNameDuplicated) {
-          repoName =
-            this.$t("backup.default_repository_name", {
-              provider: `${this.getProviderShortName()}`,
-            }) + ` (${repoNameSuffix})`;
-
-          isRepoNameDuplicated = this.repositories.find(
-            (b) => b.name == repoName
-          );
-          repoNameSuffix++;
-        }
-        this.name = repoName;
+        // do not prefill repository name — leave input empty
+        this.name = "";
         if (this.selectedProvider == "smb") {
           this.focusElement("smb_host");
-        } else if (this.selectedProvider != "cluster") {
+        } else if (
+          this.selectedProvider != "cluster" &&
+          this.selectedProvider != "rclone"
+        ) {
           this.focusElement("url");
         }
       }
     },
+    selectedProvider: function (newProvider, oldProvider) {
+      if (oldProvider && newProvider !== oldProvider) {
+        this.url = "";
+        this.password = "";
+        this.selectedNode = null;
+
+        this.backblaze.b2_account_id = "";
+        this.backblaze.b2_account_key = "";
+
+        this.aws.aws_access_key_id = "";
+        this.aws.aws_default_region = "";
+        this.aws.aws_secret_access_key = "";
+
+        this.genericS3.aws_access_key_id = "";
+        this.genericS3.aws_secret_access_key = "";
+
+        this.smb.smb_host = "";
+        this.smb.smb_user = "";
+        this.smb.smb_pass = "";
+        this.smb.smb_domain = "";
+
+        this.rclone.configuration_source = "paste";
+        this.rclone.rclone_conf_secret = "";
+        this.rclone.base_path = "";
+        this.rclone.configuration_uploaded_file = null;
+      }
+    },
+    "rclone.configuration_uploaded_file": function (newFiles) {
+      if (newFiles && newFiles.length > 0 && newFiles[0].file) {
+        const reader = new FileReader();
+        this.loading.fileReading = true;
+        reader.onload = (e) => {
+          this.rclone.rclone_conf_secret = e.target.result.trim();
+          this.loading.fileReading = false;
+        };
+        reader.onerror = () => {
+          this.loading.fileReading = false;
+          this.error.rclone.configuration_file = this.$t(
+            "backup.rclone_conf_error"
+          );
+        };
+        reader.readAsText(newFiles[0].file);
+      } else {
+        this.rclone.rclone_conf_secret = "";
+        this.loading.fileReading = false;
+      }
+    },
   },
   methods: {
-    ...mapActions(["setNotificationDrawerShownInStore"]),
     async getClusterStatus() {
       this.loading.getClusterStatus = true;
       this.error.getClusterStatus = "";
@@ -773,14 +860,11 @@ export default {
       this.clusterStatus = taskResult.output.nodes;
       this.loading.getClusterStatus = false;
     },
-    goToNotificationDrawer() {
-      this.$emit("hide");
-      this.setNotificationDrawerShownInStore(true);
-    },
     clearFields() {
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
-      this.isAzureSelected = false;
+      this.isGenericS3Selected = false;
+      this.isRcloneSelected = false;
       this.isSambaSelected = false;
       this.isClusterSelected = false;
       this.name = "";
@@ -797,15 +881,15 @@ export default {
       this.genericS3.aws_access_key_id = "";
       this.genericS3.aws_secret_access_key = "";
 
-      this.azure.azure_account_name = "";
-      this.azure.azure_account_key = "";
-
       this.smb.smb_host = "";
       this.smb.smb_user = "";
       this.smb.smb_pass = "";
       this.smb.smb_domain = "";
 
-      //// handle ALL providers
+      this.rclone.configuration_source = "paste";
+      this.rclone.rclone_conf_secret = "";
+      this.rclone.base_path = "";
+      this.rclone.configuration_uploaded_file = null;
     },
     nextStep() {
       if (this.isNextButtonDisabled) {
@@ -834,39 +918,34 @@ export default {
       }
     },
     selectBackblaze() {
-      //// handle ALL providers
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
       this.isSambaSelected = false;
       this.isClusterSelected = false;
     },
     selectAmazonS3() {
-      //// handle ALL providers
       this.isBackblazeSelected = false;
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
       this.isGenericS3Selected = false;
       this.isSambaSelected = false;
       this.isClusterSelected = false;
     },
     selectSamba() {
-      //// handle ALL providers
       this.isBackblazeSelected = false;
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
       this.isGenericS3Selected = false;
       this.isAmazonS3Selected = false;
       this.isClusterSelected = false;
     },
     selectGenericS3() {
-      //// handle ALL providers
       this.isBackblazeSelected = false;
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
       this.isAmazonS3Selected = false;
       this.isSambaSelected = false;
       this.isClusterSelected = false;
     },
-    selectAzure() {
-      //// handle ALL providers
+    selectRclone() {
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
@@ -874,12 +953,11 @@ export default {
       this.isClusterSelected = false;
     },
     selectCluster() {
-      //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
       this.isSambaSelected = false;
-      this.isAzureSelected = false;
+      this.isRcloneSelected = false;
     },
     buildRepositoryParameters() {
       switch (this.selectedProvider) {
@@ -899,10 +977,10 @@ export default {
             aws_access_key_id: this.genericS3.aws_access_key_id,
             aws_secret_access_key: this.genericS3.aws_secret_access_key,
           };
-        case "azure":
+        case "rclone":
           return {
-            azure_account_name: this.azure.azure_account_name,
-            azure_account_key: this.azure.azure_account_key,
+            rclone_conf_secret: this.rclone.rclone_conf_secret,
+            basepath: this.rclone.base_path,
           };
         case "smb":
           return {
@@ -914,7 +992,6 @@ export default {
         case "cluster":
           return {};
       }
-      //// handle all providers
     },
     validateAddBackblazeRepository() {
       // clear errors
@@ -1095,48 +1172,31 @@ export default {
       }
       return isValidationOk;
     },
-    validateAddAzureRepository() {
+    validateAddRcloneRepository() {
       // clear errors
       this.error.name = "";
-      this.error.url = "";
       this.error.repoConnection = "";
-
-      this.error.azure.azure_account_name = "";
-      this.error.azure.azure_account_key = "";
+      this.error.rclone.rclone_conf_secret = "";
+      this.error.rclone.base_path = "";
+      this.error.rclone.configuration_file = "";
 
       let isValidationOk = true;
 
-      if (!this.url) {
-        this.error.url = this.$t("common.required");
+      if (this.rclone.configuration_source === "paste") {
+        if (!this.rclone.rclone_conf_secret) {
+          this.error.rclone.rclone_conf_secret = this.$t("common.required");
 
-        if (isValidationOk) {
-          this.focusElement("url");
-          isValidationOk = false;
+          if (isValidationOk) {
+            this.focusElement("rclone_conf_secret");
+            isValidationOk = false;
+          }
         }
-      } else if (this.url.includes(" ")) {
-        // wrong url protocol
-        this.error.url = this.$t("backup.invalid_url");
-
-        if (isValidationOk) {
-          this.focusElement("url");
-          isValidationOk = false;
-        }
-      }
-
-      if (!this.azure.azure_account_name) {
-        this.error.azure.azure_account_name = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("azure_account_name");
-          isValidationOk = false;
-        }
-      }
-
-      if (!this.azure.azure_account_key) {
-        this.error.azure.azure_account_key = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("azure_account_key");
+      } else {
+        if (
+          !this.rclone.configuration_uploaded_file ||
+          this.rclone.configuration_uploaded_file.length === 0
+        ) {
+          this.error.rclone.configuration_file = this.$t("common.required");
           isValidationOk = false;
         }
       }
@@ -1266,8 +1326,8 @@ export default {
       switch (this.selectedProvider) {
         case "backblaze":
           return this.validateAddBackblazeRepository();
-        case "azure":
-          return this.validateAddAzureRepository();
+        case "rclone":
+          return this.validateAddRcloneRepository();
         case "aws":
           return this.validateAmazonS3Repository();
         case "genericS3":
@@ -1314,7 +1374,6 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
           },
         })
       );
@@ -1338,25 +1397,68 @@ export default {
       for (const validationError of validationErrors) {
         let field = this.getValidationErrorField(validationError);
 
-        if (validationError.error == "backup_repository_not_accessible") {
+        const connectionErrors = [
+          "backup_repository_not_accessible",
+          "no_read_permission",
+          "no_write_permission",
+          "no_delete_permission",
+        ];
+        if (connectionErrors.includes(validationError.error)) {
           // show error notification
-          this.error.repoConnection = "error";
-        } else if (field !== "(root)") {
+          this.error.repoConnection = validationError.error;
+        } else if (field !== "(root)" && field !== "provider") {
+          // map rclone backend field names to frontend field/ref names
+          const errorField =
+            this.selectedProvider === "rclone" && field === "basepath"
+              ? "base_path"
+              : this.selectedProvider === "rclone" && field === "parameters"
+              ? "rclone_conf_secret"
+              : field;
+          const refField =
+            this.selectedProvider === "rclone" && field === "basepath"
+              ? "rclone_base_path"
+              : this.selectedProvider === "rclone" && field === "parameters"
+              ? "rclone_conf_secret"
+              : field;
+          // use generic rclone_conf_error for any error on rclone_conf_secret
+          // (anyOf schema branches produce untranslatable codes like parameters_pattern)
+          const translationKey =
+            this.selectedProvider === "rclone" &&
+            errorField === "rclone_conf_secret"
+              ? "rclone_conf_error"
+              : validationError.error;
+          // show error on upload widget or paste textarea depending on active mode
+          const displayField =
+            this.selectedProvider === "rclone" &&
+            errorField === "rclone_conf_secret" &&
+            this.rclone.configuration_source === "upload"
+              ? "configuration_file"
+              : errorField;
           // set i18n error message
           if (
             // we could have error.property and error.provider.property
-            field === "name" ||
-            field === "url" ||
-            field === "repoConnection"
+            displayField === "name" ||
+            displayField === "url" ||
+            displayField === "repoConnection"
           ) {
-            this.error[field] = this.$t("backup." + validationError.error);
+            this.error[displayField] = this.$t("backup." + translationKey);
           } else {
-            this.error[this.selectedProvider][field] = this.$t(
-              "backup." + validationError.error
+            this.error[this.selectedProvider][displayField] = this.$t(
+              "backup." + translationKey
             );
           }
           if (!focusAlreadySet) {
-            this.focusElement(field);
+            this.$nextTick(() => {
+              const el = this.$refs[refField];
+              if (el) {
+                if (typeof el.focus === "function") {
+                  el.focus();
+                } else if (el.$el) {
+                  const focusable = el.$el.querySelector("input, textarea");
+                  if (focusable) focusable.focus();
+                }
+              }
+            });
             focusAlreadySet = true;
           }
         }
@@ -1367,9 +1469,7 @@ export default {
       this.$emit("repoCreated");
       this.$emit("hide");
     },
-    getProviderShortName() {
-      return this.$t(`backup.${this.selectedProvider}_short`);
-    },
+
     async listBackupEndpoints() {
       this.loading.listBackupEndpoints = true;
       this.error.listBackupEndpoints = "";
@@ -1442,6 +1542,36 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+// Full width and white background for the rclone file uploader
+::v-deep .bx--file {
+  width: 100%;
+  max-width: 38rem;
+}
+::v-deep .bx--file__drop-container {
+  width: 100%;
+  max-width: 38rem;
+}
+
+.file-uploader-error ::v-deep .bx--file__drop-container {
+  outline: 2px solid $danger-01;
+  outline-offset: -2px;
+}
+
+.file-uploader-error .validation-failed-invalid-message {
+  margin-top: -0.75rem;
+  margin-bottom: 0.75rem;
+  color: $danger-01;
+  font-size: 0.75rem;
+}
+::v-deep .bx--file-container {
+  width: 100%;
+  max-width: 38rem;
+}
+::v-deep .bx--file__selected-file {
+  background-color: #ffffff;
+  max-width: 38rem;
+}
 
 .provider-card {
   min-height: 9rem;

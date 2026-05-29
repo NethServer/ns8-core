@@ -36,11 +36,23 @@
         @click="deselectOtherSnapshots(snapshot)"
         class="snapshot-tile"
       >
-        <div>
-          {{ formatSnapshotTimestamp(snapshot.timestamp) }}
+        <div class="flex items-center gap-2">
+          <span>{{ formatSnapshotTimestamp(snapshot.timestamp) }}</span>
+          <cv-tag
+            v-if="index == 0"
+            kind="blue"
+            :label="$t('backup.most_recent')"
+            size="sm"
+            class="no-margin"
+          ></cv-tag>
         </div>
-        <div v-if="index == 0" class="secondary-row">
-          {{ $t("backup.most_recent") }}
+        <div class="secondary-row">
+          {{
+            /* total_bytes is -1 when the backend has no size info for the snapshot */
+            snapshot.total_bytes >= 0
+              ? $options.filters.byteFormat(snapshot.total_bytes)
+              : "-"
+          }}
         </div>
       </NsTile>
       <infinite-loading

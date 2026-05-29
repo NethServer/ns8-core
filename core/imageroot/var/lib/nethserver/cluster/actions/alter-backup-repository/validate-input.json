@@ -203,7 +203,7 @@
                     "type": ["null", "string"],
                     "maxLength": 100000,
                     "description": "Basic INI-like string validation",
-                    "pattern": "^(\\[[^\\]]+\\]\\n)?(\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*[^\\n]*\\n)*$"
+                    "pattern": "^(\\[[^\\]]+\\]\\n)?(\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*[^\\n]*(\\n|$))*$"
                 },
                 "rclone_conf_b64_secret": {
                     "type": "string",

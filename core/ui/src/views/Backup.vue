@@ -282,15 +282,6 @@
                             class="top-right-overflow-menu"
                           >
                             <cv-overflow-menu-item
-                              @click="showEditRepoModal(repo)"
-                            >
-                              <NsMenuItem
-                                :icon="Edit20"
-                                :label="$t('common.edit')"
-                              />
-                            </cv-overflow-menu-item>
-                            <NsMenuDivider />
-                            <cv-overflow-menu-item
                               danger
                               @click="showDeleteRepoModal(repo)"
                             >
@@ -312,9 +303,9 @@
                             <div class="row actions">
                               <NsButton
                                 kind="ghost"
-                                :icon="ArrowRight20"
-                                @click="showRepoDetailsModal(repo)"
-                                >{{ $t("common.see_details") }}
+                                :icon="Edit20"
+                                @click="showEditRepoModal(repo)"
+                                >{{ $t("common.edit") }}
                               </NsButton>
                             </div>
                           </div>
@@ -689,17 +680,37 @@
     <NsDangerDeleteModal
       :isShown="isShownDeleteRepoModal"
       :name="currentRepo.name"
-      :title="$t('backup.delete_backup_repository')"
-      :warning="$t('common.please_read_carefully')"
+      :title="$t('backup.delete_destination')"
+      :isWarningShown="false"
       :description="
         $t('backup.delete_repository_confirm', {
           name: currentRepo.name,
         })
       "
+      :deleteLabel="$t('common.delete')"
       :typeToConfirm="$t('common.type_to_confirm', { name: currentRepo.name })"
       @hide="hideDeleteRepoModal"
       @confirmDelete="deleteRepo(currentRepo)"
     >
+      <template slot="description">
+        <NsInlineNotification
+          kind="warning"
+          :title="$t('backup.delete_repo_notice_title')"
+          :showCloseButton="false"
+          :loadingAction="loading.downloadClusterBackupNotice"
+          v-if="currentRepo.password"
+          @action="downloadClusterConfigurationBackup(false, true)"
+          :actionLabel="$t('backup.download_cluster_configuration_backup')"
+          :description="$t('backup.delete_repo_notice_description')"
+        />
+        <p class="mg-top-sm">
+          {{
+            $t("backup.delete_repository_confirm", {
+              name: currentRepo.name,
+            })
+          }}
+        </p>
+      </template>
       <template slot="explanation">
         <p class="mg-top-sm">{{ $t("backup.delete_repo_explanation_1") }}</p>
       </template>
@@ -759,12 +770,6 @@
         <p class="mg-top-sm">{{ $t("backup.delete_backup_explanation_2") }}</p>
       </template>
     </NsDangerDeleteModal>
-    <!-- repo details modal -->
-    <RepoDetailsModal
-      :isShown="isShownRepoDetailsModal"
-      :repository="currentRepo"
-      @hide="hideRepoDetailsModal"
-    />
     <!-- edit repo modal -->
     <EditRepositoryModal
       :isShown="isShownEditRepoModal"
@@ -812,7 +817,6 @@ import {
 import { mapGetters } from "vuex";
 import AddRepositoryModal from "@/components/backup/AddRepositoryModal";
 import CreateOrEditBackupModal from "@/components/backup/CreateOrEditBackupModal";
-import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
 import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
 import RestoreSingleInstanceModal from "@/components/backup/RestoreSingleInstanceModal";
@@ -827,7 +831,6 @@ export default {
   components: {
     AddRepositoryModal,
     CreateOrEditBackupModal,
-    RepoDetailsModal,
     BackupDetailsModal,
     EditRepositoryModal,
     RestoreSingleInstanceModal,
@@ -855,7 +858,6 @@ export default {
       Upload20,
       isShownCreateOrEditBackupModal: false,
       isShownDeleteRepoModal: false,
-      isShownRepoDetailsModal: false,
       isShownEditRepoModal: false,
       isShownDeleteBackupModal: false,
       isShownBackupDetailsModal: false,
@@ -883,6 +885,7 @@ export default {
         listBackups: true,
         alterBackup: false,
         downloadClusterBackup: false,
+        downloadClusterBackupNotice: false,
         passwordClusterBackup: false,
       },
       error: {
@@ -1066,13 +1069,6 @@ export default {
     },
     hideDeleteRepoModal() {
       this.isShownDeleteRepoModal = false;
-    },
-    showRepoDetailsModal(repo) {
-      this.currentRepo = repo;
-      this.isShownRepoDetailsModal = true;
-    },
-    hideRepoDetailsModal() {
-      this.isShownRepoDetailsModal = false;
     },
     showEditRepoModal(repo) {
       this.currentRepo = repo;
@@ -1413,8 +1409,16 @@ export default {
       this.loading.alterBackup = false;
       this.listBackups();
     },
-    async downloadClusterConfigurationBackup() {
-      this.loading.downloadClusterBackup = true;
+    async downloadClusterConfigurationBackup(
+      showLoading = true,
+      showNoticeLoading = false
+    ) {
+      if (showLoading) {
+        this.loading.downloadClusterBackup = true;
+      }
+      if (showNoticeLoading) {
+        this.loading.downloadClusterBackupNotice = true;
+      }
       const taskAction = "download-cluster-backup";
       const eventId = this.getUuid();
 
@@ -1446,16 +1450,30 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.downloadClusterBackup = this.getErrorMessage(err);
+        this.loading.downloadClusterBackup = false;
+        this.loading.downloadClusterBackupNotice = false;
         return;
       }
     },
     downloadClusterBackupAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.downloadClusterBackup = false;
+      this.loading.downloadClusterBackupNotice = false;
     },
     downloadClusterBackupCompleted(taskContext, taskResult) {
       this.loading.downloadClusterBackup = false;
-      const downloadUrl = `${window.location.protocol}//${window.location.hostname}/cluster-admin/backup/${taskResult.output.path}`;
+      this.loading.downloadClusterBackupNotice = false;
+      const path = taskResult && taskResult.output && taskResult.output.path;
+
+      if (!path) {
+        this.error.downloadClusterBackup = this.$t(
+          "error.cannot_retrieve_task_status"
+        );
+        return;
+      }
+
+      const apiBase = this.$root.apiUrl.replace(/\/api$/, "");
+      const downloadUrl = `${apiBase}/backup/${path}`;
 
       const fileName =
         "cluster-configuration-backup " +
@@ -1466,14 +1484,22 @@ export default {
         url: downloadUrl,
         method: "GET",
         responseType: "blob",
-      }).then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-      });
+        timeout: 60000,
+      })
+        .then((response) => {
+          const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.setAttribute("download", fileName);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(blobUrl);
+        })
+        .catch((err) => {
+          console.error("downloadClusterBackupCompleted", err);
+          this.error.downloadClusterBackup = this.getErrorMessage(err);
+        });
     },
     reloadBackupRepositories() {
       this.isSetClusterBackupPassword = true;
