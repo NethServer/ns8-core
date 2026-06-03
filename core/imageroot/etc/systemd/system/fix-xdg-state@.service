@@ -1,0 +1,9 @@
+[Unit]
+Description=Create User-State-Private link
+Documentation=https://github.com/NethServer/dev/issues/8028
+
+[Service]
+User=%i
+Type=oneshot
+ExecStart=bash -c '! [[ -e ~/.local/state ]] && ln -sfv ../.config ~/.local/state'
+RemainAfterExit=true
