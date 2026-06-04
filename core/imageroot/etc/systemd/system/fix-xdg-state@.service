@@ -6,5 +6,5 @@ Documentation=https://github.com/NethServer/dev/issues/8028
 User=%i
 Type=oneshot
 WorkingDirectory=~
-ExecStart=bash -c '! [[ -d .local ]] && mkdir -vp .local'
-ExecStart=bash -c '! [[ -e .local/state ]] && ln -sfv ../.config .local/state'
+ExecStart=bash -c 'mkdir -vp .local'
+ExecStart=bash -c '[[ -e .local/state ]] || ln -sfv ../.config .local/state'
