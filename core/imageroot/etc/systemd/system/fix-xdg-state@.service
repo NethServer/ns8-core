@@ -8,4 +8,3 @@ Type=oneshot
 WorkingDirectory=~
 ExecStart=bash -c '! [[ -d .local ]] && mkdir -vp .local'
 ExecStart=bash -c '! [[ -e .local/state ]] && ln -sfv ../.config .local/state'
-RemainAfterExit=true
