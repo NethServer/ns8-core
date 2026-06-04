@@ -179,14 +179,15 @@ def get_progress_callback(range_low, range_high):
     return cbk
 
 def run_helper(*args, log_command=True, **kwargs):
-    """Run the command in args, writing the command line to stderr with prio DEBUG.
-    Set log_command=False, to suppress the command logging.
-
+    """Run the command in args, writing the command line to stderr with prio INFO.
+    - Set log_command=False, to suppress the command logging.
+    - Set progress_callback=func(p), to capture the task progress data if the
+      helper command generates it.
     The command output is redirected to stderr by default.
     Additional keyword arguments are passed to subprocess.Popen
     """
     if log_command:
-        print(SD_DEBUG + shlex.join(args), file=sys.stderr)
+        print(SD_INFO + shlex.join(args), file=sys.stderr)
 
     progress_callback = kwargs.pop('progress_callback', None)
     start_env = kwargs.pop('env', os.environ)
