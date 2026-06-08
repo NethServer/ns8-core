@@ -6,5 +6,10 @@ Documentation=https://github.com/NethServer/dev/issues/8028
 User=%i
 Type=oneshot
 WorkingDirectory=~
-ExecStart=bash -c 'mkdir -vp .local'
-ExecStart=bash -c '[[ -e .local/state ]] || ln -sfv ../.config .local/state'
+# The ":" prefix disables systemd environment variable substitution, so $
+# signs in the bash script do not need escaping.
+ExecStart=:bash -c 'mkdir -vp .local ; cd .local || exit 1 ; \
+    lnk=$(readlink -v state) ; [[ ${lnk} == ../.config ]] || { \
+        [[ -e state || -L state ]] && mv -vf state state.$$.bak ; \
+        ln -sfv ../.config state ; \
+    }'
