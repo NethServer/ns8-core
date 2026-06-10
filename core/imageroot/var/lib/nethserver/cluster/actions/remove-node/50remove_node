@@ -41,6 +41,19 @@ for xmodule_id, xnode_id in rdb.hgetall('cluster/module_node').items():
     # Add to notify_domain_set the user domains that are bound to the removed module:
     notify_domain_set |= set((rdb.hget('cluster/module_domains', xmodule_id) or "").split())
 
+# Collect LDAP service data for each removed module before keys are deleted.
+# This is needed by module-removed event handlers (e.g. openldap, ldapproxy) to
+# clean up stale replication and proxy config when the node was offline.
+module_srv_ldap = {}
+for xmodule_id in remove_module_set:
+    srv_ldap = rdb.hgetall(f'module/{xmodule_id}/srv/tcp/ldap')
+    if srv_ldap:
+        ldap_serverid = rdb.hget(f'module/{xmodule_id}/environment', 'LDAP_SERVERID') or ""
+        module_srv_ldap[xmodule_id] = {
+            'srv_ldap': srv_ldap,
+            'ldap_serverid': ldap_serverid,
+        }
+
 # Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
 
@@ -49,9 +62,11 @@ if remove_module_set:
     trx.hdel("cluster/module_node", *remove_module_set)
     trx.hdel("cluster/module_domains", *remove_module_set)
 for xmodule_id in remove_module_set:
+    extra = module_srv_ldap.get(xmodule_id, {})
     trx.publish('cluster/event/module-removed', json.dumps({
         'module': xmodule_id,
         'node': tnode_id,
+        **extra,
     }))
 trx.publish('cluster/event/module-domain-changed', json.dumps({
     "modules": list(remove_module_set),
