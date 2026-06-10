@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import agent.facts
+import sys
+
+rdb = agent.redis_connect(use_replica=True)
+
+is_managed = agent.facts.has_subscription(rdb)
+
+quiet_run = False
+if '--quiet' in sys.argv or '-q' in sys.argv:
+    quiet_run = True
+
+if is_managed:
+    if not quiet_run:
+        print(agent.SD_INFO + "[INFO] check-unmanaged-updates: NS8 subscription is active")
+    # Non-zero exit: ExecCondition fails, dnf-automatic is skipped (fail-safe)
+    sys.exit(2)
+else:
+    if not quiet_run:
+        print(agent.SD_INFO + "[INFO] check-unmanaged-updates: NS8 subscription is disabled")
+    # Zero exit: ExecCondition passes, dnf-automatic runs normally
+    sys.exit(0)
