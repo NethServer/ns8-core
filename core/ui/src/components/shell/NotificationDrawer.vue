@@ -148,7 +148,11 @@ export default {
       }
     },
     isCancelShownForNotification(notification) {
-      const actionsWithCancel = ["clone-module", "run-backup", "restore-module"];
+      const actionsWithCancel = [
+        "clone-module",
+        "run-backup",
+        "restore-module",
+      ];
       return (
         notification.task &&
         notification.task &&

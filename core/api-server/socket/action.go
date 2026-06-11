@@ -145,7 +145,11 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 
 		// check filter
 		if len(logsAction.Filter) > 0 {
-			filter = ` |= "` + strings.ReplaceAll(logsAction.Filter, `"`, `\"`) + `"`
+			if logsAction.Regexp {
+				filter = ` |~ "` + strings.ReplaceAll(logsAction.Filter, `"`, `\"`) + `"`
+			} else {
+				filter = ` |= "` + strings.ReplaceAll(logsAction.Filter, `"`, `\"`) + `"`
+			}
 		} else {
 			filter = ``
 		}

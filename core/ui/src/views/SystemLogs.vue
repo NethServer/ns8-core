@@ -19,60 +19,26 @@
             class="page-toolbar-item"
             >{{ $t("system_logs.add_search") }}</NsButton
           >
-          <!-- <template v-else>
-            <cv-content-switcher
-              @selected="onLayoutSelected"
-              class="page-toolbar-item"
-            >
-              <cv-content-switcher-button
-                owner-id="horizontal"
-                :selected="csbHorizontalLayoutSelected"
-                >{{
-                  $t("system_logs.horizontal_layout")
-                }}</cv-content-switcher-button
-              >
-              <cv-content-switcher-button
-                owner-id="vertical"
-                :selected="csbVerticalLayoutSelected"
-                >{{
-                  $t("system_logs.vertical_layout")
-                }}</cv-content-switcher-button
-              >
-            </cv-content-switcher> -->
-          <NsIconMenu
-            :flipMenu="true"
-            tipPosition="top"
-            tipAlignment="end"
-            class="page-toolbar-item"
+          <cv-link @click="toggleAllFilters" class="page-toolbar-item">
+            {{
+              allFiltersCollapsed
+                ? $t("system_logs.expand_filters")
+                : $t("system_logs.collapse_filters")
+            }}
+          </cv-link>
+          <cv-link
+            @click="toggleLayout"
+            :class="[
+              'page-toolbar-item',
+              { 'toolbar-link-disabled': searches.length < 2 },
+            ]"
           >
-            <cv-overflow-menu-item @click="collapseAllFilters()">
-              <NsMenuItem
-                :icon="RowCollapse20"
-                :label="$t('system_logs.collapse_filters')"
-              />
-            </cv-overflow-menu-item>
-            <cv-overflow-menu-item
-              @click="setHorizontalLayout()"
-              :disabled="searches.length < 2 || !verticalLayout"
-              class="toggle-layout"
-            >
-              <NsMenuItem
-                :icon="Row20"
-                :label="$t('system_logs.horizontal_layout')"
-              />
-            </cv-overflow-menu-item>
-            <cv-overflow-menu-item
-              @click="setVerticalLayout()"
-              :disabled="searches.length < 2 || verticalLayout"
-              class="toggle-layout"
-            >
-              <NsMenuItem
-                :icon="Column20"
-                :label="$t('system_logs.vertical_layout')"
-              />
-            </cv-overflow-menu-item>
-          </NsIconMenu>
-          <!-- </template> -->
+            {{
+              verticalLayout
+                ? $t("system_logs.horizontal_layout")
+                : $t("system_logs.vertical_layout")
+            }}
+          </cv-link>
         </div>
       </cv-column>
     </cv-row>
@@ -122,6 +88,7 @@
           :startTime="q.startTime"
           :endDate="q.endDate"
           :endTime="q.endTime"
+          :regexp="q.regexp"
           :startSearchCommand="startSearchCommand"
           :closeAriaLabel="$t('common.close')"
           @close="closeSearch"
@@ -136,6 +103,7 @@
           @updateEndDate="onUpdateEndDate"
           @updateEndTime="onUpdateEndTime"
           @updateTimezone="onUpdateTimezone"
+          @updateRegexp="onUpdateRegexp"
           :light="true"
           :ref="'search-' + searchId"
           :timezone="q.timezone"
@@ -189,12 +157,14 @@ export default {
         endTime: "",
         autoStartSearch: false,
         timezone: "local",
+        regexp: false,
       },
       internalNodes: [],
       apps: [],
       lokiInstances: [],
       searches: [],
       verticalLayout: false,
+      allFiltersCollapsed: false,
       startSearchCommand: 0,
       loading: {
         listInstalledModules: false,
@@ -411,9 +381,33 @@ export default {
     setVerticalLayout() {
       this.verticalLayout = true;
     },
+    toggleLayout() {
+      if (this.searches.length < 2) {
+        return;
+      }
+      if (this.verticalLayout) {
+        this.setHorizontalLayout();
+      } else {
+        this.setVerticalLayout();
+      }
+    },
     collapseAllFilters() {
+      this.allFiltersCollapsed = true;
       for (const searchId of this.searches) {
-        this.$root.$emit(`collapseSystemLogsFilters-${searchId}`);
+        this.$refs["search-" + searchId][0].collapseFilters();
+      }
+    },
+    expandAllFilters() {
+      this.allFiltersCollapsed = false;
+      for (const searchId of this.searches) {
+        this.$refs["search-" + searchId][0].expandFilters();
+      }
+    },
+    toggleAllFilters() {
+      if (this.allFiltersCollapsed) {
+        this.expandAllFilters();
+      } else {
+        this.collapseAllFilters();
       }
     },
     closeSearch(searchId) {
@@ -453,6 +447,9 @@ export default {
     },
     onUpdateTimezone(timezone) {
       this.q.timezone = timezone;
+    },
+    onUpdateRegexp(regexp) {
+      this.q.regexp = regexp;
     },
   },
 };

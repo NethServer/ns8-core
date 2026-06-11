@@ -1202,6 +1202,8 @@
         "try_changing_search_filters": "Try changing search filters",
         "mode": "Mode",
         "dump": "Dump",
+        "regular_expression": "Regular expression",
+        "showing_logs_feedback": "Showing {shown} of {total} lines from {from} to {to}",
         "card_title": "Logs",
         "card_description": "Show {name} logs",
         "card_button_label": "Go to System logs",

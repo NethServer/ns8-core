@@ -97,6 +97,17 @@
             >
             </cv-text-input>
           </cv-column>
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <label class="bx--label">
+              {{ $t("system_logs.regular_expression") }}
+            </label>
+            <cv-toggle
+              v-model="internalRegexp"
+              :checked-label="$t('common.enabled')"
+              :unchecked-label="$t('common.disabled')"
+              class="mg-bottom-md"
+            />
+          </cv-column>
         </cv-row>
         <cv-row>
           <cv-column :md="verticalLayout ? 8 : 4" :xlg="verticalLayout ? 8 : 4">
@@ -280,17 +291,6 @@
         </cv-column>
       </cv-row>
       <cv-row>
-        <cv-column>
-          <cv-link @click="toggleFilters" class="toggle-filters">
-            {{
-              filtersShown
-                ? $t("system_logs.collapse_filters")
-                : $t("system_logs.expand_filters")
-            }}
-          </cv-link>
-        </cv-column>
-      </cv-row>
-      <cv-row>
         <cv-column class="logs-output-toolbar">
           <NsButton
             v-if="isFollowing"
@@ -347,6 +347,19 @@
                 class="item mg-bottom-sm"
               />
             </div>
+            <span
+              v-if="!internalFollowLogs && outputLines.length > 0"
+              class="logs-feedback"
+            >
+              {{
+                $t("system_logs.showing_logs_feedback", {
+                  shown: outputLines.length,
+                  total: internalMaxLines,
+                  from: logsFromDate,
+                  to: logsToDate,
+                })
+              }}
+            </span>
           </template>
         </cv-column>
       </cv-row>
@@ -455,6 +468,7 @@ export default {
     },
     mainSearch: Boolean,
     followLogs: Boolean,
+    regexp: Boolean,
     verticalLayout: Boolean,
     loadingApps: Boolean,
     loadingLoki: Boolean,
@@ -468,6 +482,9 @@ export default {
       MAX_LINES_LIMIT: 2000,
       filtersShown: true,
       internalContext: "",
+      internalRegexp: false,
+      logsFromDate: "",
+      logsToDate: "",
       internalSearchQuery: "",
       calOptions: {
         dateFormat: "Y-m-d",
@@ -548,6 +565,16 @@ export default {
     internalSearchQuery: function () {
       if (this.mainSearch) {
         this.$emit("updateSearchQuery", this.internalSearchQuery);
+      }
+    },
+    regexp: function () {
+      if (this.mainSearch) {
+        this.internalRegexp = this.regexp;
+      }
+    },
+    internalRegexp: function () {
+      if (this.mainSearch) {
+        this.$emit("updateRegexp", this.internalRegexp);
       }
     },
     timezone: function () {
@@ -697,17 +724,12 @@ export default {
     this.initFilters();
 
     // register event listeners
-    this.$root.$on(
-      `collapseSystemLogsFilters-${this.searchId}`,
-      this.collapseFilters
-    );
     this.$root.$on("logSearchClosed", this.onLogSearchClosed);
   },
   beforeDestroy() {
     // remove event listeners
     this.$root.$off(`logsStart-${this.searchId}`);
     this.$root.$off(`logsStop-${this.searchId}`);
-    this.$root.$off(`collapseSystemLogsFilters-${this.searchId}`);
     this.$root.$off("logSearchClosed");
 
     if (this.pid) {
@@ -720,6 +742,9 @@ export default {
     },
     collapseFilters() {
       this.filtersShown = false;
+    },
+    expandFilters() {
+      this.filtersShown = true;
     },
     onContextSelected(value) {
       this.internalContext = value;
@@ -860,6 +885,7 @@ export default {
           id: this.searchId,
           timezone: timezone,
           instance: this.internalSelectedLokiId,
+          regexp: this.internalRegexp,
         },
       };
 
@@ -892,6 +918,13 @@ export default {
         this.noLogsFound = true;
       } else {
         this.outputLines = [...this.outputLines, ...payload.message];
+        // lines are reversed (newest first): [0] = newest, [last] = oldest
+        this.logsToDate = this.outputLines[0]
+          .substring(0, 16)
+          .replace("T", " ");
+        this.logsFromDate = this.outputLines[this.outputLines.length - 1]
+          .substring(0, 16)
+          .replace("T", " ");
       }
 
       // signal LogOutput
@@ -919,6 +952,8 @@ export default {
     },
     clearLogs() {
       this.outputLines = [];
+      this.logsFromDate = "";
+      this.logsToDate = "";
     },
     onEnterKeyPress() {
       if (!this.isFollowing) {
