@@ -2,9 +2,10 @@
 Description=PhoneHome Trigger
 
 [Timer]
-OnCalendar=daily
-Persistent=true
-RandomizedDelaySec=21600
+OnCalendar=06:00
+OnCalendar=14:00
+OnCalendar=22:00
+RandomizedDelaySec=2h
 
 [Install]
 WantedBy=timers.target
