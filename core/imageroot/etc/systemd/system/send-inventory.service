@@ -1,5 +1,5 @@
 [Unit]
-Description=Send the system inventory remotely
+Description=System inventory synchronization
 After=apply-updates.service
 
 [Service]

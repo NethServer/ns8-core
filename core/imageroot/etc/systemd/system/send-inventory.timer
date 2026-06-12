@@ -1,14 +1,11 @@
 [Unit]
-Description=Execute send-inventory overnight
+Description=Send-inventory Trigger
 
 [Timer]
-# This timer settings assign a fixed time between 00:00 and 06:00 AM to
-# start the send-inventory.service unit. If the node was powered off at that
-# time the timer should trigger as soon as it gets powered on again.
-OnCalendar=00:00:00
-RandomizedDelaySec=6h
-FixedRandomDelay=true
-Persistent=true
+OnCalendar=06:00
+OnCalendar=14:00
+OnCalendar=22:00
+RandomizedDelaySec=2h
 
 [Install]
 WantedBy=timers.target
