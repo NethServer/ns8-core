@@ -77,5 +77,11 @@ redis-exec hset cluster/subscription \
     exit 0
 }
 
+# Notify subscribers so the metrics module's subscription-changed handler
+# rebuilds alert-proxy.env now (flipping alerts to the native Mimir endpoint
+# with the rotated creds) instead of waiting for the next prometheus restart.
+# Same channel/shape used by set-subscription. Best-effort.
+redis-exec publish cluster/event/subscription-changed '{"action":"migrated"}' >/dev/null 2>&1 || :
+
 logger -t migrate-to-my "migrated to my collect credentials"
 exit 0
