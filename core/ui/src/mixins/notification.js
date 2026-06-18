@@ -76,7 +76,8 @@ export default {
           id: notification.id,
           isCancelShown: false,
           cancelLabel: this.$t("notification.abort"),
-          confirmCancelLabel: this.$t("notification.confirm_abort"),
+          confirmCancelText: this.$t("notification.confirm_cancel_text"),
+          keepRunningLabel: this.$t("notification.keep_running"),
         },
         listeners: {
           notificationAction: this.handleNotificationAction,

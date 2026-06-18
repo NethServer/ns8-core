@@ -366,6 +366,8 @@
     "notification": {
         "abort": "Interrompi",
         "confirm_abort": "Conferma annullamento",
+        "confirm_cancel_text": "Interrompere questa attività? Questa azione non può essere annullata",
+        "keep_running": "Continua l'esecuzione",
         "recent": "Recente",
         "no_notifications": "Nessuna notifica",
         "no_notifications_description": "Non ci sono ancora notifiche recenti",
