@@ -70,6 +70,12 @@ Vue.use(Toast, toastOptions);
 Vue.directive("click-outside", {
   bind: function (el, binding, vnode) {
     el.clickOutsideEvent = function (event) {
+      // If the target was removed from the DOM before this bubble-phase
+      // listener fires (e.g. a Vue re-render triggered by the click handler
+      // swapped out the clicked element), don't treat it as an outside click.
+      if (!document.contains(event.target)) {
+        return;
+      }
       // check if click was outside the el and his children
       if (!(el == event.target || el.contains(event.target))) {
         // call method provided in attribute value
