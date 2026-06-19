@@ -316,7 +316,8 @@
         "no_notifications_description": "You don't have any recent notifications yet",
         "abort": "Abort",
         "confirm_cancel_text": "Abort this task? This action can't be undone",
-        "keep_running": "Keep running"
+        "keep_running": "Keep running",
+        "confirm_abort": "Yes, abort"
     },
     "task": {
         "task_failed": "Task {task} failed",
