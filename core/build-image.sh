@@ -11,7 +11,7 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; 
     echo "Pulling Golang runtime..."
     golang_cache_path="${PWD}/.golang-cache"
     mkdir -vp "${golang_cache_path}/{mcache,bcache}"
-    buildah from --name gobuilder-tmp docker.io/library/golang:1.25.10-bookworm
+    buildah from --name gobuilder-tmp docker.io/library/golang:1.25.11-bookworm
     buildah config --env GOCACHE=/var/lib/misc/bcache --env GOMODCACHE=/var/lib/misc/mcache gobuilder-tmp
     buildah commit --rm gobuilder-tmp gobuilder-image
     buildah from --name gobuilder-core \
@@ -92,7 +92,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the Redis image..."
-container=$(buildah from docker.io/library/redis:8.4.3-alpine)
+container=$(buildah from docker.io/library/redis:8.4.4-alpine)
 reponame="redis"
 # Reset upstream volume configuration: it is necessary to modify /data contents with our .conf file.
 buildah config --env=SKIP_FIX_PERMS=1 --volume=/data- "${container}"

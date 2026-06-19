@@ -27,6 +27,8 @@
           :isCancelShown="isCancelShownForNotification(notification)"
           :cancelLabel="$t('notification.abort')"
           :confirmCancelLabel="$t('notification.confirm_abort')"
+          :confirmCancelText="$t('notification.confirm_cancel_text')"
+          :keepRunningLabel="$t('notification.keep_running')"
           :isRead="notification.isRead"
           :progress="notification.task.progress"
           :isProgressShown="true"
@@ -60,6 +62,8 @@
           :isCancelShown="false"
           :cancelLabel="$t('notification.abort')"
           :confirmCancelLabel="$t('notification.confirm_abort')"
+          :confirmCancelText="$t('notification.confirm_cancel_text')"
+          :keepRunningLabel="$t('notification.keep_running')"
           :isRead="notification.isRead"
           :timestamp="notification.timestamp"
           :id="notification.id"
@@ -148,7 +152,11 @@ export default {
       }
     },
     isCancelShownForNotification(notification) {
-      const actionsWithCancel = ["clone-module", "run-backup", "restore-module"];
+      const actionsWithCancel = [
+        "clone-module",
+        "run-backup",
+        "restore-module",
+      ];
       return (
         notification.task &&
         notification.task &&

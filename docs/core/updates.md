@@ -30,10 +30,16 @@ actions.
 
 To execute the core update, use:
 
-    api-cli run update-core --data '{"core_url":"ghcr.io/nethserver/core:latest","nodes":[1, 2]}'
+    api-cli run update-core --data '{"core_url":"ghcr.io/nethserver/core:MAJ.MIN.PATCH","nodes":[NODEID1, NODEID2]}'
+
+- `MAJ.MIN.PATCH` is a Semver-compliant version tag of a stable core
+  release; a symbolic branch name (e.g. `feat-8000`) can be used for
+  feature development instead
+- NODEID1, NODEID2 are the integer node IDs of the cluster nodes to update
 
 The cluster agent running on the leader node forwards the core-update
-request to selected nodes.
+request to selected nodes. Updating a subset of nodes is discouraged in
+production clusters; keep core versions aligned on all cluster nodes.
 
 Each node agent compares the image tag of the `core_url` parameter with
 core image version installed on the node. One of the following cases
