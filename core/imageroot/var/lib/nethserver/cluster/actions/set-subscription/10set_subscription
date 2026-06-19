@@ -93,7 +93,7 @@ def terminate_nsent(rdb, attributes):
         psession = _get_http_session()
         try:
             psession.post(
-                "https://my.nethesis.it/api/Utils/freekey",
+                "https://my-proxy-prod.onrender.com/api/Utils/freekey",
                 data={"lk": legacy_id, "secret": legacy_secret},
             )
         except Exception:
@@ -117,7 +117,7 @@ def subscribe_nsent(rdb, osubscription):
     # translation proxy with credentials it cannot map.
     psession = _get_http_session()
     myresp = psession.post(
-        "https://my.nethesis.it/backend/api/systems/register",
+        "https://my-proxy-prod.onrender.com/backend/api/systems/register",
         json={"system_secret": auth_token},
         headers={"Content-Type": "application/json", "Accept": "application/json"},
     )
@@ -133,7 +133,7 @@ def subscribe_nsent(rdb, osubscription):
         "provider": "nsent",
         'system_id': system_id,
         'auth_token': auth_token,
-        'collect_url': "https://my.nethesis.it/collect/api/systems",
+        'collect_url': "https://my-proxy-prod.onrender.com/collect/api/systems",
         'migrated': "1",
         'vpn_cert_cn': "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
         'support_user': 'nethsupport',
