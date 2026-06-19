@@ -827,16 +827,34 @@ export default {
       this.error.listAlerts = this.$t("error.generic_error");
       this.loading.listAlerts = false;
     },
+    getAlertsLocale() {
+      const locale = this.$i18n.locale;
+      if (locale === "en" || locale === "it") {
+        return locale;
+      } else {
+        return "en";
+      }
+    },
     listAlertsCompleted(taskContext, taskResult) {
       // Filter by this.nodeId
       const filtered = taskResult.output.alerts.filter(
         (alert) => Number(alert.node_id) === Number(this.nodeId)
       );
 
+      const locale = this.getAlertsLocale();
+
       // Map to simplified objects (flatten annotations)
       const simplified = filtered.map((alert) => ({
-        description: alert.annotations?.description || alert.description || "",
-        summary: alert.annotations?.summary || alert.summary || "",
+        description:
+          alert.annotations?.[`description_${locale}`] ||
+          alert.annotations?.description ||
+          alert.description ||
+          "",
+        summary:
+          alert.annotations?.[`summary_${locale}`] ||
+          alert.annotations?.summary ||
+          alert.summary ||
+          "",
         endsAt: alert.endsAt || null,
         fingerprint: alert.fingerprint || null,
         receivers: alert.receivers || [],
