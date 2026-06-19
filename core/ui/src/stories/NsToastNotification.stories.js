@@ -31,7 +31,9 @@ Default.args = {
   isProgressShown: false,
   cancelLabel: "Abort",
   isCancelShown: false,
-  confirmCancelLabel: "Confirm abort",
+  confirmCancelText: "Abort this task? This action can't be undone",
+  keepRunningLabel: "Keep running",
+  confirmCancelLabel: "Yes, abort",
   closeAriaLabel: "Dismiss notification",
 };
 
@@ -47,7 +49,9 @@ Progress.args = {
   isProgressShown: true,
   isCancelShown: true,
   cancelLabel: "Abort",
-  confirmCancelLabel: "Confirm abort",
+  confirmCancelText: "Abort this task? This action can't be undone",
+  keepRunningLabel: "Keep running",
+  confirmCancelLabel: "Yes, abort",
   timestamp: new Date(),
   isRead: false,
   closeAriaLabel: "Dismiss notification",
@@ -77,6 +81,8 @@ DescriptionSlot.args = {
   isProgressShown: false,
   cancelLabel: "Abort",
   isCancelShown: false,
-  confirmCancelLabel: "Confirm abort",
+  confirmCancelText: "Abort this task? This action can't be undone",
+  keepRunningLabel: "Keep running",
+  confirmCancelLabel: "Yes, abort",
   closeAriaLabel: "Dismiss notification",
 };
