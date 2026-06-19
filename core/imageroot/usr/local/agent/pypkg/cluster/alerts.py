@@ -23,6 +23,7 @@ def _decorate_with_our_attributes(oalert):
     elif 'module_id' in oalert.get("labels", {}):
         oalert["category"] = "application" # Fallback category
         oalert["module_id"] = oalert["labels"]["module_id"]
+        oalert["node_id"] = int(oalert["labels"].get("node", "0"))
 
 def fetch_alerts():
     """Fetch active alerts from local Alertmanager."""
