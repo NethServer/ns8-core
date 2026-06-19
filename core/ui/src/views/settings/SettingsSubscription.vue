@@ -351,8 +351,6 @@ import {
   PageTitleService,
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
-import { intervalToDuration, parseISO, formatDuration } from "date-fns";
-import { getDateFnsLocale } from "@/i18n";
 import { mapGetters } from "vuex";
 
 import NotificationService from "@/mixins/notification";
@@ -397,7 +395,6 @@ export default {
       termsUrl: "",
       agreeTerms: false,
       sessionExpireDate: "",
-      dateFnsLocale: null,
       loading: {
         getSubscription: false,
         setSubscription: false,
@@ -421,11 +418,6 @@ export default {
   created() {
     this.getSubscription();
     this.getSupportSession();
-
-    // load date-fns locale based on user language
-    getDateFnsLocale().then((locale) => {
-      this.dateFnsLocale = locale;
-    });
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -439,11 +431,12 @@ export default {
   },
   methods: {
     formatExpiryDate(dateString) {
-      const parsedDate = parseISO(dateString);
-      const duration = intervalToDuration({
-        start: new Date(),
-        end: parsedDate,
-      });
+      const end = new Date(dateString);
+      const diffMs = Math.max(0, end - Date.now());
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
 
       const dateTimeStr = new Intl.DateTimeFormat(navigator.language, {
         hour: "2-digit",
@@ -451,12 +444,12 @@ export default {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
-      }).format(parsedDate);
-      const durationStr = formatDuration(duration, {
-        format: ["days", "hours"],
-        delimiter: ", ",
-        locale: this.dateFnsLocale,
-      });
+      }).format(end);
+
+      const durationStr = new Intl.DurationFormat(navigator.language, {
+        style: "long",
+      }).format({ days, hours });
+
       return `${durationStr} (${dateTimeStr})`;
     },
     showRemoveSubcriptionModal() {
