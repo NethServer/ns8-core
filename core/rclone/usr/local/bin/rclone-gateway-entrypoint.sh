@@ -14,6 +14,11 @@ rclone ${DEBUG:+-vvvv} \
     --rc-no-auth \
     --rc-addr "${RCLONE_UNIX_SOCKET}" \
     &
+sleep 0.2
+until rclone rc core/version >/dev/null 2>&1; do
+    echo "Still waiting for rclone startup..."
+    sleep 1
+done
 echo "Initialize backends..."
 rclone-serve-restart
 echo "Initialize frontend..."

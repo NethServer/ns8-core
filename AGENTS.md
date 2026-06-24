@@ -147,6 +147,12 @@ target leader node.
 - **`/etc/hosts` handling**: The `set-fqdn` action comments out lines
   containing the old hostname (prefixed with `# commented by set-fqdn #`)
   and appends a new `127.0.1.1` entry for the new hostname.
+- **Entrypoint startup waits**: For container entrypoints, a simple readiness
+  loop is acceptable when the outer service startup is supervised by Systemd.
+  In exceptional failure cases, prefer relying on the Systemd start timeout
+  instead of adding extra in-script liveness handling, as long as the
+  externally visible service (for example, HAProxy) is not started before the
+  dependency is ready.
 - **Branch names**: never use "/" in branch names. Use only chars allowed
   by container registry tags, like "-" and alphanumeric chars. This is a
   requirement for container image uploads.
