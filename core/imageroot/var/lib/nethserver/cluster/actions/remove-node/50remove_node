@@ -41,6 +41,16 @@ for xmodule_id, xnode_id in rdb.hgetall('cluster/module_node').items():
     # Add to notify_domain_set the user domains that are bound to the removed module:
     notify_domain_set |= set((rdb.hget('cluster/module_domains', xmodule_id) or "").split())
 
+# Collect OpenLDAP providers directly from Redis (schema "rfc2307" excludes AD/Samba).
+all_rfc2307 = agent.list_service_providers(rdb, 'ldap', transport='tcp', filters={'schema': 'rfc2307'})
+removed_openldap_by_domain = {}   # domain -> [{'host': host, 'port': port}, ...]
+surviving_openldap_by_domain = {} # domain -> [survivor_module_id, ...]
+for provider in all_rfc2307:
+    if provider['node'] == tnode_id:
+        removed_openldap_by_domain.setdefault(provider['domain'], []).append({'host': provider['host'], 'port': int(provider['port'])})
+    else:
+        surviving_openldap_by_domain.setdefault(provider['domain'], []).append(provider['module_id'])
+
 # Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
 
@@ -62,3 +72,26 @@ trx.delete(*(node_keys | remove_module_keys))
 # Reconfigure VPN routes of remaining nodes
 trx.publish('cluster/event/vpn-changed', json.dumps({"node_id": tnode_id}))
 trx.execute()
+
+# One surviving provider is enough: syncrepl propagates the change to the others.
+# All dead servers for the same domain are removed in a single call to avoid syncrepl
+# race conditions: each remove-server call modifies cn=config and triggers a syncrepl
+# restart (rc -100 quitting) on all peers. Consecutive calls on the same domain would
+# race against reconnecting peers, causing some changes to be lost.
+for domain, servers in removed_openldap_by_domain.items():
+    survivors = surviving_openldap_by_domain.get(domain, [])
+    if not survivors:
+        continue  # single-provider domain, nothing to notify
+    for survivor_id in survivors:
+        result = agent.tasks.run(
+            agent_id=f'module/{survivor_id}',
+            action='remove-server',
+            data={'servers': servers},
+            endpoint='redis://cluster-leader',
+        )
+        if result['exit_code'] == 0:
+            break
+        print(agent.SD_WARNING + f"remove-server on {survivor_id} failed (servers={servers})", file=sys.stderr)
+    else:
+        print(agent.SD_ERR + f"remove-server failed on all survivors for domain {domain} (servers={servers})", file=sys.stderr)
+        sys.exit(1)
