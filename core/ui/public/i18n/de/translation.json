@@ -678,7 +678,9 @@
         "notifications": "Meldungen",
         "recent": "vor kurzem",
         "unread": "ungelesen|ungelesene",
-        "abort": "Abbrechen"
+        "abort": "Abbrechen",
+        "confirm_cancel_text": "Abort this task? This action can't be undone",
+        "keep_running": "Keep running"
     },
     "domain_users": {
         "change_password": "Kennwort ändern",

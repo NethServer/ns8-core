@@ -733,7 +733,9 @@
         "no_notifications": "No notifications",
         "notifications": "Notifications",
         "recent": "Recent",
-        "unread": "unread | unread"
+        "unread": "unread | unread",
+        "confirm_cancel_text": "Abort this task? This action can't be undone",
+        "keep_running": "Keep running"
     },
     "smarthost": {
         "port_placeholder": "587",

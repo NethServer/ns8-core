@@ -1430,7 +1430,9 @@
         "notifications": "Notifications",
         "recent": "Recent",
         "unread": "unread | unread",
-        "abort": "Abort"
+        "abort": "Abort",
+        "confirm_cancel_text": "Abort this task? This action can't be undone",
+        "keep_running": "Keep running"
     },
     "samba": {
         "provider_ipaddress": "Provider IP address",

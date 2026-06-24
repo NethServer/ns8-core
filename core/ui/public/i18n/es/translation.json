@@ -1602,7 +1602,9 @@
         "notifications": "Notificaciones",
         "no_notifications_description": "No tienes notificaciones recientes",
         "recent": "Reciente",
-        "unread": "no leído | no leídos"
+        "unread": "no leído | no leídos",
+        "confirm_cancel_text": "Abort this task? This action can't be undone",
+        "keep_running": "Keep running"
     },
     "firewall": {
         "name": "Servicio",
