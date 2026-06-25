@@ -1,11 +1,18 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2023 Nethesis S.r.l.
+# Copyright (C) 2026 Nethesis S.r.l.
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-# NOTE: this step is retained to avoid update-core runtime failure until
-# agent ignores missing steps silently
+# Some nodes may run for a very long time without a manual reboot. Stop then
+# start every non-root systemd user session so /run/user/* is recreated and the
+# netns directories get the SELinux labels expected by Podman after the Rocky
+# Linux 9.8 upgrade.
+while read -r uid _; do
+    [[ "$uid" == "0" ]] && continue
+    systemctl stop "user@$uid"
+    systemctl start "user@$uid"
+done < <(loginctl list-users --no-legend)
 
 exit 0
