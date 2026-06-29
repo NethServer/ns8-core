@@ -97,15 +97,15 @@ def store_backup_status(node_id, backup_id, module_id, status):
         print(agent.SD_WARNING + "Cannot store backup status!", ex, file=sys.stderr)
 
 def run_retention(rdb, repository, repopath, retention):
-    """Apply retention policy after a successful backup."""
+    """Apply retention policy after a successful backup. Returns True on success, False on failure."""
     try:
         agent.run_restic(rdb, repository, repopath, [], [
             "forget", "--prune", f"--keep-last={retention}",
         ], check=True)
+        return True
     except Exception as ex:
-        # Backup is OK, but retention failed. We assume the error
-        # condition is temporary and will be recovered by next backup run.
-        print(f"[WARNING] retention policy failed for {repository}/{repopath}: {ex}", file=sys.stderr)
+        print(f"[ERROR] retention policy failed for {repository}/{repopath}: {ex}", file=sys.stderr)
+        return False
 
 def update_repopath_json(rdb, repository, backup_id, module_id, repopath, success):
     """Upload {repopath}.json metadata to the remote destination."""
@@ -153,16 +153,18 @@ def process_module(rdb, module_id, backup_id, node_id, repository, retention):
     repopath = get_module_repopath(rdb, module_id)
     success = (rc == 0)
 
-    # Collect stats and store backup status
+    # Collect stats
     status = collect_backup_stats(rdb, repository, repopath, start_time)
     if not success:
         status["errors"] += 1
 
-    store_backup_status(node_id, backup_id, module_id, status)
-
     if success:
-        run_retention(rdb, repository, repopath, retention)
+        if not run_retention(rdb, repository, repopath, retention):
+            success = False
+            rc = 1
+            status["errors"] += 1
 
+    store_backup_status(node_id, backup_id, module_id, status)
     update_repopath_json(rdb, repository, backup_id, module_id, repopath, success)
     return rc
 
