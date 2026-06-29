@@ -157,4 +157,4 @@ target leader node.
   by container registry tags, like "-" and alphanumeric chars. This is a
   requirement for container image uploads.
 - **Commits**: Use conventional commit style. Short title line, 50 chars max.
-  Wrap body text at 72.
+  Wrap body text at 72. Append a footer line `Assisted-by: AGENT_NAME:MODEL_VERSION`.
