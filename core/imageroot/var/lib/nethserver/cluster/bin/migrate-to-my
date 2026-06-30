@@ -24,9 +24,10 @@
 # cluster in a half-migrated state.
 #
 
-export REDIS_USER="default"
-export REDIS_PASSWORD="default"
-export REDIS_ADDRESS="127.0.0.1:6379"
+# Redis credentials are inherited from the invoking send-* unit's
+# runagent environment (the privileged 'cluster' user and the leader
+# address). Do NOT pin them to the read-only 'default' user here — the
+# rotation HSET below needs write access.
 
 while IFS='=' read -r key value; do
     declare "${key}"="${value}"
