@@ -156,11 +156,19 @@
                   }}</span>
                   <span class="value">{{ subscription.plan_name }}</span>
                 </div>
+                <div v-if="subscription.company" class="key-value-setting">
+                  <span class="label">{{
+                    $t("settings_subscription.company")
+                  }}</span>
+                  <span class="value">{{ subscription.company }}</span>
+                </div>
                 <div class="key-value-setting">
                   <span class="label">{{
                     $t("settings_subscription.expire_date")
                   }}</span>
                   <span class="value">{{
+                    !subscription.expires ||
+                    !subscription.expire_date ||
                     subscription.expire_date === "-1"
                       ? $t("settings_subscription.no_expiration")
                       : formatDate(
