@@ -337,7 +337,17 @@
         $t("settings_subscription.remove_cluster_subscription_title")
       }}</template>
       <template slot="content">
-        <div>
+        <NsInlineNotification
+          kind="warning"
+          :title="
+            $t('settings_subscription.remove_cluster_subscription_irreversible_title')
+          "
+          :description="
+            $t('settings_subscription.remove_cluster_subscription_irreversible')
+          "
+          :showCloseButton="false"
+        />
+        <div class="mg-top-md">
           {{
             $t("settings_subscription.remove_cluster_subscription_description")
           }}

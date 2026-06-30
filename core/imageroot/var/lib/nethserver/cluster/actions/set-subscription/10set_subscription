@@ -121,6 +121,13 @@ def subscribe_nsent(rdb, osubscription):
         json={"system_secret": auth_token},
         headers={"Content-Type": "application/json", "Accept": "application/json"},
     )
+    # A system key is one-shot: once a system is registered on my it cannot be
+    # re-registered, because the key is never freed (licensing safeguard). The
+    # backend answers 409; surface a specific validation error instead of
+    # falling back to the community provider and reporting a generic
+    # "unknown token", so the UI can explain a new system is needed.
+    if myresp.status_code == 409:
+        _exit_validation_error("auth_token", "***", "system_already_registered", 3)
     myresp.raise_for_status()
     dinfo = myresp.json()
 
