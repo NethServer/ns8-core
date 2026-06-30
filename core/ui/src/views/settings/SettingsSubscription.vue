@@ -139,10 +139,11 @@
                   </div>
                 </div>
               </template>
-              <template
+              <div
                 v-if="
                   !loading.getSubscription && subscription.status == 'active'
                 "
+                class="subscription-details"
               >
                 <div class="key-value-setting">
                   <span class="label">{{
@@ -198,7 +199,7 @@
                     ></cv-tag>
                   </span>
                 </div>
-              </template>
+              </div>
               <NsInlineNotification
                 v-if="error.setSubscription"
                 kind="error"
@@ -876,6 +877,20 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+// Two-column layout so all values line up regardless of label length:
+// the label column auto-sizes to the widest label, values share one edge.
+.subscription-details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 2rem;
+  row-gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.subscription-details .key-value-setting {
+  display: contents;
+}
 
 .icon-and-text {
   justify-content: flex-start;
