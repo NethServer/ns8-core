@@ -149,7 +149,15 @@
                   <span class="label">{{
                     $t("settings_subscription.system_id")
                   }}</span>
-                  <span class="value">{{ subscription.system_id }}</span>
+                  <span class="value">
+                    <cv-link
+                      v-if="subscription.system_url"
+                      :href="subscription.system_url"
+                      target="_blank"
+                      >{{ subscription.system_id }}</cv-link
+                    >
+                    <template v-else>{{ subscription.system_id }}</template>
+                  </span>
                 </div>
                 <div class="key-value-setting">
                   <span class="label">{{
