@@ -735,6 +735,7 @@
         "authentication_token_placeholder": "Paste the token here",
         "system_id": "System ID",
         "plan_name": "Plan",
+        "company": "Company",
         "expire_date": "Expiration",
         "status": "Status",
         "remote_support": "Remote support",
