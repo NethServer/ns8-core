@@ -36,7 +36,7 @@ def fetch_subscription_info_nsent(rdb, attributes):
         # the UI still shows the system_id row instead of a 500.
         return {
             "auth_token": "********",
-            "system_url": f"https://my.nethesis.it/systems/{system_id}",
+            "system_url": f"https://my-proxy-prod.onrender.com/systems/{system_id}",
             "plan_name": "Nethesis Enterprise",
             "company": "-",
             "expires": False,
@@ -65,7 +65,7 @@ def fetch_subscription_info_nsent(rdb, attributes):
 
     info = {
         "auth_token": "********",
-        "system_url": f"https://my.nethesis.it/systems/{sinfo.get('system_id', '')}",
+        "system_url": f"https://my-proxy-prod.onrender.com/systems/{sinfo.get('system_id', '')}",
         # The new my has no per-system plan; enterprise units are all
         # "Nethesis Enterprise". The organization name is surfaced as the
         # company, mirroring the nsec subscription view.
