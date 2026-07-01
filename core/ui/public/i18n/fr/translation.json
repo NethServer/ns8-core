@@ -112,7 +112,7 @@
         "cluster_configuration": "Cluster configuration",
         "aws_secret_access_key": "AWS secret access key",
         "duration": "Duration",
-        "genericS3_placeholder": "e.g. myminio.example.com/mybucket",
+        "genericS3_placeholder": "e.g. myrustfs.example.org/mybucket",
         "i_have_stored_encryption_password": "I have stored the password in a safe place",
         "errored_backups_description": "Check out 'Schedules' below",
         "b2_account_key": "B2 application key",

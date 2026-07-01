@@ -1048,7 +1048,7 @@
         "aws_url_label": "Name des AWS bucket",
         "smb_url_label": "Name der Datenfreigabe",
         "genericS3_url_label": "Adresse des Bucket",
-        "genericS3_placeholder": "z.B. myminio.example.com/mybucket",
+        "genericS3_placeholder": "z.B. myrustfs.example.org/mybucket",
         "smb_url_placeholder": "z.B. myshare oder myshare/subfolder",
         "backup_page_tooltip_manual": "Weitere Informationen siehe {manualLink}.",
         "backblaze_url_label": "Name des B2 bucket",

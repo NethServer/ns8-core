@@ -497,7 +497,7 @@
         "backblaze_url_label": "B2 bucket name",
         "genericS3_url_label": "Bucket address",
         "genericS3_url_tooltip": "Enter an address with format 'serverfqdn/bucketname'. Note: the server must have a valid TLS certificate",
-        "genericS3_placeholder": "e.g. myminio.example.com/mybucket",
+        "genericS3_placeholder": "e.g. myrustfs.example.org/mybucket",
         "smb_url_label": "Share name",
         "smb_protocol_warning_title": "SMB2 and SMB3 protocols supported",
         "smb_protocol_warning_description": "Only file shares using SMB2 or SMB3 are supported. SMB1/CIFS shares are deprecated, insecure and cannot be accessed.",

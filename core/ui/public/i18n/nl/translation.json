@@ -225,7 +225,7 @@
         "cluster_configuration": "Cluster configuratie",
         "aws_secret_access_key": "AWS geheime toegangssleutel",
         "duration": "Tijdsduur",
-        "genericS3_placeholder": "Bijv. myminio.example.com/mybucket",
+        "genericS3_placeholder": "Bijv. myrustfs.example.org/mybucket",
         "i_have_stored_encryption_password": "Ik heb het wachtwoord op een veilige plek bewaard",
         "errored_backups_description": "controleer 'Schedules' hier beneden",
         "b2_account_key": "B2 applicatie sleutel",

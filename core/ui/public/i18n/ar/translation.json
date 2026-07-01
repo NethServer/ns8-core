@@ -202,7 +202,7 @@
         "smb_url_label": "Share name",
         "genericS3_url_label": "Bucket address",
         "schedule": "Schedule",
-        "genericS3_placeholder": "e.g. myminio.example.com/mybucket",
+        "genericS3_placeholder": "e.g. myrustfs.example.org/mybucket",
         "choose_destination_repository": "Choose destination repository",
         "backup_repository_exists": "A repository with this URL already exists",
         "app_instances_not_backed_up_description": "{numInstances} app instance has no backup configured | {numInstances} app instances have no backup configured",

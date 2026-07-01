@@ -910,7 +910,7 @@
         "aws_url_label": "Nome bucket di AWS",
         "smb_url_label": "Nome condivisione",
         "genericS3_url_label": "Indirizzo bucket",
-        "genericS3_placeholder": "es. myminio.example.com/mybucket",
+        "genericS3_placeholder": "es. myrustfs.example.org/mybucket",
         "smb_url_placeholder": "es. myshare oppure myshare/subfolder",
         "backup_page_tooltip_manual": "Per maggiori informazioni {manualLink}.",
         "backblaze_url_label": "Nome bucket di B2",
