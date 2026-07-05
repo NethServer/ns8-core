@@ -40,7 +40,11 @@
       :ref="'logsContainer-' + searchId"
       :key="'logsContainer-' + searchId"
     >
-      <pre><text-highlight :queries="highlightQueries">{{ logText }}</text-highlight></pre>
+      <pre><text-highlight
+        :queries="highlightQueries"
+        :highlight-component="highlightComponent"
+        :search-term="highlight"
+      >{{ logText }}</text-highlight></pre>
     </div>
   </div>
 </template>
@@ -48,6 +52,21 @@
 <script>
 import { carbonPrefixMixin, themeMixin } from "@carbon/vue/src/mixins";
 import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
+import LogHighlightMark from "./LogHighlightMark.vue";
+
+// match the whole line containing a level keyword (not just the keyword),
+// case-insensitive: layered on top of the user's search query, purely for
+// visual colorization, they don't affect what gets matched by it
+const LOG_LEVEL_QUERIES = [
+  /^.*\b(?:ERROR|ERR|FATAL|CRIT(?:ICAL)?)\b.*$/im,
+  /^.*\b(?:WARN(?:ING)?)\b.*$/im,
+  /^.*\b(?:INFO(?:RMATION)?|NOTICE)\b.*$/im,
+  /^.*\b(?:DEBUG|TRACE)\b.*$/im,
+];
+
+// ensures every line's leading timestamp + "[node:module:syslog_id]" tag
+// gets its own highlighted chunk, even on lines with no level keyword
+const PROCESS_TAG_QUERY = /^\S+\s+\[[^\]]*\]/im;
 
 export default {
   name: "LogOutput",
@@ -80,12 +99,17 @@ export default {
     noLogsFound: Boolean,
   },
   mixins: [carbonPrefixMixin, themeMixin, UtilService, LottieService],
+  data() {
+    return {
+      highlightComponent: LogHighlightMark,
+    };
+  },
   computed: {
     logText() {
       return this.outputLines.join("\n");
     },
     highlightQueries() {
-      return [this.highlight];
+      return [this.highlight, ...LOG_LEVEL_QUERIES, PROCESS_TAG_QUERY];
     },
   },
   watch: {
@@ -127,6 +151,8 @@ export default {
   max-width: none;
   min-height: 4rem;
   max-height: 35rem;
+  background-color: #000 !important;
+  color: #f4f4f4 !important;
 }
 
 .logs-output.reduced-output-height.bx--snippet--multi {
@@ -155,5 +181,46 @@ export default {
 // show scrollbar
 .system-logs .logs-output.bx--snippet--multi .bx--snippet-container {
   overflow-y: auto !important;
+}
+
+// every line is wrapped in a <mark> (for level/tag detection), so clear the
+// native browser <mark> yellow background on that wrapper; nested
+// mark.log-search-match keeps its own default look, still legible on black
+mark.text__highlight {
+  background: transparent;
+}
+
+// log level colorization on the dark log viewer background (search-match
+// highlighting keeps its default native <mark> look, still legible on black)
+mark.log-level-error {
+  background: transparent;
+  color: #ff8389;
+  font-weight: 600;
+}
+
+mark.log-level-warn {
+  background: transparent;
+  color: #f1c21b;
+  font-weight: 600;
+}
+
+mark.log-level-info {
+  background: transparent;
+  color: #78a9ff;
+  font-weight: 600;
+}
+
+mark.log-level-debug {
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+}
+
+// leading timestamp and "[node:module:syslog_id]" tag, set off from the
+// rest of the line
+.log-timestamp,
+.log-process-tag {
+  color: #fff;
+  font-weight: 700;
 }
 </style>
