@@ -76,6 +76,9 @@ func main() {
 		router.Use(cors.New(corsConf))
 	}
 
+	// Accept trusted headers only from localhost
+	router.SetTrustedProxies([]string{"127.0.0.1", "::1"})
+
 	ijwt := createJwtInstance(viper.GetString("handler_dir"))
 
 	api := router.Group("/api")
