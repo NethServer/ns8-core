@@ -151,7 +151,7 @@ export default {
   max-width: none;
   min-height: 4rem;
   max-height: 35rem;
-  background-color: #000 !important;
+  background-color: #161616 !important;
   color: #f4f4f4 !important;
 }
 
