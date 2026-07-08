@@ -206,7 +206,7 @@ mark.log-level-warn {
 
 mark.log-level-info {
   background: transparent;
-  color: #78a9ff;
+  color: $inverse-support-04;
   font-weight: 600;
 }
 
