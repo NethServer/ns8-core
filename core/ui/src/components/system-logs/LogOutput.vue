@@ -212,7 +212,7 @@ mark.log-level-info {
 
 mark.log-level-debug {
   background: transparent;
-  color: #fff;
+  color: $ui-02;
   font-weight: 600;
 }
 
