@@ -194,7 +194,7 @@ mark.text__highlight {
 // highlighting keeps its default native <mark> look, still legible on black)
 mark.log-level-error {
   background: transparent;
-  color: #ff8389;
+  color: $inverse-support-01;
   font-weight: 600;
 }
 
