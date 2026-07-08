@@ -220,7 +220,7 @@ mark.log-level-debug {
 // rest of the line
 .log-timestamp,
 .log-process-tag {
-  color: #fff;
+  color: $ui-02;
   font-weight: 700;
 }
 </style>
