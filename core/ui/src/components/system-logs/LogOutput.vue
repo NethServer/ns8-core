@@ -200,7 +200,7 @@ mark.log-level-error {
 
 mark.log-level-warn {
   background: transparent;
-  color: #f1c21b;
+  color: $inverse-support-03;
   font-weight: 600;
 }
 
