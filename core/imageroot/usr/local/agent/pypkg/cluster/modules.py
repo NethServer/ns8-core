@@ -130,13 +130,6 @@ def _get_http_session():
     osession.headers= {
         'User-Agent': 'ns8-downloader', # DO Spaces blocks Python UA
     }
-    osession.timeout = 15 # Timeout for HTTP connections
-    oretries = urllib3.util.Retry(
-        total=3,
-        backoff_factor=0.1,
-        allowed_methods={'POST', 'GET'},
-    )
-    osession.mount('https://', requests.adapters.HTTPAdapter(max_retries=oretries))
     return osession
 
 def _list_repository_modules(rdb, repository_name, repository_url):
@@ -151,7 +144,7 @@ def _list_repository_modules(rdb, repository_name, repository_url):
                 if hsubscription and url.startswith("https://subscription.nethserver.com/"):
                     # Send system_id for HTTP Basic authentication
                     osession.auth = (hsubscription["system_id"], hashlib.sha256(hsubscription["auth_token"].encode()).hexdigest())
-                resp = osession.get(url, params={"view": repo_view})
+                resp = osession.get(url, params={"view": repo_view}, timeout=(10, 15))
                 repodata_raw = resp.text
                 updated = resp.headers.get('Last-Modified', "")
         except Exception as ex:
