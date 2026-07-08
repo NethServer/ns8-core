@@ -25,7 +25,7 @@
     <NsEmptyState
       v-else-if="noLogsFound"
       :title="$t('system_logs.no_log_found')"
-      :animationData="GhostLottie"
+      :animationData="GhostDarkBgLottie"
       animationTitle="ghost"
       :loop="1"
       class="margin-auto"
@@ -183,44 +183,46 @@ export default {
   overflow-y: auto !important;
 }
 
-// every line is wrapped in a <mark> (for level/tag detection), so clear the
-// native browser <mark> yellow background on that wrapper; nested
-// mark.log-search-match keeps its own default look, still legible on black
-mark.text__highlight {
-  background: transparent;
-}
+.logs-output {
+  // every line is wrapped in a <mark> (for level/tag detection), so clear
+  // the native browser <mark> yellow background on that wrapper; nested
+  // mark.log-search-match keeps its own default look, still legible on black
+  mark.text__highlight {
+    background: transparent;
+  }
 
-// log level colorization on the dark log viewer background (search-match
-// highlighting keeps its default native <mark> look, still legible on black)
-mark.log-level-error {
-  background: transparent;
-  color: $inverse-support-01;
-  font-weight: 600;
-}
+  // log level colorization on the dark log viewer background (search-match
+  // highlighting keeps its default native <mark> look, still legible on black)
+  mark.log-level-error {
+    background: transparent;
+    color: $inverse-support-01;
+    font-weight: 600;
+  }
 
-mark.log-level-warn {
-  background: transparent;
-  color: $inverse-support-03;
-  font-weight: 600;
-}
+  mark.log-level-warn {
+    background: transparent;
+    color: $inverse-support-03;
+    font-weight: 600;
+  }
 
-mark.log-level-info {
-  background: transparent;
-  color: $inverse-support-04;
-  font-weight: 600;
-}
+  mark.log-level-info {
+    background: transparent;
+    color: $inverse-support-04;
+    font-weight: 600;
+  }
 
-mark.log-level-debug {
-  background: transparent;
-  color: $ui-02;
-  font-weight: 600;
-}
+  mark.log-level-debug {
+    background: transparent;
+    color: $ui-02;
+    font-weight: 600;
+  }
 
-// leading timestamp and "[node:module:syslog_id]" tag, set off from the
-// rest of the line
-.log-timestamp,
-.log-process-tag {
-  color: $ui-02;
-  font-weight: 700;
+  // leading timestamp and "[node:module:syslog_id]" tag, set off from the
+  // rest of the line
+  .log-timestamp,
+  .log-process-tag {
+    color: $ui-02;
+    font-weight: 700;
+  }
 }
 </style>
