@@ -24,7 +24,8 @@ ExecStart=/usr/bin/podman run \
     --volume=./journal:/var/log/journal \
     --volume=./promtail:/etc/alloy:z \
     --volume=alloy-data:/var/lib/alloy/data:z \
-    ${PROMTAIL_IMAGE}
+    ${PROMTAIL_IMAGE} \
+    run /etc/alloy/config.alloy --storage.path=/var/lib/alloy/data --disable-reporting
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
 PIDFile=%t/%N.pid
