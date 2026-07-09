@@ -36,12 +36,17 @@ function send_inventory_nsent ()
         return 0
     fi
 
-    print-phonehome | \
-    curl -m 180 --retry 3 -L -s -X POST \
+    # Surface failures (DNS, TLS, timeouts, HTTP errors) in the journal
+    # instead of swallowing them; the || keeps set -e satisfied.
+    local err
+    err=$(print-phonehome | \
+    curl -m 180 --retry 3 -L -sSf -X POST \
         --user "${system_id:?}:${auth_token:?}" \
         -H "Content-Type: application/json" \
         --data-binary @- \
-        "${collect_url}/inventory" >/dev/null || :
+        -o /dev/null -w 'HTTP %{http_code}' \
+        "${collect_url}/inventory" 2>&1) || \
+        echo "<4>[WARNING] inventory send failed: ${err}" 1>&2
 }
 
 function send_inventory_nscom ()
