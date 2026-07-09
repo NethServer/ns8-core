@@ -133,3 +133,31 @@ key/values:
 
 - `is_active` controls the status of the Systemd `apply-updates.timer`
   unit. `1` for enabled, otherwise disabled
+
+The `cluster/apply_updates is_active` value is set automatically when a
+subscription is activated or terminated. It can also be changed directly
+with the `set-automatic-updates` cluster action:
+
+    api-cli run set-automatic-updates --data '{"apply_updates_is_active": false}'
+
+Changing `is_active` does not immediately start or stop the
+`apply-updates.timer` unit: the `set-automatic-updates` action also runs
+the `check-subscription` node helper, which reads the current value and
+aligns the timer status accordingly.
+
+### Per-instance automatic updates policy
+
+Each module instance can opt out of automatic updates independently of
+the cluster-wide `is_active` switch. The policy is stored in the Redis
+HASH `cluster/module_automatic_update`, keyed by module instance ID, with
+value `1` (enabled, the default when the key is missing) or `0`
+(disabled).
+
+The policy is set with the same `set-automatic-updates` action:
+
+    api-cli run set-automatic-updates --data '{"instances": {"dokuwiki1": false}}'
+
+When the `apply-updates` timer runs `update-modules`, instances whose
+policy is `0` are skipped and the exclusion is logged. Manually-triggered
+updates (e.g. from the UI or `api-cli run update-modules`) always ignore
+this policy and apply to every instance.

@@ -81,13 +81,15 @@
           }
         ],
         "disabled_updates_reason": "",
+        "apply_updates_is_active": true,
+        "subscription_is_active": true,
         "installed": [
-          [
             {
               "id": "dokuwiki2",
               "node": "1",
               "digest": "sha256:929465c177d9e40559b3fa838f2e429060ff7e8c3e4e1a12076b3304ad562982",
               "source": "ghcr.io/nethserver/dokuwiki",
+              "automatic_updates": true,
               "version": "0.0.1-alpha1"
             },
             {
@@ -95,9 +97,9 @@
               "node": "1",
               "digest": "sha256:929465c177d9e40559b3fa838f2e429060ff7e8c3e4e1a12076b3304ad562982",
               "source": "ghcr.io/nethserver/dokuwiki",
+              "automatic_updates": false,
               "version": "0.0.1-alpha1"
             }
-          ]
         ]
       }
     ]
@@ -204,6 +206,14 @@
           "ns7_migration"
         ],
         "description": "A non-empty strings indicates that updates are disabled for some reason. The string value identifies the reason."
+      },
+      "apply_updates_is_active": {
+        "type": "boolean",
+        "description": "True if the cluster-wide automatic updates timer is active"
+      },
+      "subscription_is_active": {
+        "type": "boolean",
+        "description": "True if a Nethesis subscription is active on the cluster"
       },
       "updates": {
         "type": "array",
@@ -315,6 +325,10 @@
               "type": "string",
               "description": "The URL of the container image registry"
             },
+            "automatic_updates": {
+              "type": "boolean",
+              "description": "True if automatic updates are enabled for this instance"
+            },
             "version": {
               "type": "string",
               "description": "A valid semantic version extracted from image tag"
@@ -325,6 +339,7 @@
             "node",
             "digest",
             "source",
+            "automatic_updates",
             "version"
           ]
         }
@@ -390,6 +405,8 @@
       "versions",
       "install_destinations",
       "installed",
+      "apply_updates_is_active",
+      "subscription_is_active",
       "updates"
     ]
   }

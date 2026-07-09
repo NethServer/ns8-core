@@ -27,13 +27,20 @@ import agent.tasks
 import cluster.modules
 import json
 
-if not os.getenv("AGENT_TASK_USER"):
+is_automatic_run = not os.getenv("AGENT_TASK_USER")
+if is_automatic_run:
     # If invoked from apply-updates command, switch to managed repo view:
     cluster.modules.select_repo_view('managed')
 
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 updates = cluster.modules.list_updates(rdb, skip_core_modules = True)
+
+if is_automatic_run:
+    # Honor the per-instance automatic updates policy, skipping instances
+    # that opted out. Manually-triggered updates always apply, regardless
+    # of the policy.
+    updates = cluster.modules.filter_automatic_updates(rdb, updates)
 
 if 'modules' in request:
     # Filter out non-matching modules:
