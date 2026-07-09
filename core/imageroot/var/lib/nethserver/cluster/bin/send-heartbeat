@@ -38,9 +38,14 @@ function send_heartbeat_nsent ()
         return 0
     fi
 
-    curl -m 30 --retry 3 -L -s -X POST \
+    # Surface failures (DNS, TLS, timeouts, HTTP errors) in the journal
+    # instead of swallowing them; the || keeps set -e and the loop alive.
+    local err
+    err=$(curl -m 30 --retry 3 -L -sSf -X POST \
         --user "${system_id:?}:${auth_token:?}" \
-        "${collect_url}/heartbeat" >/dev/null || :
+        -o /dev/null -w 'HTTP %{http_code}' \
+        "${collect_url}/heartbeat" 2>&1) || \
+        echo "<4>[WARNING] heartbeat send failed: ${err}" 1>&2
 }
 
 function send_heartbeat_nscom ()
