@@ -24,6 +24,7 @@ package methods
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/structs"
@@ -56,7 +57,7 @@ func GetAudits(c *gin.Context) {
 	data := c.Query("data")
 	from := c.Query("from")
 	to := c.Query("to")
-	limit := c.Query("limit")
+	limitParam := c.Query("limit")
 
 	// define query
 	query := "SELECT * FROM audit WHERE true"
@@ -89,13 +90,23 @@ func GetAudits(c *gin.Context) {
 	query += " ORDER BY id desc"
 
 	// add limit
-	if len(limit) == 0 {
-		limit = "500" // if not specified, limit to 500 records
+	limit := 500 // if not specified, limit to 500 records
+	if len(limitParam) > 0 {
+		parsedLimit, err := strconv.Atoi(limitParam)
+		if err != nil || parsedLimit <= 0 {
+			c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
+				Code:    400,
+				Message: "invalid limit value",
+				Data:    gin.H{"audits": nil},
+			}))
+			return
+		}
+		limit = parsedLimit
 	}
-	query += " LIMIT " + limit
+	query += " LIMIT ?"
 
 	// execute query
-	results := audit.QueryArgs(query, user, action, data, from, to)
+	results := audit.QueryArgs(query, user, action, data, from, to, limit)
 
 	// return results
 	if len(configuration.Config.AuditFile) == 0 {
