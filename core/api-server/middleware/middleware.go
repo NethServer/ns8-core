@@ -23,9 +23,10 @@
 package middleware
 
 import (
+	"fmt"
+	"net/http"
 	"path/filepath"
 	"time"
-	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -42,6 +43,16 @@ import (
 	"github.com/NethServer/ns8-core/core/api-server/response"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
+
+// BodyLimit caps the number of bytes read from the request body before
+// binding, so unauthenticated routes cannot force large allocations
+// ahead of credential validation (see GHSA-3v6g-pgp9-cmm7).
+func BodyLimit(limitBytes int64) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, limitBytes)
+		c.Next()
+	}
+}
 
 type login struct {
 	Username string `form:"username" json:"username" binding:"required"`

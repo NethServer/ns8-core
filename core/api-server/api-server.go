@@ -101,8 +101,10 @@ func main() {
 	api := router.Group("/api")
 
 	// define login and logout endpoint
-	api.POST("/login", middleware.InstanceJWT().LoginHandler)
-	api.POST("/logout", middleware.InstanceJWT().LogoutHandler)
+	// BodyLimit runs before JWT auth: these routes are reachable by
+	// unauthenticated clients, so the body must be capped before binding.
+	api.POST("/login", middleware.BodyLimit(16<<10), middleware.InstanceJWT().LoginHandler)
+	api.POST("/logout", middleware.BodyLimit(1<<10), middleware.InstanceJWT().LogoutHandler)
 
 	// define basic auth routes
 	api.GET("/module/:module_id/http-basic/:action", methods.BasicAuthModule)

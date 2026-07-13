@@ -29,6 +29,16 @@ import (
 
 var logger *log.Logger
 
+// BodyLimit caps the number of bytes read from the request body before
+// binding, so unauthenticated routes cannot force large allocations
+// ahead of credential validation (see GHSA-3v6g-pgp9-cmm7).
+func BodyLimit(limitBytes int64) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, limitBytes)
+		c.Next()
+	}
+}
+
 // Reference: https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 const (
 	SD_EMERG   = "<0>" /* system is unusable */
@@ -83,7 +93,9 @@ func main() {
 
 	api := router.Group("/api")
 	api.GET("/auth", basicAuth)
-	api.POST("/login", ijwt.LoginHandler)
+	// BodyLimit runs before JWT auth: this route is reachable by
+	// unauthenticated clients, so the body must be capped before binding.
+	api.POST("/login", BodyLimit(16<<10), ijwt.LoginHandler)
 	api.Use(ijwt.MiddlewareFunc()) // next API route definitions require the Authorization header
 	api.POST("/logout", ijwt.LogoutHandler)
 	api.POST("/:handler", apiPostHandler)
