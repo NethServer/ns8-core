@@ -51,14 +51,16 @@ jobs:
       - id: publish
         name: "Publish the API documents"
         if: "${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'synchronize')) }}"
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           # Publish the API documents
           set -e
           git add .apidoc/dst
           PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
           if (( PR_NUMBER > 0 )); then
-            COMMIT_MESSAGE="apidoc@${{ github.head_ref }} #${PR_NUMBER}"
-            REMOTE_BRANCH="apidoc-${{ github.head_ref }}"
+            COMMIT_MESSAGE="apidoc@${HEAD_REF} #${PR_NUMBER}"
+            REMOTE_BRANCH="apidoc-${HEAD_REF}"
           else
             BRANCH=$(basename ${{ github.ref }})
             COMMIT_MESSAGE="apidoc@$BRANCH"
@@ -74,5 +76,7 @@ jobs:
       - id: cleanup
         name: "Cleanup apidoc-${{ github.head_ref }} branch"
         if: "github.event_name == 'pull_request' && github.event.action == 'closed'"
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
-          git push -f origin :refs/heads/apidoc-${{ github.head_ref }}
+          git push -f origin :refs/heads/apidoc-${HEAD_REF}

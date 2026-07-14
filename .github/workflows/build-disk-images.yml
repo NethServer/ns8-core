@@ -18,12 +18,14 @@ jobs:
         with:
           python-version: '3.14'
       - id: check
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           pip install semver
-          check_core_version=$(cat <<EOF
-          import semver, sys
+          check_core_version=$(cat <<'EOF'
+          import os, semver
           try:
-            print("false") if semver.VersionInfo.parse("${{ github.event.workflow_run.head_branch }}").prerelease else print ("true")
+            print("false") if semver.VersionInfo.parse(os.environ["HEAD_BRANCH"]).prerelease else print ("true")
           except ValueError: print("false")
           EOF
           )

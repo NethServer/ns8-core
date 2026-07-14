@@ -18,12 +18,15 @@ jobs:
       modules: ${{ steps.modules.outputs.list }}
     steps:
       - id: tag
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]
           then
-            tag=${{ github.head_ref }}
+            tag="$HEAD_REF"
           else
-            tag="${{ github.ref_name }}"
+            tag="$REF_NAME"
           fi
           if [ "$tag" = "main" ]
           then

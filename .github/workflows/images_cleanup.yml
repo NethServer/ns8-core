@@ -35,12 +35,15 @@ jobs:
           fi
       - id: tag
         name: "Retrieve the name of the containers tag"
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]
           then
-            tag=${{ github.head_ref }}
+            tag="$HEAD_REF"
           else
-            tag="${{ github.ref_name }}"
+            tag="$REF_NAME"
           fi
           # Sanitize tag, slash is forbidden
           echo "name=${tag//\//-}" >> $GITHUB_OUTPUT
