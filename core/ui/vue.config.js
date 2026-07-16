@@ -3,8 +3,9 @@ module.exports = {
   configureWebpack: {
     optimization: {
       splitChunks: {
-        minSize: 10000,
-        maxSize: 250000,
+        // Cap chunk size so the single vendor bundle is split into a few
+        // cache-friendly chunks (not one ~2 MiB blob, not dozens of tiny files)
+        maxSize: 500000,
       },
     },
   },
