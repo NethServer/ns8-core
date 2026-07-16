@@ -1,0 +1,39 @@
+#!/usr/local/bin/runagent python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import agent
+import agent.tasks
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('module_url')
+parser.add_argument('instances', nargs='+')
+parser.add_argument('--force', help='force update even if module_url is already present locally', action='store_true')
+parser.add_argument('--verbose', help='show update-module action stderr on success', action='store_true')
+args = parser.parse_args()
+
+result = agent.tasks.run(
+    agent_id='cluster',
+    action='update-module',
+    data={
+        'module_url': args.module_url,
+        'instances': args.instances,
+        'force': args.force,
+    },
+    extra={
+        'title': "cluster/update-module",
+        'description': "update-module command",
+        'isNotificationHidden': False,
+    },
+    endpoint="redis://cluster-leader",
+)
+
+if result['exit_code'] != 0 or args.verbose:
+    print(result['error'], file=sys.stderr, end='')
+print(result['output'])
+sys.exit(result['exit_code'])
