@@ -24,6 +24,7 @@ package configuration
 
 import (
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -37,6 +38,11 @@ type Configuration struct {
 	AuditFile     string   `json:"audit_file"`
 	Issuer        string   `json:"issuer"`
 	SensitiveList []string `json:"sensitive_list"`
+
+	// Generous global per-IP rate limit applied to every API route as a
+	// coarse safety net; 0 disables it
+	GlobalRateLimitAverage int `json:"global_rate_limit_average"`
+	GlobalRateLimitBurst   int `json:"global_rate_limit_burst"`
 }
 
 var Config = Configuration{}
@@ -94,5 +100,17 @@ func Init() {
 		Config.SensitiveList = strings.Split(os.Getenv("SENSITIVE_LIST"), ",")
 	} else {
 		Config.SensitiveList = []string{"password", "secret", "token", "jwt", "admpass", "adminpass", "key", "pass"}
+	}
+
+	if v, err := strconv.Atoi(os.Getenv("GLOBAL_RATE_LIMIT_AVERAGE")); err == nil {
+		Config.GlobalRateLimitAverage = v
+	} else {
+		Config.GlobalRateLimitAverage = 25
+	}
+
+	if v, err := strconv.Atoi(os.Getenv("GLOBAL_RATE_LIMIT_BURST")); err == nil {
+		Config.GlobalRateLimitBurst = v
+	} else {
+		Config.GlobalRateLimitBurst = 100
 	}
 }

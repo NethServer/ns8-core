@@ -81,7 +81,9 @@ GET  /api/2FA/qr-code                                  # generate QR code
 
 All via environment variables: `LISTEN_ADDRESS`, `REDIS_ADDRESS`, `REDIS_USER`,
 `REDIS_PASSWORD`, `SECRET` (JWT key), `STATIC_PATH`, `AUDIT_FILE`,
-`SENSITIVE_LIST`, `ISSUER` (TOTP issuer name, default `NethServer`).
+`SENSITIVE_LIST`, `ISSUER` (TOTP issuer name, default `NethServer`),
+`GLOBAL_RATE_LIMIT_AVERAGE` (per-IP requests/sec across all routes, default
+`25`; `0` disables), `GLOBAL_RATE_LIMIT_BURST` (burst allowance, default `100`).
 
 ## Conventions
 

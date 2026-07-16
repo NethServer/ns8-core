@@ -10,6 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/spf13/viper v1.17.0
 	github.com/xeipuuv/gojsonschema v1.2.0
+	golang.org/x/time v0.12.0
 )
 
 require (

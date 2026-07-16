@@ -33,6 +33,12 @@ Configuration parameters can be passed as environment variables.
 - `AMLD_EXPORT_ENV`, space-separated list of environment variable names that
   are exported to handler commands -- default `` (empty)
 
+- `AMLD_RATE_LIMIT_AVERAGE`, max sustained requests per second per client IP
+  across all API routes -- default `25`; set to `0` to disable rate limiting
+
+- `AMLD_RATE_LIMIT_BURST`, burst allowance above the average before requests
+  are rejected with HTTP 429 -- default `100`
+
 ## How to implement the API
 
 Each directory under `AMLD_HANDLER_DIR` is considered an API HTTP route.
