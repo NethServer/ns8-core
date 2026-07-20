@@ -40,3 +40,6 @@ public/config/config.development.js
 
 # Output of 'npm pack'
 *.tgz
+
+# Storybook build outputs
+storybook-static
