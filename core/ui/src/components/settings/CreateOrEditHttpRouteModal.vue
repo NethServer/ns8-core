@@ -511,7 +511,9 @@ export default {
             // Determine if it looks like an IPv6 address
             const isIPv6Like = ip.includes(":") || ip.includes("::");
             this.error.ip_allowlist = this.$t(
-              isIPv6Like ? "settings_http_routes.invalid_ipv6" : "settings_http_routes.invalid_ipv4",
+              isIPv6Like
+                ? "settings_http_routes.invalid_ipv6"
+                : "settings_http_routes.invalid_ipv4",
               { ip: ip }
             );
             if (isValidationOk) {
