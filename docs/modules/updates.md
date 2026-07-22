@@ -52,14 +52,13 @@ pass `--force`:
 
     update-module ghcr.io/nethserver/mymodule:1.0.0 mymodule1 --force
 
-To update one or more module instances to their latest available version
-without knowing the exact tag, use the `update-modules` action instead,
-which resolves the latest valid version on its own. See
-[Updates]({{site.baseurl}}/core/updates#module-updates).
+The `update-module` command refuses to update an instance with an image of
+a different module (e.g. updating `nextcloud1` with a `mattermost` image),
+even with `--force`. This check is enforced by the CLI only: it can be
+bypassed by invoking the `cluster/update-module` action directly, e.g. via
+`api-cli` (see below).
 
 The same action can also be invoked directly with `api-cli`, e.g. to script
 around it:
-
-     api-cli run update-module --data '{"module_url":"ghcr.io/nethserver/mymodule:1.0.0","instances":["mymodule1"]}'
 
     api-cli run update-module --data '{"module_url":"ghcr.io/nethserver/mymodule:1.0.0","instances":["mymodule1"],"force":true}'
