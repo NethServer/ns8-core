@@ -17,6 +17,17 @@ parser.add_argument('--force', help='force update even if module_url is already 
 parser.add_argument('--verbose', help='show update-module action stderr on success', action='store_true')
 args = parser.parse_args()
 
+rdb = agent.redis_connect()
+new_image_name = agent.get_image_name_from_url(args.module_url)
+for module_id in args.instances:
+    current_image_url = rdb.hget(f'module/{module_id}/environment', 'IMAGE_URL')
+    current_image_name = agent.get_image_name_from_url(current_image_url) if current_image_url else None
+    if current_image_name is not None and current_image_name != new_image_name:
+        print(f'Module instance "{module_id}" is of type "{current_image_name}", '
+              f'cannot update it with an image of type "{new_image_name}" ({args.module_url})',
+              file=sys.stderr)
+        sys.exit(1)
+
 result = agent.tasks.run(
     agent_id='cluster',
     action='update-module',
