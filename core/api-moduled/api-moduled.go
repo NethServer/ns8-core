@@ -117,7 +117,17 @@ func prepareEnvironment(ginCtx *gin.Context) []string {
 
 func apiPostHandler(ginCtx *gin.Context) {
 
+	// Keep only the last path segment, then reject any name starting with
+	// a dot ("." or "..") so it cannot point outside the configured
+	// handler directory.
 	pHandler := path.Base(ginCtx.Param("handler"))
+	if strings.HasPrefix(pHandler, ".") {
+		ginCtx.JSON(http.StatusBadRequest, gin.H{
+			"code":   http.StatusBadRequest,
+			"status": "Invalid handler name",
+		})
+		return
+	}
 	handlerDir := path.Clean(viper.GetString("handler_dir")+"/"+pHandler) + "/"
 
 	// Check if handler directory exists, return 404 otherwise:
@@ -303,7 +313,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 					}
 				}
 			} else {
-				logger.Printf(SD_CRIT+"Authorizator: invalid token scope type \"%T\". Value: %#v\n", ginCtx.FullPath(), scope, scope)
+				logger.Printf(SD_CRIT+"Authorizator: invalid token scope type \"%T\". Value: %#v\n", scopeValue, scopeValue)
 			}
 
 			return false
