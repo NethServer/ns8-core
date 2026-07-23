@@ -80,7 +80,7 @@ require (
 	github.com/ugorji/go v1.2.7 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
-	github.com/yuin/goldmark v1.4.13 // indirect
+	github.com/yuin/goldmark v1.7.17 // indirect
 	golang.org/x/arch v0.14.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
