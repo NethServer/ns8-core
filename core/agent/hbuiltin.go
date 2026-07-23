@@ -23,9 +23,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
-	"fmt"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/go-redis/redis/v8"
@@ -156,7 +156,7 @@ func rejectAction(rdb *redis.Client, actionCtx context.Context, task *models.Tas
 		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
 		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
 		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
-		pipe.Expire(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", taskExpireDuration)
+		pipe.Expire(ctx, "task/"+agentPrefix+"/"+task.ID+"/context", taskExpireDuration)
 		publishStatus(pipe, progressChannel, actionDescriptor) // aborted status
 		return nil
 	})

@@ -21,9 +21,9 @@
 package models
 
 import (
-	"time"
 	"os"
 	"sort"
+	"time"
 )
 
 type Task struct {
@@ -38,7 +38,7 @@ type Task struct {
 }
 
 const (
-	STEP_VALIDATE_INPUT = "validate-input.json"
+	STEP_VALIDATE_INPUT  = "validate-input.json"
 	STEP_VALIDATE_OUTPUT = "validate-output.json"
 )
 
@@ -72,7 +72,7 @@ func CreateTaskProcessor(actionName string, actionPaths []string) Processor {
 
 	actionStepsKeys := make([]string, len(actionSteps))
 	i := 0
-	for k, _ := range actionSteps {
+	for k := range actionSteps {
 		actionStepsKeys[i] = k
 		i += 1
 	}

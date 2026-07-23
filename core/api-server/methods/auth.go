@@ -142,7 +142,7 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 
 	// compose user authorizations
 	userAuthorizationsRedis.Username = username
-	userAuthorizationsRedis.Role = roles  // keep original string of raw role list
+	userAuthorizationsRedis.Role = roles // keep original string of raw role list
 	userAuthorizationsRedis.Actions = actions
 
 	// close redis connection
@@ -154,12 +154,12 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 
 // CheckOTP godoc
 // @Summary Check if OTP validates for the given username
-func CheckOTP(username string, otp string) (bool) {
+func CheckOTP(username string, otp string) bool {
 	secret := getUserSecret(username)
 	return checkOtpBySecret(secret, otp)
 }
 
-func checkOtpBySecret(secret string, otp string) (bool) {
+func checkOtpBySecret(secret string, otp string) bool {
 	// set OTP configuration
 	otpc := &dgoogauth.OTPConfig{
 		Secret:      secret,
@@ -211,7 +211,7 @@ func Set2FAStatus(c *gin.Context) {
 	}
 
 	// Check if OTP is valid
-	if ! checkOtpBySecret(jsonOTP.Secret, jsonOTP.OTP) {
+	if !checkOtpBySecret(jsonOTP.Secret, jsonOTP.OTP) {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "OTP token verification failed",
@@ -336,7 +336,7 @@ func Del2FAStatus(c *gin.Context) {
 	redisConnection := redis.Instance()
 
 	// set 2FA to disabled
-	if err := redisConnection.HSet(ctx, "user/" + username, "2fa", "").Err(); err != nil {
+	if err := redisConnection.HSet(ctx, "user/"+username, "2fa", "").Err(); err != nil {
 		utils.LogError(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -457,10 +457,10 @@ func BasicAuthModule(c *gin.Context) {
 
 }
 
-func setUserSecret(username string, secret string) (error) {
+func setUserSecret(username string, secret string) error {
 	// init redis connection
 	redisConnection := redis.Instance()
-	err := redisConnection.HSet(ctx, "user/" + username, "2fa", secret).Err()
+	err := redisConnection.HSet(ctx, "user/"+username, "2fa", secret).Err()
 	if err != nil {
 		return err
 	}
@@ -469,7 +469,7 @@ func setUserSecret(username string, secret string) (error) {
 
 func getUserSecret(username string) string {
 	redisConnection := redis.Instance()
-	result, err := redisConnection.HGet(ctx, "user/" + username, "2fa").Result()
+	result, err := redisConnection.HGet(ctx, "user/"+username, "2fa").Result()
 	if err != nil {
 		return ""
 	}
