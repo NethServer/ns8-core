@@ -81,7 +81,7 @@
 	 var ddata interface{}
 	 err := json.Unmarshal(data, &ddata)
 	 if err != nil {
-		 return nil, fmt.Errorf("JSON unmarshal error: %w. Input data: %v", err, data)
+		 return nil, fmt.Errorf("JSON unmarshal error: %w", err)
 	 }
 	 errorList, errInfo := validateGoStruct(schemaPath, ddata)
 	 if errInfo != nil {

@@ -205,7 +205,6 @@ func apiPostHandler(ginCtx *gin.Context) {
 	jerr := json.Unmarshal(responseBytes, &responsePayload)
 	if jerr != nil {
 		logger.Println(SD_ERR+"JSON Unmarshal() error:", jerr)
-		logger.Println(SD_DEBUG+"Response buffer", string(responseBytes[:]))
 		ginCtx.JSON(http.StatusInternalServerError, gin.H{
 			"code":   http.StatusInternalServerError,
 			"status": "Internal server error",
@@ -233,12 +232,13 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 			// INPUT validation
 			//
 			if _, err := os.Stat(baseHandlerDir + "/login/validate-input.json"); err == nil {
+				// Login payloads carry credentials: never log field values.
 				errData, errInfo := validation.ValidatePayload(baseHandlerDir+"/login/validate-input.json", requestBytes)
 				if errInfo != nil {
-					logger.Println(SD_ERR+"Input validation error:", errInfo)
+					logger.Println(SD_ERR + "Input validation error")
 					return nil, jwt.ErrFailedAuthentication
 				} else if len(errData) > 0 {
-					logger.Println(SD_ERR+"Input validation error:", errData)
+					logger.Println(SD_ERR + "Input validation error")
 					return nil, jwt.ErrFailedAuthentication
 				}
 			}
