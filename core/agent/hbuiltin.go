@@ -116,13 +116,13 @@ func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[strin
 			exitCode = 2
 			actionDescriptor.Status = "validation-failed"
 			actionError = "Action cancel-task validation-failed at step task-lookup: task ID not found"
-			log.Printf(SD_ERR + actionError)
+			log.Print(SD_ERR + actionError)
 		}
 	} else {
 		exitCode = 10
 		actionDescriptor.Status = "validation-failed"
 		actionError = "Action cancel-task validation-failed at step builtin-validation.json: invalid task ID or timeout value"
-		log.Printf(SD_ERR + actionError)
+		log.Print(SD_ERR + actionError)
 	}
 
 	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {

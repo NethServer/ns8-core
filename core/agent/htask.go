@@ -83,7 +83,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			errorList, validateFault := validation.ValidateGoStruct(step.Path, task.Data)
 			if validateFault != nil {
 				errorMessage := fmt.Sprintf("JSON Schema input validation aborted at step %s: %v\n", step.Path, validateFault)
-				log.Printf(SD_ERR + errorMessage)
+				log.Print(SD_ERR + errorMessage)
 				actionError += errorMessage
 				actionDescriptor.Status = "aborted"
 				exitCode = 1
@@ -103,7 +103,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			errorList, validateFault := validation.ValidateJsonString(step.Path, []byte(actionOutput))
 			if validateFault != nil {
 				errorMessage := fmt.Sprintf("JSON Schema output validation aborted at step %s: %v\n", step.Path, validateFault)
-				log.Printf(SD_ERR + errorMessage)
+				log.Print(SD_ERR + errorMessage)
 				actionError += errorMessage
 				actionDescriptor.Status = "aborted"
 				exitCode = 1
@@ -290,6 +290,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 	defer func() { complete <- 1 }()
 	brpopCtx, cancelBrpop := context.WithCancel(ctx)
+	defer cancelBrpop()
 	taskCancelFunctions := make(map[string]context.CancelFunc)
 
 	// If we have a REDIS_PASSWORD the default redis username is the agentPrefix string
