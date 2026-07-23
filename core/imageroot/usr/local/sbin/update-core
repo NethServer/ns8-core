@@ -1,0 +1,49 @@
+#!/usr/local/bin/runagent python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import agent
+import agent.tasks
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('core_url')
+parser.add_argument('--nodes', nargs='+', type=int, help='update only these node identifiers, instead of every node in the cluster (edge case, use with care: nodes end up on different core versions)')
+parser.add_argument('--force', help='force update even if core_url is already present locally', action='store_true')
+parser.add_argument('--verbose', help='show update-core action stderr on success', action='store_true')
+args = parser.parse_args()
+
+image_name = agent.get_image_name_from_url(args.core_url)
+if image_name != 'core':
+    parser.error(f'core_url must reference the "core" image, got "{image_name}"')
+
+rdb = agent.redis_connect()
+if args.nodes:
+    nodes = args.nodes
+else:
+    nodes = list(int(node_id) for node_id in set(rdb.hvals('cluster/module_node')))
+
+result = agent.tasks.run(
+    agent_id='cluster',
+    action='update-core',
+    data={
+        'core_url': args.core_url,
+        'nodes': nodes,
+        'force': args.force,
+    },
+    extra={
+        'title': "cluster/update-core",
+        'description': "update-core command",
+        'isNotificationHidden': False,
+    },
+    endpoint="redis://cluster-leader",
+)
+
+if result['exit_code'] != 0 or args.verbose:
+    print(result['error'], file=sys.stderr, end='')
+print(result['output'])
+sys.exit(result['exit_code'])
