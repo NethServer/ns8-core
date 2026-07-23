@@ -25,8 +25,10 @@ specify it with "--backup". Default module volumes are automatically
 mounted.
 
 In the cluster agent environment, specify the Restic repository manually
-using "--destination" and "--repopath". Volumes must be manually mounted
-by passing additional options to Podman via "--podman".
+using "--destination" and "--repopath", or use "--module" to calculate the
+repository path from a module ID. When "--module" is used and the given
+module has just one scheduled backup, "--backup" is optional. Volumes must
+be manually mounted by passing additional options to Podman via "--podman".
 
 Example invocations:
 
@@ -34,6 +36,8 @@ Example invocations:
     restic-wrapper stats
     restic-wrapper --backup 2 stats
     restic-wrapper --destination fd4e75b5-9836-42be-b5db-b4983a851e40 --repopath webtop/2f3c56e2-aa1a-4eda-9e32-0ec9348cd31b stats
+    restic-wrapper --module webtop1 stats
+    restic-wrapper --module webtop1 --backup 2 stats
     restic-wrapper --podman volume=./restoredir:/srv/restoredir restore latest:state/ -t /srv/restoredir
 
 """
@@ -48,6 +52,7 @@ parser.add_argument('--podman', action="append", type=str, help="Arguments for P
 parser.add_argument('--backup', help="Backup ID")
 parser.add_argument('--destination', help="Destination UUID")
 parser.add_argument('--repopath', help="Repository path under the backup destination")
+parser.add_argument('--module', help="Module ID: calculate repository path prefix and module UUID")
 parser.add_argument('--show', action="store_true", help="Show destinations and backups")
 wargs, rargs = parser.parse_known_args()
 if '--help' in rargs:
@@ -74,6 +79,15 @@ if wargs.show:
     print(header + listing, end="")
     sys.exit(0)
 
+def get_module_backups(module_id):
+    """Return the list of scheduled backup IDs that include the given module."""
+    backups = []
+    for kbackup in rdb.scan_iter('cluster/backup/*'):
+        instances = (rdb.hget(kbackup, "instances") or "").split()
+        if module_id in instances:
+            backups.append(kbackup.removeprefix('cluster/backup/'))
+    return backups
+
 module_id = os.environ.get("MODULE_ID")
 repopath = None
 backup_id = None
@@ -88,9 +102,25 @@ if module_id:
     repopath = agent.get_image_name_from_url(os.environ["IMAGE_URL"]) + "/" + os.environ["MODULE_UUID"]
     if not backup_id:
         try:
-            backup_id = min(rdb.smembers(f"module/{module_id}/backups"))
-        except:
+            backup_id = min(get_module_backups(module_id))
+        except ValueError:
             pass
+
+if wargs.module:
+    module_uuid = rdb.hget("cluster/module_uuid", wargs.module)
+    if not module_uuid:
+        print(f"Module not found: {wargs.module}", file=sys.stderr)
+        sys.exit(2)
+    repopath = wargs.module.strip("0123456789") + "/" + module_uuid
+    if not backup_id:
+        module_backups = get_module_backups(wargs.module)
+        if len(module_backups) == 1:
+            backup_id = module_backups[0]
+        elif len(module_backups) > 1:
+            parser.print_help()
+            print()
+            print(f"Module {wargs.module} has {len(module_backups)} scheduled backups. Specify one with --backup.", file=sys.stderr)
+            sys.exit(2)
 
 if backup_id:
     dest_uuid = rdb.hget(f"cluster/backup/{backup_id}", "repository")
