@@ -23,15 +23,18 @@
 package middleware
 
 import (
-	"path/filepath"
-	"time"
 	"fmt"
+	"net/http"
+	"path/filepath"
+	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"golang.org/x/time/rate"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
@@ -42,6 +45,69 @@ import (
 	"github.com/NethServer/ns8-core/core/api-server/response"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
+
+// BodyLimit caps the number of bytes read from the request body before
+// binding, so unauthenticated routes cannot force large allocations
+// ahead of credential validation (see GHSA-3v6g-pgp9-cmm7).
+func BodyLimit(limitBytes int64) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, limitBytes)
+		c.Next()
+	}
+}
+
+const rateLimiterStaleAfter = 3 * time.Minute
+const rateLimiterCleanupInterval = time.Minute
+
+type rateLimiterVisitor struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
+
+// RateLimiter throttles requests per client IP with a token-bucket limiter,
+// so an unauthenticated route cannot be flooded with enough concurrent
+// requests to exhaust memory before BodyLimit's per-request cap can help
+// (BodyLimit bounds one request's body, not how many requests run at once).
+// rps is the sustained rate and burst the number of requests allowed instantly.
+func RateLimiter(rps rate.Limit, burst int) gin.HandlerFunc {
+	visitors := make(map[string]*rateLimiterVisitor)
+	var mu sync.Mutex
+
+	go func() {
+		for {
+			time.Sleep(rateLimiterCleanupInterval)
+			mu.Lock()
+			for ip, v := range visitors {
+				if time.Since(v.lastSeen) > rateLimiterStaleAfter {
+					delete(visitors, ip)
+				}
+			}
+			mu.Unlock()
+		}
+	}()
+
+	return func(c *gin.Context) {
+		ip := c.ClientIP()
+
+		mu.Lock()
+		v, exists := visitors[ip]
+		if !exists {
+			v = &rateLimiterVisitor{limiter: rate.NewLimiter(rps, burst)}
+			visitors[ip] = v
+		}
+		v.lastSeen = time.Now()
+		limiter := v.limiter
+		mu.Unlock()
+
+		if !limiter.Allow() {
+			c.JSON(http.StatusTooManyRequests, gin.H{"code": http.StatusTooManyRequests, "message": "too many requests", "data": nil})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
 
 type login struct {
 	Username string `form:"username" json:"username" binding:"required"`

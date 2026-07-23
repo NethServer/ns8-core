@@ -31,6 +31,7 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/time/rate"
 
 	"github.com/NethServer/ns8-core/core/api-server/audit"
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
@@ -82,6 +83,16 @@ func main() {
 	// use the TCP peer address, preventing header-based IP spoofing.
 	router.SetTrustedProxies([]string{"127.0.0.1", "::1"})
 
+	// Generous global per-IP rate limit as a coarse safety net across all
+	// routes (a looser second layer behind the tighter per-route BodyLimit
+	// caps on the pre-auth routes). Set GLOBAL_RATE_LIMIT_AVERAGE=0 to disable.
+	if configuration.Config.GlobalRateLimitAverage > 0 {
+		router.Use(middleware.RateLimiter(
+			rate.Limit(configuration.Config.GlobalRateLimitAverage),
+			configuration.Config.GlobalRateLimitBurst,
+		))
+	}
+
 	// add default compression
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
@@ -101,8 +112,10 @@ func main() {
 	api := router.Group("/api")
 
 	// define login and logout endpoint
-	api.POST("/login", middleware.InstanceJWT().LoginHandler)
-	api.POST("/logout", middleware.InstanceJWT().LogoutHandler)
+	// BodyLimit runs before JWT auth: these routes are reachable by
+	// unauthenticated clients, so the body must be capped before binding.
+	api.POST("/login", middleware.BodyLimit(16<<10), middleware.InstanceJWT().LoginHandler)
+	api.POST("/logout", middleware.BodyLimit(1<<10), middleware.InstanceJWT().LogoutHandler)
 
 	// define basic auth routes
 	api.GET("/module/:module_id/http-basic/:action", methods.BasicAuthModule)

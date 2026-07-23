@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/NethServer/ns8-core/core/api-moduled/validation"
@@ -25,9 +26,73 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"golang.org/x/time/rate"
 )
 
 var logger *log.Logger
+
+// BodyLimit caps the number of bytes read from the request body before
+// binding, so unauthenticated routes cannot force large allocations
+// ahead of credential validation (see GHSA-3v6g-pgp9-cmm7).
+func BodyLimit(limitBytes int64) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, limitBytes)
+		c.Next()
+	}
+}
+
+const rateLimiterStaleAfter = 3 * time.Minute
+const rateLimiterCleanupInterval = time.Minute
+
+type rateLimiterVisitor struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
+
+// RateLimiter throttles requests per client IP with a token-bucket limiter,
+// so an unauthenticated route cannot be flooded with enough concurrent
+// requests to exhaust memory before BodyLimit's per-request cap can help
+// (BodyLimit bounds one request's body, not how many requests run at once).
+// rps is the sustained rate and burst the number of requests allowed instantly.
+func RateLimiter(rps rate.Limit, burst int) gin.HandlerFunc {
+	visitors := make(map[string]*rateLimiterVisitor)
+	var mu sync.Mutex
+
+	go func() {
+		for {
+			time.Sleep(rateLimiterCleanupInterval)
+			mu.Lock()
+			for ip, v := range visitors {
+				if time.Since(v.lastSeen) > rateLimiterStaleAfter {
+					delete(visitors, ip)
+				}
+			}
+			mu.Unlock()
+		}
+	}()
+
+	return func(c *gin.Context) {
+		ip := c.ClientIP()
+
+		mu.Lock()
+		v, exists := visitors[ip]
+		if !exists {
+			v = &rateLimiterVisitor{limiter: rate.NewLimiter(rps, burst)}
+			visitors[ip] = v
+		}
+		v.lastSeen = time.Now()
+		limiter := v.limiter
+		mu.Unlock()
+
+		if !limiter.Allow() {
+			c.JSON(http.StatusTooManyRequests, gin.H{"code": http.StatusTooManyRequests, "message": "too many requests", "data": nil})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
 
 // Reference: https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 const (
@@ -52,6 +117,8 @@ func main() {
 	viper.SetDefault("jwt_token_lookup", "header: Authorization")
 	viper.SetDefault("jwt_realm", "api-moduled")
 	viper.SetDefault("export_env", "")
+	viper.SetDefault("rate_limit_average", 25)
+	viper.SetDefault("rate_limit_burst", 100)
 	viper.AutomaticEnv()
 
 	logger = log.New(os.Stderr, "", 0)
@@ -79,11 +146,20 @@ func main() {
 	// Accept trusted headers only from localhost
 	router.SetTrustedProxies([]string{"127.0.0.1", "::1"})
 
+	// Generous global per-IP rate limit as a coarse safety net across all
+	// routes (a looser second layer behind the tighter per-route BodyLimit
+	// cap on the pre-auth login route). Set AMLD_RATE_LIMIT_AVERAGE=0 to disable.
+	if rateLimitAverage := viper.GetInt("rate_limit_average"); rateLimitAverage > 0 {
+		router.Use(RateLimiter(rate.Limit(rateLimitAverage), viper.GetInt("rate_limit_burst")))
+	}
+
 	ijwt := createJwtInstance(viper.GetString("handler_dir"))
 
 	api := router.Group("/api")
 	api.GET("/auth", basicAuth)
-	api.POST("/login", ijwt.LoginHandler)
+	// BodyLimit runs before JWT auth: this route is reachable by
+	// unauthenticated clients, so the body must be capped before binding.
+	api.POST("/login", BodyLimit(16<<10), ijwt.LoginHandler)
 	api.Use(ijwt.MiddlewareFunc()) // next API route definitions require the Authorization header
 	api.POST("/logout", ijwt.LogoutHandler)
 	api.POST("/:handler", apiPostHandler)

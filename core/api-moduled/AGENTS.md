@@ -81,6 +81,8 @@ All via `AMLD_` prefixed environment variables (uses Viper):
 | `AMLD_JWT_REALM` | `api-moduled` | JWT realm name |
 | `AMLD_ID_KEY` | `uid` | JWT identity claim key |
 | `AMLD_EXPORT_ENV` | — | Extra env vars for handlers |
+| `AMLD_RATE_LIMIT_AVERAGE` | `25` | Per-IP requests/sec across all routes; `0` disables |
+| `AMLD_RATE_LIMIT_BURST` | `100` | Burst allowance above the average |
 
 ## Key differences from api-server
 
