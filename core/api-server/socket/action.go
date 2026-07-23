@@ -251,7 +251,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		}
 
 	case "authorize":
-		authPayload, ok := socketAction.Payload.(map[string]interface{})
+		authPayload, ok := socketAction.Payload.(map[string]any)
 		if !ok {
 			utils.LogError(errors.New("Authorize payload is corrupt"))
 		}

@@ -109,7 +109,7 @@ func getTasks(c *gin.Context, queueName string) {
 	}
 
 	// define map
-	var taskMap map[string]map[string]interface{}
+	var taskMap map[string]map[string]any
 
 	// loop tasks array
 	for _, t := range tasksArray {
@@ -120,11 +120,11 @@ func getTasks(c *gin.Context, queueName string) {
 
 		// check if map exists
 		if taskMap == nil {
-			taskMap = make(map[string]map[string]interface{})
+			taskMap = make(map[string]map[string]any)
 		}
 		// check if chil of map exists
 		if taskMap[task] == nil {
-			taskMap[task] = make(map[string]interface{})
+			taskMap[task] = make(map[string]any)
 		}
 
 		// get content of key: GET <task_id>
@@ -140,7 +140,7 @@ func getTasks(c *gin.Context, queueName string) {
 			return
 		}
 
-		var taskContentData interface{}
+		var taskContentData any
 		// We expect a JSON-encoded output. If the unmarshal fails, return the output as-is.
 		if errOutputDecode := json.Unmarshal([]byte(taskContent), &taskContentData); errOutputDecode != nil {
 			taskContentData = taskContent
@@ -214,7 +214,7 @@ func getTaskFile(c *gin.Context, filePath string) {
 		return
 	}
 
-	var outputData interface{}
+	var outputData any
 	// We expect a JSON-encoded output. If the unmarshal fails, return the output as-is.
 	if errOutputDecode := json.Unmarshal([]byte(outputC), &outputData); errOutputDecode != nil {
 		outputData = outputC
@@ -249,7 +249,7 @@ func getTaskContext(c *gin.Context, filePath string) {
 	// close redis connection
 	redisConnection.Close()
 
-	var contextData interface{}
+	var contextData any
 	// We expect a JSON-encoded context. If the unmarshal fails, return the context as-is.
 	if errOutputDecode := json.Unmarshal([]byte(contextC), &contextData); errOutputDecode != nil {
 		contextData = contextC
@@ -342,7 +342,7 @@ func createTask(c *gin.Context, queueName string) {
 	redisConnection.Close()
 
 	// convert to map and flat it
-	var jsonDyn map[string]interface{}
+	var jsonDyn map[string]any
 	json.Unmarshal(stringTask, &jsonDyn)
 	in, _ := flat.Flatten(jsonDyn, nil)
 

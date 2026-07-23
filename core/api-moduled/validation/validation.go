@@ -9,16 +9,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/xeipuuv/gojsonschema"
-	"io/ioutil"
 	"os"
 	"strings"
 )
 
 type ValidationError struct {
-	Parameter string      `json:"parameter"`
-	Error     string      `json:"error"`
-	Value     interface{} `json:"value"`
-	Field     string      `json:"field"`
+	Parameter string `json:"parameter"`
+	Error     string `json:"error"`
+	Value     any    `json:"value"`
+	Field     string `json:"field"`
 }
 
 func toValidationErrorArray(errorList []gojsonschema.ResultError) []ValidationError {
@@ -28,8 +27,8 @@ func toValidationErrorArray(errorList []gojsonschema.ResultError) []ValidationEr
 	for idx, resError := range errorList {
 		field := resError.Field()
 		parameter := field
-		if dotPos := strings.IndexByte(field, '.'); dotPos >= 0 {
-			parameter = field[:dotPos]
+		if before, _, ok := strings.Cut(field, "."); ok {
+			parameter = before
 		}
 		errors[idx] = ValidationError{
 			Parameter: parameter,
@@ -41,14 +40,14 @@ func toValidationErrorArray(errorList []gojsonschema.ResultError) []ValidationEr
 	return errors
 }
 
-func validateGoStruct(schemaPath string, data interface{}) ([]gojsonschema.ResultError, error) {
+func validateGoStruct(schemaPath string, data any) ([]gojsonschema.ResultError, error) {
 
 	documentLoader := gojsonschema.NewGoLoader(data)
 	schemaLoader := gojsonschema.NewSchemaLoader()
 
 	// Read JSON Schema definitions from a well-known path. Ignore read errors.
 	libraryPath := os.Getenv("AGENT_INSTALL_DIR") + "/validator-definitions.json"
-	if schemaData, err := ioutil.ReadFile(libraryPath); err == nil {
+	if schemaData, err := os.ReadFile(libraryPath); err == nil {
 		loader := gojsonschema.NewStringLoader(string(schemaData))
 		if err := schemaLoader.AddSchemas(loader); err != nil {
 			return nil, fmt.Errorf("Schema loader error while loding %s: %w", libraryPath, err)
@@ -56,7 +55,7 @@ func validateGoStruct(schemaPath string, data interface{}) ([]gojsonschema.Resul
 	}
 
 	// Read the JSON Schema from the given path. This must succeed.
-	schemaData, readFileError := ioutil.ReadFile(schemaPath)
+	schemaData, readFileError := os.ReadFile(schemaPath)
 	if readFileError != nil {
 		return nil, fmt.Errorf("Failed to read schema file %s: %w", schemaPath, readFileError)
 	}
@@ -78,7 +77,7 @@ func validateGoStruct(schemaPath string, data interface{}) ([]gojsonschema.Resul
 }
 
 func ValidatePayload(schemaPath string, data []byte) ([]ValidationError, error) {
-	var ddata interface{}
+	var ddata any
 	err := json.Unmarshal(data, &ddata)
 	if err != nil {
 		return nil, fmt.Errorf("JSON unmarshal error: %w", err)

@@ -19,7 +19,7 @@ func readStateFile() []string {
 		log.Printf(SD_ERR+"Cannot read ./environment file: %s", err)
 		return env
 	}
-	for _, line := range strings.Split(string(content), "\n") {
+	for line := range strings.SplitSeq(string(content), "\n") {
 		if line == "" {
 			continue
 		}

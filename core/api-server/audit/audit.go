@@ -157,7 +157,7 @@ func Store(audit models.Audit) {
 	tx.Commit()
 }
 
-func QueryArgs(query string, args ...interface{}) []models.Audit {
+func QueryArgs(query string, args ...any) []models.Audit {
 	var results []models.Audit
 
 	if ok, out := db.isFaulty(db.faultyStatus); ok {
@@ -165,13 +165,13 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 		return results
 	}
 
-	cleanArgs := make([]interface{}, 0, len(args))
+	cleanArgs := make([]any, 0, len(args))
 	for _, item := range args {
 		if item != "" {
 			if strings.Contains(fmt.Sprintf("%v", item), ",") {
-				parts := strings.Split(fmt.Sprintf("%v", item), ",")
+				parts := strings.SplitSeq(fmt.Sprintf("%v", item), ",")
 
-				for _, element := range parts {
+				for element := range parts {
 					cleanArgs = append(cleanArgs, element)
 				}
 			} else {
