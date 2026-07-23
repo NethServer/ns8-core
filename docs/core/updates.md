@@ -28,14 +28,35 @@ The first stage applies enhancements and bug fixes for the `core` image.
 The core image contains: agents, UI, additional core images and common
 actions.
 
-To execute the core update, use:
+To execute the core update from the command line, run on the leader node:
 
-    api-cli run update-core --data '{"core_url":"ghcr.io/nethserver/core:MAJ.MIN.PATCH","nodes":[NODEID1, NODEID2]}'
+    update-core ghcr.io/nethserver/core:MAJ.MIN.PATCH
 
 - `MAJ.MIN.PATCH` is a Semver-compliant version tag of a stable core
   release; a symbolic branch name (e.g. `feat-8000`) can be used for
   feature development instead
-- NODEID1, NODEID2 are the integer node IDs of the cluster nodes to update
+
+By default every node in the cluster is updated, keeping core versions
+aligned. Updating only a subset of nodes is a development edge case and is
+discouraged in production clusters; use `--nodes` to override the default:
+
+    update-core ghcr.io/nethserver/core:MAJ.MIN.PATCH --nodes NODEID1 NODEID2
+
+If the given `core_url` is already present in the local Podman storage, no
+remote download occurs and the local image is used instead. Pass `--force`
+to always pull and reinstall it, ignoring the Semver tag check:
+
+    update-core ghcr.io/nethserver/core:MAJ.MIN.PATCH --force
+
+By default the command prints only the action output; on failure it also
+prints the error. Pass `--verbose` to print the error even on success:
+
+    update-core ghcr.io/nethserver/core:MAJ.MIN.PATCH --verbose
+
+The same action can also be invoked directly with `api-cli`, e.g. to script
+around it:
+
+    api-cli run update-core --data '{"core_url":"ghcr.io/nethserver/core:MAJ.MIN.PATCH","nodes":[NODEID1, NODEID2]}'
 
 The cluster agent running on the leader node forwards the core-update
 request to selected nodes. Updating a subset of nodes is discouraged in
