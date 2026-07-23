@@ -133,7 +133,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 		Key:         []byte(configuration.Config.Secret),
 		Timeout:     time.Hour * 24 * 14, // 2 weeks
 		IdentityKey: identityKey,
-		Authenticator: func(c *gin.Context) (interface{}, error) {
+		Authenticator: func(c *gin.Context) (any, error) {
 			// check login credentials exists
 			var loginVals login
 			if err := c.ShouldBind(&loginVals); err != nil {
@@ -199,7 +199,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			}, nil
 
 		},
-		PayloadFunc: func(data interface{}) jwt.MapClaims {
+		PayloadFunc: func(data any) jwt.MapClaims {
 			// read current user
 			if user, ok := data.(*models.UserAuthorizations); ok {
 				// create claims map
@@ -214,7 +214,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// return claims map
 			return jwt.MapClaims{}
 		},
-		IdentityHandler: func(c *gin.Context) interface{} {
+		IdentityHandler: func(c *gin.Context) any {
 			// handle identity and extract claims
 			claims := jwt.ExtractClaims(c)
 
@@ -235,7 +235,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// return user
 			return user
 		},
-		Authorizator: func(data interface{}, c *gin.Context) bool {
+		Authorizator: func(data any, c *gin.Context) bool {
 			// extract data payload and check authorizations
 			if v, ok := data.(*models.UserAuthorizations); ok {
 				// enforce IP allowlist on every request

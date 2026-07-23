@@ -154,7 +154,7 @@ func relayRedisProgressEvents(socketConnection *melody.Melody) {
 	}()
 }
 
-func writeSocketResponse(s *melody.Session, name string, msg interface{}) {
+func writeSocketResponse(s *melody.Session, name string, msg any) {
 	// create event object
 	event := &models.Event{}
 	event.Name = name

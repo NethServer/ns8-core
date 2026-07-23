@@ -23,8 +23,8 @@
 package models
 
 type SocketAction struct {
-	Action  string      `json:"action" structs:"action"`
-	Payload interface{} `json:"payload" structs:"payload"`
+	Action  string `json:"action" structs:"action"`
+	Payload any    `json:"payload" structs:"payload"`
 }
 
 type LogsStartAction struct {

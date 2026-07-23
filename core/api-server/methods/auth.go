@@ -126,8 +126,8 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 
 	// get actions for each role and entity: SMEMBERS <entity>/<reference>/roles/<role>
 	var actions []string
-	roleList := strings.Split(roles, ",")
-	for _, r := range roleList {
+	roleList := strings.SplitSeq(roles, ",")
+	for r := range roleList {
 		r = strings.TrimSpace(r)
 		if r == "" {
 			continue
@@ -520,7 +520,7 @@ func CheckIPAllowed(clientIP string, allowedNetworks string) bool {
 	if ip == nil {
 		return false
 	}
-	for _, entry := range strings.Split(allowedNetworks, ",") {
+	for entry := range strings.SplitSeq(allowedNetworks, ",") {
 		entry = strings.TrimSpace(entry)
 		if entry == "" {
 			continue

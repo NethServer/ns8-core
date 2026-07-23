@@ -80,12 +80,12 @@ func CheckClientIdle(ctx context.Context, rdb *redis.Client, searchName string, 
 		return fmt.Errorf("Redis CLIENT LIST command failed (%v)", err)
 	}
 	// Split the CLIENT LIST output by lines and spaces
-	for _, line := range strings.Split(val.(string), "\n") {
+	for line := range strings.SplitSeq(val.(string), "\n") {
 		var clientName string
 		var clientIdle int
 		var convError error
 		// Seek idle= and name= fields among the fields list
-		for _, field := range strings.Split(line, " ") {
+		for field := range strings.SplitSeq(line, " ") {
 			if strings.HasPrefix(field, "idle=") {
 				clientIdle, convError = strconv.Atoi(field[5:])
 				if convError != nil {

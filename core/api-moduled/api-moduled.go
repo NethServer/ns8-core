@@ -185,7 +185,7 @@ func prepareEnvironment(ginCtx *gin.Context) []string {
 		"JWT_ID=" + jwt_id,
 		"JWT_CLAIMS=" + string(jclaims),
 	}
-	for _, varname := range strings.Split(viper.GetString("export_env"), " ") {
+	for varname := range strings.SplitSeq(viper.GetString("export_env"), " ") {
 		env = append(env, varname+"="+os.Getenv(varname))
 	}
 	return env
@@ -301,7 +301,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 		TokenHeadName: "Bearer",
 		TimeFunc:      time.Now,
 
-		Authenticator: func(ginCtx *gin.Context) (interface{}, error) {
+		Authenticator: func(ginCtx *gin.Context) (any, error) {
 			requestBytes, _ := io.ReadAll(ginCtx.Request.Body)
 
 			//
@@ -348,7 +348,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 			ginCtx.Set("JWT_PAYLOAD", jwt.MapClaims(responsePayload))
 			return responsePayload, nil // Authentication is successful
 		},
-		PayloadFunc: func(data interface{}) jwt.MapClaims {
+		PayloadFunc: func(data any) jwt.MapClaims {
 			if claims, ok := data.(gin.H); ok {
 				return jwt.MapClaims(claims)
 			}
@@ -364,7 +364,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 				"claims":  jwt.ExtractClaims(ginCtx),
 			})
 		},
-		Authorizator: func(data interface{}, ginCtx *gin.Context) bool {
+		Authorizator: func(data any, ginCtx *gin.Context) bool {
 			claims := jwt.ExtractClaims(ginCtx)
 
 			if ginCtx.FullPath() == "/api/logout" {
@@ -379,7 +379,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 				return true
 			}
 
-			if scope, ok := scopeValue.([]interface{}); ok {
+			if scope, ok := scopeValue.([]any); ok {
 				// Check if the wanted handler is in the scope
 				for _, elemValue := range scope {
 					elem, ok := elemValue.(string)

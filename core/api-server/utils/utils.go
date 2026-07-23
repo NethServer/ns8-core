@@ -24,6 +24,7 @@ package utils
 
 import (
 	"os"
+	"slices"
 	"strconv"
 	"time"
 )
@@ -33,12 +34,7 @@ func LogError(err error) {
 }
 
 func Contains(a string, values []string) bool {
-	for _, b := range values {
-		if b == a {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(values, a)
 }
 
 func EpochToHumanDate(epochTime int) string {

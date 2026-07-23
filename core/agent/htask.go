@@ -423,17 +423,17 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 
 // Transform the string array representing an environment
 // to a list of values for the redis.HSet variadic function
-func exportToRedis(env []string) []interface{} {
-	out := make([]interface{}, len(env)*2)
+func exportToRedis(env []string) []any {
+	out := make([]any, len(env)*2)
 	for i, kv := range env {
 		j := i * 2
-		eq := strings.Index(kv, "=")
-		if eq < 0 {
+		before, after, ok := strings.Cut(kv, "=")
+		if !ok {
 			out[j] = kv
 			out[j+1] = ""
 		} else {
-			out[j] = kv[:eq]
-			out[j+1] = kv[eq+1:]
+			out[j] = before
+			out[j+1] = after
 		}
 	}
 	return out
@@ -447,7 +447,7 @@ func publishStatus(client redis.Cmdable, progressChannel string, actionDescripto
 }
 
 func obscureTaskInput(jsonStr string) string {
-	var jsonData map[string]interface{}
+	var jsonData map[string]any
 	if err := json.Unmarshal([]byte(jsonStr), &jsonData); err != nil {
 		log.Println(SD_ERR+"Error unmarshalling JSON:", err)
 		return jsonStr
@@ -475,9 +475,9 @@ func isSensitive(target string) bool {
 	return false
 }
 
-func recursiveObscureSensitiveKeys(data interface{}) {
+func recursiveObscureSensitiveKeys(data any) {
 	switch v := data.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		// It's an object, so iterate through its key-value pairs
 		for key, value := range v {
 			// Recursively update the value
@@ -489,7 +489,7 @@ func recursiveObscureSensitiveKeys(data interface{}) {
 			}
 		}
 
-	case []interface{}:
+	case []any:
 		// It's an array, so iterate through its elements
 		for _, item := range v {
 			// Recursively update the element
