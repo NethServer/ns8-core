@@ -40,7 +40,7 @@ type Processor struct {
 }
 
 func CreateOneStepProcessor(stepName string) Processor {
-	return Processor{Status: "pending", Progress: 0, Steps: []Step{{Name: stepName, Path:"", Weight: 1}}}
+	return Processor{Status: "pending", Progress: 0, Steps: []Step{{Name: stepName, Path: "", Weight: 1}}}
 }
 
 /*
@@ -63,7 +63,7 @@ func ListProcessors(paths []string) []string {
 		}
 	}
 	processors := make([]string, 0, len(procDirs))
-	for dir, _ := range procDirs {
+	for dir := range procDirs {
 		processors = append(processors, dir)
 	}
 	return processors

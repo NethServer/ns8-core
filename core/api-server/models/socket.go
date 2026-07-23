@@ -22,8 +22,6 @@
 
 package models
 
-import ()
-
 type SocketAction struct {
 	Action  string      `json:"action" structs:"action"`
 	Payload interface{} `json:"payload" structs:"payload"`

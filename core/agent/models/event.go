@@ -26,9 +26,9 @@ import (
 )
 
 type Event struct {
-	Source    string
-	Name      string
-	Payload   string
+	Source  string
+	Name    string
+	Payload string
 }
 
 func CreateEventHandler(eventName string, basePaths []string) Processor {
@@ -54,7 +54,7 @@ func CreateEventHandler(eventName string, basePaths []string) Processor {
 
 	handlerStepsKeys := make([]string, len(handlerSteps))
 	i := 0
-	for k, _ := range handlerSteps {
+	for k := range handlerSteps {
 		handlerStepsKeys[i] = k
 		i += 1
 	}
@@ -70,4 +70,3 @@ func CreateEventHandler(eventName string, basePaths []string) Processor {
 
 	return Processor{Status: "pending", Progress: 0, Steps: steps}
 }
-

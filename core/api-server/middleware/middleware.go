@@ -112,7 +112,7 @@ func RateLimiter(rps rate.Limit, burst int) gin.HandlerFunc {
 type login struct {
 	Username string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
-	Otp string `form:"otp" json:"otp,omitempty"`
+	Otp      string `form:"otp" json:"otp,omitempty"`
 }
 
 var jwtMiddleware *jwt.GinJWTMiddleware
@@ -164,9 +164,9 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 			otpPassClaim := false
 			if otpNeed {
-				if ! methods.CheckOTP(username, otpValue) {
+				if !methods.CheckOTP(username, otpValue) {
 					err := errors.New("OTP check failed")
-					utils.LogError(errors.Wrap(err, "[AUTH] login-fail(OTP) " + generateLogMessage(c, username, otpNeed)))
+					utils.LogError(errors.Wrap(err, "[AUTH] login-fail(OTP) "+generateLogMessage(c, username, otpNeed)))
 					return nil, err
 				}
 				otpPassClaim = true // claim that 2FA is enabled and used
@@ -195,7 +195,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// return user auth model
 			return &models.UserAuthorizations{
 				Username: username,
-				OtpPass: otpPassClaim, // true if OTP passed, false if OTP is not needed
+				OtpPass:  otpPassClaim, // true if OTP passed, false if OTP is not needed
 			}, nil
 
 		},

@@ -347,7 +347,7 @@ func createTask(c *gin.Context, queueName string) {
 	in, _ := flat.Flatten(jsonDyn, nil)
 
 	// search for sensitve data, in sensitive list
-	for k, _ := range in {
+	for k := range in {
 		for _, s := range configuration.Config.SensitiveList {
 			if strings.Contains(strings.ToLower(k), strings.ToLower(s)) {
 				in[k] = "XXX"

@@ -70,13 +70,13 @@ func Init() {
 			if s.faultySchema {
 				return true, "issues while creating the database schema"
 			}
-			if s.faultyOpen { 
+			if s.faultyOpen {
 				return true, "an error opening the database file"
 			}
 			if s.faultyConfig {
 				return true, "misconfiguration of the database file path"
 			}
-			
+
 			return false, ""
 		},
 	}
@@ -131,7 +131,7 @@ func enableWALBasedJournal() {
 
 func Store(audit models.Audit) {
 	if ok, out := db.isFaulty(db.faultyStatus); ok {
-		utils.LogError(errors.Wrap(errors.New("Connection dropped due to " + out), "[AUDIT][STORE]"))
+		utils.LogError(errors.Wrap(errors.New("Connection dropped due to "+out), "[AUDIT][STORE]"))
 		return
 	}
 
@@ -161,7 +161,7 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 	var results []models.Audit
 
 	if ok, out := db.isFaulty(db.faultyStatus); ok {
-		utils.LogError(errors.Wrap(errors.New("Connection dropped due to " + out), "[AUDIT][QUERY]"))
+		utils.LogError(errors.Wrap(errors.New("Connection dropped due to "+out), "[AUDIT][QUERY]"))
 		return results
 	}
 
@@ -217,7 +217,7 @@ func Query(query string) []string {
 	var results []string
 
 	if ok, out := db.isFaulty(db.faultyStatus); ok {
-		utils.LogError(errors.Wrap(errors.New("Connection dropped due to " + out), "[AUDIT][QUERY]"))
+		utils.LogError(errors.Wrap(errors.New("Connection dropped due to "+out), "[AUDIT][QUERY]"))
 		return results
 	}
 
