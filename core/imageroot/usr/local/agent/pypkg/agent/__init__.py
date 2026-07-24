@@ -551,9 +551,15 @@ def get_module_seq(module_id : str) -> int:
     except (TypeError, ValueError):
         return -1
 
-def list_service_providers(rdb, service, transport='*', filters={}):
+def list_service_providers(rdb, service, transport='*', filters={}, sortby='node_proximity'):
     """Look up the endpoint information about a given service. Filter
-    results by transport protocol or any other exact attribute value"""
+    results by transport protocol or any other exact attribute value.
+    Sort results with sortby, one of:
+    - 'node_proximity' (default): services on the local node first,
+      then on the leader node, then on other worker nodes
+    - 'module_seq_asc': lower sequence number first
+    - 'module_seq_desc': higher sequence number first
+    """
 
     results = []
 
@@ -591,6 +597,26 @@ def list_service_providers(rdb, service, transport='*', filters={}):
     if 'module_uuid' in filters and len(results) > 1:
         results.sort(key=lambda e: e['module_seq'])
         results = [results[-1]] # Return last item only
+
+    if sortby == 'module_seq_asc':
+        results.sort(key=lambda e: e.get('module_seq', -1))
+    elif sortby == 'module_seq_desc':
+        results.sort(key=lambda e: e.get('module_seq', -1), reverse=True)
+    elif sortby == 'node_proximity':
+        local_node = os.environ.get('NODE_ID')
+        leader_node = rdb.hget('cluster/environment', 'NODE_ID')
+
+        def node_priority(record):
+            node = record.get('node')
+            if node == local_node:
+                priority = 0
+            elif node == leader_node:
+                priority = 1
+            else:
+                priority = 2
+            return (priority, record.get('module_seq', -1))
+
+        results.sort(key=node_priority)
 
     return results
 
