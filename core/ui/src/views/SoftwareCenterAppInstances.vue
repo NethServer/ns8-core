@@ -239,6 +239,20 @@
                       :label="$t('software_center.update_to_testing_version')"
                     />
                   </cv-overflow-menu-item>
+                  <!-- enable/disable automatic updates -->
+                  <cv-overflow-menu-item
+                    v-if="subscriptionIsActive"
+                    @click="toggleInstanceAutomaticUpdates(instance)"
+                  >
+                    <NsMenuItem
+                      :icon="Time20"
+                      :label="
+                        instance.automatic_updates
+                          ? $t('software_center.disable_automatic_updates')
+                          : $t('software_center.enable_automatic_updates')
+                      "
+                    />
+                  </cv-overflow-menu-item>
                   <cv-overflow-menu-item
                     v-if="!favoriteApps.includes(instance.id)"
                     @click="addFavorite(instance)"
@@ -320,6 +334,18 @@
                   </div>
                   <div class="row">
                     {{ $t("common.version") }} {{ instance.version }}
+                  </div>
+                  <div
+                    v-if="
+                      subscriptionIsActive &&
+                      instance.automatic_updates === false
+                    "
+                    class="row"
+                  >
+                    <cv-tag
+                      kind="high-contrast"
+                      :label="$t('software_center.updates_disabled')"
+                    />
                   </div>
                   <div
                     v-if="isStableUpdateAvailable(app, instance)"
@@ -460,6 +486,8 @@ import UpdateAppModal from "../components/software-center/UpdateAppModal";
 import SetInstanceLabelModal from "@/components/software-center/SetInstanceLabelModal.vue";
 import RestartModuleModal from "@/components/software-center/RestartModuleModal.vue";
 import Information16 from "@carbon/icons-vue/es/information/16";
+import Time20 from "@carbon/icons-vue/es/time/20";
+import AutomaticUpdatesService from "@/mixins/automatic-updates";
 
 export default {
   name: "SoftwareCenterAppInstances",
@@ -477,6 +505,7 @@ export default {
     IconService,
     QueryParamService,
     PageTitleService,
+    AutomaticUpdatesService,
   ],
   pageTitle() {
     return this.$t("software_center.app_instances_no_name");
@@ -487,6 +516,8 @@ export default {
       UPDATE_DELAY: 10000,
       appName: "",
       app: null,
+      subscriptionIsActive: false,
+      Time20,
       isShownInstallModal: false,
       isShownEditInstanceLabel: false,
       isShownUninstallModal: false,
@@ -520,6 +551,7 @@ export default {
         removeFavorite: "",
         setNodeLabel: "",
         updateModule: "",
+        setAutomaticUpdates: "",
       },
     };
   },
@@ -592,6 +624,11 @@ export default {
         this.app = app;
       }
 
+      // cluster-wide subscription flag is repeated on every module
+      if (modules.length) {
+        this.subscriptionIsActive = !!modules[0].subscription_is_active;
+      }
+
       // highlight instance
       if (this.elementToHighlight) {
         this.isElementHighlighted = true;
@@ -644,6 +681,24 @@ export default {
       this.instanceToUpdate = instance;
       this.isUpdatingToTestingVersion = isUpdatingToTestingVersion;
       this.isShownUpdateModal = true;
+    },
+    toggleInstanceAutomaticUpdates(instance) {
+      this.error.setAutomaticUpdates = "";
+      const enable = instance.automatic_updates === false;
+      this.setAutomaticUpdates(
+        { instances: { [instance.id]: enable } },
+        {
+          title: enable
+            ? this.$t("software_center.enable_automatic_updates")
+            : this.$t("software_center.disable_automatic_updates"),
+          onCompleted: () => {
+            this.listModules();
+          },
+          onError: (message) => {
+            this.error.setAutomaticUpdates = message;
+          },
+        }
+      );
     },
     addFavoriteCompleted() {
       this.$root.$emit("reloadAppDrawer");

@@ -46,6 +46,19 @@
               tipAlignment="end"
               class="page-toolbar-item"
             >
+              <cv-overflow-menu-item
+                v-if="subscriptionIsActive"
+                @click="toggleAutomaticUpdates()"
+              >
+                <NsMenuItem
+                  :icon="Time20"
+                  :label="
+                    applyUpdatesIsActive
+                      ? $t('software_center.disable_automatic_updates')
+                      : $t('software_center.enable_automatic_updates')
+                  "
+                />
+              </cv-overflow-menu-item>
               <cv-overflow-menu-item @click="showSoftwareCenterCoreApps()">
                 <NsMenuItem
                   :icon="Application20"
@@ -90,6 +103,30 @@
             kind="error"
             :title="$t('action.clean-repositories-cache')"
             :description="error.cleanRepositoriesCache"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="subscriptionIsActive && !applyUpdatesIsActive">
+        <cv-column>
+          <NsInlineNotification
+            kind="warning"
+            :title="$t('software_center.automatic_updates_disabled_title')"
+            :description="
+              $t('software_center.automatic_updates_disabled_description')
+            "
+            :actionLabel="$t('software_center.enable_automatic_updates')"
+            @action="enableAutomaticUpdates"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.setAutomaticUpdates">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.set-automatic-updates')"
+            :description="error.setAutomaticUpdates"
             :showCloseButton="false"
           />
         </cv-column>
@@ -235,6 +272,21 @@
             />
           </div>
           <div v-if="csbUpdatesSelected">
+            <template
+              v-if="
+                subscriptionIsActive &&
+                (appUpdates.length || isCoreUpdateAvailable) &&
+                !loading.listModules &&
+                !loading.listCoreModules
+              "
+            >
+              <h4 class="mg-bottom-sm">
+                {{ $t("software_center.applications_update") }}
+              </h4>
+              <p class="mg-bottom-lg">
+                {{ $t("software_center.applications_update_description") }}
+              </p>
+            </template>
             <!-- core update -->
             <template
               v-if="
@@ -368,6 +420,11 @@
       @close="isShownInstallModal = false"
       @installationCompleted="listModules"
     />
+    <DisableAutomaticUpdatesModal
+      :visible="isShownDisableAutomaticUpdatesModal"
+      @hide="isShownDisableAutomaticUpdatesModal = false"
+      @completed="onAutomaticUpdatesChanged"
+    />
   </div>
 </template>
 
@@ -375,6 +432,9 @@
 import AppList from "@/components/software-center/AppList";
 import to from "await-to-js";
 import InstallAppModal from "@/components/software-center/InstallAppModal";
+import DisableAutomaticUpdatesModal from "@/components/software-center/DisableAutomaticUpdatesModal";
+import AutomaticUpdatesService from "@/mixins/automatic-updates";
+import Time20 from "@carbon/icons-vue/es/time/20";
 import {
   QueryParamService,
   UtilService,
@@ -390,6 +450,7 @@ export default {
   components: {
     AppList,
     InstallAppModal,
+    DisableAutomaticUpdatesModal,
   },
   mixins: [
     IconService,
@@ -398,6 +459,7 @@ export default {
     TaskService,
     LottieService,
     PageTitleService,
+    AutomaticUpdatesService,
   ],
   pageTitle() {
     return this.$t("software_center.title");
@@ -424,6 +486,10 @@ export default {
       appToInstall: null,
       isCoreUpdateAvailable: false,
       coreApp: null,
+      applyUpdatesIsActive: false,
+      subscriptionIsActive: false,
+      isShownDisableAutomaticUpdatesModal: false,
+      Time20,
       loading: {
         listModules: true,
         cleanRepositoriesCache: false,
@@ -435,6 +501,7 @@ export default {
         listCoreModules: "",
         updateCore: "",
         updateModules: "",
+        setAutomaticUpdates: "",
       },
     };
   },
@@ -568,6 +635,12 @@ export default {
       }
       this.appUpdates = appUpdates;
       this.modules = modules;
+
+      // cluster-wide automatic updates flags are repeated on every module
+      if (modules.length) {
+        this.applyUpdatesIsActive = !!modules[0].apply_updates_is_active;
+        this.subscriptionIsActive = !!modules[0].subscription_is_active;
+      }
       this.listCoreModules();
     },
     async listCoreModules() {
@@ -835,6 +908,29 @@ export default {
     },
     showSoftwareCenterCoreApps() {
       this.$router.push("/software-center/core-apps");
+    },
+    toggleAutomaticUpdates() {
+      if (this.applyUpdatesIsActive) {
+        this.isShownDisableAutomaticUpdatesModal = true;
+      } else {
+        this.enableAutomaticUpdates();
+      }
+    },
+    enableAutomaticUpdates() {
+      this.error.setAutomaticUpdates = "";
+      this.setAutomaticUpdates(
+        { apply_updates_is_active: true },
+        {
+          title: this.$t("software_center.enable_automatic_updates"),
+          onCompleted: this.onAutomaticUpdatesChanged,
+          onError: (message) => {
+            this.error.setAutomaticUpdates = message;
+          },
+        }
+      );
+    },
+    onAutomaticUpdatesChanged() {
+      this.listModules();
     },
   },
 };
