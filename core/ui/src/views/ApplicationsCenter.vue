@@ -245,6 +245,14 @@
                       kind="green"
                       :label="$t('applications.update_available')"
                     />
+                    <cv-tag
+                      v-if="
+                        subscriptionIsActive && row.automatic_updates === false
+                      "
+                      class="mg-left-sm"
+                      kind="high-contrast"
+                      :label="$t('software_center.updates_disabled')"
+                    />
                   </cv-data-table-cell>
                   <cv-data-table-cell class="table-overflow-menu-cell">
                     <cv-overflow-menu flip-menu class="table-overflow-menu">
@@ -299,6 +307,20 @@
                           :icon="Upgrade20"
                           :label="
                             $t('software_center.update_to_testing_version')
+                          "
+                        />
+                      </cv-overflow-menu-item>
+                      <!-- enable/disable automatic updates -->
+                      <cv-overflow-menu-item
+                        v-if="subscriptionIsActive"
+                        @click="toggleInstanceAutomaticUpdates(row)"
+                      >
+                        <NsMenuItem
+                          :icon="Time20"
+                          :label="
+                            row.automatic_updates
+                              ? $t('software_center.disable_automatic_updates')
+                              : $t('software_center.enable_automatic_updates')
                           "
                         />
                       </cv-overflow-menu-item>
@@ -451,7 +473,9 @@ import SetInstanceLabelModal from "@/components/software-center/SetInstanceLabel
 import RestartModuleModal from "@/components/software-center/RestartModuleModal.vue";
 import AddNoteModal from "@/components/applications-center/AddNoteModal.vue";
 import RequestQuote20 from "@carbon/icons-vue/es/request-quote/20";
+import Time20 from "@carbon/icons-vue/es/time/20";
 import AppInfoModal from "@/components/software-center/AppInfoModal.vue";
+import AutomaticUpdatesService from "@/mixins/automatic-updates";
 
 import {
   QueryParamService,
@@ -481,6 +505,7 @@ export default {
     TaskService,
     LottieService,
     PageTitleService,
+    AutomaticUpdatesService,
   ],
   pageTitle() {
     return this.$t("applications.title");
@@ -513,6 +538,8 @@ export default {
       appUpdates: [],
       app: null,
       modules: [],
+      subscriptionIsActive: false,
+      Time20,
       tableColumns: ["name", "type", "node", "version"],
       tablePage: [],
       filter: {
@@ -531,6 +558,7 @@ export default {
         addNote: "",
         addFavorite: "",
         removeFavorite: "",
+        setAutomaticUpdates: "",
       },
       isShowNote: false,
       noteInstance: null,
@@ -647,6 +675,24 @@ export default {
         (app) => app.id === instance.appInfoData.id
       );
       this.isShownUpdateModal = true;
+    },
+    toggleInstanceAutomaticUpdates(row) {
+      this.error.setAutomaticUpdates = "";
+      const enable = row.automatic_updates === false;
+      this.setAutomaticUpdates(
+        { instances: { [row.id]: enable } },
+        {
+          title: enable
+            ? this.$t("software_center.enable_automatic_updates")
+            : this.$t("software_center.disable_automatic_updates"),
+          onCompleted: () => {
+            this.listModules();
+          },
+          onError: (message) => {
+            this.error.setAutomaticUpdates = message;
+          },
+        }
+      );
     },
     isTestingUpdateAvailable(instance) {
       const app = this.appUpdates.find((a) => a.id === instance.appInfoData.id);
@@ -934,6 +980,7 @@ export default {
             ui_note: installedData.ui_note || "",
             version: installedData.version || "",
             update: installedData.update || "",
+            automatic_updates: item.automatic_updates,
             appInfoData: moduleData, // needed for clone/move/info modals
           });
         }
@@ -941,6 +988,11 @@ export default {
       // sort by id
       extractedModules.sort(this.sortByProperty("id"));
       this.modules = extractedModules;
+
+      // cluster-wide subscription flag is repeated on every module
+      if (modules.length) {
+        this.subscriptionIsActive = !!modules[0].subscription_is_active;
+      }
 
       // map module types for filter
       const moduleTypes = [
