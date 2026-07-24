@@ -26,8 +26,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"syscall"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -53,7 +53,7 @@ var eventPaths flagStringSlice
 var pollingDuration = 5000 * time.Millisecond
 var taskExpireDuration = 8 * time.Hour
 
-var maxConcurrency = 32 // default limit of spawned concurrent processes
+var maxConcurrency = 32                    // default limit of spawned concurrent processes
 var overloadSleep = 500 * time.Millisecond // wait time before rejecting new processes
 
 // Command arguments --actionsdir and --eventsdir can be repeated multiple

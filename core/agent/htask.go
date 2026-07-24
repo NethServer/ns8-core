@@ -83,7 +83,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			errorList, validateFault := validation.ValidateGoStruct(step.Path, task.Data)
 			if validateFault != nil {
 				errorMessage := fmt.Sprintf("JSON Schema input validation aborted at step %s: %v\n", step.Path, validateFault)
-				log.Printf(SD_ERR + errorMessage)
+				log.Print(SD_ERR + errorMessage)
 				actionError += errorMessage
 				actionDescriptor.Status = "aborted"
 				exitCode = 1
@@ -103,7 +103,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			errorList, validateFault := validation.ValidateJsonString(step.Path, []byte(actionOutput))
 			if validateFault != nil {
 				errorMessage := fmt.Sprintf("JSON Schema output validation aborted at step %s: %v\n", step.Path, validateFault)
-				log.Printf(SD_ERR + errorMessage)
+				log.Print(SD_ERR + errorMessage)
 				actionError += errorMessage
 				actionDescriptor.Status = "aborted"
 				exitCode = 1
@@ -212,7 +212,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 		}()
 
 		if err := cmd.Start(); err != nil {
-			log.Printf(SD_WARNING + "Action %s skipped step %s: %v", task.Action, step.Name, err)
+			log.Printf(SD_WARNING+"Action %s skipped step %s: %v", task.Action, step.Name, err)
 			actionDescriptor.SetProgressAtStep(stepIndex, 100)
 			publishStatus(rdb, progressChannel, actionDescriptor)
 			continue
@@ -240,7 +240,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 				doneChan = make(chan struct{}) // stop doneChan from being select()'ed
 			case <-time.After(pollingDuration):
 				// Extend context TTL while the task is running
-				rdb.Expire(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", 12 * pollingDuration)
+				rdb.Expire(ctx, "task/"+agentPrefix+"/"+task.ID+"/context", 12*pollingDuration)
 				publishStatus(rdb, progressChannel, actionDescriptor)
 			}
 		}
@@ -270,14 +270,14 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 		// Use a single command pipeline to preserve data integrity.
 
 		// Publish the final environment copy in a Redis HASH key
-		pipe.Del(ctx, agentPrefix + "/environment")
-		pipe.HSet(ctx, agentPrefix + "/environment", exportToRedis(readStateFile())...)
+		pipe.Del(ctx, agentPrefix+"/environment")
+		pipe.HSet(ctx, agentPrefix+"/environment", exportToRedis(readStateFile())...)
 
 		// Publish the action response
 		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
 		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
 		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
-		pipe.Expire(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", taskExpireDuration)
+		pipe.Expire(ctx, "task/"+agentPrefix+"/"+task.ID+"/context", taskExpireDuration)
 		publishStatus(pipe, progressChannel, actionDescriptor)
 		return nil
 	})
@@ -290,6 +290,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 	defer func() { complete <- 1 }()
 	brpopCtx, cancelBrpop := context.WithCancel(ctx)
+	defer cancelBrpop()
 	taskCancelFunctions := make(map[string]context.CancelFunc)
 
 	// If we have a REDIS_PASSWORD the default redis username is the agentPrefix string
@@ -307,68 +308,68 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 		redisAddress = "127.0.0.1:6379"
 	}
 	rdb := redis.NewClient(&redis.Options{
-		Addr:      redisAddress,
-		Username:  redisUsername,
-		Password:  redisPassword,
-		DB:        0,
-		OnConnect: setClientNameCallback,
-		MaxRetries:       10,
-		MinRetryBackoff:   100 * time.Millisecond,
-		MaxRetryBackoff:   5000 * time.Millisecond,
+		Addr:            redisAddress,
+		Username:        redisUsername,
+		Password:        redisPassword,
+		DB:              0,
+		OnConnect:       setClientNameCallback,
+		MaxRetries:      10,
+		MinRetryBackoff: 100 * time.Millisecond,
+		MaxRetryBackoff: 5000 * time.Millisecond,
 	})
 
 	workersRegistry := NewWorkersLimiter(maxConcurrency, overloadSleep)
 	var tcMu sync.Mutex
 	taskCh := make(chan models.Task)
 	go readTasks(rdb, brpopCtx, taskCh)
-	MAINLOOP:
-		for {
-			select {
-			case <-actionsCtx.Done():
-				go func() {
-					// SIGUSR1 received: wait until all workers complete
-					workersRegistry.Wait()
-					// Then stop reading events
-					cancelBrpop()
-				}()
-				// Prevents entering this branch further
-				actionsCtx = ctx
-			case task, stillListening := <-taskCh:
-				if stillListening == false {
-					workersRegistry.Wait()
-					break MAINLOOP
-				}
-
-				if workersRegistry.ObserveOverload() {
-					rejectAction(rdb, ctx, &task)
-					continue
-				}
-
-				// Create a cancelable context for the task and
-				// store its cancel function in a safe map
-				taskCtx, taskCancelFunction := context.WithCancel(ctx)
-				tcMu.Lock()
-				taskCancelFunctions[task.ID] = taskCancelFunction
-				tcMu.Unlock()
-
-				// Start the task worker
-				go func(task models.Task) {
-					workersRegistry.Add(1)
-					defer workersRegistry.Done()
-					switch task.Action {
-					case "list-actions":
-						runListActions(rdb, &task)
-					case "cancel-task":
-						runCancelTask(rdb, &task, taskCancelFunctions, &tcMu)
-					default:
-						runAction(rdb, taskCtx, &task)
-					}
-					tcMu.Lock()
-					delete(taskCancelFunctions, task.ID)
-					tcMu.Unlock()
-				}(task)
+MAINLOOP:
+	for {
+		select {
+		case <-actionsCtx.Done():
+			go func() {
+				// SIGUSR1 received: wait until all workers complete
+				workersRegistry.Wait()
+				// Then stop reading events
+				cancelBrpop()
+			}()
+			// Prevents entering this branch further
+			actionsCtx = ctx
+		case task, stillListening := <-taskCh:
+			if stillListening == false {
+				workersRegistry.Wait()
+				break MAINLOOP
 			}
+
+			if workersRegistry.ObserveOverload() {
+				rejectAction(rdb, ctx, &task)
+				continue
+			}
+
+			// Create a cancelable context for the task and
+			// store its cancel function in a safe map
+			taskCtx, taskCancelFunction := context.WithCancel(ctx)
+			tcMu.Lock()
+			taskCancelFunctions[task.ID] = taskCancelFunction
+			tcMu.Unlock()
+
+			// Start the task worker
+			go func(task models.Task) {
+				workersRegistry.Add(1)
+				defer workersRegistry.Done()
+				switch task.Action {
+				case "list-actions":
+					runListActions(rdb, &task)
+				case "cancel-task":
+					runCancelTask(rdb, &task, taskCancelFunctions, &tcMu)
+				default:
+					runAction(rdb, taskCtx, &task)
+				}
+				tcMu.Lock()
+				delete(taskCancelFunctions, task.ID)
+				tcMu.Unlock()
+			}(task)
 		}
+	}
 }
 
 func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task) {
@@ -410,7 +411,7 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 		}
 
 		// Store the task as context
-		setErr := rdb.Set(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", obscureTaskInput(popResult[1]), 12 * pollingDuration).Err()
+		setErr := rdb.Set(ctx, "task/"+agentPrefix+"/"+task.ID+"/context", obscureTaskInput(popResult[1]), 12*pollingDuration).Err()
 		if setErr != nil {
 			log.Print(SD_ERR+"Context set error: ", setErr)
 		}
@@ -422,17 +423,17 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 
 // Transform the string array representing an environment
 // to a list of values for the redis.HSet variadic function
-func exportToRedis(env []string) []interface{} {
-	out := make([]interface{}, len(env)*2)
+func exportToRedis(env []string) []any {
+	out := make([]any, len(env)*2)
 	for i, kv := range env {
 		j := i * 2
-		eq := strings.Index(kv, "=")
-		if eq < 0 {
+		before, after, ok := strings.Cut(kv, "=")
+		if !ok {
 			out[j] = kv
 			out[j+1] = ""
 		} else {
-			out[j] = kv[:eq]
-			out[j+1] = kv[eq+1:]
+			out[j] = before
+			out[j+1] = after
 		}
 	}
 	return out
@@ -446,7 +447,7 @@ func publishStatus(client redis.Cmdable, progressChannel string, actionDescripto
 }
 
 func obscureTaskInput(jsonStr string) string {
-	var jsonData map[string]interface{}
+	var jsonData map[string]any
 	if err := json.Unmarshal([]byte(jsonStr), &jsonData); err != nil {
 		log.Println(SD_ERR+"Error unmarshalling JSON:", err)
 		return jsonStr
@@ -474,9 +475,9 @@ func isSensitive(target string) bool {
 	return false
 }
 
-func recursiveObscureSensitiveKeys(data interface{}) {
+func recursiveObscureSensitiveKeys(data any) {
 	switch v := data.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		// It's an object, so iterate through its key-value pairs
 		for key, value := range v {
 			// Recursively update the value
@@ -488,7 +489,7 @@ func recursiveObscureSensitiveKeys(data interface{}) {
 			}
 		}
 
-	case []interface{}:
+	case []any:
 		// It's an array, so iterate through its elements
 		for _, item := range v {
 			// Recursively update the element

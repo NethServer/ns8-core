@@ -59,9 +59,9 @@ func Instance() *melody.Melody {
  */
 func onPong(s *melody.Session) {
 	muClock.Sync()
-	if ! validSessionFilter(s) {
+	if !validSessionFilter(s) {
 		oErrorMsg := map[string]string{
-			"type": "authorize-error",
+			"type":    "authorize-error",
 			"payload": "Token has expired",
 		}
 		jErrorMsg, _ := json.Marshal(oErrorMsg)
@@ -76,7 +76,7 @@ func onPong(s *melody.Session) {
  */
 func onDisconnect(s *melody.Session) {
 	iChilds, keyExists := s.Get("childs")
-	if ! keyExists {
+	if !keyExists {
 		return // nothing to do
 	}
 	for _, pid := range iChilds.([]int) {
@@ -106,7 +106,7 @@ func validSessionFilter(s *melody.Session) bool {
 
 func getSessionExpireTimestamp(s *melody.Session) int64 {
 	exp, ok := s.Get("exp")
-	if ! ok {
+	if !ok {
 		return 0
 	}
 	texp, _ := exp.(int64)
@@ -154,7 +154,7 @@ func relayRedisProgressEvents(socketConnection *melody.Melody) {
 	}()
 }
 
-func writeSocketResponse(s *melody.Session, name string, msg interface{}) {
+func writeSocketResponse(s *melody.Session, name string, msg any) {
 	// create event object
 	event := &models.Event{}
 	event.Name = name

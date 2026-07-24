@@ -23,9 +23,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
-	"fmt"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/go-redis/redis/v8"
@@ -116,13 +116,13 @@ func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[strin
 			exitCode = 2
 			actionDescriptor.Status = "validation-failed"
 			actionError = "Action cancel-task validation-failed at step task-lookup: task ID not found"
-			log.Printf(SD_ERR + actionError)
+			log.Print(SD_ERR + actionError)
 		}
 	} else {
 		exitCode = 10
 		actionDescriptor.Status = "validation-failed"
 		actionError = "Action cancel-task validation-failed at step builtin-validation.json: invalid task ID or timeout value"
-		log.Printf(SD_ERR + actionError)
+		log.Print(SD_ERR + actionError)
 	}
 
 	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
@@ -156,7 +156,7 @@ func rejectAction(rdb *redis.Client, actionCtx context.Context, task *models.Tas
 		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
 		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
 		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
-		pipe.Expire(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", taskExpireDuration)
+		pipe.Expire(ctx, "task/"+agentPrefix+"/"+task.ID+"/context", taskExpireDuration)
 		publishStatus(pipe, progressChannel, actionDescriptor) // aborted status
 		return nil
 	})
