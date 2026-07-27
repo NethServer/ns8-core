@@ -9,21 +9,6 @@
         <cv-column :md="4" :xlg="10" class="page-title">
           <h2>
             {{ $t("software_center.title") }}
-            <cv-interactive-tooltip
-              alignment="start"
-              direction="right"
-              class="info"
-            >
-              <template slot="content">
-                <i18n path="software_center.title_tooltip" tag="p">
-                  <template v-slot:applications>
-                    <cv-link @click="goToApplicationsCenter">
-                      {{ $t("applications.title") }}
-                    </cv-link>
-                  </template>
-                </i18n>
-              </template>
-            </cv-interactive-tooltip>
           </h2>
         </cv-column>
         <cv-column :md="4" :xlg="6">
@@ -46,18 +31,31 @@
               tipAlignment="end"
               class="page-toolbar-item"
             >
+              <cv-overflow-menu-item
+                v-if="subscriptionIsActive"
+                @click="toggleAutomaticUpdates()"
+              >
+                <NsMenuItem
+                  :icon="applyUpdatesIsActive ? PauseOutline20 : PlayOutline20"
+                  :label="
+                    applyUpdatesIsActive
+                      ? $t('software_center.disable_automatic_updates')
+                      : $t('software_center.enable_automatic_updates')
+                  "
+                />
+              </cv-overflow-menu-item>
               <cv-overflow-menu-item @click="showSoftwareCenterCoreApps()">
                 <NsMenuItem
-                  :icon="Application20"
-                  :label="$t('software_center.core_apps')"
+                  :icon="ArrowRight20"
+                  :label="$t('software_center.go_to_core_applications')"
                 />
               </cv-overflow-menu-item>
               <cv-overflow-menu-item
                 @click="goToSettingsSoftwareRepositories()"
               >
                 <NsMenuItem
-                  :icon="Settings20"
-                  :label="$t('settings_sw_repositories.title')"
+                  :icon="ArrowRight20"
+                  :label="$t('software_center.go_to_software_repositories')"
                 />
               </cv-overflow-menu-item>
             </NsIconMenu>
@@ -94,29 +92,32 @@
           />
         </cv-column>
       </cv-row>
-      <cv-row v-if="q.view !== 'updates'">
-        <cv-column v-if="isCoreUpdateAvailable">
+      <cv-row v-if="subscriptionIsActive && !applyUpdatesIsActive">
+        <cv-column>
           <NsInlineNotification
             kind="warning"
-            :title="$t('software_center.core_app_update_available')"
+            :title="$t('software_center.automatic_updates_disabled_title')"
             :description="
-              $t('software_center.core_app_update_available_description')
+              $t('software_center.automatic_updates_disabled_description')
             "
-            :actionLabel="$t('common.see_details')"
-            @action="showSoftwareCenterCoreApps"
+            :actionLabel="$t('software_center.enable_automatic_updates')"
+            @action="toggleAutomaticUpdates"
             :showCloseButton="false"
           />
         </cv-column>
-        <cv-column v-else-if="appUpdates.length && !loading.listCoreModules">
+      </cv-row>
+      <cv-row v-if="q.view !== 'updates'">
+        <cv-column
+          v-if="
+            (isCoreUpdateAvailable || appUpdates.length) &&
+            !loading.listCoreModules
+          "
+        >
           <NsInlineNotification
             kind="warning"
             :title="$t('software_center.software_updates')"
-            :description="
-              $tc('software_center.you_have_updates', appUpdates.length, {
-                numUpdates: appUpdates.length,
-              })
-            "
-            :actionLabel="$t('common.see_details')"
+            :description="updatesNotificationDescription"
+            :actionLabel="$t('software_center.go_to_updates')"
             @action="goToUpdates"
             :showCloseButton="false"
           />
@@ -235,28 +236,6 @@
             />
           </div>
           <div v-if="csbUpdatesSelected">
-            <!-- core update -->
-            <template
-              v-if="
-                isCoreUpdateAvailable &&
-                !loading.listModules &&
-                !loading.listCoreModules
-              "
-            >
-              <h4 class="mg-bottom-md">
-                {{ $t("software_center.core_update") }}
-              </h4>
-              <AppList
-                :apps="[coreApp]"
-                :skeleton="false"
-                tab="updates"
-                key="core-update"
-                :light="true"
-              />
-              <h4 v-if="appUpdates.length" class="mg-bottom-md">
-                {{ $t("software_center.app_updates") }}
-              </h4>
-            </template>
             <NsInlineNotification
               v-if="error.updateModules"
               kind="error"
@@ -264,7 +243,7 @@
               :description="error.updateModules"
               :showCloseButton="false"
             />
-            <!-- apps updates -->
+            <!-- holds the only Cancel: must stay mounted while the list reloads -->
             <NsInlineNotification
               v-if="updateAllAppsTimeout"
               kind="info"
@@ -282,29 +261,68 @@
               :showCloseButton="false"
               :timer="UPDATE_DELAY"
             />
-            <div
-              v-if="
-                appUpdates.length &&
-                !updateAllAppsTimeout &&
-                !loading.listModules &&
-                !loading.listCoreModules
-              "
-              class="toolbar"
-            >
-              <NsButton
-                kind="primary"
-                :icon="Upgrade20"
-                @click="willUpdateAllApps()"
-                :disabled="isUpdateInProgress"
-                >{{ $t("software_center.update_all_apps") }}</NsButton
+            <!-- core update -->
+            <template v-if="isCoreUpdateAvailable && !loadingUpdates">
+              <h4 class="mg-bottom-sm">
+                {{ $t("software_center.core_update") }}
+              </h4>
+              <p class="mg-bottom-lg">
+                {{ $t("software_center.core_update_description") }}
+              </p>
+              <AppList
+                :apps="[coreApp]"
+                :skeleton="false"
+                tab="updates"
+                key="core-update"
+                :light="true"
+              />
+            </template>
+            <!-- apps updates -->
+            <template v-if="appUpdates.length && !loadingUpdates">
+              <h4 class="mg-bottom-sm">
+                {{ $t("software_center.applications_update") }}
+              </h4>
+              <p
+                v-if="subscriptionIsActive && applyUpdatesIsActive"
+                class="mg-bottom-lg"
               >
-            </div>
+                {{ $t("software_center.applications_update_description") }}
+              </p>
+              <div v-if="!updateAllAppsTimeout" class="toolbar">
+                <NsButton
+                  kind="primary"
+                  :icon="Upgrade20"
+                  @click="willUpdateAllApps()"
+                  :disabled="isUpdateInProgress"
+                  >{{ $t("software_center.update_all_apps") }}</NsButton
+                >
+              </div>
+              <AppList
+                :apps="appUpdates"
+                :skeleton="false"
+                tab="updates"
+                @install="openInstallModal"
+                key="updates-app-list"
+                :light="true"
+              />
+            </template>
+            <!-- loading skeleton -->
+            <AppList
+              v-if="loadingUpdates"
+              :apps="[]"
+              :skeleton="true"
+              tab="updates"
+              key="updates-skeleton"
+              :light="true"
+            />
+            <!-- no updates: not to be claimed when a listing failed -->
             <cv-tile
               v-if="
                 !appUpdates.length &&
                 !isCoreUpdateAvailable &&
-                !loading.listModules &&
-                !loading.listCoreModules
+                !loadingUpdates &&
+                !error.listModules &&
+                !error.listCoreModules
               "
               kind="standard"
               :light="true"
@@ -315,17 +333,12 @@
                 animationTitle="rocket"
                 :loop="1"
                 key="updates-empty-state"
-              />
+              >
+                <template #description>
+                  <p>{{ $t("software_center.no_updates_available") }}</p>
+                </template>
+              </NsEmptyState>
             </cv-tile>
-            <AppList
-              v-else
-              :apps="appUpdates"
-              :skeleton="loading.listModules || loading.listCoreModules"
-              tab="updates"
-              @install="openInstallModal"
-              key="updates-app-list"
-              :light="true"
-            />
           </div>
         </section>
         <!-- search results -->
@@ -368,6 +381,12 @@
       @close="isShownInstallModal = false"
       @installationCompleted="listModules"
     />
+    <AutomaticUpdatesModal
+      :visible="isShownAutomaticUpdatesModal"
+      :enable="!applyUpdatesIsActive"
+      @hide="isShownAutomaticUpdatesModal = false"
+      @completed="onAutomaticUpdatesChanged"
+    />
   </div>
 </template>
 
@@ -375,6 +394,9 @@
 import AppList from "@/components/software-center/AppList";
 import to from "await-to-js";
 import InstallAppModal from "@/components/software-center/InstallAppModal";
+import AutomaticUpdatesModal from "@/components/software-center/AutomaticUpdatesModal";
+import PauseOutline20 from "@carbon/icons-vue/es/pause--outline/20";
+import PlayOutline20 from "@carbon/icons-vue/es/play--outline/20";
 import {
   QueryParamService,
   UtilService,
@@ -390,6 +412,7 @@ export default {
   components: {
     AppList,
     InstallAppModal,
+    AutomaticUpdatesModal,
   },
   mixins: [
     IconService,
@@ -424,6 +447,11 @@ export default {
       appToInstall: null,
       isCoreUpdateAvailable: false,
       coreApp: null,
+      applyUpdatesIsActive: false,
+      subscriptionIsActive: false,
+      isShownAutomaticUpdatesModal: false,
+      PauseOutline20,
+      PlayOutline20,
       loading: {
         listModules: true,
         cleanRepositoriesCache: false,
@@ -448,6 +476,26 @@ export default {
     },
     csbUpdatesSelected() {
       return this.q.view === "updates";
+    },
+    loadingUpdates() {
+      return this.loading.listModules || this.loading.listCoreModules;
+    },
+    updatesNotificationDescription() {
+      if (this.isCoreUpdateAvailable && this.appUpdates.length) {
+        return this.$tc(
+          "software_center.core_and_app_updates_available",
+          this.appUpdates.length,
+          { numUpdates: this.appUpdates.length }
+        );
+      }
+      if (this.isCoreUpdateAvailable) {
+        return this.$t("software_center.core_updates_available_description");
+      }
+      return this.$tc(
+        "software_center.you_have_updates",
+        this.appUpdates.length,
+        { numUpdates: this.appUpdates.length }
+      );
     },
     installedModules() {
       return this.modules.filter((app) => {
@@ -500,9 +548,6 @@ export default {
   },
   methods: {
     ...mapActions(["setUpdateInProgressInStore"]),
-    goToApplicationsCenter() {
-      this.$router.push("/applications-center");
-    },
     async listModules() {
       this.loading.listModules = true;
       this.error.listModules = "";
@@ -510,6 +555,7 @@ export default {
 
       // register to task completion
       this.$root.$once(taskAction + "-completed", this.listModulesCompleted);
+      this.$root.$once(taskAction + "-aborted", this.listModulesAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -528,6 +574,13 @@ export default {
         this.loading.listModules = false;
         return;
       }
+    },
+    listModulesAborted(taskResult) {
+      console.error("list-modules aborted", taskResult);
+      // the cluster-wide automatic updates flags travel with this output
+      this.loading.listModules = false;
+      this.loading.listCoreModules = false;
+      this.error.listModules = this.$t("error.generic_error");
     },
     // List repositories to show the warning inline message in case some of them have testing switch turned on
     async listRepositories() {
@@ -568,6 +621,12 @@ export default {
       }
       this.appUpdates = appUpdates;
       this.modules = modules;
+
+      // cluster-wide automatic updates flags are repeated on every module
+      if (modules.length) {
+        this.applyUpdatesIsActive = !!modules[0].apply_updates_is_active;
+        this.subscriptionIsActive = !!modules[0].subscription_is_active;
+      }
       this.listCoreModules();
     },
     async listCoreModules() {
@@ -835,6 +894,13 @@ export default {
     },
     showSoftwareCenterCoreApps() {
       this.$router.push("/software-center/core-apps");
+    },
+    toggleAutomaticUpdates() {
+      this.isShownAutomaticUpdatesModal = true;
+    },
+    onAutomaticUpdatesChanged(enable) {
+      // apply the reported value instead of re-listing the whole catalogue
+      this.applyUpdatesIsActive = enable;
     },
   },
 };
