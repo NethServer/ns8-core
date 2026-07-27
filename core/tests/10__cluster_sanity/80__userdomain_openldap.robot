@@ -3,7 +3,9 @@ Library            SSHLibrary
 Resource           api.resource
 Resource           userdomain.resource
 Suite Setup        Start the client tool container
-Suite Teardown     Stop the client tool container
+Suite Teardown     Run keywords
+...                    Stop the client tool container
+...                    Wait until uid is free
 
 *** Variables ***
 ${domain}    openldap.nethserver.test
@@ -82,3 +84,8 @@ Start the client tool container
 
 Stop the client tool container
     Execute Command    podman kill ldapclient
+
+Wait until uid is free
+    [Documentation]    Avoid concurrent run with Samba DC installation started by the next test suite
+    Execute Command    bash -c 'while id ${mid1} ; do sleep 1 ; done'    timeout=60s
+    Execute Command    bash -c 'while id ${mid2} ; do sleep 1 ; done'    timeout=60s
