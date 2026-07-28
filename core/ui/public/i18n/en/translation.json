@@ -937,11 +937,15 @@
         "no_acme_server": "No ACME settings",
         "no_acme_server_description": "No cluster node has ACME settings configured",
         "url": "ACME directory URL",
+        "url_helper": "URL of the ACME provider used to issue certificates.",
         "node": "Node",
+        "challenge": "Challenge type",
+        "challenge_http_01": "HTTP-01",
+        "challenge_tls_alpn_01": "TLS-ALPN-01",
         "edit_acme_server": "Edit ACME settings",
-        "edit_acme_server_for_node": "Edit ACME server for {node}",
-        "reload_page": "Page reload needed",
-        "edit_acme_server_leader_node_warning": "You are editing the ACME server for the leader node. After you click 'Edit ACME server' you'll need to reload the page"
+        "acme_settings_for_node": "ACME settings for {node}",
+        "reload_page": "Reload required",
+        "edit_acme_server_leader_node_warning": "Changes to the leader node configuration require a page reload after saving."
     },
     "apps_lets_encrypt": {
         "lets_encrypt_tips": "Requests a Let's Encrypt TLS certificate automatically. Disabling this option deletes the existing certificate (if any). You can also view or delete it in Cluster settings > TLS certificates.",

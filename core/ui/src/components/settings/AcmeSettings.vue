@@ -67,6 +67,14 @@
                     </span>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
+                    <NsTag
+                      v-if="row.challenge"
+                      :kind="getChallengeTagKind(row.challenge)"
+                      size="sm"
+                      :label="getChallengeLabel(row.challenge)"
+                    />
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
                     <div class="justify-flex-end">
                       <NsButton
                         kind="ghost"
@@ -97,7 +105,9 @@
 <script>
 import to from "await-to-js";
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
-import EditAcmeServerModal from "@/components/settings/EditAcmeServerModal.vue";
+import EditAcmeServerModal, {
+  ACME_CHALLENGE_TYPES,
+} from "@/components/settings/EditAcmeServerModal.vue";
 
 export default {
   name: "AcmeSettings",
@@ -106,7 +116,7 @@ export default {
   data() {
     return {
       tablePage: [],
-      tableColumns: ["node", "url"],
+      tableColumns: ["node", "url", "challenge"],
       servers: [],
       isShownEditServerModal: false,
       currentErrorAction: "",
@@ -154,6 +164,18 @@ export default {
     registerTaskListener(eventName, handler) {
       this.$root.$once(eventName, handler);
       this.taskListeners.push([eventName, handler]);
+    },
+    getChallengeType(challenge) {
+      return ACME_CHALLENGE_TYPES.find((type) => type.value === challenge);
+    },
+    getChallengeTagKind(challenge) {
+      const challengeType = this.getChallengeType(challenge);
+      // fallback needed: cv-tag validates the kind against a fixed list
+      return challengeType ? challengeType.tagKind : "gray";
+    },
+    getChallengeLabel(challenge) {
+      const challengeType = this.getChallengeType(challenge);
+      return challengeType ? this.$t(challengeType.labelKey) : challenge;
     },
     showEditServerModal(server) {
       this.currentServer = server;
