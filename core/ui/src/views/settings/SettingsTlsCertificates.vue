@@ -710,7 +710,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["clusterNodes"]),
+    ...mapState(["clusterNodes", "isWebsocketConnected"]),
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
         return this.$t("settings_tls_certificates." + column);
@@ -861,6 +861,13 @@ export default {
     next();
   },
   watch: {
+    isWebsocketConnected: function (isConnected) {
+      // a Traefik restart kills this websocket: pending task events are lost
+      if (isConnected) {
+        this.loading.listCertificatesNum = 0;
+        this.listCertificates();
+      }
+    },
     "q.view": function (view) {
       // covers both the tab click and the deep link
       if (view === "acme") {
@@ -1077,7 +1084,7 @@ export default {
               )} - ${this.getNodeLabel(traefikInstance)})`,
             });
           }
-          this.loading.listCertificatesNum--;
+          this.decreaseListCertificatesNum();
         }
       }
     },
@@ -1096,7 +1103,7 @@ export default {
           traefikInstance
         )} - ${this.getNodeLabel(traefikInstance)})`,
       });
-      this.loading.listCertificatesNum--;
+      this.decreaseListCertificatesNum();
     },
     listCertificatesCompleted(taskContext, taskResult) {
       const traefikId = taskContext.extra.traefikInstance.id;
@@ -1171,7 +1178,14 @@ export default {
       // $set() is needed for reactivity (see https://v2.vuejs.org/v2/guide/reactivity.html#For-Objects)
       this.$set(this.certificatesByTraefikId, traefikId, certs);
 
-      this.loading.listCertificatesNum--;
+      this.decreaseListCertificatesNum();
+    },
+    decreaseListCertificatesNum() {
+      // never go below zero: the reconnection watcher resets the counter
+      this.loading.listCertificatesNum = Math.max(
+        0,
+        this.loading.listCertificatesNum - 1
+      );
     },
     getTagKind(status) {
       switch (status) {

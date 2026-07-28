@@ -23,12 +23,15 @@
             })
           }}
         </div>
+        <!-- set-acme-server restarts Traefik on the edited node, whichever it is -->
         <NsInlineNotification
-          v-if="server && server.nodeId == leaderNode.id"
+          v-if="server"
           kind="warning"
-          :title="$t('settings_acme_servers.reload_page')"
+          :title="$t('settings_tls_certificates.traefik_will_be_restarted')"
           :description="
-            $t('settings_acme_servers.edit_acme_server_leader_node_warning')
+            $t('settings_acme_servers.acme_restart_message', {
+              node: server.node,
+            })
           "
           :showCloseButton="false"
         />
@@ -90,7 +93,7 @@
 <script>
 import to from "await-to-js";
 import { UtilService, TaskService } from "@nethserver/ns8-ui-lib";
-import { mapGetters } from "vuex";
+import { mapState } from "vuex";
 
 // DNS-01 is not implemented yet: adding an entry here is enough
 export const ACME_CHALLENGE_TYPES = [
@@ -134,7 +137,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["leaderNode"]),
+    ...mapState(["isWebsocketConnected"]),
     challengeTypes() {
       return ACME_CHALLENGE_TYPES;
     },
@@ -143,6 +146,14 @@ export default {
     },
   },
   watch: {
+    isWebsocketConnected: function (isConnected) {
+      // safety net: nothing else clears the pending state if the restart cut
+      // the request off before validation-ok could be delivered
+      if (isConnected && this.loading.setAcmeServer) {
+        this.loading.setAcmeServer = false;
+        this.$emit("hide");
+      }
+    },
     isShown: function () {
       if (this.isShown) {
         this.url = this.server.url;

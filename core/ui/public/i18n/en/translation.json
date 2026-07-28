@@ -944,8 +944,7 @@
         "challenge_tls_alpn_01": "TLS-ALPN-01",
         "edit_acme_server": "Edit ACME settings",
         "acme_settings_for_node": "ACME settings for {node}",
-        "reload_page": "Reload required",
-        "edit_acme_server_leader_node_warning": "Changes to the leader node configuration require a page reload after saving."
+        "acme_restart_message": "Traefik will briefly disconnect HTTP clients connected to {node}. If your session goes through this node, the page will reconnect automatically after a few seconds."
     },
     "apps_lets_encrypt": {
         "lets_encrypt_tips": "Requests a Let's Encrypt TLS certificate automatically. Disabling this option deletes the existing certificate (if any). You can also view or delete it in Cluster settings > TLS certificates.",

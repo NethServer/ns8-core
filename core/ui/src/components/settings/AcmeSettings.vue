@@ -105,6 +105,7 @@
 <script>
 import to from "await-to-js";
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
+import { mapState } from "vuex";
 import EditAcmeServerModal, {
   ACME_CHALLENGE_TYPES,
 } from "@/components/settings/EditAcmeServerModal.vue";
@@ -136,6 +137,7 @@ export default {
     };
   },
   computed: {
+    ...mapState(["isWebsocketConnected"]),
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
         return this.$t("settings_acme_servers." + column);
@@ -145,6 +147,20 @@ export default {
       return (
         this.loading.listInstalledModules || this.loading.getAcmeServerNum > 0
       );
+    },
+  },
+  watch: {
+    isWebsocketConnected: function (isConnected) {
+      // a Traefik restart kills this websocket: pending task events are lost
+      if (isConnected) {
+        this.loading.getAcmeServerNum = 0;
+
+        if (this.traefikInstances.length) {
+          this.getAcmeServer();
+        } else {
+          this.listInstalledModules();
+        }
+      }
     },
   },
   created() {
@@ -290,7 +306,7 @@ export default {
           this.error.getAcmeServer = errMessage;
           this.currentErrorAction = this.$t("action." + taskAction);
           this.currentErrorDescription = errMessage;
-          this.loading.getAcmeServerNum--;
+          this.decreaseGetAcmeServerNum();
         }
       }
     },
@@ -299,7 +315,7 @@ export default {
       this.error.getAcmeServer = this.$t("error.generic_error");
       this.currentErrorAction = this.$t("action." + taskContext.action);
       this.currentErrorDescription = this.$t("error.generic_error");
-      this.loading.getAcmeServerNum--;
+      this.decreaseGetAcmeServerNum();
     },
     getAcmeServerCompleted(taskContext, taskResult) {
       const server = taskResult.output;
@@ -312,9 +328,27 @@ export default {
       server.nodeId = nodeId;
       server.longNodeLabel = this.getNodeLabel(node);
       server.traefikInstance = traefikId;
-      this.servers.push(server);
+
+      // replace instead of append: an event delivered after a reconnection
+      // reset would otherwise duplicate the row
+      const index = this.servers.findIndex(
+        (existing) => existing.traefikInstance === traefikId
+      );
+
+      if (index > -1) {
+        this.servers.splice(index, 1, server);
+      } else {
+        this.servers.push(server);
+      }
       this.servers.sort(this.sortByProperty("node"));
-      this.loading.getAcmeServerNum--;
+      this.decreaseGetAcmeServerNum();
+    },
+    decreaseGetAcmeServerNum() {
+      // never go below zero: the reconnection watcher resets the counter
+      this.loading.getAcmeServerNum = Math.max(
+        0,
+        this.loading.getAcmeServerNum - 1
+      );
     },
     onReloadServers() {
       this.getAcmeServer();
