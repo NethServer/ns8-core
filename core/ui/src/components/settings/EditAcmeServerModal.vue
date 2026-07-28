@@ -41,10 +41,8 @@
           data-modal-primary-focus
           ref="url"
         />
-        <!-- hidden when the module did not report a challenge type: it is too
-             old to know about it, so the UI must not invent a value -->
-        <!-- ref is on the wrapper: a ref inside v-for is an array, and
-             focusElement() calls .focus() on it without checking -->
+        <!-- an older module reports no challenge type: do not invent one -->
+        <!-- ref on the wrapper: a ref inside v-for is an array, focusElement would throw -->
         <div
           v-if="isChallengeSupported"
           class="mg-top-md"
@@ -56,8 +54,7 @@
           }}</label>
           <div role="group" aria-labelledby="acme-challenge-label">
             <cv-radio-group :vertical="true">
-              <!-- disabled goes on each button: cv-radio-group has no such prop,
-                   while cv-radio-button forwards attributes to its input -->
+              <!-- disabled must be per button: cv-radio-group has no such prop -->
               <cv-radio-button
                 v-for="challengeType in challengeTypes"
                 :key="challengeType.value"
@@ -69,8 +66,6 @@
               />
             </cv-radio-group>
           </div>
-          <!-- .bx--form-requirement is display:none unless it follows a
-               [data-invalid] field wrapper, which a radio group never is -->
           <div
             v-if="error.challenge"
             class="bx--form-requirement challenge-error"
@@ -97,8 +92,7 @@ import to from "await-to-js";
 import { UtilService, TaskService } from "@nethserver/ns8-ui-lib";
 import { mapGetters } from "vuex";
 
-// challenge types supported by the traefik set-acme-server action.
-// DNS-01 is not implemented yet: adding it here is enough to expose it
+// DNS-01 is not implemented yet: adding an entry here is enough
 export const ACME_CHALLENGE_TYPES = [
   {
     value: "HTTP-01",
@@ -135,7 +129,7 @@ export default {
         url: "",
         challenge: "",
       },
-      // [eventName, handler] pairs registered on $root, removed in beforeDestroy
+      // [eventName, handler] pairs to remove in beforeDestroy
       taskListeners: [],
     };
   },
@@ -157,8 +151,7 @@ export default {
     },
   },
   beforeDestroy() {
-    // remove task listeners still registered on $root, otherwise a save
-    // completing after this modal is gone runs focusElement() on a deleted ref
+    // a save completing after destroy runs focusElement on a deleted ref
     this.taskListeners.forEach(([eventName, handler]) => {
       this.$root.$off(eventName, handler);
     });
@@ -231,9 +224,7 @@ export default {
         this.setAcmeServerCompleted
       );
 
-      // only echo back the fields the module actually reported: the action
-      // schema sets additionalProperties false, so sending a key an older
-      // traefik does not know about would fail the whole request
+      // the action sets additionalProperties false: send only reported fields
       const data = { url: this.url };
 
       if (this.isChallengeSupported) {
@@ -291,8 +282,7 @@ export default {
           "error." + validationError.error
         );
 
-        // a parameter with no field of its own, such as email, would land on a
-        // non-reactive key and make focusElement() throw on an undefined ref
+        // focusElement would throw on a parameter with no field of its own
         if (param !== "setAcmeServer" && param in this.error) {
           this.error[param] = message;
 
@@ -322,10 +312,8 @@ export default {
   max-width: 38rem;
 }
 
-// Carbon only reveals .bx--form-requirement next to a [data-invalid] field
-// wrapper, and a radio group never gets one, so the message needs both the
-// visibility and the error color. $text-error is not reachable from
-// carbon-utils in this Carbon version, hence the literal value
+// Carbon reveals .bx--form-requirement only next to a [data-invalid] wrapper,
+// which a radio group never is; $text-error is not reachable from carbon-utils
 .challenge-error {
   display: block;
   max-height: none;

@@ -123,7 +123,7 @@ export default {
       currentErrorDescription: "",
       traefikInstances: [],
       currentServer: null,
-      // [eventName, handler] pairs registered on $root, removed in beforeDestroy
+      // [eventName, handler] pairs to remove in beforeDestroy
       taskListeners: [],
       loading: {
         listInstalledModules: false,
@@ -151,10 +151,7 @@ export default {
     this.listInstalledModules();
   },
   beforeDestroy() {
-    // remove task listeners still registered on $root: a task completing after
-    // the component is gone would run its handler on a dead instance, and
-    // listInstalledModulesCompleted() would create one task per traefik node.
-    // $off only touches $root._events, the notification drawer is store-driven
+    // a task completing after destroy would re-fire the whole task chain
     this.taskListeners.forEach(([eventName, handler]) => {
       this.$root.$off(eventName, handler);
     });
@@ -170,7 +167,7 @@ export default {
     },
     getChallengeTagKind(challenge) {
       const challengeType = this.getChallengeType(challenge);
-      // fallback needed: cv-tag validates the kind against a fixed list
+      // cv-tag validates the kind against a fixed list
       return challengeType ? challengeType.tagKind : "gray";
     },
     getChallengeLabel(challenge) {
@@ -251,8 +248,7 @@ export default {
     },
     async getAcmeServer() {
       this.servers = [];
-      // without this a transient failure keeps the table on the error state
-      // even once every node answers again
+      // otherwise a transient error sticks after the nodes answer again
       this.clearTableError();
 
       for (const traefikInstance of this.traefikInstances) {

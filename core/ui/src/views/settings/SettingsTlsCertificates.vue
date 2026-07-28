@@ -589,8 +589,7 @@ import DeleteObsoleteCertificatesModal from "@/components/settings/DeleteObsolet
 import WarningAltFilled16 from "@carbon/icons-vue/es/warning--alt--filled/16";
 import AcmeSettings from "@/components/settings/AcmeSettings.vue";
 
-// keep in sync with the cv-tab order in the template and with tabSelected():
-// tabSelected maps the tab index, so adding a conditional tab would shift it
+// order must match the cv-tab order: tabSelected maps the tab index
 const TAB_VIEWS = ["certificates", "acme"];
 
 export default {
@@ -619,8 +618,7 @@ export default {
         view: "",
         selectedNodeId: "",
       },
-      // mount the ACME tab on first visit and keep it alive afterwards: a v-if
-      // on q.view would re-run its whole task chain on every tab switch
+      // mount once and keep alive: a v-if would re-run the task chain
       acmeTabVisited: false,
       tablePage: [],
       tableColumns: [
@@ -849,16 +847,13 @@ export default {
     next((vm) => {
       vm.watchQueryData(vm);
       vm.queryParamsToDataForCore(vm, to.query);
-      // needed: queryParamsToDataForCore leaves q.view empty when the query has
-      // no view, and copies it verbatim when it is not a real tab name. With
-      // noDefaultToFirst, an unknown view selects no tab at all
+      // with noDefaultToFirst, an unknown or empty view selects no tab at all
       vm.normalizeView();
     });
   },
   beforeRouteUpdate(to, from, next) {
     this.queryParamsToDataForCore(this, to.query);
-    // needed: queryParamsToDataForCore only assigns keys present in the query,
-    // so a same-path navigation without view would keep the previous tab
+    // queryParamsToDataForCore skips keys absent from the query
     if (typeof to.query.view === "undefined") {
       this.q.view = TAB_VIEWS[0];
     }
@@ -867,8 +862,7 @@ export default {
   },
   watch: {
     "q.view": function (view) {
-      // the watcher covers both the tab click and the deep link, since q.view
-      // is set from the query inside the beforeRouteEnter callback
+      // covers both the tab click and the deep link
       if (view === "acme") {
         this.acmeTabVisited = true;
       }
