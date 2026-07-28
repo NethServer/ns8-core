@@ -22,20 +22,8 @@
         </cv-column>
       </cv-row>
       <cv-row>
-        <cv-column :md="4" :xlg="10" class="subpage-title">
+        <cv-column class="subpage-title">
           <h3>{{ $t("settings_tls_certificates.title") }}</h3>
-        </cv-column>
-        <cv-column :md="4" :xlg="6">
-          <div class="page-toolbar">
-            <NsButton
-              kind="tertiary"
-              size="field"
-              :icon="BareMetalServer20"
-              @click="goToAcmeServers()"
-              class="subpage-toolbar-item"
-              >{{ $t("settings_acme_servers.title") }}
-            </NsButton>
-          </div>
         </cv-column>
       </cv-row>
       <cv-row>
@@ -52,396 +40,469 @@
     <cv-grid fullWidth>
       <cv-row>
         <cv-column>
-          <cv-tile light>
-            <div v-if="offlineTraefikInstances.length">
-              <NsInlineNotification
-                v-for="instance in offlineTraefikInstances"
-                :key="instance.id"
-                kind="error"
-                :title="
-                  $t('settings_tls_certificates.node_is_offline', {
-                    node: getNodeLabel(instance),
-                  })
-                "
-                :description="getOfflineInstanceDescription(instance)"
-                :showCloseButton="false"
-              />
-            </div>
-            <div v-if="listCertificatesErrors.length">
-              <NsInlineNotification
-                v-for="(error, index) in listCertificatesErrors"
-                :key="index"
-                kind="error"
-                :title="error.title"
-                :description="error.description"
-                :showCloseButton="false"
-              />
-            </div>
-            <div class="toolbar gap-2 flex-wrap" v-if="certificates.length">
-              <!-- request certificate -->
-              <NsButton
-                v-if="nodesWithoutCertificate.length"
-                kind="primary"
-                :icon="Add20"
-                :disabled="loadingCertificates"
-                @click="showRequestCertificateModal"
-                >{{ $t("settings_tls_certificates.request_certificate") }}
-              </NsButton>
-              <cv-tooltip
-                v-else
-                alignment="center"
-                direction="top"
-                :tip="
-                  $t(
-                    'settings_tls_certificates.request_certificate_disabled_message'
-                  )
-                "
-              >
-                <NsButton
-                  kind="primary"
-                  :icon="Add20"
-                  disabled
-                  @click="showRequestCertificateModal"
-                  >{{ $t("settings_tls_certificates.request_certificate") }}
-                </NsButton>
-              </cv-tooltip>
-              <!-- upload certificate -->
-              <NsButton
-                kind="secondary"
-                :icon="Upload20"
-                @click="uploadTlsCertificateState.setVisible(true)"
-                >{{ $t("settings_tls_certificates.add_custom_certificate") }}
-              </NsButton>
-              <!-- delete obsolete certificates -->
-              <NsButton
-                kind="tertiary"
-                :icon="TrashCan20"
-                @click="showDeleteObsoleteCertificatesModal"
-                :disabled="!nodesWithObsoleteCertificates.length"
-                >{{
-                  $t("settings_tls_certificates.delete_obsolete_certificates")
-                }}
-              </NsButton>
-            </div>
-            <div>
-              <div>
-                <div class="data-table-filters">
-                  <cv-search
-                    :label="$t('common.search')"
-                    :placeholder="
-                      $t('settings_tls_certificates.filter_certificates')
-                    "
-                    :clear-aria-label="$t('common.clear_search')"
-                    v-model="filter.text"
-                    :disabled="loadingCertificates"
-                    size="large"
-                    ref="tableSearch"
-                    class="self-end"
-                    @input="onSearchInput"
-                  >
-                  </cv-search>
-                  <NsComboBox
-                    v-model="filter.certificateType"
-                    :label="$t('common.choose')"
-                    :title="$t('settings_tls_certificates.ui_type')"
-                    :auto-filter="true"
-                    :auto-highlight="true"
-                    :options="typeOptions"
-                    :disabled="loadingCertificates"
-                  >
-                  </NsComboBox>
-                  <NsComboBox
-                    v-model="filter.certificateStatus"
-                    :label="$t('common.choose')"
-                    :title="$t('settings_tls_certificates.status')"
-                    :auto-filter="true"
-                    :auto-highlight="true"
-                    :options="statusOptions"
-                    :disabled="loadingCertificates"
-                  >
-                  </NsComboBox>
-                  <NsComboBox
-                    v-model="q.selectedNodeId"
-                    :label="$t('common.choose')"
-                    :title="$t('common.node')"
-                    :auto-filter="true"
-                    :auto-highlight="true"
-                    :options="nodesForFilter"
-                    :disabled="loadingCertificates"
-                  >
-                  </NsComboBox>
-                  <cv-link
-                    @click="clearFilters()"
-                    class="self-end mb-3 shrink-0"
-                    >{{ $t("common.clear_filters") }}
-                  </cv-link>
-                </div>
-                <NsDataTable
-                  :allRows="filteredCertificates"
-                  :columns="i18nTableColumns"
-                  :rawColumns="tableColumns"
-                  :sortable="true"
-                  :pageSizes="[10, 25, 50, 100]"
-                  :overflow-menu="true"
-                  :isSearchable="false"
-                  :noSearchResultsLabel="$t('common.no_search_results')"
-                  :noSearchResultsDescription="
-                    $t('common.no_search_results_description')
-                  "
-                  :isLoading="loadingCertificates"
-                  :skeletonRows="5"
-                  :isErrorShown="!!error.listInstalledModules"
-                  :errorTitle="currentErrorAction"
-                  :errorDescription="currentErrorDescription"
-                  :itemsPerPageLabel="$t('pagination.items_per_page')"
-                  :rangeOfTotalItemsLabel="
-                    $t('pagination.range_of_total_items')
-                  "
-                  :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-                  :backwardText="$t('pagination.previous_page')"
-                  :forwardText="$t('pagination.next_page')"
-                  :pageNumberLabel="$t('pagination.page_number')"
-                  ref="certificatesTable"
-                  @updatePage="tablePage = $event"
-                >
-                  <template slot="empty-state">
-                    <template v-if="hasActiveFilters && certificates.length">
-                      <!-- no search results -->
-                      <NsEmptyState
-                        :title="$t('common.no_search_results')"
-                        key="no-results-empty-state"
-                      >
-                        <template #description>
-                          <div
-                            class="flex flex-col items-center text-center gap-2"
-                          >
-                            <p>
-                              {{ $t("common.no_search_results_description") }}
-                            </p>
-                            <NsButton
-                              kind="ghost"
-                              size="field"
-                              @click="clearFilters()"
-                              >{{ $t("common.clear_filters") }}
-                            </NsButton>
-                          </div>
-                        </template>
-                      </NsEmptyState>
-                    </template>
-                    <template v-else>
-                      <!-- no tls certificates -->
-                      <NsEmptyState
+          <NsTabs
+            :container="false"
+            :aria-label="$t('common.tab_navigation')"
+            :noDefaultToFirst="true"
+            @tab-selected="tabSelected"
+          >
+            <cv-tab
+              id="tab-1"
+              :label="$t('settings_tls_certificates.certificates')"
+              :selected="q.view === 'certificates'"
+            >
+              <cv-row>
+                <cv-column>
+                  <cv-tile light>
+                    <div v-if="offlineTraefikInstances.length">
+                      <NsInlineNotification
+                        v-for="instance in offlineTraefikInstances"
+                        :key="instance.id"
+                        kind="error"
                         :title="
-                          $t('settings_tls_certificates.no_tls_certificate')
+                          $t('settings_tls_certificates.node_is_offline', {
+                            node: getNodeLabel(instance),
+                          })
                         "
-                        key="no-certificates-empty-state"
-                      >
-                        <template #pictogram>
-                          <DocumentSecurityPictogram />
-                        </template>
-                        <template #description>
-                          <div class="flex flex-col items-center gap-4">
-                            <p>
-                              {{
-                                $t(
-                                  "settings_tls_certificates.no_tls_certificate_description"
-                                )
-                              }}
-                            </p>
-                            <div class="flex flex-col items-center gap-2">
-                              <NsButton
-                                v-if="nodesWithoutCertificate.length"
-                                kind="primary"
-                                :icon="Add20"
-                                :disabled="loadingCertificates"
-                                @click="showRequestCertificateModal"
-                                >{{
-                                  $t(
-                                    "settings_tls_certificates.request_certificate"
-                                  )
-                                }}
-                              </NsButton>
-                              <NsButton
-                                kind="ghost"
-                                :icon="Upload20"
-                                @click="
-                                  uploadTlsCertificateState.setVisible(true)
-                                "
-                                >{{
-                                  $t(
-                                    "settings_tls_certificates.add_custom_certificate"
-                                  )
-                                }}
-                              </NsButton>
-                            </div>
-                          </div>
-                        </template>
-                      </NsEmptyState>
-                    </template>
-                  </template>
-                  <template slot="data">
-                    <cv-data-table-row
-                      v-for="(row, rowIndex) in tablePage"
-                      :key="`${rowIndex}`"
-                      :value="`${rowIndex}`"
+                        :description="getOfflineInstanceDescription(instance)"
+                        :showCloseButton="false"
+                      />
+                    </div>
+                    <div v-if="listCertificatesErrors.length">
+                      <NsInlineNotification
+                        v-for="(error, index) in listCertificatesErrors"
+                        :key="index"
+                        kind="error"
+                        :title="error.title"
+                        :description="error.description"
+                        :showCloseButton="false"
+                      />
+                    </div>
+                    <div
+                      class="toolbar gap-2 flex-wrap"
+                      v-if="certificates.length"
                     >
-                      <cv-data-table-cell>
-                        <span>
-                          {{ row.ui_name }}
-                        </span>
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        <cv-tag
-                          v-if="
-                            row.ui_type === 'automatic' ||
-                            row.ui_type === 'obsolete'
-                          "
-                          :kind="
-                            row.ui_type === 'automatic'
-                              ? 'gray'
-                              : 'high-contrast'
-                          "
-                          :label="
-                            $t('settings_tls_certificates.' + row.ui_type)
-                          "
-                          class="no-margin"
-                        ></cv-tag>
-                        <span v-else>
-                          {{ $t("settings_tls_certificates." + row.ui_type) }}
-                        </span>
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        <cv-interactive-tooltip
-                          v-if="row.ui_issuer !== row.issuer"
-                          alignment="center"
-                          direction="top"
-                          class="info"
-                        >
-                          <template #trigger>
-                            <cv-link>{{ row.ui_issuer }}</cv-link>
-                          </template>
-                          <template #content>
-                            {{ row.issuer }}
-                          </template>
-                        </cv-interactive-tooltip>
-                        <span v-else>
-                          {{ row.issuer }}
-                        </span>
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        <div class="flex items-center gap-2">
-                          <span>
-                            {{ row.expiration }}
-                          </span>
-                          <cv-interactive-tooltip
-                            v-if="row.status === 'expiring'"
-                            alignment="center"
-                            direction="top"
-                            class="shrink-0"
+                      <!-- request certificate -->
+                      <NsButton
+                        v-if="nodesWithoutCertificate.length"
+                        kind="primary"
+                        :icon="Add20"
+                        :disabled="loadingCertificates"
+                        @click="showRequestCertificateModal"
+                        >{{
+                          $t("settings_tls_certificates.request_certificate")
+                        }}
+                      </NsButton>
+                      <cv-tooltip
+                        v-else
+                        alignment="center"
+                        direction="top"
+                        :tip="
+                          $t(
+                            'settings_tls_certificates.request_certificate_disabled_message'
+                          )
+                        "
+                      >
+                        <NsButton
+                          kind="primary"
+                          :icon="Add20"
+                          disabled
+                          @click="showRequestCertificateModal"
+                          >{{
+                            $t("settings_tls_certificates.request_certificate")
+                          }}
+                        </NsButton>
+                      </cv-tooltip>
+                      <!-- upload certificate -->
+                      <NsButton
+                        kind="secondary"
+                        :icon="Upload20"
+                        @click="uploadTlsCertificateState.setVisible(true)"
+                        >{{
+                          $t("settings_tls_certificates.add_custom_certificate")
+                        }}
+                      </NsButton>
+                      <!-- delete obsolete certificates -->
+                      <NsButton
+                        kind="tertiary"
+                        :icon="TrashCan20"
+                        @click="showDeleteObsoleteCertificatesModal"
+                        :disabled="!nodesWithObsoleteCertificates.length"
+                        >{{
+                          $t(
+                            "settings_tls_certificates.delete_obsolete_certificates"
+                          )
+                        }}
+                      </NsButton>
+                    </div>
+                    <div>
+                      <div>
+                        <div class="data-table-filters">
+                          <cv-search
+                            :label="$t('common.search')"
+                            :placeholder="
+                              $t(
+                                'settings_tls_certificates.filter_certificates'
+                              )
+                            "
+                            :clear-aria-label="$t('common.clear_search')"
+                            v-model="filter.text"
+                            :disabled="loadingCertificates"
+                            size="large"
+                            ref="tableSearch"
+                            class="self-end"
+                            @input="onSearchInput"
                           >
-                            <template #trigger>
-                              <WarningAltFilled16 class="ns-warning" />
-                            </template>
-                            <template #content>
-                              {{
-                                $t("settings_tls_certificates.expiring_warning")
-                              }}
-                            </template>
-                          </cv-interactive-tooltip>
+                          </cv-search>
+                          <NsComboBox
+                            v-model="filter.certificateType"
+                            :label="$t('common.choose')"
+                            :title="$t('settings_tls_certificates.ui_type')"
+                            :auto-filter="true"
+                            :auto-highlight="true"
+                            :options="typeOptions"
+                            :disabled="loadingCertificates"
+                          >
+                          </NsComboBox>
+                          <NsComboBox
+                            v-model="filter.certificateStatus"
+                            :label="$t('common.choose')"
+                            :title="$t('settings_tls_certificates.status')"
+                            :auto-filter="true"
+                            :auto-highlight="true"
+                            :options="statusOptions"
+                            :disabled="loadingCertificates"
+                          >
+                          </NsComboBox>
+                          <NsComboBox
+                            v-model="q.selectedNodeId"
+                            :label="$t('common.choose')"
+                            :title="$t('common.node')"
+                            :auto-filter="true"
+                            :auto-highlight="true"
+                            :options="nodesForFilter"
+                            :disabled="loadingCertificates"
+                          >
+                          </NsComboBox>
+                          <cv-link
+                            @click="clearFilters()"
+                            class="self-end mb-3 shrink-0"
+                            >{{ $t("common.clear_filters") }}
+                          </cv-link>
                         </div>
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        <cv-tag
-                          :kind="getTagKind(row.status)"
-                          :label="
-                            row.status === 'expiring'
-                              ? $t('settings_tls_certificates.valid')
-                              : $t('settings_tls_certificates.' + row.status)
+                        <NsDataTable
+                          :allRows="filteredCertificates"
+                          :columns="i18nTableColumns"
+                          :rawColumns="tableColumns"
+                          :sortable="true"
+                          :pageSizes="[10, 25, 50, 100]"
+                          :overflow-menu="true"
+                          :isSearchable="false"
+                          :noSearchResultsLabel="$t('common.no_search_results')"
+                          :noSearchResultsDescription="
+                            $t('common.no_search_results_description')
                           "
-                          class="no-margin"
+                          :isLoading="loadingCertificates"
+                          :skeletonRows="5"
+                          :isErrorShown="!!error.listInstalledModules"
+                          :errorTitle="currentErrorAction"
+                          :errorDescription="currentErrorDescription"
+                          :itemsPerPageLabel="$t('pagination.items_per_page')"
+                          :rangeOfTotalItemsLabel="
+                            $t('pagination.range_of_total_items')
+                          "
+                          :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+                          :backwardText="$t('pagination.previous_page')"
+                          :forwardText="$t('pagination.next_page')"
+                          :pageNumberLabel="$t('pagination.page_number')"
+                          ref="certificatesTable"
+                          @updatePage="tablePage = $event"
                         >
-                        </cv-tag>
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        <template v-if="row.names.length > 3">
-                          <div
-                            v-for="name in row.names.slice(0, 3)"
-                            :key="name"
-                          >
-                            {{ name }}
-                          </div>
-                          <cv-interactive-tooltip
-                            alignment="center"
-                            direction="top"
-                            class="info"
-                          >
-                            <template #trigger>
-                              <cv-link>
-                                {{
-                                  $tc(
-                                    "common.plus_others",
-                                    row.names.length - 3,
-                                    {
-                                      num: row.names.length - 3,
-                                    }
+                          <template slot="empty-state">
+                            <template
+                              v-if="hasActiveFilters && certificates.length"
+                            >
+                              <!-- no search results -->
+                              <NsEmptyState
+                                :title="$t('common.no_search_results')"
+                                key="no-results-empty-state"
+                              >
+                                <template #description>
+                                  <div
+                                    class="flex flex-col items-center text-center gap-2"
+                                  >
+                                    <p>
+                                      {{
+                                        $t(
+                                          "common.no_search_results_description"
+                                        )
+                                      }}
+                                    </p>
+                                    <NsButton
+                                      kind="ghost"
+                                      size="field"
+                                      @click="clearFilters()"
+                                      >{{ $t("common.clear_filters") }}
+                                    </NsButton>
+                                  </div>
+                                </template>
+                              </NsEmptyState>
+                            </template>
+                            <template v-else>
+                              <!-- no tls certificates -->
+                              <NsEmptyState
+                                :title="
+                                  $t(
+                                    'settings_tls_certificates.no_tls_certificate'
                                   )
-                                }}
-                              </cv-link>
+                                "
+                                key="no-certificates-empty-state"
+                              >
+                                <template #pictogram>
+                                  <DocumentSecurityPictogram />
+                                </template>
+                                <template #description>
+                                  <div class="flex flex-col items-center gap-4">
+                                    <p>
+                                      {{
+                                        $t(
+                                          "settings_tls_certificates.no_tls_certificate_description"
+                                        )
+                                      }}
+                                    </p>
+                                    <div
+                                      class="flex flex-col items-center gap-2"
+                                    >
+                                      <NsButton
+                                        v-if="nodesWithoutCertificate.length"
+                                        kind="primary"
+                                        :icon="Add20"
+                                        :disabled="loadingCertificates"
+                                        @click="showRequestCertificateModal"
+                                        >{{
+                                          $t(
+                                            "settings_tls_certificates.request_certificate"
+                                          )
+                                        }}
+                                      </NsButton>
+                                      <NsButton
+                                        kind="ghost"
+                                        :icon="Upload20"
+                                        @click="
+                                          uploadTlsCertificateState.setVisible(
+                                            true
+                                          )
+                                        "
+                                        >{{
+                                          $t(
+                                            "settings_tls_certificates.add_custom_certificate"
+                                          )
+                                        }}
+                                      </NsButton>
+                                    </div>
+                                  </div>
+                                </template>
+                              </NsEmptyState>
                             </template>
-                            <template #content>
-                              <ul class="unordered-list">
-                                <li v-for="name in row.names" :key="name">
-                                  {{ name }}
-                                </li>
-                              </ul>
-                            </template>
-                          </cv-interactive-tooltip>
-                        </template>
-                        <template v-else>
-                          <div v-for="name in row.names" :key="name">
-                            {{ name }}
-                          </div>
-                        </template>
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        <span>{{ row.node }}</span>
-                      </cv-data-table-cell>
-                      <cv-data-table-cell class="table-overflow-menu-cell">
-                        <cv-overflow-menu
-                          flip-menu
-                          class="table-overflow-menu"
-                          :data-test-id="row.name + '-menu'"
-                        >
-                          <!-- manage names -->
-                          <cv-overflow-menu-item
-                            v-if="row.default && row.type === 'internal'"
-                            @click="showManageNamesModal(row)"
-                          >
-                            <NsMenuItem
-                              :icon="Edit20"
-                              :label="
-                                $t('settings_tls_certificates.manage_names')
-                              "
-                            />
-                          </cv-overflow-menu-item>
-                          <!-- delete -->
-                          <cv-overflow-menu-item
-                            danger
-                            @click="showDeleteCertificateModal(row)"
-                          >
-                            <NsMenuItem
-                              :icon="TrashCan20"
-                              :label="$t('common.delete')"
-                            />
-                          </cv-overflow-menu-item>
-                        </cv-overflow-menu>
-                      </cv-data-table-cell>
-                    </cv-data-table-row>
-                  </template>
-                </NsDataTable>
-              </div>
-            </div>
-          </cv-tile>
+                          </template>
+                          <template slot="data">
+                            <cv-data-table-row
+                              v-for="(row, rowIndex) in tablePage"
+                              :key="`${rowIndex}`"
+                              :value="`${rowIndex}`"
+                            >
+                              <cv-data-table-cell>
+                                <span>
+                                  {{ row.ui_name }}
+                                </span>
+                              </cv-data-table-cell>
+                              <cv-data-table-cell>
+                                <cv-tag
+                                  v-if="
+                                    row.ui_type === 'automatic' ||
+                                    row.ui_type === 'obsolete'
+                                  "
+                                  :kind="
+                                    row.ui_type === 'automatic'
+                                      ? 'gray'
+                                      : 'high-contrast'
+                                  "
+                                  :label="
+                                    $t(
+                                      'settings_tls_certificates.' + row.ui_type
+                                    )
+                                  "
+                                  class="no-margin"
+                                ></cv-tag>
+                                <span v-else>
+                                  {{
+                                    $t(
+                                      "settings_tls_certificates." + row.ui_type
+                                    )
+                                  }}
+                                </span>
+                              </cv-data-table-cell>
+                              <cv-data-table-cell>
+                                <cv-interactive-tooltip
+                                  v-if="row.ui_issuer !== row.issuer"
+                                  alignment="center"
+                                  direction="top"
+                                  class="info"
+                                >
+                                  <template #trigger>
+                                    <cv-link>{{ row.ui_issuer }}</cv-link>
+                                  </template>
+                                  <template #content>
+                                    {{ row.issuer }}
+                                  </template>
+                                </cv-interactive-tooltip>
+                                <span v-else>
+                                  {{ row.issuer }}
+                                </span>
+                              </cv-data-table-cell>
+                              <cv-data-table-cell>
+                                <div class="flex items-center gap-2">
+                                  <span>
+                                    {{ row.expiration }}
+                                  </span>
+                                  <cv-interactive-tooltip
+                                    v-if="row.status === 'expiring'"
+                                    alignment="center"
+                                    direction="top"
+                                    class="shrink-0"
+                                  >
+                                    <template #trigger>
+                                      <WarningAltFilled16 class="ns-warning" />
+                                    </template>
+                                    <template #content>
+                                      {{
+                                        $t(
+                                          "settings_tls_certificates.expiring_warning"
+                                        )
+                                      }}
+                                    </template>
+                                  </cv-interactive-tooltip>
+                                </div>
+                              </cv-data-table-cell>
+                              <cv-data-table-cell>
+                                <cv-tag
+                                  :kind="getTagKind(row.status)"
+                                  :label="
+                                    row.status === 'expiring'
+                                      ? $t('settings_tls_certificates.valid')
+                                      : $t(
+                                          'settings_tls_certificates.' +
+                                            row.status
+                                        )
+                                  "
+                                  class="no-margin"
+                                >
+                                </cv-tag>
+                              </cv-data-table-cell>
+                              <cv-data-table-cell>
+                                <template v-if="row.names.length > 3">
+                                  <div
+                                    v-for="name in row.names.slice(0, 3)"
+                                    :key="name"
+                                  >
+                                    {{ name }}
+                                  </div>
+                                  <cv-interactive-tooltip
+                                    alignment="center"
+                                    direction="top"
+                                    class="info"
+                                  >
+                                    <template #trigger>
+                                      <cv-link>
+                                        {{
+                                          $tc(
+                                            "common.plus_others",
+                                            row.names.length - 3,
+                                            {
+                                              num: row.names.length - 3,
+                                            }
+                                          )
+                                        }}
+                                      </cv-link>
+                                    </template>
+                                    <template #content>
+                                      <ul class="unordered-list">
+                                        <li
+                                          v-for="name in row.names"
+                                          :key="name"
+                                        >
+                                          {{ name }}
+                                        </li>
+                                      </ul>
+                                    </template>
+                                  </cv-interactive-tooltip>
+                                </template>
+                                <template v-else>
+                                  <div v-for="name in row.names" :key="name">
+                                    {{ name }}
+                                  </div>
+                                </template>
+                              </cv-data-table-cell>
+                              <cv-data-table-cell>
+                                <span>{{ row.node }}</span>
+                              </cv-data-table-cell>
+                              <cv-data-table-cell
+                                class="table-overflow-menu-cell"
+                              >
+                                <cv-overflow-menu
+                                  flip-menu
+                                  class="table-overflow-menu"
+                                  :data-test-id="row.name + '-menu'"
+                                >
+                                  <!-- manage names -->
+                                  <cv-overflow-menu-item
+                                    v-if="
+                                      row.default && row.type === 'internal'
+                                    "
+                                    @click="showManageNamesModal(row)"
+                                  >
+                                    <NsMenuItem
+                                      :icon="Edit20"
+                                      :label="
+                                        $t(
+                                          'settings_tls_certificates.manage_names'
+                                        )
+                                      "
+                                    />
+                                  </cv-overflow-menu-item>
+                                  <!-- delete -->
+                                  <cv-overflow-menu-item
+                                    danger
+                                    @click="showDeleteCertificateModal(row)"
+                                  >
+                                    <NsMenuItem
+                                      :icon="TrashCan20"
+                                      :label="$t('common.delete')"
+                                    />
+                                  </cv-overflow-menu-item>
+                                </cv-overflow-menu>
+                              </cv-data-table-cell>
+                            </cv-data-table-row>
+                          </template>
+                        </NsDataTable>
+                      </div>
+                    </div>
+                  </cv-tile>
+                </cv-column>
+              </cv-row>
+            </cv-tab>
+            <cv-tab
+              id="tab-2"
+              :label="$t('settings_acme_servers.title')"
+              :selected="q.view === 'acme'"
+            >
+              <cv-row>
+                <cv-column>
+                  <AcmeSettings v-if="acmeTabVisited" />
+                </cv-column>
+              </cv-row>
+            </cv-tab>
+          </NsTabs>
         </cv-column>
       </cv-row>
     </cv-grid>
@@ -526,6 +587,11 @@ import { StateManager as UploadTlsCertificateState } from "@/components/settings
 import Upload20 from "@carbon/icons-vue/es/upload/20";
 import DeleteObsoleteCertificatesModal from "@/components/settings/DeleteObsoleteCertificatesModal.vue";
 import WarningAltFilled16 from "@carbon/icons-vue/es/warning--alt--filled/16";
+import AcmeSettings from "@/components/settings/AcmeSettings.vue";
+
+// keep in sync with the cv-tab order in the template and with tabSelected():
+// tabSelected maps the tab index, so adding a conditional tab would shift it
+const TAB_VIEWS = ["certificates", "acme"];
 
 export default {
   name: "SettingsTlsCertificates",
@@ -534,6 +600,7 @@ export default {
     UploadTlsCertificateModal,
     DeleteObsoleteCertificatesModal,
     WarningAltFilled16,
+    AcmeSettings,
   },
   mixins: [
     TaskService,
@@ -549,8 +616,12 @@ export default {
   data() {
     return {
       q: {
+        view: "",
         selectedNodeId: "",
       },
+      // mount the ACME tab on first visit and keep it alive afterwards: a v-if
+      // on q.view would re-run its whole task chain on every tab switch
+      acmeTabVisited: false,
       tablePage: [],
       tableColumns: [
         "ui_name",
@@ -778,11 +849,30 @@ export default {
     next((vm) => {
       vm.watchQueryData(vm);
       vm.queryParamsToDataForCore(vm, to.query);
+      // needed: queryParamsToDataForCore leaves q.view empty when the query has
+      // no view, and copies it verbatim when it is not a real tab name. With
+      // noDefaultToFirst, an unknown view selects no tab at all
+      vm.normalizeView();
     });
   },
   beforeRouteUpdate(to, from, next) {
     this.queryParamsToDataForCore(this, to.query);
+    // needed: queryParamsToDataForCore only assigns keys present in the query,
+    // so a same-path navigation without view would keep the previous tab
+    if (typeof to.query.view === "undefined") {
+      this.q.view = TAB_VIEWS[0];
+    }
+    this.normalizeView();
     next();
+  },
+  watch: {
+    "q.view": function (view) {
+      // the watcher covers both the tab click and the deep link, since q.view
+      // is set from the query inside the beforeRouteEnter callback
+      if (view === "acme") {
+        this.acmeTabVisited = true;
+      }
+    },
   },
   created() {
     // register to events
@@ -1192,8 +1282,17 @@ export default {
       // reload certificates
       this.listCertificates();
     },
-    goToAcmeServers() {
-      this.$router.push("/settings/acme-servers");
+    normalizeView() {
+      if (!TAB_VIEWS.includes(this.q.view)) {
+        this.q.view = TAB_VIEWS[0];
+      }
+    },
+    tabSelected(tabNum) {
+      if (tabNum == 0) {
+        this.q.view = "certificates";
+      } else if (tabNum == 1) {
+        this.q.view = "acme";
+      }
     },
     async uploadCustomCertificate(event) {
       // set component to loading

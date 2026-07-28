@@ -848,6 +848,7 @@
     },
     "settings_tls_certificates": {
         "title": "TLS certificates",
+        "certificates": "Certificates",
         "show_all": "Show all",
         "request_certificate": "Request certificate",
         "filter_certificates": "Filter certificates",
@@ -931,13 +932,13 @@
         "certificates_not_displayed": "Certificates configured on {instanceId} are not displayed"
     },
     "settings_acme_servers": {
-        "title": "ACME servers",
-        "search_acme_server": "Search ACME server",
-        "no_acme_server": "No ACME server",
-        "no_acme_server_description": "There is no ACME server configured",
-        "url": "URL",
+        "title": "ACME settings",
+        "search_acme_server": "Search ACME settings",
+        "no_acme_server": "No ACME settings",
+        "no_acme_server_description": "No cluster node has ACME settings configured",
+        "url": "ACME directory URL",
         "node": "Node",
-        "edit_acme_server": "Edit ACME server",
+        "edit_acme_server": "Edit ACME settings",
         "edit_acme_server_for_node": "Edit ACME server for {node}",
         "reload_page": "Page reload needed",
         "edit_acme_server_leader_node_warning": "You are editing the ACME server for the leader node. After you click 'Edit ACME server' you'll need to reload the page"
