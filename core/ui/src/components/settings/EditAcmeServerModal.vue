@@ -231,13 +231,18 @@ export default {
         this.setAcmeServerCompleted
       );
 
-      // only send challenge when the module reported one: the action schema
-      // sets additionalProperties false, so sending a key an older traefik
-      // does not know about would fail the whole request
+      // only echo back the fields the module actually reported: the action
+      // schema sets additionalProperties false, so sending a key an older
+      // traefik does not know about would fail the whole request
       const data = { url: this.url };
 
       if (this.isChallengeSupported) {
         data.challenge = this.challenge;
+      }
+
+      if (this.server.email !== undefined) {
+        // the action resets the email when the field is missing
+        data.email = this.server.email;
       }
 
       const res = await to(
@@ -281,14 +286,22 @@ export default {
         const param = validationError.parameter;
 
         // set i18n error message
-        this.error[param] = this.getI18nStringWithFallback(
+        const message = this.getI18nStringWithFallback(
           "settings_acme_servers." + validationError.error,
           "error." + validationError.error
         );
 
-        if (!focusAlreadySet) {
-          this.focusElement(param);
-          focusAlreadySet = true;
+        // a parameter with no field of its own, such as email, would land on a
+        // non-reactive key and make focusElement() throw on an undefined ref
+        if (param !== "setAcmeServer" && param in this.error) {
+          this.error[param] = message;
+
+          if (!focusAlreadySet) {
+            this.focusElement(param);
+            focusAlreadySet = true;
+          }
+        } else {
+          this.error.setAcmeServer = message;
         }
       }
     },
