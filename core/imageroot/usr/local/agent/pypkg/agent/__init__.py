@@ -283,6 +283,7 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, progress_ca
     kwargs.setdefault('stdout', sys.stdout)
     kwargs.setdefault('stderr', sys.stderr)
     if progress_callback and '--json' in restic_args:
+        check_wanted = kwargs.pop('check', False)
         kwargs['stdout'] = subprocess.PIPE
         kwargs.setdefault('errors', 'replace')
         kwargs.setdefault('text', True)
@@ -295,6 +296,8 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, progress_ca
                     progress_callback(json.loads(line))
                 except Exception as ex:
                     print(SD_DEBUG + "Error decoding Restic status message", ex, file=kwargs['stderr'])
+        if check_wanted and prestic.returncode != 0:
+            raise subprocess.CalledProcessError(prestic.returncode, podman_cmd)
     else:
         prestic = subprocess.run(podman_cmd, **kwargs)
     return prestic
