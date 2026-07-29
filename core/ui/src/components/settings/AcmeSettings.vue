@@ -218,15 +218,16 @@ export default {
     async getAcmeServer() {
       // a handler of a previous round would decrement the counter of this one
       this.clearTaskListeners();
-      this.loading.getAcmeServerNum = 0;
       this.servers = [];
       // otherwise a transient error sticks after the nodes answer again
       this.clearTableError();
+      // count the whole batch upfront: the counter must not reach zero between
+      // two iterations
+      this.loading.getAcmeServerNum = this.traefikInstances.length;
 
       for (const traefikInstance of this.traefikInstances) {
         const taskAction = "get-acme-server";
         const eventId = this.getUuid();
-        this.loading.getAcmeServerNum++;
 
         // register to task events
 
@@ -262,7 +263,7 @@ export default {
           this.error.getAcmeServer = errMessage;
           this.currentErrorAction = this.$t("action." + taskAction);
           this.currentErrorDescription = errMessage;
-          this.decreaseGetAcmeServerNum();
+          this.loading.getAcmeServerNum--;
         }
       }
     },
@@ -271,7 +272,7 @@ export default {
       this.error.getAcmeServer = this.$t("error.generic_error");
       this.currentErrorAction = this.$t("action." + taskContext.action);
       this.currentErrorDescription = this.$t("error.generic_error");
-      this.decreaseGetAcmeServerNum();
+      this.loading.getAcmeServerNum--;
     },
     getAcmeServerCompleted(taskContext, taskResult) {
       const server = taskResult.output;
@@ -297,14 +298,7 @@ export default {
         this.servers.push(server);
       }
       this.servers.sort(this.sortByProperty("node"));
-      this.decreaseGetAcmeServerNum();
-    },
-    decreaseGetAcmeServerNum() {
-      // never go below zero: a new round resets the counter
-      this.loading.getAcmeServerNum = Math.max(
-        0,
-        this.loading.getAcmeServerNum - 1
-      );
+      this.loading.getAcmeServerNum--;
     },
     onReloadServers() {
       this.getAcmeServer();

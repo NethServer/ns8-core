@@ -980,6 +980,8 @@ export default {
       this.currentErrorAction = this.$t("action." + taskContext.action);
       this.currentErrorDescription = this.$t("error.generic_error");
       this.loading.listInstalledModules = false;
+      // the certificates chain will not run: release its skeleton rows
+      this.loading.listCertificatesNum = 0;
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
       // init nodes
@@ -1038,12 +1040,13 @@ export default {
       this.clearTaskListeners();
       this.offlineTraefikInstances = [];
       this.listCertificatesErrors = [];
-      this.loading.listCertificatesNum = 0;
+      // count the whole batch upfront: the counter must not reach zero between
+      // two iterations
+      this.loading.listCertificatesNum = this.traefikInstances.length;
 
       for (const traefikInstance of this.traefikInstances) {
         const taskAction = "list-certificates";
         const eventId = this.getUuid();
-        this.loading.listCertificatesNum++;
 
         // register to task events
 
@@ -1109,7 +1112,7 @@ export default {
               )} - ${this.getNodeLabel(traefikInstance)})`,
             });
           }
-          this.decreaseListCertificatesNum();
+          this.loading.listCertificatesNum--;
         }
       }
     },
@@ -1128,7 +1131,7 @@ export default {
           traefikInstance
         )} - ${this.getNodeLabel(traefikInstance)})`,
       });
-      this.decreaseListCertificatesNum();
+      this.loading.listCertificatesNum--;
     },
     listCertificatesCompleted(taskContext, taskResult) {
       const traefikId = taskContext.extra.traefikInstance.id;
@@ -1203,14 +1206,7 @@ export default {
       // $set() is needed for reactivity (see https://v2.vuejs.org/v2/guide/reactivity.html#For-Objects)
       this.$set(this.certificatesByTraefikId, traefikId, certs);
 
-      this.decreaseListCertificatesNum();
-    },
-    decreaseListCertificatesNum() {
-      // never go below zero: a new round resets the counter
-      this.loading.listCertificatesNum = Math.max(
-        0,
-        this.loading.listCertificatesNum - 1
-      );
+      this.loading.listCertificatesNum--;
     },
     getTagKind(status) {
       switch (status) {
