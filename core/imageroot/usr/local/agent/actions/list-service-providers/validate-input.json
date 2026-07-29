@@ -38,6 +38,13 @@
             "title": "Filter clauses",
             "description": "Return entries matching all the given clauses",
             "type": "object"
+        },
+        "sortby": {
+            "title": "Sorting rule",
+            "description": "Sort the returned entries with the given rule",
+            "type": "string",
+            "enum": ["node_proximity", "module_seq_asc", "module_seq_desc"],
+            "default": "node_proximity"
         }
     }
 }

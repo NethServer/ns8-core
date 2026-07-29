@@ -92,6 +92,15 @@ The input JSON object attributes are:
     - `module_uuid` copy of `HGET module/{id}/environment MODULE_UUID`
     - `ui_name`, copy of `GET module/{id}/ui_name`)
     - `transport`, copy of `transport` of the Redis key name
+    - `module_seq`, the module sequential number parsed from `module_id`
+      (e.g. `mail1` has sequence `1`)
+- `sortby` (optional): sorting rule applied to the results. One of:
+    - `node_proximity` (default): services on the local node first, then on
+      the leader node, then on other worker nodes; `module_seq` is used as
+      a stable secondary key
+    - `module_seq_asc`: order by increasing module sequence number (e.g.
+      `mail1` before `mail2`)
+    - `module_seq_desc`: order by decreasing module sequence number
 
 The following Python code snippet invokes `agent.list_service_providers()`
 to discover an IMAP server. It connects to the local Redis replica, so it
@@ -102,4 +111,13 @@ startup more robust.
 import agent
 rdb = agent.redis_connect(use_replica=True) # connect the local Redis replica
 print(agent.list_service_providers(rdb, 'imap', 'tcp'))
+```
+
+By default, results are sorted by node proximity to the caller (local node
+first, leader node second, other worker nodes third). Pass `sortby` to
+select a different rule, e.g. to order candidates by module sequence
+number:
+
+```python
+print(agent.list_service_providers(rdb, 'imap', 'tcp', sortby='module_seq_desc'))
 ```

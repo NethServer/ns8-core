@@ -123,7 +123,9 @@ target leader node.
   `10`, `20`, `30`) are commonly used. Each step is a separate executable
   (Python 3 or Bash).
 - **JSON Schema validation**: Actions define `validate-input.json` /
-  `validate-output.json` for automatic request/response validation.
+  `validate-output.json` for automatic request/response validation. Whenever
+  an action's input or output attributes change, update the matching schema
+  file in the same commit/PR.
 - **Redis as state store**: All persistent state is in Redis, not on the
   filesystem. Actions use `agent.redis_connect()` to read/write state.
 - **UI design system**: Carbon Design System (`@carbon/vue`). Use Carbon

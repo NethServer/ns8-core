@@ -17,6 +17,7 @@ rdb = agent.redis_connect()
 
 json.dump(agent.list_service_providers(rdb,
     request['service'],
-    transport=request.get('transport', '*'), 
+    transport=request.get('transport', '*'),
     filters=request.get('filter', {}),
+    sortby=request.get('sortby', 'node_proximity'),
 ), fp=sys.stdout)
