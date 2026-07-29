@@ -8,6 +8,15 @@
       <cv-grid class="no-padding">
         <cv-row>
           <cv-column>
+            <!-- NsDataTable replaces the rows with its error: report a partial
+                 failure here, so the nodes that did answer stay readable -->
+            <NsInlineNotification
+              v-if="tableError && servers.length"
+              kind="error"
+              :title="tableErrorTitle"
+              :description="tableErrorDescription"
+              :showCloseButton="false"
+            />
             <NsDataTable
               :allRows="servers"
               :columns="i18nTableColumns"
@@ -26,7 +35,7 @@
               "
               :isLoading="loadingServers"
               :skeletonRows="5"
-              :isErrorShown="!!instancesError || !!error.getAcmeServer"
+              :isErrorShown="!!tableError && !servers.length"
               :errorTitle="tableErrorTitle"
               :errorDescription="tableErrorDescription"
               :itemsPerPageLabel="$t('pagination.items_per_page')"
@@ -154,6 +163,9 @@ export default {
     },
     loadingServers() {
       return this.isLoadingInstances || this.loading.getAcmeServerNum > 0;
+    },
+    tableError() {
+      return this.instancesError || this.error.getAcmeServer;
     },
     tableErrorTitle() {
       return this.instancesError
