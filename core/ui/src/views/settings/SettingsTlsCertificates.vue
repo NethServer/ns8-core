@@ -493,12 +493,17 @@
             </cv-tab>
             <cv-tab
               id="tab-2"
-              :label="$t('settings_acme_servers.title')"
+              :label="$t('settings_acme_servers.acme_settings')"
               :selected="q.view === 'acme'"
             >
               <cv-row>
                 <cv-column>
-                  <AcmeSettings v-if="acmeTabVisited" />
+                  <AcmeSettings
+                    v-if="acmeTabVisited"
+                    :traefikInstances="traefikInstances"
+                    :isLoadingInstances="loading.listInstalledModules"
+                    :instancesError="error.listInstalledModules"
+                  />
                 </cv-column>
               </cv-row>
             </cv-tab>
@@ -639,6 +644,8 @@ export default {
       currentErrorDescription: "",
       traefikInstances: [],
       currentCertificate: null,
+      // [eventName, handler] pairs registered on $root
+      taskListeners: [],
       filter: {
         text: "",
         certificateType: "",
@@ -862,10 +869,11 @@ export default {
   },
   watch: {
     isWebsocketConnected: function (isConnected) {
-      // a Traefik restart kills this websocket: pending task events are lost
+      // a Traefik restart kills this websocket: pending task events are lost.
+      // Always restart from the instance list, it chains everything else and
+      // republishes traefikInstances for the ACME tab
       if (isConnected) {
-        this.loading.listCertificatesNum = 0;
-        this.listCertificates();
+        this.listInstalledModules();
       }
     },
     "q.view": function (view) {
@@ -889,8 +897,19 @@ export default {
   beforeDestroy() {
     // remove event listeners
     this.$root.$off("reloadCertificates");
+    this.clearTaskListeners();
   },
   methods: {
+    registerTaskListener(eventName, handler) {
+      this.$root.$once(eventName, handler);
+      this.taskListeners.push([eventName, handler]);
+    },
+    clearTaskListeners() {
+      this.taskListeners.forEach(([eventName, handler]) => {
+        this.$root.$off(eventName, handler);
+      });
+      this.taskListeners = [];
+    },
     showRequestCertificateModal() {
       this.currentCertificate = null;
       this.isShownRequestCertificateModal = true;
@@ -916,18 +935,21 @@ export default {
       this.isShownDeleteObsoleteCertificatesModal = false;
     },
     async listInstalledModules() {
+      // a handler of a previous round would decrement the counters of this one
+      this.clearTaskListeners();
       this.loading.listInstalledModules = true;
+      this.error.listInstalledModules = "";
       const taskAction = "list-installed-modules";
       const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$once(
+      this.registerTaskListener(
         `${taskAction}-aborted-${eventId}`,
         this.listInstalledModulesAborted
       );
 
       // register to task completion
-      this.$root.$once(
+      this.registerTaskListener(
         `${taskAction}-completed-${eventId}`,
         this.listInstalledModulesCompleted
       );
@@ -948,6 +970,7 @@ export default {
         this.error.listInstalledModules = errMessage;
         this.currentErrorAction = this.$t("action." + taskAction);
         this.currentErrorDescription = errMessage;
+        this.loading.listInstalledModules = false;
         return;
       }
     },
@@ -1011,6 +1034,8 @@ export default {
       this.listCertificates();
     },
     async listCertificates() {
+      // a handler of a previous round would decrement the counter of this one
+      this.clearTaskListeners();
       this.offlineTraefikInstances = [];
       this.listCertificatesErrors = [];
       this.loading.listCertificatesNum = 0;
@@ -1022,7 +1047,7 @@ export default {
 
         // register to task events
 
-        this.$root.$once(
+        this.registerTaskListener(
           `${taskAction}-aborted-${eventId}`,
           (taskResult, taskContext) => {
             this.listCertificatesAborted(
@@ -1033,7 +1058,7 @@ export default {
           }
         );
 
-        this.$root.$once(
+        this.registerTaskListener(
           `${taskAction}-completed-${eventId}`,
           this.listCertificatesCompleted
         );
@@ -1181,7 +1206,7 @@ export default {
       this.decreaseListCertificatesNum();
     },
     decreaseListCertificatesNum() {
-      // never go below zero: the reconnection watcher resets the counter
+      // never go below zero: a new round resets the counter
       this.loading.listCertificatesNum = Math.max(
         0,
         this.loading.listCertificatesNum - 1

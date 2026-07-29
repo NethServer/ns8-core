@@ -12,7 +12,7 @@
     @primary-click="setAcmeServer"
   >
     <template slot="title">{{
-      $t("settings_acme_servers.edit_acme_server")
+      $t("settings_acme_servers.edit_acme_settings")
     }}</template>
     <template slot="content">
       <cv-form @submit.prevent="setAcmeServer">
@@ -37,8 +37,8 @@
         />
         <NsTextInput
           v-model.trim="url"
-          :label="$t('settings_acme_servers.url')"
-          :helper-text="$t('settings_acme_servers.url_helper')"
+          :label="$t('settings_acme_servers.acme_directory_url')"
+          :helper-text="$t('settings_acme_servers.acme_directory_url_helper')"
           :invalid-message="error.url"
           :disabled="loading.setAcmeServer"
           data-modal-primary-focus
@@ -132,7 +132,7 @@ export default {
         url: "",
         challenge: "",
       },
-      // [eventName, handler] pairs to remove in beforeDestroy
+      // [eventName, handler] pairs registered on $root
       taskListeners: [],
     };
   },
@@ -147,31 +147,43 @@ export default {
   },
   watch: {
     isWebsocketConnected: function (isConnected) {
-      // safety net: nothing else clears the pending state if the restart cut
-      // the request off before validation-ok could be delivered
+      // the restart cut the request off before any task event was delivered:
+      // the outcome is unknown, so keep the modal open and say so instead of
+      // closing as if the save had succeeded
       if (isConnected && this.loading.setAcmeServer) {
+        this.clearTaskListeners();
         this.loading.setAcmeServer = false;
-        this.$emit("hide");
+        this.error.setAcmeServer = this.$t(
+          "settings_acme_servers.save_result_unknown"
+        );
+        this.$emit("reloadServers");
       }
     },
     isShown: function () {
       if (this.isShown) {
         this.url = this.server.url;
-        this.challenge = this.server.challenge || DEFAULT_ACME_CHALLENGE_TYPE;
+        // an empty reported challenge must not be silently promoted to HTTP-01
+        this.challenge =
+          this.server.challenge === undefined
+            ? DEFAULT_ACME_CHALLENGE_TYPE
+            : this.server.challenge;
       }
     },
   },
   beforeDestroy() {
     // a save completing after destroy runs focusElement on a deleted ref
-    this.taskListeners.forEach(([eventName, handler]) => {
-      this.$root.$off(eventName, handler);
-    });
-    this.taskListeners = [];
+    this.clearTaskListeners();
   },
   methods: {
     registerTaskListener(eventName, handler) {
       this.$root.$once(eventName, handler);
       this.taskListeners.push([eventName, handler]);
+    },
+    clearTaskListeners() {
+      this.taskListeners.forEach(([eventName, handler]) => {
+        this.$root.$off(eventName, handler);
+      });
+      this.taskListeners = [];
     },
     onModalHidden() {
       this.clearErrors();
@@ -242,8 +254,9 @@ export default {
         data.challenge = this.challenge;
       }
 
-      if (this.server.email !== undefined) {
-        // the action resets the email when the field is missing
+      if (this.server.email) {
+        // the action resets the email when the field is missing, and its schema
+        // may reject an empty string: forward it only when there is one
         data.email = this.server.email;
       }
 
@@ -252,7 +265,7 @@ export default {
           action: taskAction,
           data: data,
           extra: {
-            title: this.$t("settings_acme_servers.edit_acme_server"),
+            title: this.$t("settings_acme_servers.edit_acme_settings"),
             description: this.$t("common.processing"),
             eventId,
           },
@@ -293,8 +306,8 @@ export default {
           "error." + validationError.error
         );
 
-        // focusElement would throw on a parameter with no field of its own
-        if (param !== "setAcmeServer" && param in this.error) {
+        // focusElement would throw on a parameter whose field is not rendered
+        if (param in this.error && this.$refs[param]) {
           this.error[param] = message;
 
           if (!focusAlreadySet) {

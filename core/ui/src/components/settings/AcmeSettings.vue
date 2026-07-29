@@ -17,7 +17,7 @@
               :overflow-menu="true"
               isSearchable
               :searchPlaceholder="
-                $t('settings_acme_servers.search_acme_server')
+                $t('settings_acme_servers.search_acme_settings')
               "
               :searchClearLabel="$t('common.clear_search')"
               :noSearchResultsLabel="$t('common.no_search_results')"
@@ -26,11 +26,9 @@
               "
               :isLoading="loadingServers"
               :skeletonRows="5"
-              :isErrorShown="
-                !!error.listInstalledModules || !!error.getAcmeServer
-              "
-              :errorTitle="currentErrorAction"
-              :errorDescription="currentErrorDescription"
+              :isErrorShown="!!instancesError || !!error.getAcmeServer"
+              :errorTitle="tableErrorTitle"
+              :errorDescription="tableErrorDescription"
               :itemsPerPageLabel="$t('pagination.items_per_page')"
               :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
               :ofTotalPagesLabel="$t('pagination.of_total_pages')"
@@ -41,12 +39,12 @@
             >
               <template slot="empty-state">
                 <NsEmptyState
-                  :title="$t('settings_acme_servers.no_acme_server')"
+                  :title="$t('settings_acme_servers.no_acme_settings')"
                 >
                   <template #description>
                     <div>
                       {{
-                        $t("settings_acme_servers.no_acme_server_description")
+                        $t("settings_acme_servers.no_acme_settings_description")
                       }}
                     </div>
                   </template>
@@ -105,7 +103,6 @@
 <script>
 import to from "await-to-js";
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
-import { mapState } from "vuex";
 import EditAcmeServerModal, {
   ACME_CHALLENGE_TYPES,
 } from "@/components/settings/EditAcmeServerModal.vue";
@@ -114,69 +111,85 @@ export default {
   name: "AcmeSettings",
   components: { EditAcmeServerModal },
   mixins: [TaskService, UtilService, IconService],
+  props: {
+    // the parent page already lists them: do not run the task twice
+    traefikInstances: {
+      type: Array,
+      default: () => [],
+    },
+    isLoadingInstances: Boolean,
+    instancesError: {
+      type: String,
+      default: "",
+    },
+  },
   data() {
     return {
       tablePage: [],
       tableColumns: ["node", "url", "challenge"],
+      // the raw columns are row property names: labels need their own keys
+      tableColumnLabelKeys: [
+        "settings_acme_servers.node",
+        "settings_acme_servers.acme_directory_url",
+        "settings_acme_servers.challenge",
+      ],
       servers: [],
       isShownEditServerModal: false,
       currentErrorAction: "",
       currentErrorDescription: "",
-      traefikInstances: [],
       currentServer: null,
-      // [eventName, handler] pairs to remove in beforeDestroy
+      // [eventName, handler] pairs registered on $root
       taskListeners: [],
       loading: {
-        listInstalledModules: false,
         getAcmeServerNum: 0,
       },
       error: {
-        listInstalledModules: "",
         getAcmeServer: "",
       },
     };
   },
   computed: {
-    ...mapState(["isWebsocketConnected"]),
     i18nTableColumns() {
-      return this.tableColumns.map((column) => {
-        return this.$t("settings_acme_servers." + column);
-      });
+      return this.tableColumnLabelKeys.map((key) => this.$t(key));
     },
     loadingServers() {
-      return (
-        this.loading.listInstalledModules || this.loading.getAcmeServerNum > 0
-      );
+      return this.isLoadingInstances || this.loading.getAcmeServerNum > 0;
+    },
+    tableErrorTitle() {
+      return this.instancesError
+        ? this.$t("action.list-installed-modules")
+        : this.currentErrorAction;
+    },
+    tableErrorDescription() {
+      return this.instancesError || this.currentErrorDescription;
     },
   },
   watch: {
-    isWebsocketConnected: function (isConnected) {
-      // a Traefik restart kills this websocket: pending task events are lost
-      if (isConnected) {
-        this.loading.getAcmeServerNum = 0;
-
-        if (this.traefikInstances.length) {
-          this.getAcmeServer();
-        } else {
-          this.listInstalledModules();
-        }
-      }
+    // the parent republishes the instances after a Traefik restart killed the
+    // websocket, which is also how this table recovers
+    traefikInstances: function () {
+      this.getAcmeServer();
     },
   },
   created() {
-    this.listInstalledModules();
+    if (this.traefikInstances.length) {
+      this.getAcmeServer();
+    }
   },
   beforeDestroy() {
     // a task completing after destroy would re-fire the whole task chain
-    this.taskListeners.forEach(([eventName, handler]) => {
-      this.$root.$off(eventName, handler);
-    });
-    this.taskListeners = [];
+    this.clearTaskListeners();
   },
   methods: {
     registerTaskListener(eventName, handler) {
       this.$root.$once(eventName, handler);
       this.taskListeners.push([eventName, handler]);
+    },
+    clearTaskListeners() {
+      this.taskListeners.forEach(([eventName, handler]) => {
+        this.$root.$off(eventName, handler);
+      });
+      this.taskListeners = [];
     },
     getChallengeType(challenge) {
       return ACME_CHALLENGE_TYPES.find((type) => type.value === challenge);
@@ -198,71 +211,14 @@ export default {
       this.isShownEditServerModal = false;
     },
     clearTableError() {
-      this.error.listInstalledModules = "";
       this.error.getAcmeServer = "";
       this.currentErrorAction = "";
       this.currentErrorDescription = "";
     },
-    async listInstalledModules() {
-      this.loading.listInstalledModules = true;
-      this.clearTableError();
-      const taskAction = "list-installed-modules";
-      const eventId = this.getUuid();
-
-      // register to task error
-      this.registerTaskListener(
-        `${taskAction}-aborted-${eventId}`,
-        this.listInstalledModulesAborted
-      );
-
-      // register to task completion
-      this.registerTaskListener(
-        `${taskAction}-completed-${eventId}`,
-        this.listInstalledModulesCompleted
-      );
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        const errMessage = this.getErrorMessage(err);
-        this.error.listInstalledModules = errMessage;
-        this.currentErrorAction = this.$t("action." + taskAction);
-        this.currentErrorDescription = errMessage;
-        this.loading.listInstalledModules = false;
-        return;
-      }
-    },
-    listInstalledModulesAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.listInstalledModules = this.$t("error.generic_error");
-      this.currentErrorAction = this.$t("action." + taskContext.action);
-      this.currentErrorDescription = this.$t("error.generic_error");
-      this.loading.listInstalledModules = false;
-    },
-    listInstalledModulesCompleted(taskContext, taskResult) {
-      let traefikInstances = [];
-
-      for (let instanceList of Object.values(taskResult.output)) {
-        for (let instance of instanceList) {
-          if (instance.id.startsWith("traefik")) {
-            traefikInstances.push(instance);
-          }
-        }
-      }
-      this.traefikInstances = traefikInstances;
-      this.loading.listInstalledModules = false;
-      this.getAcmeServer();
-    },
     async getAcmeServer() {
+      // a handler of a previous round would decrement the counter of this one
+      this.clearTaskListeners();
+      this.loading.getAcmeServerNum = 0;
       this.servers = [];
       // otherwise a transient error sticks after the nodes answer again
       this.clearTableError();
@@ -344,7 +300,7 @@ export default {
       this.decreaseGetAcmeServerNum();
     },
     decreaseGetAcmeServerNum() {
-      // never go below zero: the reconnection watcher resets the counter
+      // never go below zero: a new round resets the counter
       this.loading.getAcmeServerNum = Math.max(
         0,
         this.loading.getAcmeServerNum - 1
