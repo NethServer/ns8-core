@@ -1133,7 +1133,7 @@
     "error": {
         "error": "Errore",
         "validation_error": "Errore di validazione",
-        "network_error": "Errore di rete. Controlla la connessione e ricarica la pagina.",
+        "network_error": "Errore di rete",
         "404": "Risorsa non trovata",
         "network_timeout": "Timeout di rete",
         "generic_error": "Qualcosa è andato storto",
