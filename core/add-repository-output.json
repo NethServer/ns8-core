@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"add-repository output","$id":"http://schema.nethserver.org/cluster/add-repository-output.json","description":"Output schema of the add-repository action","examples":[true],"type":"boolean"}
