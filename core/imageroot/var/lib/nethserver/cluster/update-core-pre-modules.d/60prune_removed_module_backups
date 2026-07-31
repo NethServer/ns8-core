@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+
+#
+# Bug NethServer/dev#8094: modules removed from the cluster before backup
+# schedule cleanup was implemented were left dangling in backup schedules,
+# backup status entries and cluster/module_uuid. Prune them, using
+# cluster/module_node as the authoritative source of live module ids.
+#
+
+rdb = agent.redis_connect(privileged=True)
+live_modules = set(rdb.hkeys('cluster/module_node'))
+
+trx = rdb.pipeline()
+
+dangling_mids = [mid for mid in rdb.hkeys('cluster/module_uuid') if mid not in live_modules]
+if dangling_mids:
+    trx.hdel('cluster/module_uuid', *dangling_mids)
+
+for kbackup in rdb.scan_iter('cluster/backup/*'):
+    instances_set = set((rdb.hget(kbackup, 'instances') or '').split())
+    if not instances_set.issubset(live_modules):
+        trx.hset(kbackup, 'instances', ' '.join(sorted(instances_set.intersection(live_modules))))
+
+for kstatus in rdb.scan_iter('node/*/backup_status/*'):
+    dangling_mid_hkeys = [mid for mid in rdb.hkeys(kstatus) if mid not in live_modules]
+    if dangling_mid_hkeys:
+        trx.hdel(kstatus, *dangling_mid_hkeys)
+
+trx.execute()
