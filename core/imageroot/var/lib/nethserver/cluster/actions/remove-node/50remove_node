@@ -44,10 +44,25 @@ for xmodule_id, xnode_id in rdb.hgetall('cluster/module_node').items():
 # Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
 
+# Collect the backup schedule/status changes needed to forget the removed modules
+backup_updates = {} # {cluster/backup/<id> key: trimmed "instances" string}
+backup_status_keys = []
+if remove_module_set:
+    for kbackup in rdb.scan_iter('cluster/backup/*'):
+        instances_set = set((rdb.hget(kbackup, 'instances') or '').split())
+        if instances_set.intersection(remove_module_set):
+            backup_updates[kbackup] = ' '.join(sorted(instances_set.difference(remove_module_set)))
+    backup_status_keys = list(rdb.scan_iter('node/*/backup_status/*'))
+
 trx = rdb.pipeline()
 if remove_module_set:
     trx.hdel("cluster/module_node", *remove_module_set)
     trx.hdel("cluster/module_domains", *remove_module_set)
+    trx.hdel("cluster/module_uuid", *remove_module_set)
+    for kbackup, instances in backup_updates.items():
+        trx.hset(kbackup, 'instances', instances)
+    for kstatus in backup_status_keys:
+        trx.hdel(kstatus, *remove_module_set)
 for xmodule_id in remove_module_set:
     trx.publish('cluster/event/module-removed', json.dumps({
         'module': xmodule_id,
