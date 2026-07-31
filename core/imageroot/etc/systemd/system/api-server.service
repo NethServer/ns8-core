@@ -13,6 +13,9 @@ ExecStart=/usr/local/bin/api-server
 ExecStartPost=-+/usr/local/bin/api-server-motd
 ExecStopPost=+rm -vf /etc/issue.d/api-server.issue /etc/motd.d/api-server
 Restart=always
+# The terminal relay handles system passwords in memory: no core dump can carry
+# them to disk.
+LimitCORE=0
 User=api-server
 RuntimeDirectory=api-server/tokens
 RuntimeDirectoryMode=0700

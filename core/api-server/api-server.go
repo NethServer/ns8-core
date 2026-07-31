@@ -137,6 +137,12 @@ func main() {
 		api.GET("/node/:node_id/task/:task_id/context", methods.GetNodeTaskContext)
 		api.POST("/node/:node_id/tasks", methods.CreateNodeTask)
 
+		// Authorize a terminal and mint a one-shot ticket. The body carries
+		// {"action": "open-terminal"} so the Authorizator matches it against
+		// the grants of the node taken from the URL. No credentials here: the
+		// SSH handshake happens on the /ws/terminal channel.
+		api.POST("/node/:node_id/terminal-sessions", socket.CreateTerminalSession)
+
 		// module
 		api.GET("/modules", methods.GetModules)
 		api.GET("/module/:module_id/tasks", methods.GetModuleTasks)
@@ -160,6 +166,18 @@ func main() {
 	ws := router.Group("/ws")
 	ws.GET("", func(c *gin.Context) {
 		socketConnection.HandleRequest(c.Writer, c.Request)
+	})
+
+	// Terminal sessions use a dedicated melody instance: the shared one above
+	// keeps melody's 512 byte default read limit, which a paste would exceed,
+	// and raising it there would raise it for that endpoint's clients too.
+	// The client address is resolved by gin so that the trusted proxy logic
+	// applies to the ticket check as well.
+	terminalConnection := socket.TerminalInstance()
+	ws.GET("/terminal", func(c *gin.Context) {
+		terminalConnection.HandleRequestWithKeys(c.Writer, c.Request, map[string]any{
+			"client_ip": c.ClientIP(),
+		})
 	})
 
 	// handle missing endpoint

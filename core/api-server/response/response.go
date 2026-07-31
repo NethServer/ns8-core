@@ -47,6 +47,12 @@ type StatusNotFound struct {
 	Data    any    `json:"data" structs:"data"`
 }
 
+type StatusConflict struct {
+	Code    int    `json:"code" example:"409" structs:"code"`
+	Message string `json:"message" example:"Conflict" structs:"message"`
+	Data    any    `json:"data" structs:"data"`
+}
+
 type StatusInternalServerError struct {
 	Code    int    `json:"code" example:"500" structs:"code"`
 	Message string `json:"message" example:"Internal server error" structs:"message"`
