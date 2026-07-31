@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+"""Report whether the cluster-admin terminal can reach sshd on this node.
+
+Returns four values and nothing else. The task output is readable by any
+authenticated user because GET requests bypass authorization in api-server,
+so the raw sshd configuration must never be exposed here.
+
+As a side effect, publishes the host keys sshd actually serves into
+node/<id>/ssh. The api-server trusts them because they arrive over the
+cluster's authenticated channel (Redis ACL plus WireGuard); this is not a
+pinning, and a legitimately regenerated key is accepted as soon as it is
+published.
+"""
+
+import json
+import os
+import subprocess
+import sys
+
+import agent
+
+SSHD_BINARY = '/usr/sbin/sshd'
+ANY_ADDRESSES = ('0.0.0.0', '::', '*')
+
+
+def fail(message):
+    print(message, file=sys.stderr)
+    sys.exit(1)
+
+
+def run_sshd_test(connection_spec=None):
+    """Return sshd's effective configuration as a dict of directive -> [values]."""
+    command = [SSHD_BINARY, '-T']
+    if connection_spec:
+        command += ['-C', connection_spec]
+    probe = subprocess.run(command, capture_output=True, text=True)
+    if probe.returncode != 0:
+        fail(f'sshd -T failed: {probe.stderr.strip()}')
+
+    config = {}
+    for line in probe.stdout.splitlines():
+        directive, _, value = line.partition(' ')
+        config.setdefault(directive.lower(), []).append(value.strip())
+    return config
+
+
+def listens_on(config, address):
+    """True when sshd listens on the given address, or on every address."""
+    for entry in config.get('listenaddress', []):
+        # Entries look like 0.0.0.0:22, [::]:22 or 10.5.4.1:22
+        host = entry.rsplit(':', 1)[0].strip('[]')
+        if host in ANY_ADDRESSES or host == address:
+            return True
+    return False
+
+
+def served_host_keys(config):
+    """Public keys for the private keys sshd is configured to serve."""
+    keys = []
+    for path in config.get('hostkey', []):
+        try:
+            with open(path + '.pub') as pub:
+                fields = pub.read().split()
+        except OSError:
+            derive = subprocess.run(['ssh-keygen', '-y', '-f', path],
+                                    capture_output=True, text=True)
+            if derive.returncode != 0:
+                continue
+            fields = derive.stdout.split()
+        if len(fields) >= 2:
+            keys.append({'type': fields[0], 'key': fields[1]})
+    return keys
+
+
+if not os.path.isfile(SSHD_BINARY):
+    fail(f'{SSHD_BINARY} not found: is openssh-server installed?')
+
+rdb = agent.redis_connect()
+node_id = os.environ['NODE_ID']
+
+leader_id = rdb.hget('cluster/environment', 'NODE_ID')
+leader_address = rdb.hget(f'node/{leader_id}/vpn', 'ip_address')
+node_address = rdb.hget(f'node/{node_id}/vpn', 'ip_address')
+if not leader_address or not node_address:
+    fail('missing VPN address for the leader or for this node')
+
+# The global pass gives the listening port, needed to build the connection spec.
+global_config = run_sshd_test()
+port = int(global_config.get('port', ['22'])[0])
+
+# Without -C, sshd ignores every Match block, including the one the terminal
+# opt-in installs, so the answer would always be the pre-activation policy.
+# addr must stay a single address for the same reason cluster/network does.
+effective = run_sshd_test(
+    f'user=root,addr={leader_address},laddr={node_address},lport={port}'
+)
+
+host_keys = served_host_keys(global_config)
+if host_keys:
+    rdb.hset(f'node/{node_id}/ssh', mapping={
+        'host_keys': json.dumps(host_keys),
+        'port': port,
+    })
+
+json.dump({
+    'permit_root_login': effective.get('permitrootlogin', ['no'])[0] == 'yes',
+    'password_auth': effective.get('passwordauthentication', ['no'])[0] == 'yes',
+    'listen_wg0': listens_on(global_config, node_address),
+    'port': port,
+}, fp=sys.stdout)

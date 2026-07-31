@@ -67,6 +67,16 @@ if [[ -n "${wg0_cluster_network}" ]]; then
   firewall-cmd --permanent --zone=trusted --remove-source="${wg0_cluster_network}" >/dev/null
 fi
 
+# Close the password authentication the cluster-admin terminal may have opened.
+# The file is written at runtime, so it is not listed in coreimage.lst and would
+# otherwise outlive the uninstall.
+if [[ -f /etc/ssh/sshd_config.d/90-ns8-terminal.conf ]]; then
+  rm -f /etc/ssh/sshd_config.d/90-ns8-terminal.conf
+  if /usr/sbin/sshd -t; then
+    systemctl reload sshd.service 2>/dev/null || systemctl reload ssh.service || :
+  fi
+fi
+
 firewall-cmd --reload
 
 echo "Stopping the core services and timers"

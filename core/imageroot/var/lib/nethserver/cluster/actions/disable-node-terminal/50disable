@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+"""Disable the cluster-admin terminal on a node.
+
+Clears the flag first: that closes the api-server door immediately, and
+api-server drops live sessions on the next keepalive tick when it re-reads the
+flag. Removing the sshd drop-in comes second, and does not wait -- the node may
+well be unreachable, which is precisely the case this ordering handles. The
+node/<id>/tasks queue is durable, so the node converges when it comes back.
+"""
+
+import json
+import os
+import sys
+from datetime import datetime, timezone
+
+import agent
+import agent.tasks
+
+request = json.load(sys.stdin)
+node_id = request['node_id']
+
+rdb = agent.redis_connect(privileged=True)
+
+rdb.hset(f'node/{node_id}/terminal', mapping={
+    'enabled': '0',
+    'updated_by': os.environ.get('AGENT_TASK_USER', ''),
+    'updated_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+})
+
+agent.tasks.runp_nowait([{
+    'agent_id': f'node/{node_id}',
+    'action': 'set-terminal-sshd',
+    'data': {},
+}], endpoint='redis://cluster-leader')

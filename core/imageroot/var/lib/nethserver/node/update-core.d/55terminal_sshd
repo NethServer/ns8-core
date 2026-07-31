@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+
+# Refresh the published SSH host keys and realign the terminal sshd drop-in
+# with node/<id>/terminal. Both steps are idempotent.
+#
+# This is the long-stop, not the main convergence path: enable-node-terminal and
+# disable-node-terminal push the same action right after writing the flag, and
+# the node/<id>/tasks queue is durable so a powered-off node converges when it
+# returns. Weeks can pass between two update-core runs.
+#
+# Neither step may break the core update: a node without openssh-server is a
+# legitimate configuration, and set-terminal-sshd is a no-op there as long as the
+# terminal is disabled.
+
+runagent -m node /var/lib/nethserver/node/actions/probe-terminal-access/50probe >/dev/null \
+    || echo "terminal: could not publish the SSH host keys"
+
+runagent -m node /var/lib/nethserver/node/actions/set-terminal-sshd/50converge \
+    || echo "terminal: sshd drop-in is out of sync with node/*/terminal"

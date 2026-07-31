@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+"""Converge the cluster-admin terminal sshd drop-in to the node flag.
+
+This action takes no parameter on purpose. The desired state is read from
+Redis (node/<id>/terminal enabled), so a caller can only realign the node
+with the cluster policy, never open password authentication on its own.
+"""
+
+import os
+import subprocess
+import sys
+import tempfile
+
+import agent
+
+DROPIN_PATH = '/etc/ssh/sshd_config.d/90-ns8-terminal.conf'
+SSHD_CONFIG = '/etc/ssh/sshd_config'
+SSHD_BINARY = '/usr/sbin/sshd'
+
+
+def fail(message):
+    print(message, file=sys.stderr)
+    sys.exit(1)
+
+
+def find_sshd_unit():
+    """Return the sshd unit name: RHEL ships sshd.service, Debian ssh.service."""
+    for unit in ('sshd.service', 'ssh.service'):
+        probe = subprocess.run(['systemctl', 'cat', '--', unit], capture_output=True)
+        if probe.returncode == 0:
+            return unit
+    fail('no sshd unit found (tried sshd.service and ssh.service): is openssh-server installed?')
+
+
+def assert_include_present():
+    """Refuse to write a drop-in that sshd would never read.
+
+    Without an Include directive the file is inert, and reporting success
+    would leave the cluster believing the terminal is usable.
+    """
+    try:
+        with open(SSHD_CONFIG) as config:
+            for line in config:
+                fields = line.split()
+                if len(fields) >= 2 and fields[0].lower() == 'include' and 'sshd_config.d' in fields[1]:
+                    return
+    except OSError as ex:
+        fail(f'cannot read {SSHD_CONFIG}: {ex}')
+    fail(f'{SSHD_CONFIG} has no "Include /etc/ssh/sshd_config.d/*.conf" directive, '
+         f'{DROPIN_PATH} would be ignored')
+
+
+def dropin_content(vpn_network):
+    """Build the drop-in restricting password authentication to the cluster VPN.
+
+    vpn_network is the cluster/network value, a single CIDR. Never derive it
+    from api-server's getClusterNetworks(), which prepends the loopback
+    addresses: the support tunnel DNATs port 22 to 127.0.0.1, so loopback here
+    would open root password login on a path that is key-only today.
+    """
+    return (
+        '# Managed by NS8, rewritten by the set-terminal-sshd action. Do not edit.\n'
+        f'Match Address {vpn_network}\n'
+        '    PermitRootLogin yes\n'
+        '    PasswordAuthentication yes\n'
+        '    KbdInteractiveAuthentication yes\n'
+        '# "Match all" closes the block above. Drop-ins are included at the top of\n'
+        '# sshd_config, so an unclosed Match would swallow the rest of the host policy.\n'
+        'Match all\n'
+    )
+
+
+def read_dropin():
+    try:
+        with open(DROPIN_PATH) as dropin:
+            return dropin.read()
+    except FileNotFoundError:
+        return None
+    except OSError as ex:
+        fail(f'cannot read {DROPIN_PATH}: {ex}')
+
+
+def apply_state(content):
+    """Write the drop-in, or remove it when content is None."""
+    if content is None:
+        try:
+            os.unlink(DROPIN_PATH)
+        except FileNotFoundError:
+            pass
+        return
+
+    directory = os.path.dirname(DROPIN_PATH)
+    os.makedirs(directory, mode=0o755, exist_ok=True)
+    with tempfile.NamedTemporaryFile('w', dir=directory, delete=False) as tmp:
+        tmp.write(content)
+        tmp.flush()
+        os.fsync(tmp.fileno())
+        os.fchmod(tmp.fileno(), 0o644)
+        os.replace(tmp.name, DROPIN_PATH)
+
+
+rdb = agent.redis_connect()
+node_id = os.environ['NODE_ID']
+enabled = rdb.hget(f'node/{node_id}/terminal', 'enabled') == '1'
+
+if enabled:
+    vpn_network = rdb.get('cluster/network')
+    if not vpn_network:
+        fail('cluster/network is empty: refusing to open password authentication '
+             'without a VPN network to restrict it to')
+    desired = dropin_content(vpn_network)
+else:
+    desired = None
+
+previous = read_dropin()
+if desired == previous:
+    sys.exit(0)
+
+# sshd is only required once there is something to change, so a node without
+# openssh-server and with the terminal disabled stays a silent no-op. That
+# matters because the update-core hook calls this action on every node.
+if not os.path.isfile(SSHD_BINARY):
+    fail(f'{SSHD_BINARY} not found: is openssh-server installed?')
+
+if enabled:
+    assert_include_present()
+
+unit = find_sshd_unit()
+apply_state(desired)
+
+# Validate before reloading: a syntax error would take sshd down on this node.
+check = subprocess.run([SSHD_BINARY, '-t'], capture_output=True, text=True)
+if check.returncode != 0:
+    apply_state(previous)
+    fail(f'sshd rejected the configuration, reverted {DROPIN_PATH}: {check.stderr.strip()}')
+
+subprocess.run(['systemctl', 'reload', unit], check=True)
+
+if desired is None:
+    print(f'{DROPIN_PATH} removed, password authentication closed', file=sys.stderr)
+else:
+    print(f'{DROPIN_PATH} written for {vpn_network}', file=sys.stderr)

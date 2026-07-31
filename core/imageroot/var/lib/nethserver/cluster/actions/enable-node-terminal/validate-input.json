@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "enable-node-terminal input",
+    "$id": "http://schema.nethserver.org/cluster/enable-node-terminal-input.json",
+    "description": "Allow the cluster-admin terminal on a node. Installs an sshd drop-in that accepts password authentication from the cluster VPN only.",
+    "examples": [
+        {
+            "node_id": 2
+        }
+    ],
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "node_id"
+    ],
+    "properties": {
+        "node_id": {
+            "title": "Node identifier",
+            "type": "integer",
+            "minimum": 1
+        }
+    }
+}

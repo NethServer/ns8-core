@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+"""Enable the cluster-admin terminal on a node.
+
+Writes the flag first, then asks the node to converge its sshd drop-in. The
+transient state that follows -- flag on, drop-in not yet written -- makes the
+handshake fail visibly and opens nothing. The opposite order would risk leaving
+sshd accepting root passwords from the VPN while the interface reports the
+terminal as disabled.
+
+This action runs on the leader, so it must never write sshd files itself: the
+target node does that through its own set-terminal-sshd action.
+"""
+
+import json
+import os
+import sys
+from datetime import datetime, timezone
+
+import agent
+import agent.tasks
+
+AGENT_MAX_IDLE = 8
+
+
+def agent_is_alive(rdb, agent_id):
+    """Mirror api-server's liveness check: the agent sets its Redis client name.
+
+    Needed because the task wait loop polls forever with no timeout, so pushing
+    a subtask to a powered-off node would hang this action indefinitely.
+    """
+    for client in rdb.client_list():
+        if client.get('name') != agent_id:
+            continue
+        try:
+            return int(client.get('idle', AGENT_MAX_IDLE + 1)) <= AGENT_MAX_IDLE
+        except ValueError:
+            return False
+    return False
+
+
+request = json.load(sys.stdin)
+node_id = request['node_id']
+
+rdb = agent.redis_connect(privileged=True)
+if not rdb.exists(f'node/{node_id}/vpn'):
+    print(f'node/{node_id} is not a cluster member', file=sys.stderr)
+    sys.exit(2)
+
+# Fail before touching the flag: enabling a terminal on an unreachable node
+# cannot succeed, and leaving the flag set would be misleading.
+if not agent_is_alive(rdb, f'node/{node_id}'):
+    print(f'node/{node_id} is not responding, cannot reconfigure its sshd',
+          file=sys.stderr)
+    sys.exit(2)
+
+rdb.hset(f'node/{node_id}/terminal', mapping={
+    'enabled': '1',
+    'updated_by': os.environ.get('AGENT_TASK_USER', ''),
+    'updated_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+})
+
+# Wait for the node: enabling a terminal on an unreachable node is pointless,
+# and a rejected sshd configuration must be loud rather than leave the cluster
+# believing the terminal is usable.
+errors = agent.tasks.runp_brief([{
+    'agent_id': f'node/{node_id}',
+    'action': 'set-terminal-sshd',
+    'data': {},
+}], endpoint='redis://cluster-leader')
+
+if errors:
+    print(f'node/{node_id} did not converge: the flag is set but sshd was not '
+          'reconfigured, so the terminal will fail to authenticate', file=sys.stderr)
+    sys.exit(3)

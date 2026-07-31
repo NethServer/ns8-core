@@ -106,6 +106,12 @@ systemctl enable --now \
 echo "Start node timers"
 systemctl enable --now password-warning.timer
 
+# Publish the SSH host keys the cluster-admin terminal will check. A joining node
+# publishes its own at the first probe, which always precedes a terminal session.
+echo "Publish SSH host keys:"
+runagent -m node /var/lib/nethserver/node/actions/probe-terminal-access/50probe >/dev/null \
+    || echo "terminal: could not publish the SSH host keys"
+
 echo "Grant initial permissions:"
 runagent python3 <<'EOF'
 import agent
