@@ -175,6 +175,12 @@ const routes = [
     component: SoftwareCenterAppInstances,
   },
   {
+    path: "/terminal",
+    name: "NodeTerminal",
+    component: () =>
+      import(/* webpackChunkName: "terminal" */ "../views/NodeTerminal.vue"),
+  },
+  {
     path: "/system-logs",
     name: "SystemLogs",
     component: SystemLogs,

@@ -113,6 +113,10 @@
                 "ui_name": {
                     "type": "string"
                 },
+                "terminal_enabled": {
+                    "type": "boolean",
+                    "description": "Whether the cluster-admin terminal is allowed on this node"
+                },
                 "vpn_endpoint": {
                     "type": "string"
                 },

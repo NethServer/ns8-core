@@ -446,7 +446,12 @@
         "get-password-warning": "Get password warning",
         "list-mountpoints": "List mountpoints",
         "import-backup-destinations": "Import backup destinations",
-        "list-cluster-backup-endpoints": "List cluster backup endpoints"
+        "list-cluster-backup-endpoints": "List cluster backup endpoints",
+        "open-terminal": "Open terminal",
+        "probe-terminal-access": "Check terminal access",
+        "enable-node-terminal": "Enable node terminal",
+        "disable-node-terminal": "Disable node terminal",
+        "set-terminal-sshd": "Apply terminal sshd configuration"
     },
     "network": {
         "title": "Network"
@@ -718,11 +723,11 @@
         "mail_from_placeholder": "E.g. user@domain.com",
         "mail_from_format": "Invalid email address format",
         "notification_enabled_on_my_nethesis": "Notifications enabled on my.nethesis.it",
-        "linked_to_an_active_subscription":"This system is linked to an active subscription, alert emails are already managed and delivered by my.nethesis.it portal.",
+        "linked_to_an_active_subscription": "This system is linked to an active subscription, alert emails are already managed and delivered by my.nethesis.it portal.",
         "disabled_email_notifications_description": "To configure alert notifications, email notifications must be enabled in the cluster settings.",
         "disabled_email_notification": "Email notifications disabled",
         "go_to_email_notifications": "Go to Email notifications"
-  },
+    },
     "settings_subscription": {
         "title": "Subscription",
         "cluster_subscription": "Cluster subscription",
@@ -1120,7 +1125,7 @@
         "restart_app": "Restarting the application {name} will interrupt its operation and may cause downtime. Proceed only if maintenance is needed and users are aware.",
         "restart_instance": "Restart instance",
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
-        "restarting":" Restarting...",
+        "restarting": " Restarting...",
         "restart_instance_name": "Restart instance {instance}",
         "restart_application": "Restart application",
         "app_categories": {
@@ -1512,7 +1517,7 @@
         "confirm_password": "Confirm password",
         "import_data": "Import data",
         "export_data": "Export data",
-        "password":"Password",
+        "password": "Password",
         "locked": "Locked",
         "must_change_password": "Must change password",
         "no_password_expiration": "No password expiration"
@@ -1812,12 +1817,41 @@
         "invalid_csv_format": "Invalid CSV format",
         "import_error": "Import error",
         "import": "Import",
-        "delete_your_file_after_import":"Delete your file after the import",
-        "delete_your_file_after_import_description":"If the file contains user passwords, it's recommended to delete the CSV after the import for security reasons.",
+        "delete_your_file_after_import": "Delete your file after the import",
+        "delete_your_file_after_import_description": "If the file contains user passwords, it's recommended to delete the CSV after the import for security reasons.",
         "no_import_users": "No users to import",
         "no_import_users_description": "The CSV file does not contain any user to import.",
         "invalid_csv_format_not_expected_columns": "Invalid CSV format: unexpected number of columns",
         "file_read_error": "File read error",
         "importing_data_on_domain_name": "Importing data on domain {name}"
+    },
+    "terminal": {
+        "title": "Terminal",
+        "node": "Node",
+        "open": "Open terminal",
+        "close": "Close",
+        "open_on_node": "Open a terminal on node {node}",
+        "system_user": "System user",
+        "system_password": "System password",
+        "on": "Enabled",
+        "off": "Disabled",
+        "disabled_on_node": "The terminal is disabled on this node",
+        "enable_warning": "Enabling the terminal changes the sshd configuration of this node: password authentication is allowed from the cluster VPN only. On a node hardened with PasswordAuthentication no, this re-allows it for VPN connections.",
+        "cannot_change_state": "Cannot change the terminal state",
+        "toggle_failed": "The node did not apply the change. Its sshd configuration may not match the state shown here.",
+        "cannot_list_nodes": "Cannot retrieve the node list",
+        "cannot_open": "Cannot open the terminal",
+        "session_closed": "Session closed",
+        "transport_error": "The connection to the server was interrupted",
+        "retry_after": "Too many failed attempts. Try again in {seconds} seconds.",
+        "probe_failed": "Cannot determine whether sshd accepts a terminal on this node",
+        "sshd_not_listening": "sshd does not listen on the cluster VPN address",
+        "sshd_not_listening_description": "The terminal reaches the node through the VPN. Check the ListenAddress directive on that node.",
+        "root_password_refused": "This node refuses root with a password",
+        "root_password_refused_description": "PermitRootLogin is not set to yes for VPN connections. Use an unprivileged account and sudo, or change the sshd configuration of the node.",
+        "password_auth_disabled": "Password authentication is disabled on this node",
+        "password_auth_disabled_description": "sshd refuses passwords for VPN connections. Check the sshd configuration of the node.",
+        "credentials_notice": "These credentials are checked by the node",
+        "credentials_notice_description": "The user name and password are those of a system account on the node. They travel through the server that relays the session and are not stored."
     }
 }

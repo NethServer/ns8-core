@@ -59,6 +59,13 @@
       <cv-side-nav-divider />
 
       <cv-side-nav-link
+        @click="goTo('/terminal')"
+        :active="isLinkActive('/terminal')"
+      >
+        <template v-slot:nav-icon><Terminal20 /></template>
+        {{ $t("terminal.title") }}
+      </cv-side-nav-link>
+      <cv-side-nav-link
         @click="goTo('/system-logs')"
         :active="isLinkActive('/#/system-logs')"
       >
@@ -96,6 +103,7 @@ import Events20 from "@carbon/icons-vue/es/events/20";
 import Save20 from "@carbon/icons-vue/es/save/20";
 import Settings20 from "@carbon/icons-vue/es/settings/20";
 import Catalog20 from "@carbon/icons-vue/es/catalog/20";
+import Terminal20 from "@carbon/icons-vue/es/terminal/20";
 import Application20 from "@carbon/icons-vue/es/application/20";
 import Activity20 from "@carbon/icons-vue/es/activity/20";
 import Chip20 from "@carbon/icons-vue/es/chip/20";
@@ -111,6 +119,7 @@ export default {
     Save20,
     Events20,
     Catalog20,
+    Terminal20,
     Settings20,
     Application20,
     Activity20,
