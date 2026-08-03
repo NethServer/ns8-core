@@ -13,6 +13,10 @@ import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
 
+// Comfortably under the relay's 128 KiB read limit, which it enforces by
+// closing the session.
+const INPUT_CHUNK_SIZE = 32 * 1024;
+
 export default {
   name: "XtermPane",
   props: {
@@ -101,7 +105,15 @@ export default {
       }
       // Encode explicitly: the relay expects bytes, and a JS string would lose
       // the distinction between control frames and terminal input.
-      this.socket.send(new TextEncoder().encode(data));
+      const bytes = new TextEncoder().encode(data);
+
+      // A paste arrives as one onData event, so sending it whole would exceed
+      // the relay's read limit and the server would close the session. Split
+      // it: this is a byte stream, frame boundaries carry no meaning, and a
+      // single socket delivers them in order.
+      for (let offset = 0; offset < bytes.length; offset += INPUT_CHUNK_SIZE) {
+        this.socket.send(bytes.subarray(offset, offset + INPUT_CHUNK_SIZE));
+      }
     },
     onTerminalResize({ rows, cols }) {
       if (
