@@ -18,9 +18,7 @@ target node does that through its own set-terminal-sshd action.
 """
 
 import json
-import os
 import sys
-from datetime import datetime, timezone
 
 import agent
 import agent.tasks
@@ -33,14 +31,20 @@ def agent_is_alive(rdb, agent_id):
 
     Needed because the task wait loop polls forever with no timeout, so pushing
     a subtask to a powered-off node would hang this action indefinitely.
+
+    An agent holds several connections and they do not go idle together, so the
+    freshest one decides. Answering from whichever came first in the list made
+    this a coin flip that declared a running node dead. Pubsub connections are
+    left out, as api-server does: a subscriber is idle by nature.
     """
-    for client in rdb.client_list():
+    for client in rdb.client_list(_type='normal'):
         if client.get('name') != agent_id:
             continue
         try:
-            return int(client.get('idle', AGENT_MAX_IDLE + 1)) <= AGENT_MAX_IDLE
+            if int(client.get('idle', AGENT_MAX_IDLE + 1)) <= AGENT_MAX_IDLE:
+                return True
         except ValueError:
-            return False
+            continue
     return False
 
 
@@ -59,11 +63,13 @@ if not agent_is_alive(rdb, f'node/{node_id}'):
           file=sys.stderr)
     sys.exit(2)
 
-rdb.hset(f'node/{node_id}/terminal', mapping={
-    'enabled': '1',
-    'updated_by': os.environ.get('AGENT_TASK_USER', ''),
-    'updated_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
-})
+previous_enabled = rdb.hget(f'node/{node_id}/terminal', 'enabled') or '0'
+
+# Only the flag. Who flipped it and when belongs in audit.db, which keeps the
+# whole history and which modules cannot read: node/* is world-readable inside
+# the cluster through their %R~node/* grant, so an administrator name written
+# here would be handed to every installed module.
+rdb.hset(f'node/{node_id}/terminal', 'enabled', '1')
 
 # Wait for the node: enabling a terminal on an unreachable node is pointless,
 # and a rejected sshd configuration must be loud rather than leave the cluster
@@ -75,6 +81,10 @@ errors = agent.tasks.runp_brief([{
 }], endpoint='redis://cluster-leader')
 
 if errors:
-    print(f'node/{node_id} did not converge: the flag is set but sshd was not '
-          'reconfigured, so the terminal will fail to authenticate', file=sys.stderr)
+    # Roll the flag back. The UI reads it to advertise a working terminal, so
+    # leaving it set would send operators to a node whose sshd refuses them,
+    # and three attempts each is enough to throttle them on every node.
+    rdb.hset(f'node/{node_id}/terminal', 'enabled', previous_enabled)
+    print(f'node/{node_id} did not converge: sshd was not reconfigured, so the '
+          'terminal stays disabled', file=sys.stderr)
     sys.exit(3)

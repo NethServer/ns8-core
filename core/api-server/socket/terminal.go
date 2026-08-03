@@ -45,6 +45,12 @@ const (
 	// than this is a runaway client, not a person typing.
 	terminalLineLimit = 128
 
+	// Ceiling on the two SSH round trips that have no watchdog of their own:
+	// the correlation record, which goes through the account's login shell, and
+	// the keepalive, whose loop also carries the expiry and idle checks.
+	terminalCorrelationTimeout = 5 * time.Second
+	terminalKeepaliveTimeout   = 15 * time.Second
+
 	terminalIdleTimeout = 15 * time.Minute
 	terminalMaxDuration = 8 * time.Hour
 	terminalKeepalive   = 30 * time.Second
@@ -76,12 +82,23 @@ var terminalMu sync.Mutex
 // Outstanding tickets, keyed by their hex token.
 var terminalTickets = map[string]*terminalTicket{}
 
-// Cluster-admin user currently holding a node, enforcing one session per node.
-var terminalHolders = map[string]string{}
+// Node currently held, enforcing one session per node. The reservation carries
+// an id and not just the user name: a stale release must not be able to free a
+// reservation that has since been handed to someone else, which would let two
+// sessions run on the same node.
+var terminalHolders = map[string]terminalHolder{}
+
+var terminalHolderSeq uint64
+
+type terminalHolder struct {
+	user string
+	id   uint64
+}
 
 type terminalTicket struct {
 	token     []byte
 	nodeID    string
+	holderID  uint64
 	user      string
 	clientIP  string
 	exp       int64
@@ -183,7 +200,7 @@ func reserveTerminal(nodeID string, user string, clientIP string, exp int64) (st
 	expireTicketsLocked()
 
 	if holder, busy := terminalHolders[nodeID]; busy {
-		return "", errTerminalBusy(holder)
+		return "", errTerminalBusy(holder.user)
 	}
 
 	raw := make([]byte, 32)
@@ -192,15 +209,19 @@ func reserveTerminal(nodeID string, user string, clientIP string, exp int64) (st
 	}
 	token := hex.EncodeToString(raw)
 
+	terminalHolderSeq++
+	holderID := terminalHolderSeq
+
 	terminalTickets[token] = &terminalTicket{
 		token:     raw,
 		nodeID:    nodeID,
+		holderID:  holderID,
 		user:      user,
 		clientIP:  clientIP,
 		exp:       exp,
 		expiresAt: time.Now().Add(terminalAttachTimeout),
 	}
-	terminalHolders[nodeID] = user
+	terminalHolders[nodeID] = terminalHolder{user: user, id: holderID}
 
 	return token, nil
 }
@@ -226,7 +247,7 @@ func consumeTicket(token string, clientIP string) (*terminalTicket, error) {
 	delete(terminalTickets, token)
 
 	if ticket.clientIP != clientIP {
-		releaseTerminalLocked(ticket.nodeID)
+		releaseTerminalLocked(ticket.nodeID, ticket.holderID)
 		return nil, errTerminalAddressChanged
 	}
 
@@ -238,18 +259,24 @@ func expireTicketsLocked() {
 	for token, ticket := range terminalTickets {
 		if now.After(ticket.expiresAt) {
 			delete(terminalTickets, token)
-			releaseTerminalLocked(ticket.nodeID)
+			releaseTerminalLocked(ticket.nodeID, ticket.holderID)
 		}
 	}
 }
 
-func releaseTerminal(nodeID string) {
+func releaseTerminal(nodeID string, holderID uint64) {
 	terminalMu.Lock()
 	defer terminalMu.Unlock()
-	releaseTerminalLocked(nodeID)
+	releaseTerminalLocked(nodeID, holderID)
 }
 
-func releaseTerminalLocked(nodeID string) {
+// releaseTerminalLocked frees a node only for the reservation that asked. A
+// late release from a session that has already ended must not drop the
+// reservation of whoever took the node next.
+func releaseTerminalLocked(nodeID string, holderID uint64) {
+	if holder, held := terminalHolders[nodeID]; held && holder.id != holderID {
+		return
+	}
 	delete(terminalHolders, nodeID)
 }
 
@@ -330,8 +357,12 @@ func handleTicketFrame(s *melody.Session, state *terminalState, control terminal
 		return
 	}
 
-	state.adopt(ticket)
-	state.setPhase(phaseLogin)
+	if !state.adopt(ticket) {
+		// The reservation was taken out by the ticket, and this session will
+		// never carry it, so free it here.
+		releaseTerminal(ticket.nodeID, ticket.holderID)
+		return
+	}
 
 	writeTerminalControl(s, gin.H{"type": "ticket-accepted"})
 

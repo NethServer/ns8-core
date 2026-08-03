@@ -15,9 +15,7 @@ node/<id>/tasks queue is durable, so the node converges when it comes back.
 """
 
 import json
-import os
 import sys
-from datetime import datetime, timezone
 
 import agent
 import agent.tasks
@@ -27,11 +25,8 @@ node_id = request['node_id']
 
 rdb = agent.redis_connect(privileged=True)
 
-rdb.hset(f'node/{node_id}/terminal', mapping={
-    'enabled': '0',
-    'updated_by': os.environ.get('AGENT_TASK_USER', ''),
-    'updated_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
-})
+# Only the flag: see the note in enable-node-terminal.
+rdb.hset(f'node/{node_id}/terminal', 'enabled', '0')
 
 agent.tasks.runp_nowait([{
     'agent_id': f'node/{node_id}',

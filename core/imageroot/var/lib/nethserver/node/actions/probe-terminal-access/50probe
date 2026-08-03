@@ -50,11 +50,29 @@ def run_sshd_test(connection_spec=None):
     return config
 
 
+def listen_host(entry):
+    """Host part of a sshd -T listenaddress entry.
+
+    Entries look like 0.0.0.0:22, [::]:22 or 10.5.4.1:22, but sshd omits the
+    port when the configuration does. Splitting on the last colon is therefore
+    wrong for a bare IPv6 address: '::' would come out as ':' and the caller
+    would report no listener on a host that listens on every address.
+    """
+    entry = entry.strip()
+    if entry.startswith('['):
+        # sshd brackets an IPv6 host only to append a port.
+        host, _, _ = entry[1:].partition(']')
+        return host
+    # One colon separates a port; several mean an unbracketed IPv6 address.
+    if entry.count(':') == 1:
+        return entry.split(':', 1)[0]
+    return entry
+
+
 def listens_on(config, address):
     """True when sshd listens on the given address, or on every address."""
     for entry in config.get('listenaddress', []):
-        # Entries look like 0.0.0.0:22, [::]:22 or 10.5.4.1:22
-        host = entry.rsplit(':', 1)[0].strip('[]')
+        host = listen_host(entry)
         if host in ANY_ADDRESSES or host == address:
             return True
     return False

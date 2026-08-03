@@ -149,8 +149,15 @@
             />
 
             <!-- Mounted as soon as the socket is up, not once connected: the
-                 login prompts are drawn inside this pane. -->
-            <XtermPane v-if="socket" ref="pane" :socket="socket" />
+                 login prompts are drawn inside this pane. It outlives the
+                 socket so the transcript and the closing notice stay readable,
+                 and the key gives each new session a clean screen. -->
+            <XtermPane
+              v-if="isPaneShown"
+              :key="paneKey"
+              ref="pane"
+              :socket="socket"
+            />
           </template>
         </cv-column>
       </cv-row>
@@ -160,7 +167,7 @@
       size="default"
       kind="danger"
       :visible="isCloseModalShown"
-      @modal-hidden="isCloseModalShown = false"
+      @modal-hidden="onCloseModalHidden"
       @primary-click="onCloseConfirmed"
     >
       <template slot="title">{{ $t("terminal.close_confirm") }}</template>
@@ -207,8 +214,13 @@ export default {
       terminalEnabled: [],
       socket: null,
       pendingOutput: [],
+      isPaneShown: false,
+      paneKey: 0,
       isConnected: false,
       isCloseModalShown: false,
+      // Router callback held while the confirmation is on screen: navigating
+      // away kills the shell just as the Close button does, so it asks first.
+      pendingNavigation: null,
       closedReason: "",
       probe: {
         permit_root_login: false,
@@ -249,9 +261,17 @@ export default {
     // switch keeps the previous node's state, since syncToggle only ran after
     // the node list was reloaded.
     selectedNodeId: function () {
+      // The pane belongs to the node it was opened on: leaving that node must
+      // end the session and take the terminal off screen, whether or not the
+      // new one has the terminal enabled.
+      this.closeSession();
+      this.discardPane();
+
       this.syncToggle();
       this.error.toggle = "";
       this.error.probe = "";
+      this.error.session = "";
+      this.closedReason = "";
 
       // The probe is not only informative: it republishes the host keys the
       // handshake pins, so it has to run before a session is requested.
@@ -259,8 +279,25 @@ export default {
         this.probeAccess();
       }
     },
+    // Armed only while a shell is live, and disarmed as soon as it ends. Left
+    // in place it would prompt on every navigation, and a prompt that cries
+    // wolf is one users learn to dismiss without reading.
+    isConnected: function (connected) {
+      if (connected) {
+        window.addEventListener("beforeunload", this.onBeforeUnload);
+      } else {
+        window.removeEventListener("beforeunload", this.onBeforeUnload);
+      }
+    },
   },
   beforeRouteLeave(to, from, next) {
+    // Leaving the page kills the shell exactly as the Close button does, so it
+    // deserves the same warning. The router waits until the modal answers.
+    if (this.isConnected) {
+      this.pendingNavigation = next;
+      this.isCloseModalShown = true;
+      return;
+    }
     this.closeSession();
     next();
   },
@@ -268,6 +305,8 @@ export default {
     this.listNodes();
   },
   beforeDestroy() {
+    // The isConnected watcher does not run on destruction, so disarm here too.
+    window.removeEventListener("beforeunload", this.onBeforeUnload);
     this.closeSession();
   },
   methods: {
@@ -420,6 +459,8 @@ export default {
     async requestSession() {
       this.error.session = "";
       this.closedReason = "";
+      // Start from a clean screen rather than under the previous transcript.
+      this.discardPane();
 
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
@@ -446,6 +487,7 @@ export default {
       const socket = new WebSocket(`${this.$root.config.WS_ENDPOINT}/terminal`);
       socket.binaryType = "arraybuffer";
       this.socket = socket;
+      this.isPaneShown = true;
 
       socket.addEventListener("open", () => {
         socket.send(JSON.stringify({ type: "ticket", ticket }));
@@ -502,6 +544,13 @@ export default {
           break;
       }
     },
+    // Takes the terminal off screen and drops its transcript. Kept apart from
+    // closeSession, which ends the connection but leaves the pane readable.
+    discardPane() {
+      this.isPaneShown = false;
+      this.pendingOutput = [];
+      this.paneKey += 1;
+    },
     flushPendingOutput() {
       if (!this.$refs.pane) {
         return;
@@ -517,20 +566,56 @@ export default {
       if (this.isConnected) {
         this.isCloseModalShown = true;
       } else {
-        this.closeSession();
+        this.endSessionFromUi();
       }
     },
     onCloseConfirmed() {
-      this.isCloseModalShown = false;
-      this.closeSession();
+      // Taken before ending the session: onCloseModalHidden fires right after
+      // and must not read it as a cancellation.
+      const proceed = this.pendingNavigation;
+      this.pendingNavigation = null;
+
+      this.endSessionFromUi();
+
+      if (proceed) {
+        proceed();
+      }
     },
+    onCloseModalHidden() {
+      this.isCloseModalShown = false;
+      // Dismissed without confirming. A navigation waiting on this modal has
+      // to be answered, or the router stays blocked on a question nobody
+      // replied to and every later route change is ignored.
+      const cancel = this.pendingNavigation;
+      this.pendingNavigation = null;
+      if (cancel) {
+        cancel(false);
+      }
+    },
+    onBeforeUnload(event) {
+      // The wording belongs to the browser; preventDefault plus returnValue is
+      // what makes the prompt appear at all.
+      event.preventDefault();
+      event.returnValue = "";
+    },
+    // Closing from the UI also takes the terminal off screen. Keeping it would
+    // read as a button that did nothing. The transcript is only worth
+    // preserving when the server ends the session, where the notice explains
+    // why it happened.
+    endSessionFromUi() {
+      this.closeSession();
+      this.discardPane();
+    },
+    // Ends the connection only. The pane stays mounted on purpose: the server
+    // sleeps 50 ms before the close frame precisely so its closing notice
+    // arrives, and unmounting here would throw away that notice along with the
+    // whole transcript.
     closeSession() {
       this.isCloseModalShown = false;
       if (this.socket) {
         this.socket.close();
         this.socket = null;
       }
-      this.pendingOutput = [];
       this.isConnected = false;
     },
   },

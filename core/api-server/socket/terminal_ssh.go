@@ -49,6 +49,7 @@ type terminalState struct {
 	opened time.Time
 
 	nodeID   string
+	holderID uint64
 	user     string
 	sshUser  string
 	clientIP string
@@ -62,6 +63,11 @@ type terminalState struct {
 	// Keystrokes waiting to be consumed by the login prompts. Buffered so a
 	// paste does not block melody's read pump.
 	loginInput chan []byte
+
+	// What followed the newline in the frame the previous prompt stopped on. A
+	// paste can carry the user name and the password in one frame, and those
+	// trailing bytes belong to the next prompt.
+	loginRemainder []byte
 
 	// Closed once by closeTerminal. Without it a login goroutine would sit on
 	// its prompt until the login deadline after the browser has gone, and could
@@ -88,13 +94,25 @@ func (state *terminalState) setPhase(phase string) {
 	state.phase = phase
 }
 
-func (state *terminalState) adopt(ticket *terminalTicket) {
+// adopt binds a consumed ticket to the session and enters the login phase in a
+// single step. It reports false when the session was closed meanwhile: melody
+// runs closeTerminal from its write pump, so a close can land between consuming
+// the ticket and installing it. Installing it anyway would revive a closed
+// session whose later closeTerminal calls all return at the closed guard,
+// leaving the node reserved for good.
+func (state *terminalState) adopt(ticket *terminalTicket) bool {
 	state.mu.Lock()
 	defer state.mu.Unlock()
+	if state.closed {
+		return false
+	}
 	state.nodeID = ticket.nodeID
+	state.holderID = ticket.holderID
 	state.user = ticket.user
 	state.clientIP = ticket.clientIP
 	state.exp = ticket.exp
+	state.phase = phaseLogin
+	return true
 }
 
 func (state *terminalState) touch() {
@@ -147,6 +165,32 @@ func (state *terminalState) currentSize() (int, int) {
 	return state.rows, state.cols
 }
 
+func (state *terminalState) takeLoginRemainder() []byte {
+	state.mu.Lock()
+	defer state.mu.Unlock()
+	rest := state.loginRemainder
+	state.loginRemainder = nil
+	return rest
+}
+
+func (state *terminalState) stashLoginRemainder(data []byte) {
+	state.mu.Lock()
+	defer state.mu.Unlock()
+	state.loginRemainder = data
+}
+
+// dropLoginRemainder throws away buffered input after a failed attempt. A paste
+// that went wrong must not spill its second line into the next prompt, where
+// the user name echoes and a password would land in the scrollback.
+func (state *terminalState) dropLoginRemainder() {
+	state.mu.Lock()
+	defer state.mu.Unlock()
+	for i := range state.loginRemainder {
+		state.loginRemainder[i] = 0
+	}
+	state.loginRemainder = nil
+}
+
 // offerLoginInput queues keystrokes for the login prompts. It reports false
 // when the queue is saturated, which no human typing can do.
 func (state *terminalState) offerLoginInput(keys []byte) bool {
@@ -196,22 +240,19 @@ func attachShell(s *melody.Session, state *terminalState, sshUser string, client
 		localPort = port
 	}
 
-	// Best effort: the operating system administrator has no access to
-	// audit.db, so this is the only place the cluster-admin identity shows up
-	// on the node itself.
-	correlated := true
-	if err := writeCorrelationRecord(client, state.user, state.clientIP); err != nil {
-		correlated = false
-	}
-
 	session, stdout, stdin, err := openTerminalShell(client, rows, cols)
 	if err != nil {
 		_ = client.Close()
 		writeTerminalControl(s, gin.H{"type": "auth-error", "message": "could not open a shell: " + err.Error()})
-		releaseTerminal(state.nodeID)
 		closeTerminal(s, "shell refused")
 		return
 	}
+
+	// Best effort, and after the shell is up: the operating system
+	// administrator has no access to audit.db, so this is the only place the
+	// cluster-admin identity shows up on the node itself, but it must not delay
+	// a session that is otherwise ready.
+	correlated := writeCorrelationRecord(client, state.user, state.clientIP) == nil
 
 	state.mu.Lock()
 	state.sshUser = sshUser
@@ -450,11 +491,27 @@ func terminalKeepaliveLoop(s *melody.Session, state *terminalState) {
 		opened := state.opened
 		state.mu.Unlock()
 
-		// x/crypto/ssh has no keepalive of its own.
-		if _, _, err := client.SendRequest("keepalive@openssh.com", true, nil); err != nil {
-			closeTerminal(s, "lost the connection to the node")
+		// x/crypto/ssh has no keepalive of its own. Bounded because it opens
+		// this loop, and the loop is what enforces the expiry, idle, duration
+		// and disabled checks below: a black-holed node would otherwise leave a
+		// live shell that none of them can ever reach.
+		alive := make(chan error, 1)
+		go func() {
+			_, _, err := client.SendRequest("keepalive@openssh.com", true, nil)
+			alive <- err
+		}()
+
+		select {
+		case err := <-alive:
+			if err != nil {
+				closeTerminal(s, "lost the connection to the node")
+				return
+			}
+		case <-time.After(terminalKeepaliveTimeout):
+			closeTerminal(s, "the node stopped answering")
 			return
 		}
+
 		if exp > 0 && time.Now().Unix() > exp {
 			closeTerminal(s, "session token expired")
 			return
@@ -510,6 +567,7 @@ func closeTerminal(s *melody.Session, reason string) {
 	client := state.client
 	session := state.session
 	nodeID := state.nodeID
+	holderID := state.holderID
 	user := state.user
 	sshUser := state.sshUser
 	localPort := state.localPort
@@ -524,7 +582,7 @@ func closeTerminal(s *melody.Session, reason string) {
 		_ = client.Close()
 	}
 	if nodeID != "" {
-		releaseTerminal(nodeID)
+		releaseTerminal(nodeID, holderID)
 	}
 
 	if started {
@@ -565,7 +623,22 @@ func writeCorrelationRecord(client *ssh.Client, adminUser string, clientIP strin
 	defer session.Close()
 
 	message := fmt.Sprintf("session opened by %s from %s", adminUser, clientIP)
-	return session.Run("logger -t ns8-terminal -- " + shellSingleQuote(message))
+
+	// Bounded on purpose. This runs a command through the account's login
+	// shell, and a shell that never returns would otherwise hang the caller
+	// with no timeout of its own watching over it. The deferred Close unblocks
+	// the goroutine, and the buffered channel keeps it from leaking.
+	done := make(chan error, 1)
+	go func() {
+		done <- session.Run("logger -t ns8-terminal -- " + shellSingleQuote(message))
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-time.After(terminalCorrelationTimeout):
+		return errors.New("timed out writing the correlation record")
+	}
 }
 
 func shellSingleQuote(value string) string {

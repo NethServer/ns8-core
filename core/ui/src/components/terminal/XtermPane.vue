@@ -20,9 +20,12 @@ export default {
     // messages. AttachAddon is deliberately not used: it is bidirectional by
     // default, so pairing it with our own onData handler sends every keystroke
     // twice.
+    //
+    // Becomes null once the session ends: the pane outlives it so the operator
+    // keeps the transcript and the closing notice on screen.
     socket: {
       type: WebSocket,
-      required: true,
+      default: null,
     },
   },
   data() {
@@ -52,8 +55,10 @@ export default {
     this.observer = new ResizeObserver(this.fit);
     this.observer.observe(this.$refs.container);
 
-    this.socket.binaryType = "arraybuffer";
-    this.socket.addEventListener("message", this.onSocketMessage);
+    if (this.socket) {
+      this.socket.binaryType = "arraybuffer";
+      this.socket.addEventListener("message", this.onSocketMessage);
+    }
 
     this.fit();
     this.term.focus();
@@ -91,7 +96,7 @@ export default {
       }
     },
     onTerminalData(data) {
-      if (this.socket.readyState !== WebSocket.OPEN) {
+      if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
         return;
       }
       // Encode explicitly: the relay expects bytes, and a JS string would lose
@@ -100,6 +105,7 @@ export default {
     },
     onTerminalResize({ rows, cols }) {
       if (
+        !this.socket ||
         this.socket.readyState !== WebSocket.OPEN ||
         (rows === this.lastSize.rows && cols === this.lastSize.cols)
       ) {

@@ -46,6 +46,11 @@ func runLoginFlow(s *melody.Session, state *terminalState) {
 		return
 	}
 
+	// The keepalive loop only watches the disabled flag once a shell is up, so
+	// without this an operator revoking the terminal could not interrupt a
+	// session parked at the password prompt.
+	go watchDisabledDuringLogin(s, state)
+
 	writeTerminalText(s, fmt.Sprintf("\r\nNS8 node %s\r\n", state.nodeID))
 
 	for attempt := 0; attempt < terminalLoginAttempts; attempt++ {
@@ -62,6 +67,7 @@ func runLoginFlow(s *melody.Session, state *terminalState) {
 
 		sshUser := string(raw)
 		if !sshUsernamePattern.MatchString(sshUser) {
+			state.dropLoginRemainder()
 			writeTerminalText(s, "\r\ninvalid user name\r\n")
 			continue
 		}
@@ -104,6 +110,7 @@ func runLoginFlow(s *melody.Session, state *terminalState) {
 				"ssh_user":  sshUser,
 				"client_ip": state.clientIP,
 			})
+			state.dropLoginRemainder()
 			// Deliberately vague and uniform, as sshd is: telling the operator
 			// whether the account exists would be a gift to anyone guessing.
 			writeTerminalText(s, "\r\nLogin incorrect\r\n")
@@ -116,6 +123,26 @@ func runLoginFlow(s *melody.Session, state *terminalState) {
 	}
 
 	closeTerminal(s, "too many failed login attempts")
+}
+
+func watchDisabledDuringLogin(s *melody.Session, state *terminalState) {
+	ticker := time.NewTicker(terminalKeepalive)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-state.done:
+			return
+		case <-ticker.C:
+			if state.currentPhase() != phaseLogin {
+				return
+			}
+			if terminalDisabled(state.nodeID) {
+				closeTerminal(s, "the terminal was disabled on this node")
+				return
+			}
+		}
+	}
 }
 
 // answerPrompts renders the questions sshd sends over keyboard-interactive and
@@ -191,27 +218,33 @@ func readLine(s *melody.Session, state *terminalState, deadline time.Time, echo 
 	}
 
 	for {
-		remaining := time.Until(deadline)
-		if remaining <= 0 {
-			wipe(line)
-			return nil, errLoginTimeout
+		// Whatever the previous prompt left behind comes first, before waiting
+		// on the socket again.
+		chunk := state.takeLoginRemainder()
+
+		if len(chunk) == 0 {
+			remaining := time.Until(deadline)
+			if remaining <= 0 {
+				wipe(line)
+				return nil, errLoginTimeout
+			}
+
+			timer := time.NewTimer(remaining)
+			select {
+			case chunk = <-state.loginInput:
+				timer.Stop()
+			case <-state.done:
+				timer.Stop()
+				wipe(line)
+				return nil, errLoginAborted
+			case <-timer.C:
+				wipe(line)
+				return nil, errLoginTimeout
+			}
 		}
 
-		var chunk []byte
-		timer := time.NewTimer(remaining)
-		select {
-		case chunk = <-state.loginInput:
-			timer.Stop()
-		case <-state.done:
-			timer.Stop()
-			wipe(line)
-			return nil, errLoginAborted
-		case <-timer.C:
-			wipe(line)
-			return nil, errLoginTimeout
-		}
-
-		for _, character := range chunk {
+		for index := 0; index < len(chunk); index++ {
+			character := chunk[index]
 			switch escape {
 			case escSeen:
 				// Only CSI and SS3 carry parameters; anything else was a lone
@@ -231,6 +264,20 @@ func readLine(s *melody.Session, state *terminalState, deadline time.Time, echo 
 
 			switch character {
 			case '\r', '\n':
+				// A paste can hold the user name and the password in one
+				// frame. Keep the tail for the next prompt instead of dropping
+				// it, and swallow the LF of a CRLF pair so it does not read as
+				// an empty answer there.
+				rest := chunk[index+1:]
+				if character == '\r' && len(rest) > 0 && rest[0] == '\n' {
+					rest = rest[1:]
+				}
+				if len(rest) > 0 {
+					keep := make([]byte, len(rest))
+					copy(keep, rest)
+					state.stashLoginRemainder(keep)
+				}
+
 				wipe(chunk)
 				answer := make([]byte, len(line))
 				copy(answer, line)
