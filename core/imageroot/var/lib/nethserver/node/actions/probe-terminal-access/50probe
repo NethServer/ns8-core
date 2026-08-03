@@ -81,7 +81,9 @@ def served_host_keys(config):
 if not os.path.isfile(SSHD_BINARY):
     fail(f'{SSHD_BINARY} not found: is openssh-server installed?')
 
-rdb = agent.redis_connect()
+# Privileged: the probe publishes the host keys into node/<id>/ssh, and the
+# default Redis user is read-only.
+rdb = agent.redis_connect(privileged=True)
 node_id = os.environ['NODE_ID']
 
 leader_id = rdb.hget('cluster/environment', 'NODE_ID')
