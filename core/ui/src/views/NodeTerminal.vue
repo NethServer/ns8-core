@@ -68,6 +68,51 @@
                 :description="error.toggle"
                 :showCloseButton="false"
               />
+
+              <!-- What sshd will accept, asked before anything is typed. The
+                   probe also republishes the host keys the handshake pins. -->
+              <template v-if="selectedNode.terminal_enabled">
+                <cv-skeleton-text
+                  v-if="loading.probe"
+                  :paragraph="true"
+                  :line-count="2"
+                ></cv-skeleton-text>
+                <template v-else>
+                  <NsInlineNotification
+                    v-if="error.probe"
+                    kind="error"
+                    :title="$t('action.probe-terminal-access')"
+                    :description="error.probe"
+                    :showCloseButton="false"
+                  />
+                  <NsInlineNotification
+                    v-else-if="!probe.listen_wg0"
+                    kind="error"
+                    :title="$t('terminal.sshd_not_listening')"
+                    :description="$t('terminal.sshd_not_listening_description')"
+                    :showCloseButton="false"
+                  />
+                  <!-- Most operators log in as root: say it before they try -->
+                  <NsInlineNotification
+                    v-else-if="!probe.permit_root_login"
+                    kind="warning"
+                    :title="$t('terminal.root_password_refused')"
+                    :description="
+                      $t('terminal.root_password_refused_description')
+                    "
+                    :showCloseButton="false"
+                  />
+                  <NsInlineNotification
+                    v-else-if="!probe.password_auth"
+                    kind="warning"
+                    :title="$t('terminal.password_auth_disabled')"
+                    :description="
+                      $t('terminal.password_auth_disabled_description')
+                    "
+                    :showCloseButton="false"
+                  />
+                </template>
+              </template>
             </template>
 
             <div class="terminal-actions">
@@ -82,7 +127,7 @@
               <NsButton
                 kind="danger--tertiary"
                 :icon="Close20"
-                @click="closeSession"
+                @click="confirmClose"
                 v-else
                 >{{ $t("terminal.close") }}</NsButton
               >
@@ -103,24 +148,28 @@
               :showCloseButton="false"
             />
 
-            <XtermPane
-              v-if="socket && isConnected"
-              ref="pane"
-              :socket="socket"
-            />
+            <!-- Mounted as soon as the socket is up, not once connected: the
+                 login prompts are drawn inside this pane. -->
+            <XtermPane v-if="socket" ref="pane" :socket="socket" />
           </template>
         </cv-column>
       </cv-row>
     </cv-grid>
 
-    <OpenTerminalModal
-      v-if="selectedNode"
-      :isShown="isModalShown"
-      :nodeId="selectedNodeId"
-      :nodeLabel="nodeLabelOf(selectedNode)"
-      @open="onCredentials"
-      @hide="onModalHidden"
-    />
+    <NsModal
+      size="default"
+      kind="danger"
+      :visible="isCloseModalShown"
+      @modal-hidden="isCloseModalShown = false"
+      @primary-click="onCloseConfirmed"
+    >
+      <template slot="title">{{ $t("terminal.close_confirm") }}</template>
+      <template slot="content">
+        <p>{{ $t("terminal.close_confirm_description") }}</p>
+      </template>
+      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
+      <template slot="primary-button">{{ $t("terminal.close") }}</template>
+    </NsModal>
   </div>
 </template>
 
@@ -136,12 +185,11 @@ import {
   PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import NodeService from "@/mixins/node";
-import OpenTerminalModal from "@/components/terminal/OpenTerminalModal";
 import XtermPane from "@/components/terminal/XtermPane";
 
 export default {
   name: "NodeTerminal",
-  components: { OpenTerminalModal, XtermPane },
+  components: { XtermPane },
   mixins: [
     TaskService,
     UtilService,
@@ -158,17 +206,26 @@ export default {
       selectedNodeId: "",
       terminalEnabled: [],
       socket: null,
-      isModalShown: false,
+      pendingOutput: [],
       isConnected: false,
+      isCloseModalShown: false,
       closedReason: "",
+      probe: {
+        permit_root_login: false,
+        password_auth: false,
+        listen_wg0: false,
+        port: 22,
+      },
       loading: {
         listNodes: false,
         toggle: false,
+        probe: false,
       },
       error: {
         listNodes: "",
         toggle: "",
         session: "",
+        probe: "",
       },
     };
   },
@@ -182,8 +239,25 @@ export default {
       return (
         !!this.selectedNode &&
         this.selectedNode.terminal_enabled &&
-        !this.loading.toggle
+        !this.loading.toggle &&
+        !this.loading.probe
       );
+    },
+  },
+  watch: {
+    // Everything shown below the selector belongs to one node. Without this the
+    // switch keeps the previous node's state, since syncToggle only ran after
+    // the node list was reloaded.
+    selectedNodeId: function () {
+      this.syncToggle();
+      this.error.toggle = "";
+      this.error.probe = "";
+
+      // The probe is not only informative: it republishes the host keys the
+      // handshake pins, so it has to run before a session is requested.
+      if (this.selectedNode && this.selectedNode.terminal_enabled) {
+        this.probeAccess();
+      }
     },
   },
   beforeRouteLeave(to, from, next) {
@@ -294,23 +368,58 @@ export default {
         this.loading.toggle = false;
       }
     },
-    requestSession() {
-      this.error.session = "";
-      this.closedReason = "";
-      this.isModalShown = true;
+    /**
+     * Ask the node what sshd will accept. The probe passes a connection spec to
+     * sshd -T, so it reports the policy that applies to the terminal rather
+     * than the global one.
+     */
+    async probeAccess() {
+      this.loading.probe = true;
+      this.error.probe = "";
+      const taskAction = "probe-terminal-access";
+      const eventId = this.getUuid();
+
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.probeAborted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.probeCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(this.selectedNodeId, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.probe = this.getErrorMessage(err);
+        this.loading.probe = false;
+      }
     },
-    onModalHidden() {
-      this.isModalShown = false;
+    probeCompleted(taskContext, taskResult) {
+      this.probe = taskResult.output;
+      this.loading.probe = false;
+    },
+    probeAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.probe = this.$t("terminal.probe_failed");
+      this.loading.probe = false;
     },
     /**
      * Two steps on purpose. The REST call only authorizes and returns a
-     * one-shot ticket; credentials travel on the websocket, where the handshake
-     * runs. That leaves room for a browser-held signer later without changing
-     * this flow.
+     * one-shot ticket; the login prompts then run inside the terminal, driven
+     * by api-server for the user name and by sshd for the password.
      */
-    async onCredentials(credentials) {
-      this.isModalShown = false;
+    async requestSession() {
       this.error.session = "";
+      this.closedReason = "";
 
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
@@ -331,9 +440,9 @@ export default {
         return;
       }
 
-      this.openSocket(response.data.data.ticket, credentials);
+      this.openSocket(response.data.data.ticket);
     },
-    openSocket(ticket, credentials) {
+    openSocket(ticket) {
       const socket = new WebSocket(`${this.$root.config.WS_ENDPOINT}/terminal`);
       socket.binaryType = "arraybuffer";
       this.socket = socket;
@@ -344,11 +453,17 @@ export default {
 
       socket.addEventListener("message", (event) => {
         if (typeof event.data !== "string") {
-          // Terminal bytes: XtermPane consumes them.
+          // Terminal bytes: XtermPane consumes them once mounted. Until then
+          // they are kept here, otherwise the login prompt would be lost.
+          if (!this.$refs.pane) {
+            this.pendingOutput.push(event.data);
+          }
           return;
         }
-        this.onControlFrame(JSON.parse(event.data), credentials);
+        this.onControlFrame(JSON.parse(event.data));
       });
+
+      this.$nextTick(this.flushPendingOutput);
 
       socket.addEventListener("close", () => {
         this.isConnected = false;
@@ -359,32 +474,25 @@ export default {
         this.error.session = this.$t("terminal.transport_error");
       });
     },
-    onControlFrame(frame, credentials) {
+    onControlFrame(frame) {
       switch (frame.type) {
         case "ticket-accepted": {
+          // Nothing to answer: the server owns the login dialogue from here.
+          // Only the size is worth sending, so the shell it opens next matches
+          // the pane the prompts are already drawn in.
           const size = this.$refs.pane
             ? this.$refs.pane.currentSize()
             : { rows: 24, cols: 80 };
           this.socket.send(
-            JSON.stringify({
-              type: "credentials",
-              username: credentials.username,
-              password: credentials.password,
-              rows: size.rows,
-              cols: size.cols,
-            })
+            JSON.stringify({ type: "resize", rows: size.rows, cols: size.cols })
           );
-          // Drop the password as soon as it is on the wire.
-          credentials.password = "";
           break;
         }
         case "ready":
           this.isConnected = true;
           break;
         case "auth-error":
-          this.error.session = frame.retry_after
-            ? this.$t("terminal.retry_after", { seconds: frame.retry_after })
-            : frame.message;
+          this.error.session = frame.message;
           break;
         case "closed":
           this.closedReason = frame.reason;
@@ -394,11 +502,35 @@ export default {
           break;
       }
     },
+    flushPendingOutput() {
+      if (!this.$refs.pane) {
+        return;
+      }
+      for (const data of this.pendingOutput) {
+        this.$refs.pane.writeBytes(data);
+      }
+      this.pendingOutput = [];
+    },
+    // Only worth asking once a shell is up: at the login prompt there is
+    // nothing running to lose.
+    confirmClose() {
+      if (this.isConnected) {
+        this.isCloseModalShown = true;
+      } else {
+        this.closeSession();
+      }
+    },
+    onCloseConfirmed() {
+      this.isCloseModalShown = false;
+      this.closeSession();
+    },
     closeSession() {
+      this.isCloseModalShown = false;
       if (this.socket) {
         this.socket.close();
         this.socket = null;
       }
+      this.pendingOutput = [];
       this.isConnected = false;
     },
   },

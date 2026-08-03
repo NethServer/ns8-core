@@ -29,9 +29,21 @@ import (
 
 const (
 	// Time allowed to attach the WebSocket with the ticket obtained from the
-	// REST call, and then to send the credentials on that channel.
-	terminalAttachTimeout      = 30 * time.Second
-	terminalCredentialsTimeout = 30 * time.Second
+	// REST call, and then to complete the login prompts on that channel. The
+	// login budget is generous because a human is typing, but bounded: the
+	// ticket holds the node reserved, so an abandoned tab would otherwise lock
+	// the terminal for everyone else.
+	terminalAttachTimeout = 30 * time.Second
+	terminalLoginTimeout  = 2 * time.Minute
+
+	// Attempts offered at the login prompt before the session is closed, as on
+	// a console. Each attempt is a fresh ssh.Dial, so each one gets its own
+	// MaxAuthTries budget on the node.
+	terminalLoginAttempts = 3
+
+	// Bytes accepted on a single prompt line. A user name or a password longer
+	// than this is a runaway client, not a person typing.
+	terminalLineLimit = 128
 
 	terminalIdleTimeout = 15 * time.Minute
 	terminalMaxDuration = 8 * time.Hour
@@ -49,10 +61,10 @@ const (
 // Phases of a terminal WebSocket. A message that does not belong to the
 // current phase closes the session instead of being ignored.
 const (
-	phaseTicket      = "ticket"
-	phaseCredentials = "credentials"
-	phaseRunning     = "running"
-	phaseClosed      = "closed"
+	phaseTicket  = "ticket"
+	phaseLogin   = "login"
+	phaseRunning = "running"
+	phaseClosed  = "closed"
 )
 
 var terminalCtx = context.Background()
@@ -76,17 +88,15 @@ type terminalTicket struct {
 	expiresAt time.Time
 }
 
-// terminalControl is the typed shape of every inbound text frame. Inbound
-// frames are never logged verbatim: a malformed one would otherwise put the
-// password in the journal through utils.LogError, which writes err.Error() to
-// stderr.
+// terminalControl is the typed shape of every inbound text frame. Credentials
+// no longer travel here: the login prompts run inside the terminal, so the
+// password arrives as ordinary binary keystrokes. Text frames are still never
+// logged verbatim, because the ticket is a bearer token for the reservation.
 type terminalControl struct {
-	Type     string `json:"type"`
-	Ticket   string `json:"ticket"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Rows     int    `json:"rows"`
-	Cols     int    `json:"cols"`
+	Type   string `json:"type"`
+	Ticket string `json:"ticket"`
+	Rows   int    `json:"rows"`
+	Cols   int    `json:"cols"`
 }
 
 // TerminalInstance returns the melody instance dedicated to terminal sessions.
@@ -259,7 +269,14 @@ func auditTerminal(user string, action string, data gin.H) {
  */
 
 func onTerminalConnect(s *melody.Session) {
-	state := &terminalState{phase: phaseTicket, opened: time.Now()}
+	state := &terminalState{
+		phase:      phaseTicket,
+		opened:     time.Now(),
+		rows:       24,
+		cols:       80,
+		loginInput: make(chan []byte, 64),
+		done:       make(chan struct{}),
+	}
 	s.Set("terminal", state)
 
 	go func() {
@@ -293,8 +310,6 @@ func onTerminalControl(s *melody.Session, message []byte) {
 	switch control.Type {
 	case "ticket":
 		handleTicketFrame(s, state, control)
-	case "credentials":
-		handleCredentialsFrame(s, state, &control)
 	case "resize":
 		state.resize(control.Rows, control.Cols)
 	default:
@@ -316,45 +331,37 @@ func handleTicketFrame(s *melody.Session, state *terminalState, control terminal
 	}
 
 	state.adopt(ticket)
-	state.setPhase(phaseCredentials)
-
-	go func() {
-		time.Sleep(terminalCredentialsTimeout)
-		if state.currentPhase() == phaseCredentials {
-			closeTerminal(s, "credentials not sent in time")
-		}
-	}()
+	state.setPhase(phaseLogin)
 
 	writeTerminalControl(s, gin.H{"type": "ticket-accepted"})
-}
 
-func handleCredentialsFrame(s *melody.Session, state *terminalState, control *terminalControl) {
-	if state.currentPhase() != phaseCredentials {
-		closeTerminal(s, "credentials not expected now")
-		return
-	}
-
-	// The JSON decoder materialises the password as a Go string, which is
-	// immutable and may be copied by the garbage collector, so it cannot be
-	// wiped. What we can do is keep a single copy, hand it straight to the
-	// handshake, blank our own buffer afterwards, never log it, and set
-	// LimitCORE=0 on the unit so it cannot reach a core dump.
-	password := []byte(control.Password)
-	control.Password = ""
-
-	startTerminalSession(s, state, control.Username, password, control.Rows, control.Cols)
-
-	for i := range password {
-		password[i] = 0
-	}
+	// The login prompts need keystrokes, and melody calls its handlers one at a
+	// time on the read pump: waiting for input from inside a handler would stop
+	// that input from ever being read.
+	go runLoginFlow(s, state)
 }
 
 func onTerminalInput(s *melody.Session, message []byte) {
 	state := terminalStateOf(s)
-	if state == nil || state.currentPhase() != phaseRunning {
+	if state == nil {
 		return
 	}
-	state.write(message)
+
+	switch state.currentPhase() {
+	case phaseRunning:
+		state.write(message)
+	case phaseLogin:
+		// Copy before handing over: melody reuses its read buffer, and these
+		// bytes are the password being typed.
+		keys := make([]byte, len(message))
+		copy(keys, message)
+		for i := range message {
+			message[i] = 0
+		}
+		if !state.offerLoginInput(keys) {
+			closeTerminal(s, "input flood during login")
+		}
+	}
 }
 
 func onTerminalDisconnect(s *melody.Session) {

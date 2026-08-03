@@ -1830,9 +1830,8 @@
         "node": "Node",
         "open": "Open terminal",
         "close": "Close",
-        "open_on_node": "Open a terminal on node {node}",
-        "system_user": "System user",
-        "system_password": "System password",
+        "close_confirm": "Close the terminal?",
+        "close_confirm_description": "The shell on the node is terminated with the session. Anything still running in it, including a command started from this terminal, is killed.",
         "on": "Enabled",
         "off": "Disabled",
         "disabled_on_node": "The terminal is disabled on this node",
@@ -1843,15 +1842,12 @@
         "cannot_open": "Cannot open the terminal",
         "session_closed": "Session closed",
         "transport_error": "The connection to the server was interrupted",
-        "retry_after": "Too many failed attempts. Try again in {seconds} seconds.",
         "probe_failed": "Cannot determine whether sshd accepts a terminal on this node",
         "sshd_not_listening": "sshd does not listen on the cluster VPN address",
         "sshd_not_listening_description": "The terminal reaches the node through the VPN. Check the ListenAddress directive on that node.",
         "root_password_refused": "This node refuses root with a password",
         "root_password_refused_description": "PermitRootLogin is not set to yes for VPN connections. Use an unprivileged account and sudo, or change the sshd configuration of the node.",
         "password_auth_disabled": "Password authentication is disabled on this node",
-        "password_auth_disabled_description": "sshd refuses passwords for VPN connections. Check the sshd configuration of the node.",
-        "credentials_notice": "These credentials are checked by the node",
-        "credentials_notice_description": "The user name and password are those of a system account on the node. They travel through the server that relays the session and are not stored."
+        "password_auth_disabled_description": "sshd refuses passwords for VPN connections. Check the sshd configuration of the node."
     }
 }

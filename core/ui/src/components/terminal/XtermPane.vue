@@ -117,6 +117,13 @@ export default {
       // a multi-byte character split across two frames.
       this.term.write(new Uint8Array(event.data));
     },
+    // Used by the parent to replay bytes that arrived before this pane was
+    // mounted: the login prompt is the very first thing the server writes.
+    writeBytes(data) {
+      if (this.term) {
+        this.term.write(new Uint8Array(data));
+      }
+    },
     writeNotice(message) {
       if (this.term) {
         this.term.write(`\r\n\x1b[31m${message}\x1b[0m\r\n`);

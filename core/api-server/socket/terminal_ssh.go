@@ -54,6 +54,20 @@ type terminalState struct {
 	clientIP string
 	exp      int64
 
+	// Kept outside the SSH session: the browser sizes the pane as soon as it is
+	// mounted, which is now before the shell exists.
+	rows int
+	cols int
+
+	// Keystrokes waiting to be consumed by the login prompts. Buffered so a
+	// paste does not block melody's read pump.
+	loginInput chan []byte
+
+	// Closed once by closeTerminal. Without it a login goroutine would sit on
+	// its prompt until the login deadline after the browser has gone, and could
+	// still bring up a shell on a session nobody is reading.
+	done chan struct{}
+
 	client    *ssh.Client
 	session   *ssh.Session
 	stdin     io.WriteCloser
@@ -109,11 +123,16 @@ func (state *terminalState) write(data []byte) {
 	_, _ = stdin.Write(data)
 }
 
+// resize records the size in every phase and forwards it only once a shell
+// exists: the pane is mounted for the login prompts, so the first frames land
+// before there is any session to notify.
 func (state *terminalState) resize(rows int, cols int) {
 	if rows <= 0 || cols <= 0 {
 		return
 	}
 	state.mu.Lock()
+	state.rows = rows
+	state.cols = cols
 	session := state.session
 	state.mu.Unlock()
 	if session == nil {
@@ -122,66 +141,55 @@ func (state *terminalState) resize(rows int, cols int) {
 	_ = session.WindowChange(rows, cols)
 }
 
+func (state *terminalState) currentSize() (int, int) {
+	state.mu.Lock()
+	defer state.mu.Unlock()
+	return state.rows, state.cols
+}
+
+// offerLoginInput queues keystrokes for the login prompts. It reports false
+// when the queue is saturated, which no human typing can do.
+func (state *terminalState) offerLoginInput(keys []byte) bool {
+	select {
+	case state.loginInput <- keys:
+		return true
+	default:
+		return false
+	}
+}
+
 /*
  * Handshake
  */
 
-func startTerminalSession(s *melody.Session, state *terminalState, sshUser string, password []byte, rows int, cols int) {
-	if !sshUsernamePattern.MatchString(sshUser) {
-		writeTerminalControl(s, gin.H{"type": "auth-error", "message": "invalid user name"})
-		releaseTerminal(state.nodeID)
-		closeTerminal(s, "invalid user name")
-		return
-	}
-
-	if wait := throttleRetryAfter(state.nodeID, sshUser, state.user); wait > 0 {
-		writeTerminalControl(s, gin.H{
-			"type":        "auth-error",
-			"message":     "too many failed attempts, try again later",
-			"retry_after": int(wait.Seconds()),
-		})
-		releaseTerminal(state.nodeID)
-		closeTerminal(s, "throttled")
-		return
-	}
-
-	target, hostKeys, err := nodeSSHTarget(state.nodeID)
-	if err != nil {
-		writeTerminalControl(s, gin.H{"type": "auth-error", "message": err.Error()})
-		releaseTerminal(state.nodeID)
-		closeTerminal(s, "target unavailable")
-		return
-	}
-
+// dialNode authenticates against a node and returns the live client. It neither
+// closes the WebSocket nor records anything: only the caller can tell a refused
+// password from an operator who pressed Ctrl-C at the prompt.
+func dialNode(target string, hostKeys []ssh.PublicKey, sshUser string, ask ssh.KeyboardInteractiveChallenge) (*ssh.Client, error) {
 	config := &ssh.ClientConfig{
 		User: sshUser,
 		// One method only: x/crypto/ssh tries every method listed and each
-		// failure counts against the server's MaxAuthTries, so a user mistyping
-		// a password could get the leader's VPN address banned for everyone.
-		Auth:              []ssh.AuthMethod{ssh.Password(string(password))},
+		// failure counts against the server's MaxAuthTries. Every retry is a
+		// fresh Dial, so each one starts from a clean budget on the node.
+		Auth:              []ssh.AuthMethod{ssh.KeyboardInteractive(ask)},
 		HostKeyCallback:   publishedHostKeyCallback(hostKeys),
 		HostKeyAlgorithms: publishedHostKeyAlgorithms(hostKeys),
 		Timeout:           terminalHandshakeTimeout,
 	}
 
-	client, err := ssh.Dial("tcp", target, config)
-	if err != nil {
-		throttleRecordFailure(state.nodeID, sshUser, state.user)
-		// Audited with the cluster-admin identity: lastb on the node only ever
-		// shows the leader address, so without this line an administrator
-		// guessing root passwords leaves no attributable trace.
-		auditTerminal(state.user, "terminal-auth-failed", gin.H{
-			"node":      state.nodeID,
-			"ssh_user":  sshUser,
-			"client_ip": state.clientIP,
-		})
-		writeTerminalControl(s, gin.H{"type": "auth-error", "message": "authentication failed"})
-		releaseTerminal(state.nodeID)
-		closeTerminal(s, "authentication failed")
+	return ssh.Dial("tcp", target, config)
+}
+
+// attachShell takes an authenticated client and puts the session in service.
+func attachShell(s *melody.Session, state *terminalState, sshUser string, client *ssh.Client) {
+	// The browser can vanish while the handshake is in flight. Opening a shell
+	// then would resurrect a closed session and leak the SSH client.
+	if state.currentPhase() != phaseLogin {
+		_ = client.Close()
 		return
 	}
 
-	throttleRecordSuccess(state.nodeID, sshUser, state.user)
+	rows, cols := state.currentSize()
 
 	localPort := ""
 	if _, port, splitErr := net.SplitHostPort(client.LocalAddr().String()); splitErr == nil {
@@ -496,6 +504,9 @@ func closeTerminal(s *melody.Session, reason string) {
 	}
 	state.closed = true
 	state.phase = phaseClosed
+	if state.done != nil {
+		close(state.done)
+	}
 	client := state.client
 	session := state.session
 	nodeID := state.nodeID
