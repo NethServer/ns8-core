@@ -103,11 +103,44 @@ The action fails loudly when `sshd_config` has no
 `Include /etc/ssh/sshd_config.d/*.conf` directive, because the drop-in would be
 inert and reporting success would be a lie.
 
+## How a session starts
+
+The REST call only authorizes. It checks the `open-terminal` grant, reserves the
+node — one session per node at a time — and returns a one-shot ticket bound to
+the browser's address and valid for thirty seconds. The browser then opens the
+WebSocket and presents that ticket. No credentials are involved so far, and the
+browser sends only a node id: address and port come from Redis, because taking a
+host from the client would turn api-server into an arbitrary SSH proxy.
+
+The login prompts then run inside the terminal itself. There is no credentials
+form.
+
+**The user name prompt is drawn by api-server, not by the node.** SSH carries the
+user name inside the authentication request, so there is no remote `login:`
+prompt to relay: api-server prints one and does its own line editing until
+Enter. Only the password questions are real, relayed from `sshd` over
+keyboard-interactive, with the echo off as `sshd` asks.
+
+A wrong password gives another try, three in total, each one a fresh SSH
+connection so each starts from a clean `MaxAuthTries` budget on the node. The
+whole login phase is capped at two minutes: an abandoned prompt would otherwise
+hold the node reserved against everyone else. Cancelling at the prompt is
+distinguished from a refused password, so it feeds neither the throttle nor the
+audit.
+
+This changes nothing about who can read the password. It still crosses
+api-server in clear on its way to the node. What it removes is the password
+field, and the browser vault entry that field invited.
+
 ## Preconditions
 
-`probe-terminal-access` reports whether a session can succeed, and the browser
-runs it before asking for credentials — so a user is not made to type a root
-password for a handshake that cannot work.
+`probe-terminal-access` reports whether a session can succeed. The browser runs
+it when a node is selected, so the warnings are on screen before the terminal is
+opened and nobody types a root password for a handshake that cannot work.
+
+It also has a side effect the handshake depends on: it publishes the host keys
+`sshd` serves into `node/<id>/ssh`. A node that has never been probed has no
+published key, and the connection is refused for that reason alone.
 
 It returns three booleans and the port, and nothing else: task output is readable
 by any authenticated user because GET requests bypass authorization, so the raw
@@ -155,12 +188,40 @@ merely chronological.
 
 Node-side attribution is otherwise degraded: `last` and `lastb` show the leader's
 address for every session. As a complement, api-server runs `logger` over a
-second SSH channel before opening the pseudo-terminal, so the node journal carries
-the cluster-admin identity — the operating system administrator has no access to
-`audit.db`.
+second SSH channel, so the node journal carries the cluster-admin identity and
+the browser address — the operating system administrator has no access to
+`audit.db`. It runs once the pseudo-terminal is open and is bounded: it goes
+through the account's login shell, and a shell that never returns would
+otherwise hold up a session that is already usable.
+
+That line only exists for sessions that succeed. A failed handshake opens no SSH
+session, so nothing can run `logger` and the node keeps only the `sshd` record,
+which names the leader.
 
 Failed handshakes must be audited: without them, a cluster administrator guessing
 root passwords is invisible both in `audit.db` and in `lastb`.
+
+## CrowdSec can ban the leader and cut a node out of the cluster
+
+Every terminal connection reaches a node from the leader's VPN address, so `sshd`
+attributes failed logins to the leader and never to the real client. A
+brute-force detector running on the node will therefore ban the leader.
+
+This was reproduced on a test cluster: four failed attempts produced eight
+`crowdsecurity/ssh-bf` events and a ban of the leader's VPN address on the node.
+The firewall bouncer drops the source address on **all ports**, not just SSH, and
+the whole control plane travels that same address — the node agent, Redis
+replication, log shipping. Redis replication went down with the terminal and had
+to re-establish. The ban lasted a minute there; with CrowdSec's default duration
+the node would leave the cluster for four hours, and the cluster UI cannot repair
+it, because the UI drives the node through the connection that is blocked.
+
+The trigger is an administrator mistyping a root password.
+
+**CrowdSec must be configured never to ban the cluster VPN network.** That is the
+only mitigation covering every source of failures coming from the leader, not
+just this feature. Spacing the attempts on the api-server side lowers the rate
+but does not close it.
 
 ## What this does not protect
 
@@ -170,6 +231,24 @@ of ours, users type `sudo`, `mysql -p` or a nested `ssh` inside the shell.
 End-to-end encryption would not change it, since api-server serves the JavaScript
 and could substitute the key material without the browser having any anchor to
 notice.
+
+Reading the stream is not the interesting power, and it is not one this feature
+grants. api-server's Redis ACL covers every key and every channel and includes
+`lpush`, and NS8 dispatches work by pushing onto `task/<agent>/…`, so that access
+already queues arbitrary actions on any node agent, which runs as root. Whoever
+controls api-server holds the cluster without anyone's password.
+
+What the terminal adds is persistence rather than access. Cluster secrets are
+rotated by rebuilding — JWT secret, Redis ACL passwords, WireGuard keys. A node
+root password is not: it stays valid afterwards and carries outside NS8 wherever
+it is reused.
+
+Passwords also live in the memory of processes that can be paged out: Traefik,
+which terminates TLS, api-server, and Redis, which receives the cluster-admin
+password as an `AUTH` argument. `LimitCORE=0` keeps them out of core dumps, but
+nothing keeps them out of swap. Encrypted swap is the answer, and it is an
+installation decision rather than a code one. This is not specific to the
+terminal: the cluster-admin password already takes that path at every login.
 
 The `open-terminal` grant is also a password oracle: it allows testing system
 passwords against `sshd` from an address that sits in firewalld's `trusted` zone,
