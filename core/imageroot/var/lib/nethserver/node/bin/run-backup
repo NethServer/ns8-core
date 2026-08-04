@@ -21,10 +21,8 @@ RETRY_INTERVAL = 60   # seconds between retries
 RETRY_TIMEOUT = 3600  # total retry window in seconds
 
 PROM_DIR = "/run/node_exporter"
-PROM_UNKNOWN = -1
 PROM_FAILED = 0
 PROM_SUCCESS = 1
-PROM_CONFLICT = 2
 
 def prometheus_escape_label_value(value: str) -> str:
     return (
@@ -38,7 +36,7 @@ def write_backup_prom(backup_id, backup_name, status):
     """Write a Prometheus .prom file for this backup's status."""
     output_file = os.path.join(PROM_DIR, f"backup{backup_id}.prom")
     content = (
-        '# HELP node_backup_status Status of the backup (0 = failure, 1 = success, 2 = conflict, -1 = unknown)\n'
+        '# HELP node_backup_status Status of the backup (0 = failure, 1 = success)\n'
         '# TYPE node_backup_status gauge\n'
         f'node_backup_status{{id="{backup_id}",name="{prometheus_escape_label_value(backup_name)}"}} {status}\n'
     )
@@ -208,9 +206,6 @@ def main():
         print(f"No local modules for backup {backup_id}", file=sys.stderr)
         return
 
-    # Initialize prom file to UNKNOWN
-    write_backup_prom(backup_id, backup_name, PROM_UNKNOWN)
-
     failed = []
     retry_queue = []
 
@@ -220,8 +215,6 @@ def main():
         if rc == 0:
             print(f"{module_id}: backup {backup_id} completed", file=sys.stderr)
         elif rc == EXIT_ALREADY_RUNNING:
-            if len(failed) == len(retry_queue) == 0:
-                write_backup_prom(backup_id, backup_name, PROM_CONFLICT)
             print(f"{module_id}: already running, queued for retry", file=sys.stderr)
             retry_queue.append(module_id)
         else:
