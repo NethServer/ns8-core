@@ -92,6 +92,17 @@ adapter for first (Keycloak is the leading candidate), and any future
 support for broker replicas of the same OIDC domain, are left to a
 follow-up implementation issue.
 
+This document assumes one FQDN per broker instance, isolation between
+tenants being achieved by running separate instances (see above). Some
+broker products can present multiple FQDNs from a single instance at
+the reverse-proxy level (e.g. Keycloak's request-based hostname
+provider) without this affecting the OIDC domain model at all: the
+FQDN already lives on the domain's own `srv/http/oidc` key, not on some
+cluster-wide single-hostname assumption, so adding multi-FQDN support
+for a broker instance later is a broker-module/proxy detail, not a
+change to this architecture. Left to a follow-up implementation issue,
+should the need arise.
+
 ## Broker endpoint and TLS
 
 Unlike the [LDAP proxy](core/user_domains.md), which is an internal-only,
