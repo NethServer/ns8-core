@@ -66,6 +66,9 @@ for bid, backup in backups.items():
     instances = rdb.hget(f"cluster/backup/{bid}", "instances") or ""
     for mid in instances.split():
         module_uuid = rdb.hget("cluster/module_uuid", mid)
+        if module_uuid is None:
+            # Skip stale references to modules removed from the cluster
+            continue
         path_prefix = agent.get_image_name_from_url(rdb.hget(f"module/{mid}/environment", "IMAGE_URL") or "/:")
         status = backup_statuses.get((bid, mid))
         if status is not None:

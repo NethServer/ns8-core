@@ -114,6 +114,15 @@ rdb.delete(f'cluster/authorizations/module/{module_id}')
 rdb.hdel('cluster/module_node', module_id)
 rdb.hdel('cluster/module_uuid', module_id)
 
+# Remove the module from any backup schedule and purge its backup status
+for kbackup in rdb.scan_iter('cluster/backup/*'):
+    instances = (rdb.hget(kbackup, 'instances') or '').split()
+    if module_id in instances:
+        instances.remove(module_id)
+        rdb.hset(kbackup, 'instances', ' '.join(instances))
+for kstatus in rdb.scan_iter('node/*/backup_status/*'):
+    rdb.hdel(kstatus, module_id)
+
 # Revoke module permissions, clean up permissions of other modules
 rdb.delete(f'roles/module/{module_id}')
 permpipe = rdb.pipeline()
