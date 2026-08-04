@@ -248,6 +248,9 @@ def main():
         failed.append(module_id)
 
     if failed:
+        # Modules that never became available are a failure too, and no verdict
+        # has been recorded for them yet: do not leave a stale status behind
+        write_backup_prom(backup_id, backup_name, PROM_FAILED)
         print(f"Backup {backup_id} finished with failures: {', '.join(failed)}", file=sys.stderr)
         sys.exit(1)
 
