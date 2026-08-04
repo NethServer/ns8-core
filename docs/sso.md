@@ -265,3 +265,11 @@ LDAP-only application.
   is tracked by its own issue.
 - Replacing existing LDAP-based authentication, which remains fully
   supported.
+- Supporting delegated/impersonated access for AI agents acting on a
+  user's behalf: this is a machine-to-machine flow (e.g. OAuth token
+  exchange, RFC 8693) rather than the browser-based authorization code
+  flow this document assumes, and does not require reopening the
+  domain/broker model above — a broker can advertise support for it as
+  a future capability, the same way other per-domain capabilities are
+  advertised today. Left to a follow-up design issue, should the need
+  arise.
