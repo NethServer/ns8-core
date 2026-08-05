@@ -153,7 +153,7 @@ async def _retry_request(request_procedure, *args, **kwargs):
     attempts = kwargs.pop('retry_attempts', 20)
     incfactor = kwargs.pop('retry_incfactor', 2.0)
     kwargs.setdefault('retry_sendlogin', True)
-    http_temporary_errors = [500, 502, 503, 504]
+    http_temporary_errors = [429, 500, 502, 503, 504]
     http_temporary_errors += kwargs.pop('retry_statuscodes', [])
 
     request_name = request_procedure.__name__

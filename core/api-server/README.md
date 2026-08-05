@@ -28,14 +28,21 @@ REDIS_USER=default
 REDIS_PASSWORD=""
 SECRET=MY_SECRET,11
 GLOBAL_RATE_LIMIT_AVERAGE=25
-GLOBAL_RATE_LIMIT_BURST=100
+GLOBAL_RATE_LIMIT_BURST=300
 ```
 
 - `GLOBAL_RATE_LIMIT_AVERAGE`: max sustained requests per second per client
   IP across all API routes, default is `25`; set to `0` to disable rate
   limiting
 - `GLOBAL_RATE_LIMIT_BURST`: burst allowance above the average before
-  requests are rejected with HTTP 429, default is `100`
+  requests are rejected with HTTP 429, default is `300`
+
+The sustained average is what bounds a flood; the burst only sets how many
+requests may arrive at once, and is therefore sized for a legitimate
+cluster-admin page load (~150 requests: static assets plus task round-trips).
+
+A burst below `1` is raised to `1`, because a zero-capacity token bucket would
+reject every request; use `GLOBAL_RATE_LIMIT_AVERAGE=0` to disable the limiter.
 
 ## Running
 
