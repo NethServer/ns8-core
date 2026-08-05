@@ -5,6 +5,8 @@ BindsTo=node_exporter.service
 
 [Service]
 Type=simple
+WorkingDirectory=/var/lib/nethserver/node/state
+ExecStartPre=/bin/rm -f ./node_exporter/node-info.prom
 ExecStart=runagent -m node refresh-node-info -l 60
-ExecStopPost=rm -f /run/node_exporter/node-info.prom
+ExecStopPost=/bin/rm -f ./node_exporter/node-info.prom
 SyslogIdentifier=%N

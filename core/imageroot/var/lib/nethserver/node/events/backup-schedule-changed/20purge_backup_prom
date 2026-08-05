@@ -9,10 +9,12 @@ import os
 import agent
 import glob
 
+PROM_DIR = "./node_exporter"
+
 def purge_backup_prom_files(keep_bids):
     """Remove stale backup*.prom files."""
     keep_files = [f'backup{bid}.prom' for bid in keep_bids]
-    for prom_file in glob.glob('/run/node_exporter/backup*.prom'):
+    for prom_file in glob.glob(os.path.join(PROM_DIR, 'backup*.prom')):
         if os.path.basename(prom_file) not in keep_files:
             os.unlink(prom_file)
             print("Removed", prom_file)
