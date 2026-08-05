@@ -249,6 +249,17 @@ LDAP-only application.
   in that domain remain fully accessible to LDAP-only applications
   through the existing LDAP proxy, independent of the broker.
 
+A third option, between these two, is fronting a legacy application with
+an auth-proxy sidecar such as
+[oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/): the sidecar
+runs the OIDC authorization code flow against the broker on the
+application's behalf and forwards identity/group claims as HTTP headers,
+letting an application that cannot speak OIDC itself still consume a
+brokered identity, without becoming OIDC-native. This is an
+application-integration pattern, not a broker architecture change — it
+still requires a broker behind it — and is left to each application's
+own integration to adopt where it fits.
+
 ## Non-goals
 
 - Implementing a broker module (e.g. Keycloak) and its management API
