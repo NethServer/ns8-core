@@ -9,7 +9,10 @@ set -e
 
 function write_prom_file()
 {
-    outfile="/run/node_exporter/node-info.prom"
+    # Relative to the agent working directory, and shared with the
+    # node_exporter container as its textfile collector directory
+    mkdir -p ./node_exporter
+    outfile="./node_exporter/node-info.prom"
     main4=$(ip -4 -j route get 255.0 2>/dev/null | jq -r '.[0].prefsrc')
     main6=$(ip -6 -j route get 2000:: 2>/dev/null | jq -r '.[0].prefsrc')
     fqdn=$(hostname -f)

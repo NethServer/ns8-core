@@ -41,7 +41,11 @@ and a procedure tailored for single node cluster disaster recovery.
   impersonation. The `run-backup` command also updates the backup status
   of every application in Redis key `node/<node ID>/backup_status/<backup
   ID>`, and writes an overall backup status into
-  `/run/node_exporter/backup<backup ID>.prom` files. It also uploads
+  `/var/lib/nethserver/node/state/node_exporter/backup<backup ID>.prom`
+  files. That file holds the last known verdict of the backup, and is read
+  by the `node_exporter` textfile collector. It is stored on a persistent
+  path, so the metric survives a node reboot and keeps feeding any alert
+  based on it until the next scheduled run overwrites it. It also uploads
   `.json` files with backup repositories metadata. When executed on the
   leader node, uploads a copy of the encrypted cluster backup.
 

@@ -13,7 +13,7 @@ TimeoutStartSec=120
 # node_exporter exits with 143 on SIGTERM:
 SuccessExitStatus=143
 ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
-ExecStartPre=/usr/bin/mkdir -p /run/node_exporter
+ExecStartPre=/usr/bin/mkdir -p ./node_exporter
 ExecStart=/usr/bin/podman run \
     --conmon-pidfile %t/%N.pid \
     --cidfile %t/%N.cid \
@@ -24,10 +24,11 @@ ExecStart=/usr/bin/podman run \
     --pid=host \
     -d \
     -v /:/host:ro,rslave \
+    --volume=./node_exporter:/srv/node_exporter:z \
     ${NODE_EXPORTER_IMAGE} \
     --collector.cpu.info \
     --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/) \
-    --collector.textfile.directory=/host/run/node_exporter \
+    --collector.textfile.directory=/srv/node_exporter \
     --path.rootfs=/host
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
