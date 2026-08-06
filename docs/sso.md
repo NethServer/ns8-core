@@ -32,10 +32,17 @@ the **OIDC domain**.
 
 An OIDC domain is, like an LDAP domain, either:
 
-- **Internal**: backed by a broker module installed in the cluster.
+- **Internal**: backed by a broker module installed in the cluster. The
+  module may expose user/group management actions equivalent to the Samba
+  AD/OpenLDAP providers (e.g. add/alter/remove user, add/alter/remove
+  group — the exact set is not fixed by this document); the actions'
+  own implementation is free to drive the broker's admin API directly,
+  but only those NS8 actions are exposed as the module's interface, not
+  the broker's API itself.
 - **External**: backed by a broker instance the administrator runs and
-  manages elsewhere, supplying core with management API credentials for
-  it.
+  manages elsewhere. Like an external LDAP domain, it is read-only to
+  NS8: core cannot manage its users or groups, only register
+  applications against it — see [Client credentials](#client-credentials).
 
 Behind an OIDC domain sits a **broker**: a service such as Keycloak that
 speaks standard OIDC to applications and exposes a management API core
@@ -71,15 +78,20 @@ with its own FQDN and certificate, keeping tenants' OIDC endpoints and
 management APIs fully separate. Consolidation and isolation are both
 valid deployment choices under the same model.
 
-A broker can, in turn, draw identities from more than one upstream
-source: NS8's own LDAP domains via user federation, or external identity
-providers (Entra ID, Google Workspace...) via identity-provider
-brokering — see [Consuming brokered
+Each OIDC domain can, in turn, draw identities from more than one
+upstream source: NS8's own LDAP domains via user federation, or external
+identity providers (Entra ID, Google Workspace...) via identity
+brokering — both scoped to the domain itself (a realm, in Keycloak's
+terms), not shared across the other domains a broker instance may also
+be hosting — see [Consuming brokered
 identities](#consuming-brokered-identities-oidc-apps-vs-legacy-ldap-apps)
-for how these two differ. This is what actually solves the
-multi-application redirect URI problem: applications are provisioned
-against the broker's management API, not against each upstream IdP's
-console, one-by-one.
+for how these two differ. Both are optional and managed independently of
+the OIDC domain's own lifecycle: an administrator can add or remove an
+identity provider (configured with its own `client_id`/`client_secret`)
+or a user federation source at any time, without reconfiguring the
+domain itself. This is what actually solves the multi-application
+redirect URI problem: applications are provisioned against the broker's
+management API, not against each upstream IdP's console, one-by-one.
 
 Provisioning logic is necessarily broker-product-specific (Keycloak's
 Admin REST API has nothing in common with Auth0's or Okta's Management
@@ -166,22 +178,31 @@ event, the same pattern used for other service providers.
 Each application registers as its own OIDC client with the broker
 backing the OIDC domain it uses, and gets back its own
 `client_id`/`client_secret`, rather than sharing a single set of
-credentials the way LDAP bind credentials are shared today. An
-application obtains its client credentials by running an agent action
-against the broker (e.g. `register-oidc-client`), which drives the
-broker's management API adapter and returns the resulting credentials to
-the caller. This is designed to work identically whether the domain is
-internal or external, as long as both expose the same management API to
-core — see the note on external brokers under
-[Discovery](#discovery).
+credentials the way LDAP bind credentials are shared today.
 
-This is already an improvement over the current LDAP model, where
-bind credentials are stored in the domain configuration and handed out to
-any authorized caller. It also leaves room for brokers that support
-[Dynamic Client Registration](https://www.rfc-editor.org/rfc/rfc7591)
-(RFC 7591) to automate registration end-to-end without a product-specific
-adapter, without changing the action's interface from the application's
-point of view.
+Registration follows [Dynamic Client
+Registration](https://www.rfc-editor.org/rfc/rfc7591) (RFC 7591): the
+application registers directly against the broker's
+`registration_endpoint`, a standardized call needing no
+product-specific adapter. RFC 7591 does not standardize how that call
+gets authorized, though — Keycloak, for example, requires a short-lived
+Initial Access Token (IAT), minted per registering application (a
+single pre-minted IAT would only cover the first app). For an
+**internal** domain, core mints that IAT itself, since the broker
+module already holds full admin access.
+
+An **external** domain has no such standing admin access, so its
+configuration record must carry two attributes instead of just
+connection details:
+
+1. its OIDC discovery manifest, and
+2. an admin credential scoped down to the single permission of minting
+   IATs (e.g. in Keycloak, a client-credentials grant limited to
+   creating registration tokens, not general realm-admin access).
+
+Together these are enough for core to keep minting IATs for new
+application registrations over time, without ever holding full admin
+rights on a broker it doesn't own.
 
 ## Capability contract
 
@@ -221,6 +242,13 @@ domain ultimately point at the same underlying user base. Mapping an
 authenticated OIDC identity back to an existing LDAP user (or
 provisioning a new one) is left to each application's own integration,
 guided by the capability contract above.
+
+When a domain combines more than one identity source, the broker needs
+a way to recognize the same person across sources — typically by
+matching a claimed email address. This must be an explicit, surfaced
+choice for the administrator to enable, not a silent default: trusting
+an upstream-claimed email as a match key is also a potential
+impersonation vector.
 
 ## Consuming brokered identities: OIDC apps vs legacy LDAP apps
 
