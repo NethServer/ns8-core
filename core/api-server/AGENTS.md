@@ -83,7 +83,13 @@ All via environment variables: `LISTEN_ADDRESS`, `REDIS_ADDRESS`, `REDIS_USER`,
 `REDIS_PASSWORD`, `SECRET` (JWT key), `STATIC_PATH`, `AUDIT_FILE`,
 `SENSITIVE_LIST`, `ISSUER` (TOTP issuer name, default `NethServer`),
 `GLOBAL_RATE_LIMIT_AVERAGE` (per-IP requests/sec across all routes, default
-`25`; `0` disables), `GLOBAL_RATE_LIMIT_BURST` (burst allowance, default `100`).
+`25`; `0` disables), and `GLOBAL_RATE_LIMIT_BURST` (burst allowance, default
+`300`).
+
+The sustained average is what bounds a flood; the burst only sets how many
+requests may arrive at once, and is sized for a legitimate UI page load. A burst
+below `1` is clamped to `1` by `RateLimiter`; use `GLOBAL_RATE_LIMIT_AVERAGE=0`
+to disable the limiter.
 
 ## Conventions
 

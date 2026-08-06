@@ -55,6 +55,12 @@ type rateLimiterVisitor struct {
 // (BodyLimit bounds one request's body, not how many requests run at once).
 // rps is the sustained rate and burst the number of requests allowed instantly.
 func RateLimiter(rps rate.Limit, burst int) gin.HandlerFunc {
+	// A zero-capacity bucket can never accumulate the whole token a request
+	// needs, so it would reject everything: "0 disables" only holds for rps.
+	if burst < 1 {
+		burst = 1
+	}
+
 	visitors := make(map[string]*rateLimiterVisitor)
 	var mu sync.Mutex
 
@@ -85,6 +91,10 @@ func RateLimiter(rps rate.Limit, burst int) gin.HandlerFunc {
 		mu.Unlock()
 
 		if !limiter.Allow() {
+			// The rate is configured as a positive integer, so a token always
+			// refills within a second and Retry-After, which is expressed in
+			// whole seconds, is always 1.
+			c.Header("Retry-After", "1")
 			c.JSON(http.StatusTooManyRequests, gin.H{"code": http.StatusTooManyRequests, "message": "too many requests", "data": nil})
 			c.Abort()
 			return
@@ -118,7 +128,7 @@ func main() {
 	viper.SetDefault("jwt_realm", "api-moduled")
 	viper.SetDefault("export_env", "")
 	viper.SetDefault("rate_limit_average", 25)
-	viper.SetDefault("rate_limit_burst", 100)
+	viper.SetDefault("rate_limit_burst", 300)
 	viper.AutomaticEnv()
 
 	logger = log.New(os.Stderr, "", 0)

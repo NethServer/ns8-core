@@ -82,7 +82,12 @@ All via `AMLD_` prefixed environment variables (uses Viper):
 | `AMLD_ID_KEY` | `uid` | JWT identity claim key |
 | `AMLD_EXPORT_ENV` | — | Extra env vars for handlers |
 | `AMLD_RATE_LIMIT_AVERAGE` | `25` | Per-IP requests/sec across all routes; `0` disables |
-| `AMLD_RATE_LIMIT_BURST` | `100` | Burst allowance above the average |
+| `AMLD_RATE_LIMIT_BURST` | `300` | Burst allowance above the average |
+
+The sustained average is what bounds a flood; the burst only sets how many
+requests may arrive at once, and is sized for a legitimate UI page load. A burst
+below `1` is clamped to `1` by `RateLimiter`; use `AMLD_RATE_LIMIT_AVERAGE=0` to
+disable the limiter.
 
 ## Key differences from api-server
 

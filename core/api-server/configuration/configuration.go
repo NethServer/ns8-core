@@ -111,6 +111,6 @@ func Init() {
 	if v, err := strconv.Atoi(os.Getenv("GLOBAL_RATE_LIMIT_BURST")); err == nil {
 		Config.GlobalRateLimitBurst = v
 	} else {
-		Config.GlobalRateLimitBurst = 100
+		Config.GlobalRateLimitBurst = 300
 	}
 }

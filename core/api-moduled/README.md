@@ -37,7 +37,14 @@ Configuration parameters can be passed as environment variables.
   across all API routes -- default `25`; set to `0` to disable rate limiting
 
 - `AMLD_RATE_LIMIT_BURST`, burst allowance above the average before requests
-  are rejected with HTTP 429 -- default `100`
+  are rejected with HTTP 429 -- default `300`
+
+The sustained average is what bounds a flood; the burst only sets how many
+requests may arrive at once, and is therefore sized for a legitimate UI page
+load.
+
+A burst below `1` is raised to `1`, because a zero-capacity token bucket would
+reject every request; use `AMLD_RATE_LIMIT_AVERAGE=0` to disable the limiter.
 
 ## How to implement the API
 

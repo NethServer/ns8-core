@@ -7,6 +7,12 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import { v4 as uuidv4 } from "uuid";
 
+// In-flight task-context requests, keyed by task ID. websocket.js dispatches
+// several progress messages per task without awaiting them, so the Vuex
+// taskContextCache, which only fills once a response has landed, cannot dedupe
+// them. Module scope makes that work across every component mixing this in.
+const pendingTaskContexts = new Map();
+
 export default {
   name: "NotificationService",
   mixins: [UtilService, TaskService],
@@ -199,29 +205,51 @@ export default {
       // e.g. get-cluster-status-completed-f5d24fcd-819c-4b1d-98ad-a1b2ebcee8cf
       return `${taskContext.action}-${result}${eventId}`;
     },
+    async fetchTaskContext(taskPath, taskId, payload) {
+      const cachedContext = await this.getTaskContextFromCache(taskId);
+      if (cachedContext) {
+        return cachedContext;
+      }
+
+      let request = pendingTaskContexts.get(taskId);
+      if (!request) {
+        // clear on failure too, so a failed request never blocks later retries
+        request = this.getTaskContext(taskPath).finally(() => {
+          pendingTaskContexts.delete(taskId);
+        });
+        pendingTaskContexts.set(taskId, request);
+      }
+
+      const [err, contextResponse] = await to(request);
+
+      if (err) {
+        console.error("error retrieving task info", err);
+        return null;
+      }
+
+      if (!contextResponse.data.data) {
+        console.warn(
+          "task context not found, skipping",
+          taskId,
+          taskPath,
+          payload
+        );
+        return null;
+      }
+
+      const taskContext = contextResponse.data.data.context;
+      this.setTaskContextInCache({ taskId, taskContext });
+      return taskContext;
+    },
     async handleProgressTaskMessage(taskPath, taskId, payload) {
-      let taskContext = await this.getTaskContextFromCache(taskId);
+      const taskContext = await this.fetchTaskContext(
+        taskPath,
+        taskId,
+        payload
+      );
 
       if (!taskContext) {
-        // fetch task context from API and store it in cache
-        const [err, contextResponse] = await to(this.getTaskContext(taskPath));
-
-        if (err) {
-          console.error("error retrieving task info", err);
-          return;
-        }
-
-        if (!contextResponse.data.data) {
-          console.warn(
-            "task context not found, skipping",
-            taskId,
-            taskPath,
-            payload
-          );
-          return;
-        }
-        taskContext = contextResponse.data.data.context;
-        this.setTaskContextInCache({ taskId, taskContext });
+        return;
       }
 
       let taskResult;
@@ -239,6 +267,7 @@ export default {
             type: "error",
           };
           this.createNotification(notification);
+          return;
         }
 
         taskResult = statusResponse.data.data;
@@ -429,8 +458,30 @@ export default {
               this.getTaskStatus(taskPath)
             );
             if (err) {
-              // If the task status is not found (404), run the message
-              // handler again to activate the timer one more time:
+              // Re-arming immediately would keep adding load while the server
+              // is already throttling us, so back off first.
+              if (err.response?.status === 429) {
+                const retryAfter = Number(
+                  err.response?.headers?.["retry-after"]
+                );
+                const backoff =
+                  Number.isFinite(retryAfter) && retryAfter > 0
+                    ? retryAfter * 1000
+                    : taskProgressPollPeriod * 4;
+
+                // stored so an incoming websocket message can still cancel it
+                const backoffTimeoutId = setTimeout(() => {
+                  this.handleProgressTaskMessage(taskPath, taskId, payload);
+                }, backoff);
+                this.setPollingTimerForTaskInStore({
+                  taskId: taskId,
+                  timeoutId: backoffTimeoutId,
+                });
+                return;
+              }
+
+              // Any other error means the status is not available yet: re-enter
+              // the handler to arm the timer one more time.
               this.handleProgressTaskMessage(taskPath, taskId, payload);
               return;
             }
