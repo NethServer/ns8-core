@@ -40,6 +40,7 @@
         <cv-column>
           <NsInlineNotification
             v-if="
+              q.view !== 'frontend-proxies' &&
               q.selectedNodeId &&
               q.selectedNodeId !== 'all' &&
               selectedNodeLabel
@@ -59,196 +60,226 @@
       </cv-row>
       <cv-row>
         <cv-column>
-          <cv-tile light>
-            <cv-grid class="no-padding">
-              <cv-row>
-                <cv-column :md="4">
-                  <cv-combo-box
-                    v-model="q.selectedNodeId"
-                    :label="$t('common.choose')"
-                    :title="$t('common.show')"
-                    :auto-filter="true"
-                    :auto-highlight="true"
-                    :options="nodesForFilter"
-                    :disabled="loading.listInstalledModules"
-                    class="mg-bottom-xlg"
-                  >
-                  </cv-combo-box>
-                </cv-column>
-              </cv-row>
-              <cv-row class="toolbar">
-                <cv-column>
-                  <NsButton
-                    kind="secondary"
-                    :icon="Add20"
-                    @click="showCreateRouteModal"
-                    >{{ $t("settings_http_routes.create_route") }}
-                  </NsButton>
-                </cv-column>
-              </cv-row>
-              <cv-row>
-                <cv-column>
-                  <NsDataTable
-                    :allRows="filteredRoutes"
-                    :columns="i18nTableColumns"
-                    :rawColumns="tableColumns"
-                    :sortable="true"
-                    :pageSizes="[10, 25, 50, 100]"
-                    :overflow-menu="true"
-                    isSearchable
-                    :searchPlaceholder="$t('settings_http_routes.search_route')"
-                    :searchClearLabel="$t('common.clear_search')"
-                    :noSearchResultsLabel="$t('common.no_search_results')"
-                    :noSearchResultsDescription="
-                      $t('common.no_search_results_description')
-                    "
-                    :isLoading="loadingRoutes"
-                    :skeletonRows="5"
-                    :isErrorShown="
-                      !!error.listInstalledModules || !!error.listRoutes
-                    "
-                    :errorTitle="currentErrorAction"
-                    :errorDescription="currentErrorDescription"
-                    :itemsPerPageLabel="$t('pagination.items_per_page')"
-                    :rangeOfTotalItemsLabel="
-                      $t('pagination.range_of_total_items')
-                    "
-                    :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-                    :backwardText="$t('pagination.previous_page')"
-                    :forwardText="$t('pagination.next_page')"
-                    :pageNumberLabel="$t('pagination.page_number')"
-                    :filterRowsCallback="filterHttpRoutes"
-                    :customSortTable="sortHttpRoutes"
-                    @updatePage="tablePage = $event"
-                  >
-                    <template slot="empty-state">
-                      <NsEmptyState
-                        :title="$t('settings_http_routes.no_http_route')"
+          <NsTabs
+            :container="false"
+            :aria-label="$t('common.tab_navigation')"
+            :noDefaultToFirst="true"
+            @tab-selected="tabSelected"
+          >
+            <cv-tab
+              id="tab-1"
+              :label="$t('settings_http_routes.routes')"
+              :selected="q.view === 'routes'"
+            >
+              <cv-tile light>
+                <!-- fullWidth: without it Carbon caps the grid at 99rem and centers it -->
+                <cv-grid fullWidth class="no-padding">
+                  <cv-row>
+                    <cv-column :md="4">
+                      <cv-combo-box
+                        v-model="q.selectedNodeId"
+                        :label="$t('common.choose')"
+                        :title="$t('common.show')"
+                        :auto-filter="true"
+                        :auto-highlight="true"
+                        :options="nodesForFilter"
+                        :disabled="loading.listInstalledModules"
+                        class="mg-bottom-xlg"
                       >
-                        <template #description>
-                          <div>
-                            {{
-                              $t(
-                                "settings_http_routes.no_http_route_description"
-                              )
-                            }}
-                          </div>
-                        </template>
-                      </NsEmptyState>
-                    </template>
-                    <template slot="data">
-                      <cv-data-table-row
-                        v-for="(row, rowIndex) in tablePage"
-                        :key="`${rowIndex}`"
-                        :value="`${rowIndex}`"
+                      </cv-combo-box>
+                    </cv-column>
+                  </cv-row>
+                  <cv-row class="toolbar">
+                    <cv-column>
+                      <NsButton
+                        kind="secondary"
+                        :icon="Add20"
+                        @click="showCreateRouteModal"
+                        >{{ $t("settings_http_routes.create_route") }}
+                      </NsButton>
+                    </cv-column>
+                  </cv-row>
+                  <cv-row>
+                    <cv-column>
+                      <NsDataTable
+                        :allRows="filteredRoutes"
+                        :columns="i18nTableColumns"
+                        :rawColumns="tableColumns"
+                        :sortable="true"
+                        :pageSizes="[10, 25, 50, 100]"
+                        :overflow-menu="true"
+                        isSearchable
+                        :searchPlaceholder="
+                          $t('settings_http_routes.search_route')
+                        "
+                        :searchClearLabel="$t('common.clear_search')"
+                        :noSearchResultsLabel="$t('common.no_search_results')"
+                        :noSearchResultsDescription="
+                          $t('common.no_search_results_description')
+                        "
+                        :isLoading="loadingRoutes"
+                        :skeletonRows="5"
+                        :isErrorShown="
+                          !!error.listInstalledModules || !!error.listRoutes
+                        "
+                        :errorTitle="currentErrorAction"
+                        :errorDescription="currentErrorDescription"
+                        :itemsPerPageLabel="$t('pagination.items_per_page')"
+                        :rangeOfTotalItemsLabel="
+                          $t('pagination.range_of_total_items')
+                        "
+                        :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+                        :backwardText="$t('pagination.previous_page')"
+                        :forwardText="$t('pagination.next_page')"
+                        :pageNumberLabel="$t('pagination.page_number')"
+                        :filterRowsCallback="filterHttpRoutes"
+                        :customSortTable="sortHttpRoutes"
+                        @updatePage="tablePage = $event"
                       >
-                        <cv-data-table-cell>
-                          <div class="flex items-center gap-2">
-                            <span v-if="row.host && row.path">
-                              {{ row.host }}{{ row.path }}
-                            </span>
-                            <span v-else>
-                              {{ row.host || row.path }}
-                            </span>
-                            <cv-interactive-tooltip
-                              v-if="row.lets_encrypt_status === 'pending'"
-                              alignment="center"
-                              direction="top"
-                              class="shrink-0"
-                            >
-                              <template #trigger>
-                                <WarningAltFilled16 class="ns-warning" />
-                              </template>
-                              <template #content>
+                        <template slot="empty-state">
+                          <NsEmptyState
+                            :title="$t('settings_http_routes.no_http_route')"
+                          >
+                            <template #description>
+                              <div>
                                 {{
                                   $t(
-                                    "settings_http_routes.cannot_obtain_tls_certificate"
+                                    "settings_http_routes.no_http_route_description"
                                   )
                                 }}
-                                <cv-link
-                                  @click="goToPendingCertificateLogs(row)"
-                                >
-                                  {{ $t("settings_http_routes.show_logs") }}
-                                </cv-link>
-                              </template>
-                            </cv-interactive-tooltip>
-                          </div>
-                        </cv-data-table-cell>
-                        <cv-data-table-cell>
-                          <cv-link @click="showRouteDetailModal(row)">
-                            {{ row.name }}
-                          </cv-link>
-                        </cv-data-table-cell>
-                        <cv-data-table-cell>
-                          <span>
-                            {{ $t(`settings_http_routes.${row.type}`) }}
-                          </span>
-                        </cv-data-table-cell>
-                        <cv-data-table-cell>
-                          <span>{{ row.node }}</span>
-                        </cv-data-table-cell>
-                        <cv-data-table-cell>
-                          <NsTag
-                            v-if="!row.user_created"
-                            kind="gray"
-                            size="sm"
-                            :label="$t('settings_http_routes.automatic')"
-                          />
-                          <NsTag
-                            v-if="
-                              row.ip_allowlist !== undefined &&
-                              row.ip_allowlist.length > 0
-                            "
-                            kind="high-contrast"
-                            size="sm"
-                            :label="$t('settings_http_routes.restricted')"
-                            class="no-margin"
-                          />
-                        </cv-data-table-cell>
-                        <cv-data-table-cell class="table-overflow-menu-cell">
-                          <cv-overflow-menu
-                            flip-menu
-                            class="table-overflow-menu"
-                            :data-test-id="row.name + '-menu'"
+                              </div>
+                            </template>
+                          </NsEmptyState>
+                        </template>
+                        <template slot="data">
+                          <cv-data-table-row
+                            v-for="(row, rowIndex) in tablePage"
+                            :key="`${rowIndex}`"
+                            :value="`${rowIndex}`"
                           >
-                            <cv-overflow-menu-item
-                              @click="showRouteDetailModal(row)"
-                              :data-test-id="row.name + '-details'"
-                            >
-                              <NsMenuItem
-                                :icon="ArrowRight20"
-                                :label="$t('common.see_details')"
+                            <cv-data-table-cell>
+                              <div class="flex items-center gap-2">
+                                <span v-if="row.host && row.path">
+                                  {{ row.host }}{{ row.path }}
+                                </span>
+                                <span v-else>
+                                  {{ row.host || row.path }}
+                                </span>
+                                <cv-interactive-tooltip
+                                  v-if="row.lets_encrypt_status === 'pending'"
+                                  alignment="center"
+                                  direction="top"
+                                  class="shrink-0"
+                                >
+                                  <template #trigger>
+                                    <WarningAltFilled16 class="ns-warning" />
+                                  </template>
+                                  <template #content>
+                                    {{
+                                      $t(
+                                        "settings_http_routes.cannot_obtain_tls_certificate"
+                                      )
+                                    }}
+                                    <cv-link
+                                      @click="goToPendingCertificateLogs(row)"
+                                    >
+                                      {{ $t("settings_http_routes.show_logs") }}
+                                    </cv-link>
+                                  </template>
+                                </cv-interactive-tooltip>
+                              </div>
+                            </cv-data-table-cell>
+                            <cv-data-table-cell>
+                              <cv-link @click="showRouteDetailModal(row)">
+                                {{ row.name }}
+                              </cv-link>
+                            </cv-data-table-cell>
+                            <cv-data-table-cell>
+                              <span>
+                                {{ $t(`settings_http_routes.${row.type}`) }}
+                              </span>
+                            </cv-data-table-cell>
+                            <cv-data-table-cell>
+                              <span>{{ row.node }}</span>
+                            </cv-data-table-cell>
+                            <cv-data-table-cell>
+                              <NsTag
+                                v-if="!row.user_created"
+                                kind="gray"
+                                size="sm"
+                                :label="$t('settings_http_routes.automatic')"
                               />
-                            </cv-overflow-menu-item>
-                            <cv-overflow-menu-item
-                              @click="showEditRouteModal(row)"
-                              :data-test-id="row.name + '-edit'"
-                            >
-                              <NsMenuItem
-                                :icon="Edit20"
-                                :label="$t('common.edit')"
+                              <NsTag
+                                v-if="
+                                  row.ip_allowlist !== undefined &&
+                                  row.ip_allowlist.length > 0
+                                "
+                                kind="high-contrast"
+                                size="sm"
+                                :label="$t('settings_http_routes.restricted')"
+                                class="no-margin"
                               />
-                            </cv-overflow-menu-item>
-                            <cv-overflow-menu-item
-                              danger
-                              @click="showDeleteRouteModal(row)"
-                              :disabled="!row.user_created"
-                              :data-test-id="row.name + '-delete'"
+                            </cv-data-table-cell>
+                            <cv-data-table-cell
+                              class="table-overflow-menu-cell"
                             >
-                              <NsMenuItem
-                                :icon="TrashCan20"
-                                :label="$t('common.delete')"
-                              />
-                            </cv-overflow-menu-item>
-                          </cv-overflow-menu>
-                        </cv-data-table-cell>
-                      </cv-data-table-row>
-                    </template>
-                  </NsDataTable>
-                </cv-column>
-              </cv-row>
-            </cv-grid>
-          </cv-tile>
+                              <cv-overflow-menu
+                                flip-menu
+                                class="table-overflow-menu"
+                                :data-test-id="row.name + '-menu'"
+                              >
+                                <cv-overflow-menu-item
+                                  @click="showRouteDetailModal(row)"
+                                  :data-test-id="row.name + '-details'"
+                                >
+                                  <NsMenuItem
+                                    :icon="ArrowRight20"
+                                    :label="$t('common.see_details')"
+                                  />
+                                </cv-overflow-menu-item>
+                                <cv-overflow-menu-item
+                                  @click="showEditRouteModal(row)"
+                                  :data-test-id="row.name + '-edit'"
+                                >
+                                  <NsMenuItem
+                                    :icon="Edit20"
+                                    :label="$t('common.edit')"
+                                  />
+                                </cv-overflow-menu-item>
+                                <cv-overflow-menu-item
+                                  danger
+                                  @click="showDeleteRouteModal(row)"
+                                  :disabled="!row.user_created"
+                                  :data-test-id="row.name + '-delete'"
+                                >
+                                  <NsMenuItem
+                                    :icon="TrashCan20"
+                                    :label="$t('common.delete')"
+                                  />
+                                </cv-overflow-menu-item>
+                              </cv-overflow-menu>
+                            </cv-data-table-cell>
+                          </cv-data-table-row>
+                        </template>
+                      </NsDataTable>
+                    </cv-column>
+                  </cv-row>
+                </cv-grid>
+              </cv-tile>
+            </cv-tab>
+            <cv-tab
+              id="tab-2"
+              :label="$t('settings_http_routes.frontend_proxies')"
+              :selected="q.view === 'frontend-proxies'"
+            >
+              <HttpFrontendProxies
+                :nodes="internalNodes"
+                :traefikInstances="traefikInstances"
+                :isLoadingInstances="loading.listInstalledModules"
+                :instancesError="error.listInstalledModules"
+              />
+            </cv-tab>
+          </NsTabs>
         </cv-column>
       </cv-row>
     </cv-grid>
@@ -327,14 +358,19 @@ import {
 import { mapState } from "vuex";
 import HttpRouteDetailModal from "@/components/settings/HttpRouteDetailModal.vue";
 import CreateOrEditHttpRouteModal from "@/components/settings/CreateOrEditHttpRouteModal.vue";
+import HttpFrontendProxies from "@/components/settings/HttpFrontendProxies.vue";
 import _cloneDeep from "lodash/cloneDeep";
 import WarningAltFilled16 from "@carbon/icons-vue/es/warning--alt--filled/16";
+
+// tab order: the view query param is the tab selector
+const VIEWS = ["routes", "frontend-proxies"];
 
 export default {
   name: "SettingsHttpRoutes",
   components: {
     HttpRouteDetailModal,
     CreateOrEditHttpRouteModal,
+    HttpFrontendProxies,
     WarningAltFilled16,
   },
   mixins: [
@@ -351,12 +387,12 @@ export default {
   data() {
     return {
       q: {
+        view: "",
         selectedNodeId: "",
       },
       tablePage: [],
       tableColumns: ["route", "name", "type", "node", "attributes"],
       routes: [],
-      internalNodes: [],
       isShownCreateOrEditRouteModal: false,
       isShownRouteDetailModal: false,
       isShownDeleteRouteModal: false,
@@ -366,6 +402,8 @@ export default {
       currentRoute: null,
       routeToDelete: null,
       isEditingRoute: false,
+      // [eventName, handler] pairs registered on $root for the read chain
+      readListeners: [],
       pendingCertificatesLogsPath: {},
       loading: {
         listInstalledModules: false,
@@ -380,7 +418,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["clusterNodes"]),
+    ...mapState(["clusterNodes", "isWebsocketConnected"]),
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
         return this.$t("settings_http_routes." + column);
@@ -414,6 +452,27 @@ export default {
       }
       return "";
     },
+    // clusterNodes can land after list-installed-modules, on a page reload it
+    // usually does: recompute the list instead of snapshotting it once
+    internalNodes() {
+      return this.clusterNodes.map((node) => {
+        const nodeId = node.id.toString();
+        const traefikInstance = this.traefikInstances.find(
+          (instance) => instance.node === nodeId
+        );
+        const internalNode = {
+          name: nodeId,
+          label: this.getShortNodeLabel(node),
+          value: nodeId,
+        };
+
+        if (traefikInstance) {
+          internalNode.label += ` (${traefikInstance.id})`;
+          internalNode.traefikInstance = traefikInstance.id;
+        }
+        return internalNode;
+      });
+    },
     nodesForFilter() {
       if (!this.internalNodes.length) {
         return [];
@@ -430,6 +489,23 @@ export default {
       return nodes;
     },
   },
+  watch: {
+    // the filter has no option to select until both clusterNodes and the
+    // instances landed, in either order
+    internalNodes: function (internalNodes) {
+      if (internalNodes.length) {
+        this.repaintNodeFilter();
+      }
+    },
+    isWebsocketConnected: function (isConnected) {
+      // a Traefik restart kills this websocket: pending task events are lost.
+      // Always restart from the instance list, it chains everything else and
+      // republishes traefikInstances for the frontend proxies tab
+      if (isConnected) {
+        this.listInstalledModules();
+      }
+    },
+  },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       vm.watchQueryData(vm);
@@ -443,7 +519,22 @@ export default {
   created() {
     this.listInstalledModules();
   },
+  beforeDestroy() {
+    // a task completing after destroy would re-fire the whole read chain
+    this.clearListeners(this.readListeners);
+  },
+  mounted() {
+    // the tabs have no default selection: an unknown view would leave them all closed
+    if (!VIEWS.includes(this.q.view)) {
+      this.q.view = "routes";
+    }
+  },
   methods: {
+    tabSelected(tabNum) {
+      if (VIEWS[tabNum]) {
+        this.q.view = VIEWS[tabNum];
+      }
+    },
     showCreateRouteModal() {
       this.isEditingRoute = false;
       this.isShownCreateOrEditRouteModal = true;
@@ -470,19 +561,50 @@ export default {
     hideDeleteRouteModal() {
       this.isShownDeleteRouteModal = false;
     },
+    repaintNodeFilter() {
+      this.$nextTick(() => {
+        if (!this.q.selectedNodeId) {
+          // initially show all nodes
+          this.q.selectedNodeId = "all";
+          return;
+        }
+        const nodeId = this.q.selectedNodeId;
+
+        // cv-combo-box only repaints its text when the value changes
+        this.q.selectedNodeId = "";
+        this.$nextTick(() => {
+          this.q.selectedNodeId = nodeId;
+        });
+      });
+    },
+    registerListener(listeners, eventName, handler) {
+      this.$root.$once(eventName, handler);
+      listeners.push([eventName, handler]);
+    },
+    clearListeners(listeners) {
+      listeners.forEach(([eventName, handler]) => {
+        this.$root.$off(eventName, handler);
+      });
+      listeners.splice(0);
+    },
     async listInstalledModules() {
+      // a handler of a previous chain would decrement the counter of this one
+      this.clearListeners(this.readListeners);
       this.loading.listInstalledModules = true;
+      this.error.listInstalledModules = "";
       const taskAction = "list-installed-modules";
       const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$once(
+      this.registerListener(
+        this.readListeners,
         `${taskAction}-aborted-${eventId}`,
         this.listInstalledModulesAborted
       );
 
       // register to task completion
-      this.$root.$once(
+      this.registerListener(
+        this.readListeners,
         `${taskAction}-completed-${eventId}`,
         this.listInstalledModulesCompleted
       );
@@ -503,7 +625,8 @@ export default {
         this.error.listInstalledModules = errMessage;
         this.currentErrorAction = this.$t("action." + taskAction);
         this.currentErrorDescription = errMessage;
-        return;
+        // otherwise the tables keep their skeleton rows for good
+        this.loading.listInstalledModules = false;
       }
     },
     listInstalledModulesAborted(taskResult, taskContext) {
@@ -512,73 +635,47 @@ export default {
       this.currentErrorAction = this.$t("action." + taskContext.action);
       this.currentErrorDescription = this.$t("error.generic_error");
       this.loading.listInstalledModules = false;
+      // the routes chain will not run: release its skeleton rows
+      this.loading.listRoutesNum = 0;
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
-      // init nodes
-      let nodes = [];
-
-      for (let node of this.clusterNodes) {
-        nodes.push({
-          name: node.id.toString(),
-          label: this.getShortNodeLabel(node),
-          value: node.id.toString(),
-        });
-      }
-
       let traefikInstances = [];
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
           if (instance.id.startsWith("traefik")) {
             traefikInstances.push(instance);
-
-            // update nodes labels
-            const node = nodes.find((node) => node.value === instance.node);
-
-            if (node) {
-              node.label += ` (${instance.id})`;
-              node.traefikInstance = instance.id;
-            }
           }
         }
       }
-      this.internalNodes = nodes;
       this.traefikInstances = traefikInstances;
       this.loading.listInstalledModules = false;
-
-      this.$nextTick(() => {
-        if (!this.q.selectedNodeId) {
-          // initially show all nodes
-          this.q.selectedNodeId = "all";
-        } else {
-          const nodeId = this.q.selectedNodeId;
-
-          // workaround to update combo box
-          this.q.selectedNodeId = "";
-          this.$nextTick(() => {
-            this.q.selectedNodeId = nodeId;
-          });
-        }
-      });
-
       this.listRoutes();
     },
     async listRoutes() {
       this.routes = [];
+      // otherwise a transient error sticks after the nodes answer again
+      this.error.listRoutes = "";
+      this.currentErrorAction = "";
+      this.currentErrorDescription = "";
+      // count the whole batch upfront: the counter must not reach zero between
+      // two iterations
+      this.loading.listRoutesNum = this.traefikInstances.length;
 
       for (const traefikInstance of this.traefikInstances) {
         const taskAction = "list-routes";
         const eventId = this.getUuid();
-        this.loading.listRoutesNum++;
 
         // register to task events
 
-        this.$root.$once(
+        this.registerListener(
+          this.readListeners,
           `${taskAction}-aborted-${eventId}`,
           this.listRoutesAborted
         );
 
-        this.$root.$once(
+        this.registerListener(
+          this.readListeners,
           `${taskAction}-completed-${eventId}`,
           this.listRoutesCompleted
         );
@@ -647,7 +744,9 @@ export default {
         route.traefikInstance = traefikId;
         routes.push(route);
       }
+      // drop the previous routes of this instance: a late event must not duplicate them
       this.routes = this.routes
+        .filter((route) => route.traefikInstance !== traefikId)
         .concat(routes)
         .sort(this.sortByProperty("name"));
       this.loading.listRoutesNum--;
