@@ -302,6 +302,13 @@ p {
   max-width: none;
 }
 
+// the inline svg sits on the text baseline, so the descender gap pushes the icon
+// above the label: make the wrapper a flex box so it is exactly the svg height
+.bx--overflow-menu-options .ns-menu-item .icon {
+  display: flex;
+  align-items: center;
+}
+
 .overflow-near-button,
 .overflow-near-button button {
   height: 3rem;
