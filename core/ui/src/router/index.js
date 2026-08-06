@@ -77,12 +77,12 @@ const routes = [
       ),
   },
   {
+    // the ACME settings are now a tab of the TLS certificates page
     path: "/settings/acme-servers",
-    name: "SettingsAcmeServers",
-    component: () =>
-      import(
-        /* webpackChunkName: "settings-acme-servers" */ "../views/settings/SettingsAcmeServers.vue"
-      ),
+    redirect: {
+      name: "SettingsTlsCertificates",
+      query: { view: "acme" },
+    },
   },
   {
     path: "/settings/account",
