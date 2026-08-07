@@ -64,7 +64,7 @@ core-managed domain. It is out of scope for this document, see
 Each OIDC domain is bound to exactly one broker. The reverse isn't true:
 a single broker instance, and therefore a single FQDN, can serve
 multiple OIDC domains at once (Keycloak, for example, supports many
-realms/identity sources per instance), and nothing in this model
+realms per instance), and nothing in this model
 restricts how many broker instances a cluster, or even a single node,
 may run. The `srv` key's [optional
 qualifier](modules/service_providers.md#srv-keys) is what resolves this
@@ -131,8 +131,11 @@ valid domain, backed by the broker's local user store; an administrator
 can add an identity provider (configured with the
 `client_id`/`client_secret` issued by that provider's own console) or a
 user federation source at any time, and remove it later, without
-reconfiguring the domain, its `srv/http/oidc` key, or the application
-clients already registered against it.
+reconfiguring the domain itself or the application clients already
+registered against it. The domain keeps its identity, its issuer URL and
+its FQDN across the change; what the broker module refreshes is the
+sources and capabilities advertised on the domain's `srv/http/oidc` key,
+see [Discovery](#discovery).
 
 This layering is what actually solves the multi-application redirect URI
 problem. Registering applications directly with an external IdP means
@@ -175,15 +178,14 @@ the same one used for other cluster services. No new discovery channel is
 introduced.
 
 An **internal** broker module publishes one
-`module/{id}/{qualifier}/srv/http/oidc` HASH key per OIDC domain
-(identity source) it serves, discoverable via
-`agent.list_service_providers()`. The `{qualifier}` disambiguates domains
-served by the same broker instance, and therefore the same FQDN. Each key
-describes:
+`module/{id}/{qualifier}/srv/http/oidc` HASH key per OIDC domain it
+serves, discoverable via `agent.list_service_providers()`. The
+`{qualifier}` disambiguates domains served by the same broker instance.
+Each key describes:
 
 - the broker's FQDN, issuer URL and discovery document location
 - which capabilities it supports (see below)
-- the identity source it serves (an LDAP-federated domain, Entra ID,
+- the identity sources it serves (an LDAP-federated domain, Entra ID,
   Google Workspace...)
 
 An **external** broker is not a cluster module and cannot publish its own
@@ -240,13 +242,15 @@ LDAP as it does today), others can also consume group membership or role
 claims from the broker and reduce their LDAP dependency.
 
 Rather than the application declaring an integration "tier", the broker
-advertises, per domain, which capabilities that identity source supports
-(e.g. group membership claims, a specific claims-mapping contract) as
-part of the corresponding `srv/http/oidc` key. Each application's own
-integration checks the advertised capabilities
-against what it needs, and falls back or degrades gracefully when a
-capability is not available. This keeps the compliance check local to
-each application instead of requiring a central tier registry.
+advertises, per domain, which capabilities that domain supports (e.g.
+group membership claims, a specific claims-mapping contract) as part of
+the corresponding `srv/http/oidc` key. A domain's capabilities depend on
+what its upstream sources can provide, so they can change as sources are
+added or removed. Each application's own integration checks the
+advertised capabilities against what it needs, and falls back or degrades
+gracefully when a capability is not available. This keeps the compliance
+check local to each application instead of requiring a central tier
+registry.
 
 [Nextcloud's `user_oidc` app](https://github.com/nextcloud/user_oidc) is
 a mature, broadly deployed reference implementation of this pattern
