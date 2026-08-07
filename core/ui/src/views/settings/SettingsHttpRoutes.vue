@@ -140,6 +140,9 @@
                           <NsEmptyState
                             :title="$t('settings_http_routes.no_http_route')"
                           >
+                            <template #pictogram>
+                              <NetworkPictogram />
+                            </template>
                             <template #description>
                               <div>
                                 {{
