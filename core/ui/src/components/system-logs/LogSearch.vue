@@ -92,14 +92,28 @@
               v-model.trim="internalSearchQuery"
               :placeholder="$t('common.search_placeholder')"
               :helper-text="$t('common.case_sensitive')"
+              :invalid-message="error.searchQuery"
               @keypress.enter="onEnterKeyPress()"
               class="search-query mg-bottom-md"
             >
             </cv-text-input>
           </cv-column>
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <NsToggle
+              :label="$t('system_logs.regexp')"
+              value="regexp"
+              :form-item="true"
+              v-model="internalRegexp"
+              class="mg-bottom-md"
+              ref="regexp"
+            >
+              <template slot="text-left">{{ $t("common.disabled") }}</template>
+              <template slot="text-right">{{ $t("common.enabled") }}</template>
+            </NsToggle>
+          </cv-column>
         </cv-row>
         <cv-row>
-          <cv-column :md="verticalLayout ? 8 : 4" :xlg="verticalLayout ? 8 : 4">
+          <cv-column :md="verticalLayout ? 4 : 2" :xlg="verticalLayout ? 4 : 2">
             <label class="bx--label">
               {{ $t("system_logs.mode") }}
             </label>
@@ -128,7 +142,7 @@
               min="1"
               :max="MAX_LINES_LIMIT"
               @keypress.enter="onEnterKeyPress()"
-              class="narrow mg-bottom-md"
+              class="mg-bottom-md"
             >
             </cv-text-input>
           </cv-column>
@@ -248,6 +262,13 @@
               >"</span
             >
             <span class="filter-collapsed"
+              ><strong>{{ $t("system_logs.regexp") }}</strong
+              >:
+              <span>{{
+                internalRegexp ? $t("common.enabled") : $t("common.disabled")
+              }}</span></span
+            >
+            <span class="filter-collapsed"
               ><strong>{{ $t("system_logs.start") }}</strong
               >:
               <span>{{
@@ -279,15 +300,14 @@
           </div>
         </cv-column>
       </cv-row>
-      <cv-row>
+      <cv-row v-if="logsError">
         <cv-column>
-          <cv-link @click="toggleFilters" class="toggle-filters">
-            {{
-              filtersShown
-                ? $t("system_logs.collapse_filters")
-                : $t("system_logs.expand_filters")
-            }}
-          </cv-link>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('system_logs.search_failed')"
+            :description="logsError"
+            :showCloseButton="false"
+          />
         </cv-column>
       </cv-row>
       <cv-row>
@@ -348,9 +368,15 @@
               />
             </div>
           </template>
+          <span
+            v-if="searchStarted && !loading.logs && outputLines.length"
+            class="results-feedback"
+          >
+            {{ resultsFeedback }}
+          </span>
         </cv-column>
       </cv-row>
-      <cv-row v-if="searchStarted">
+      <cv-row v-if="searchStarted && !logsError">
         <cv-column>
           <LogOutput
             :searchId="searchId"
@@ -380,6 +406,9 @@ import {
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import Close16 from "@carbon/icons-vue/es/close/16";
+
+// leading timestamp emitted by logcli, e.g. 2026-05-15T11:06:07+01:00
+const LOG_TIMESTAMP_PATTERN = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/;
 
 export default {
   name: "LogSearch",
@@ -455,6 +484,11 @@ export default {
     },
     mainSearch: Boolean,
     followLogs: Boolean,
+    regexp: Boolean,
+    filtersShown: {
+      type: Boolean,
+      default: true,
+    },
     verticalLayout: Boolean,
     loadingApps: Boolean,
     loadingLoki: Boolean,
@@ -466,9 +500,9 @@ export default {
   data() {
     return {
       MAX_LINES_LIMIT: 2000,
-      filtersShown: true,
       internalContext: "",
       internalSearchQuery: "",
+      internalRegexp: false,
       calOptions: {
         dateFormat: "Y-m-d",
       },
@@ -488,12 +522,14 @@ export default {
       scrollToBottom: true,
       searchStarted: false,
       noLogsFound: false,
+      logsError: "",
       highlight: "",
       loading: {
         logs: false,
         stopFollowing: false,
       },
       error: {
+        searchQuery: "",
         startDate: "",
         startTime: "",
         endDate: "",
@@ -538,6 +574,49 @@ export default {
     csbFollowModeSelected() {
       return this.internalFollowLogs;
     },
+    logsInterval() {
+      // dump output is reversed by the backend, so the boundaries are sorted
+      // instead of assuming the first line is the oldest one
+      const boundaries = [
+        this.findTimestamp(false),
+        this.findTimestamp(true),
+      ].filter(Boolean);
+
+      if (!boundaries.length) {
+        return null;
+      }
+      boundaries.sort();
+      return {
+        from: boundaries[0],
+        to: boundaries[boundaries.length - 1],
+      };
+    },
+    resultsFeedback() {
+      const numLines = this.outputLines.length;
+      const interval = this.logsInterval;
+
+      // max lines is not part of a follow search: it has no input in that mode
+      if (this.internalFollowLogs) {
+        return interval
+          ? this.$t("system_logs.showing_lines", {
+              n: numLines,
+              from: interval.from,
+              to: interval.to,
+            })
+          : this.$t("system_logs.showing_lines_no_interval", { n: numLines });
+      }
+      return interval
+        ? this.$t("system_logs.showing_lines_of", {
+            n: numLines,
+            max: this.internalMaxLines,
+            from: interval.from,
+            to: interval.to,
+          })
+        : this.$t("system_logs.showing_lines_of_no_interval", {
+            n: numLines,
+            max: this.internalMaxLines,
+          });
+    },
   },
   watch: {
     searchQuery: function () {
@@ -548,6 +627,16 @@ export default {
     internalSearchQuery: function () {
       if (this.mainSearch) {
         this.$emit("updateSearchQuery", this.internalSearchQuery);
+      }
+    },
+    regexp: function () {
+      if (this.mainSearch) {
+        this.internalRegexp = this.regexp;
+      }
+    },
+    internalRegexp: function () {
+      if (this.mainSearch) {
+        this.$emit("updateRegexp", this.internalRegexp);
       }
     },
     timezone: function () {
@@ -697,17 +786,12 @@ export default {
     this.initFilters();
 
     // register event listeners
-    this.$root.$on(
-      `collapseSystemLogsFilters-${this.searchId}`,
-      this.collapseFilters
-    );
     this.$root.$on("logSearchClosed", this.onLogSearchClosed);
   },
   beforeDestroy() {
     // remove event listeners
     this.$root.$off(`logsStart-${this.searchId}`);
     this.$root.$off(`logsStop-${this.searchId}`);
-    this.$root.$off(`collapseSystemLogsFilters-${this.searchId}`);
     this.$root.$off("logSearchClosed");
 
     if (this.pid) {
@@ -715,11 +799,21 @@ export default {
     }
   },
   methods: {
-    toggleFilters() {
-      this.filtersShown = !this.filtersShown;
-    },
-    collapseFilters() {
-      this.filtersShown = false;
+    // returns the "YYYY-MM-DD HH:mm" prefix of the first line carrying one,
+    // scanning from the end of the buffer when fromEnd is set. The raw prefix
+    // is reused as-is: it already honours the timezone chosen for the query
+    findTimestamp(fromEnd) {
+      const numLines = this.outputLines.length;
+
+      for (let i = 0; i < numLines; i++) {
+        const line = this.outputLines[fromEnd ? numLines - 1 - i : i];
+        const match = LOG_TIMESTAMP_PATTERN.exec(line);
+
+        if (match) {
+          return `${match[1]} ${match[2]}`;
+        }
+      }
+      return null;
     },
     onContextSelected(value) {
       this.internalContext = value;
@@ -742,6 +836,7 @@ export default {
       this.internalTimezone = "local";
       this.internalMaxLines = "500";
       this.internalFollowLogs = false;
+      this.internalRegexp = false;
     },
     validateSearchLogs() {
       this.clearErrors();
@@ -759,6 +854,17 @@ export default {
       if (!this.internalSelectedLokiId) {
         this.error.selectedLoki = this.$t("common.required");
         isValidationOk = false;
+      }
+
+      if (this.internalRegexp && this.internalSearchQuery) {
+        try {
+          // catches the obvious mistakes: the backend validates again with RE2,
+          // the engine Loki actually runs
+          new RegExp(this.internalSearchQuery);
+        } catch (err) {
+          this.error.searchQuery = this.$t("system_logs.invalid_regexp");
+          isValidationOk = false;
+        }
       }
 
       if (!this.internalFollowLogs) {
@@ -807,6 +913,7 @@ export default {
       }
       this.loading.logs = true;
       this.noLogsFound = false;
+      this.logsError = "";
       this.searchStarted = true;
       const mode = this.internalFollowLogs ? "tail" : "dump";
 
@@ -860,6 +967,7 @@ export default {
           id: this.searchId,
           timezone: timezone,
           instance: this.internalSelectedLokiId,
+          regexp: this.internalRegexp,
         },
       };
 
@@ -887,6 +995,11 @@ export default {
     onLogsStartDump(payload) {
       this.loading.logs = false;
 
+      if (payload.error) {
+        this.onLogsQueryError(payload.error);
+        return;
+      }
+
       if (!payload.message.length) {
         // show empty state in LogsOutput
         this.noLogsFound = true;
@@ -897,7 +1010,21 @@ export default {
       // signal LogOutput
       this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
+    onLogsQueryError(message) {
+      this.loading.logs = false;
+      this.loading.stopFollowing = false;
+      this.isFollowing = false;
+      this.pid = "";
+      this.noLogsFound = false;
+      this.logsError = message;
+      this.$root.$off(`logsStart-${this.searchId}`);
+    },
     onLogsStartFollow(payload) {
+      if (payload.error) {
+        this.onLogsQueryError(payload.error);
+        return;
+      }
+
       if (this.loading.logs) {
         this.loading.logs = false;
         this.isFollowing = true;
@@ -919,6 +1046,7 @@ export default {
     },
     clearLogs() {
       this.outputLines = [];
+      this.logsError = "";
     },
     onEnterKeyPress() {
       if (!this.isFollowing) {
@@ -981,8 +1109,10 @@ export default {
   align-items: center;
 }
 
-.toggle-filters {
-  margin-bottom: $spacing-06;
+.results-feedback {
+  margin-left: auto;
+  color: $text-02;
+  font-size: 0.75rem;
 }
 
 .filter-collapsed {

@@ -19,60 +19,31 @@
             class="page-toolbar-item"
             >{{ $t("system_logs.add_search") }}</NsButton
           >
-          <!-- <template v-else>
-            <cv-content-switcher
-              @selected="onLayoutSelected"
-              class="page-toolbar-item"
-            >
-              <cv-content-switcher-button
-                owner-id="horizontal"
-                :selected="csbHorizontalLayoutSelected"
-                >{{
-                  $t("system_logs.horizontal_layout")
-                }}</cv-content-switcher-button
-              >
-              <cv-content-switcher-button
-                owner-id="vertical"
-                :selected="csbVerticalLayoutSelected"
-                >{{
-                  $t("system_logs.vertical_layout")
-                }}</cv-content-switcher-button
-              >
-            </cv-content-switcher> -->
-          <NsIconMenu
-            :flipMenu="true"
-            tipPosition="top"
-            tipAlignment="end"
+          <NsButton
+            kind="ghost"
+            size="field"
+            :icon="filtersShown ? RowCollapse20 : RowExpand20"
+            @click="toggleFilters()"
             class="page-toolbar-item"
+            >{{
+              filtersShown
+                ? $t("system_logs.collapse_filters")
+                : $t("system_logs.expand_filters")
+            }}</NsButton
           >
-            <cv-overflow-menu-item @click="collapseAllFilters()">
-              <NsMenuItem
-                :icon="RowCollapse20"
-                :label="$t('system_logs.collapse_filters')"
-              />
-            </cv-overflow-menu-item>
-            <cv-overflow-menu-item
-              @click="setHorizontalLayout()"
-              :disabled="searches.length < 2 || !verticalLayout"
-              class="toggle-layout"
-            >
-              <NsMenuItem
-                :icon="Row20"
-                :label="$t('system_logs.horizontal_layout')"
-              />
-            </cv-overflow-menu-item>
-            <cv-overflow-menu-item
-              @click="setVerticalLayout()"
-              :disabled="searches.length < 2 || verticalLayout"
-              class="toggle-layout"
-            >
-              <NsMenuItem
-                :icon="Column20"
-                :label="$t('system_logs.vertical_layout')"
-              />
-            </cv-overflow-menu-item>
-          </NsIconMenu>
-          <!-- </template> -->
+          <NsButton
+            kind="ghost"
+            size="field"
+            :icon="verticalLayout ? Row20 : Column20"
+            :disabled="searches.length < 2"
+            @click="toggleLayout()"
+            class="page-toolbar-item toggle-layout"
+            >{{
+              verticalLayout
+                ? $t("system_logs.horizontal_layout")
+                : $t("system_logs.vertical_layout")
+            }}</NsButton
+          >
         </div>
       </cv-column>
     </cv-row>
@@ -117,6 +88,8 @@
           :selectedAppId="q.selectedAppId"
           :selectedLokiId="q.selectedLokiId"
           :followLogs="q.followLogs"
+          :regexp="q.regexp"
+          :filtersShown="filtersShown"
           :maxLines="q.maxLines"
           :startDate="q.startDate"
           :startTime="q.startTime"
@@ -130,6 +103,7 @@
           @updateSelectedNodeId="onUpdateSelectedNodeId"
           @updateSelectedAppId="onUpdateSelectedAppId"
           @updateFollowLogs="onUpdateFollowLogs"
+          @updateRegexp="onUpdateRegexp"
           @updateMaxLines="onUpdateMaxLines"
           @updateStartDate="onUpdateStartDate"
           @updateStartTime="onUpdateStartTime"
@@ -182,6 +156,7 @@ export default {
         selectedAppId: "",
         selectedLokiId: "",
         followLogs: false,
+        regexp: false,
         maxLines: "500",
         startDate: "",
         startTime: "",
@@ -195,6 +170,7 @@ export default {
       lokiInstances: [],
       searches: [],
       verticalLayout: false,
+      filtersShown: true,
       startSearchCommand: 0,
       loading: {
         listInstalledModules: false,
@@ -405,16 +381,11 @@ export default {
       ).instance_id;
       this.loading.lokiInstances = false;
     },
-    setHorizontalLayout() {
-      this.verticalLayout = false;
+    toggleLayout() {
+      this.verticalLayout = !this.verticalLayout;
     },
-    setVerticalLayout() {
-      this.verticalLayout = true;
-    },
-    collapseAllFilters() {
-      for (const searchId of this.searches) {
-        this.$root.$emit(`collapseSystemLogsFilters-${searchId}`);
-      }
+    toggleFilters() {
+      this.filtersShown = !this.filtersShown;
     },
     closeSearch(searchId) {
       this.searches = this.searches.filter((s) => s !== searchId);
@@ -435,6 +406,9 @@ export default {
     },
     onUpdateFollowLogs(followLogs) {
       this.q.followLogs = followLogs;
+    },
+    onUpdateRegexp(regexp) {
+      this.q.regexp = regexp;
     },
     onUpdateMaxLines(maxLines) {
       this.q.maxLines = maxLines;
