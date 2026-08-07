@@ -370,7 +370,7 @@
           </template>
           <span
             v-if="searchStarted && !loading.logs && outputLines.length"
-            class="results-feedback"
+            class="results-feedback mg-bottom-sm"
           >
             {{ resultsFeedback }}
           </span>
@@ -1112,7 +1112,7 @@ export default {
 .results-feedback {
   margin-left: auto;
   color: $text-02;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .filter-collapsed {
