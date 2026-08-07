@@ -24,10 +24,12 @@ package socket
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -100,9 +102,6 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 
 		// filter logs params
 		var mode = ""
-		var filter = ""
-		var streamSelector = ""
-		var logqlPipeline = ""
 		var from = ""
 		var to = ""
 		var timezone = "UTC"
@@ -143,29 +142,13 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		}
 		args = append(args, mode)
 
-		// check filter
-		if len(logsAction.Filter) > 0 {
-			filter = ` |= "` + strings.ReplaceAll(logsAction.Filter, `"`, `\"`) + `"`
-		} else {
-			filter = ``
-		}
-
-		// switch entity
-		switch logsAction.Entity {
-		default:
-			streamSelector = `{node_id=~".+"}`
-
-		case "node":
-			streamSelector = `{node_id="` + logsAction.EntityName + `"}`
-
-		case "module":
-			streamSelector = `{module_id="` + logsAction.EntityName + `"}`
-		}
-
-		logqlPipeline = ` | json syslog_id="SYSLOG_IDENTIFIER", message="MESSAGE" | line_format "[{{.node_id}}:{{.module_id}}:{{.syslog_id}}] {{.message}}"`
-
 		// Compose and append the query strings to logcli arguments
-		args = append(args, streamSelector+logqlPipeline+filter)
+		query, errQuery := buildLogqlQuery(logsAction)
+		if errQuery != nil {
+			writeLogsError(s, logsAction.Id, errQuery.Error(), wg)
+			return
+		}
+		args = append(args, query)
 
 		// define command
 		cmd := exec.Command("/usr/local/bin/logcli", args...)
@@ -181,9 +164,15 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			go func() {
 				pid := ""
 
+				// logcli reports query errors on stderr: keep them to tell the
+				// client why the stream produced nothing
+				var stderrBuf bytes.Buffer
+				cmd.Stderr = &stderrBuf
+
 				// create a pipe for the output of the script
 				stdout, errStdOut := cmd.StdoutPipe()
 				if errStdOut != nil {
+					writeLogsError(s, logsAction.Id, errStdOut.Error(), wg)
 					return
 				}
 
@@ -203,6 +192,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 				// start command
 				err = cmd.Start()
 				if err != nil {
+					writeLogsError(s, logsAction.Id, err.Error(), wg)
 					return
 				}
 
@@ -224,6 +214,11 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 				// use Wait to avoid defunct process when killed
 				err = cmd.Wait()
 				if err != nil {
+					// logs-stop terminates the process with a signal and leaves
+					// stderr empty: only a real query failure is worth reporting
+					if stderrMsg := strings.TrimSpace(stderrBuf.String()); stderrMsg != "" {
+						writeLogsError(s, logsAction.Id, stderrMsg, wg)
+					}
 					return
 				}
 			}()
@@ -233,7 +228,12 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			go func() {
 				out, err := cmd.Output()
 				if err != nil {
-					utils.LogError(errors.Wrap(err, "[SOCKET] error executing Cmd for dump"))
+					message := err.Error()
+					if exitErr, isExitErr := err.(*exec.ExitError); isExitErr && len(exitErr.Stderr) > 0 {
+						message = strings.TrimSpace(string(exitErr.Stderr))
+					}
+					writeLogsError(s, logsAction.Id, message, wg)
+					return
 				}
 
 				// reverse logs orders
@@ -289,6 +289,64 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// Do not send back any message to a successfully authorized
 		// session, just keep the socket open.
 	}
+}
+
+// writeLogsError reports a failed log query to the client. It reuses the
+// logs-start event so the frontend one-shot listener is released, and adds an
+// "error" key the UI can render instead of an empty result.
+func writeLogsError(s *melody.Session, id string, message string, wg *sync.WaitGroup) {
+	utils.LogError(errors.New("[SOCKET] logs query failed: " + message))
+
+	if s != nil {
+		writeSocketResponse(s, "logs-start", gin.H{"id": id, "pid": "", "message": "", "error": message})
+	} else {
+		fmt.Fprintln(os.Stderr, message)
+		wg.Done()
+	}
+}
+
+// escapeLogqlString escapes a value to be embedded in a LogQL double-quoted
+// string. LogQL applies Go escape rules, so a raw backslash must be doubled or
+// logcli refuses to parse the query.
+func escapeLogqlString(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	return strings.ReplaceAll(s, `"`, `\"`)
+}
+
+// buildLogqlQuery assembles the LogQL query passed to logcli: stream selector,
+// json/line_format pipeline and the optional line filter. When Regexp is set the
+// filter uses the |~ operator, otherwise the plain substring operator |=.
+func buildLogqlQuery(logsAction models.LogsStartAction) (string, error) {
+	var streamSelector string
+
+	switch logsAction.Entity {
+	default:
+		streamSelector = `{node_id=~".+"}`
+
+	case "node":
+		streamSelector = `{node_id="` + escapeLogqlString(logsAction.EntityName) + `"}`
+
+	case "module":
+		streamSelector = `{module_id="` + escapeLogqlString(logsAction.EntityName) + `"}`
+	}
+
+	logqlPipeline := ` | json syslog_id="SYSLOG_IDENTIFIER", message="MESSAGE" | line_format "[{{.node_id}}:{{.module_id}}:{{.syslog_id}}] {{.message}}"`
+
+	filter := ""
+	if len(logsAction.Filter) > 0 {
+		operator := `|=`
+		if logsAction.Regexp {
+			// Loki runs RE2, the same engine as Go's regexp: rejecting here
+			// gives the user the compile error instead of an empty result
+			if _, err := regexp.Compile(logsAction.Filter); err != nil {
+				return "", err
+			}
+			operator = `|~`
+		}
+		filter = ` ` + operator + ` "` + escapeLogqlString(logsAction.Filter) + `"`
+	}
+
+	return streamSelector + logqlPipeline + filter, nil
 }
 
 func reverse(ss []string) []string {

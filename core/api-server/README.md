@@ -248,7 +248,9 @@ INPUT
       "to": "2021-01-19T20:00:00Z",
       "entity" :"module",
       "entity_name": "traefik1",
-      "timezone": "Europe/Rome"
+      "timezone": "Europe/Rome",
+      "instance": "loki1",
+      "regexp": false
    }
 }
 ```
@@ -264,6 +266,8 @@ INPUT
     -   `entity`: must be `cluster` or `node` or `module` - `string`
     -   `entity_name`: could be empty (`cluster` case) or name of the entity - `string` (ex. hostname of the node or module id like `traefik1`)
     -   `timezone`: could be empty (default UTC) or a specific valid timezone (eg. Europe/Rome)
+    -   `instance`: could be empty (default loki instance) or the id of a specific loki instance - `string` (ex. `loki1`)
+    -   `regexp`: could be empty (default `false`) - `bool` (when `true` the `filter` is a RE2 regular expression instead of a substring)
 
 ```json
 OUTPUT
@@ -282,6 +286,7 @@ OUTPUT
 -   `payload`: contains the response logs
     -   `message`: contains the log message
     -   `pid`: is the pid of the process that actually reads log
+    -   `error`: present only when the query failed (invalid regexp, `logcli` error). `message` is empty in that case
 -   `timestamp`: timestamp of the action
 -   `type`: used to identify the websocket outputs
 
