@@ -623,6 +623,10 @@ export default {
       }
     },
     internalSearchQuery: function () {
+      // drop the error as soon as the pattern is being corrected, otherwise the
+      // banner stays up and the page looks stuck
+      this.logsError = "";
+
       if (this.mainSearch) {
         this.$emit("updateSearchQuery", this.internalSearchQuery);
       }
@@ -633,6 +637,8 @@ export default {
       }
     },
     internalRegexp: function () {
+      this.logsError = "";
+
       if (this.mainSearch) {
         this.$emit("updateRegexp", this.internalRegexp);
       }
