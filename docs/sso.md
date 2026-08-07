@@ -32,24 +32,30 @@ the **OIDC domain**.
 
 An OIDC domain is, like an LDAP domain, either:
 
-- **Internal**: backed by a broker module installed in the cluster. The
-  module may expose user/group management actions equivalent to the Samba
-  AD/OpenLDAP providers (e.g. add/alter/remove user, add/alter/remove
-  group — the exact set is not fixed by this document); the actions'
-  own implementation is free to drive the broker's admin API directly,
-  but only those NS8 actions are exposed as the module's interface, not
-  the broker's API itself.
+- **Internal**: backed by a broker module installed in the cluster. Core
+  provisions the domain once, when it is created, and exposes no actions
+  to manage its users, groups or configuration afterwards — see [One-time
+  provisioning](#one-time-provisioning).
 - **External**: backed by a broker instance the administrator runs and
-  manages elsewhere. Like an external LDAP domain, it is read-only to
-  NS8: core cannot manage its users or groups, only register
-  applications against it — see [Client credentials](#client-credentials).
+  manages elsewhere. Because core steps back from an internal domain
+  right after creating it, the two cases end up looking much alike — in
+  both, the broker's configuration lives in the broker's own admin
+  console, not in NS8. Only two things really differ: an external domain
+  gets no automatically provisioned LDAP user federation, since core did
+  not create the realm and does not configure it (the administrator sets
+  one up themselves if they want it), and it must be registered with a
+  credential core can use to mint registration tokens, which an internal
+  domain provides on its own — see [Client
+  credentials](#client-credentials).
 
-Behind an OIDC domain sits a **broker**: a service such as Keycloak that
-speaks standard OIDC to applications and exposes a management API core
-can drive to provision per-application clients automatically. The broker
-plays exactly the role Samba AD/OpenLDAP play for an LDAP domain: a core
-module, the same category as Samba AD/OpenLDAP themselves, installed on
-demand only when an OIDC domain is actually configured.
+Behind an OIDC domain sits a **broker**: a service that speaks standard
+OIDC to applications and exposes a management API core can drive to
+provision per-application clients automatically. **Keycloak is the broker
+product this architecture adopts**, and the only one core supports. The
+broker plays exactly the role Samba AD/OpenLDAP play for an LDAP domain:
+a core module, the same category as Samba AD/OpenLDAP themselves,
+installed on demand only when an OIDC domain is actually configured. An
+OIDC domain maps to one Keycloak **realm**.
 
 A plain external identity provider with no broker in front of it (a raw
 Entra ID tenant or Google Workspace account) does not fit this model at
@@ -81,13 +87,14 @@ valid deployment choices under the same model.
 Provisioning logic is necessarily broker-product-specific (Keycloak's
 Admin REST API has nothing in common with Auth0's or Okta's Management
 API), the same way Samba AD and OpenLDAP are separate implementations
-behind the shared "LDAP domain" concept. This document only requires
-that a broker, whatever the product, exposes a standard OIDC endpoint for
-applications and a management API adapter core can drive, participating
-in the discovery mechanism below. Which broker product(s) core ships an
-adapter for first (Keycloak is the leading candidate), and any future
-support for broker replicas of the same OIDC domain, are left to a
-follow-up implementation issue.
+behind the shared "LDAP domain" concept. The "OIDC domain" concept is
+therefore kept product-neutral — it requires only that a broker exposes a
+standard OIDC endpoint for applications and a management API adapter core
+can drive, participating in the discovery mechanism below — but Keycloak
+is the single implementation in scope, and additional adapters are a
+non-goal until a concrete need appears. Implementing the Keycloak module
+itself, and any future support for broker replicas of the same OIDC
+domain, are left to a follow-up implementation issue.
 
 This document assumes one FQDN per broker instance, isolation between
 tenants being achieved by running separate instances (see above). Some
@@ -103,7 +110,7 @@ should the need arise.
 ### Cardinality between a domain and its upstream identity sources
 
 Cardinality does not stop at the broker. Each OIDC domain can, in turn,
-draw identities from more than one **upstream identity source**, through
+draw identities from any number of **upstream identity sources**, through
 two distinct mechanisms:
 
 - **User federation**: the broker reads users directly from an existing
@@ -118,24 +125,24 @@ federation remain visible to LDAP-only applications, while users reached
 by brokering do not exist in LDAP at all — see [Consuming brokered
 identities](#consuming-brokered-identities-oidc-apps-vs-legacy-ldap-apps).
 
-Either way, upstream sources are scoped to the domain itself — a realm,
-in Keycloak's terms — and are not shared with the other domains the same
-broker instance may be hosting. This is what keeps the
-one-broker-many-domains cardinality of the previous section safe:
-consolidating several domains on a single instance never leaks one
-domain's upstream identities into another's.
+The two mechanisms differ in another respect too, and this is what
+[One-time provisioning](#one-time-provisioning) narrows: core provisions
+**at most one** upstream source, a single LDAP user federation, and only
+at domain creation. Identity brokering is never set up by core. Both are
+optional: a domain with no upstream at all is a valid domain, backed by
+the broker's local user store.
 
-Upstream sources are also optional, and managed independently of the
-OIDC domain's own lifecycle. A domain with no upstream at all is still a
-valid domain, backed by the broker's local user store; an administrator
-can add an identity provider (configured with the
-`client_id`/`client_secret` issued by that provider's own console) or a
-user federation source at any time, and remove it later, without
-reconfiguring the domain itself or the application clients already
-registered against it. The domain keeps its identity, its issuer URL and
-its FQDN across the change; what the broker module refreshes is the
-sources and capabilities advertised on the domain's `srv/http/oidc` key,
-see [Discovery](#discovery).
+Either way, upstream sources are scoped to the domain itself — the realm
+— and are not shared with the other domains the same broker instance may
+be hosting. This is what keeps the one-broker-many-domains cardinality of
+the previous section safe: consolidating several domains on a single
+instance never leaks one domain's upstream identities into another's.
+
+Sources added later, in the Keycloak admin console, do not disturb what
+core provisioned: the domain keeps its identity, its issuer URL, its FQDN
+and the application clients already registered against it. Core simply
+does not track them, and does not need to — see [Capability
+discovery](#capability-discovery).
 
 This layering is what actually solves the multi-application redirect URI
 problem. Registering applications directly with an external IdP means
@@ -145,6 +152,76 @@ front, the broker is the only client registered upstream, once, and
 applications are provisioned against the broker's management API
 instead — a step core can automate, see [Client
 credentials](#client-credentials).
+
+## One-time provisioning
+
+Creating an OIDC domain is a **one-shot provisioning procedure**. Core
+creates the realm, applies a fixed configuration profile, and steps back:
+it exposes no actions to refine that configuration afterwards, and no
+actions to manage the realm's users and groups. Every subsequent change —
+adding an Entra ID or Google identity provider, adding a second
+federation source, editing authentication flows, creating local users — is
+made by the administrator, logged into the Keycloak admin console as
+realm administrator.
+
+This is a deliberate cost boundary, not a limitation to be lifted later
+by default. Keycloak's configuration surface is far larger than anything
+core could usefully mirror in its own UI, and mirroring it would mean
+tracking upstream schema changes forever. Core owns exactly two moments in
+a domain's life — creation and destruction — plus the ongoing ability to
+register application clients, which is the one operation applications
+cannot perform for the administrator.
+
+At creation the administrator chooses one of two branches.
+
+### Branch 1: federate an existing LDAP domain
+
+The new OIDC domain is provisioned with a single LDAP user federation
+source pointing at one existing [account provider
+domain](core/user_domains.md) of the cluster. That LDAP domain remains
+authoritative: it keeps serving LDAP-only applications directly, exactly
+as it does today, and the realm is a second, OIDC-speaking front end onto
+the same user base.
+
+Provisioning implies a few concrete constraints:
+
+- **Reachability.** The broker reaches the LDAP domain through the
+  per-node [LDAP proxy](core/user_domains.md) (`127.0.0.1`), so the node
+  running the broker module must be bound to that LDAP domain, and the
+  connection URL core writes into the realm is the local proxy's. This
+  also means an OIDC domain's federation source is fixed to a domain the
+  broker's own node can see.
+- **Bind credentials.** Core supplies the bind DN and password the same
+  way it does when binding any other module to an LDAP domain.
+- **Read-only.** The realm is provisioned with Keycloak's LDAP edit mode
+  set to `READ_ONLY`, so the broker never writes back to the directory and
+  never stores a local password for a federated user: every login
+  delegates the credential check to LDAP, keeping a single source of
+  truth for passwords.
+- **Lifecycle coupling.** The realm breaks if its federated LDAP domain
+  is removed, or if the broker's node is unbound from it. Core must
+  surface this dependency rather than let the domain fail silently; how
+  it does so is an implementation detail for the follow-up issue.
+
+Realm administration is granted through the LDAP domain itself: the
+domain's existing administrators group is imported by a group mapper and
+mapped to Keycloak's `realm-management` administrative role, so current
+LDAP admins can log into the console with the credentials they already
+have. No separate account is created.
+
+### Branch 2: no federation, local user store
+
+The realm is provisioned empty, backed by Keycloak's own user store, and
+core creates an **initial administrator account** — the same pattern the
+Samba AD and OpenLDAP providers already follow when a new LDAP domain is
+created. The account is a member of a provisioned administrators group
+that carries the `realm-management` administrative role mapping, so
+administration is granted through group membership and can be extended to
+further accounts from the console.
+
+The Samba AD/OpenLDAP analogy stops there: it covers the initial admin
+account, not ongoing parity. Core does not manage this realm's users and
+groups the way it manages an LDAP domain's.
 
 ## Broker endpoint and TLS
 
@@ -184,24 +261,36 @@ serves, discoverable via `agent.list_service_providers()`. The
 Each key describes:
 
 - the broker's FQDN, issuer URL and discovery document location
-- which capabilities it supports (see below)
-- the identity sources it serves (an LDAP-federated domain, Entra ID,
-  Google Workspace...)
+- the LDAP domain federated at creation, if any
+
+The key is written when the domain is created and deleted when the domain
+is removed; it is never updated in between. Nothing on it needs to track
+what the administrator later configures in the Keycloak console — which is
+what makes [one-time provisioning](#one-time-provisioning) affordable:
+there is no reconciliation loop between core's view of a domain and the
+broker's actual state. What an application needs beyond these stable
+facts, it asks the broker for directly, see [Capability
+discovery](#capability-discovery).
 
 An **external** broker is not a cluster module and cannot publish its own
 `srv` keys. As with external LDAP domains today, the cluster itself would
 publish an equivalent `srv/http/oidc` key on the administrator's behalf,
 from the connection details entered when the external OIDC domain is
 configured, so both cases look the same to `agent.list_service_providers()`
-callers. Whether external brokers are supported at all, and how exactly
-the cluster keeps that key in sync, is an implementation detail left to
-the follow-up issue — it isn't certain a use case for external brokers
-will actually materialize.
+callers. The write-once rule holds here too: the key is created when the
+administrator registers the external domain and dropped when they remove
+it. Whether external brokers are supported at all is left to the follow-up
+issue — it isn't certain a use case for external brokers will actually
+materialize.
 
 Each OIDC domain configuration record (stored in Redis, mirroring the
 shape of LDAP domain records) references the `srv/http/oidc` key that
-backs it. Broker configuration changes fire a `service-oidc-changed`
-event, the same pattern used for other service providers.
+backs it. Creating or destroying a domain fires the existing
+[`user-domain-changed`](core/events.md) event, the same one LDAP domains
+already use — an OIDC domain is a user domain, so applications watch a
+single event for both types. Consistently with the above, no event follows
+ordinary configuration changes made in the Keycloak console, because core
+never sees them.
 
 ## Client credentials
 
@@ -218,8 +307,15 @@ product-specific adapter. RFC 7591 does not standardize how that call
 gets authorized, though — Keycloak, for example, requires a short-lived
 Initial Access Token (IAT), minted per registering application (a
 single pre-minted IAT would only cover the first app). For an
-**internal** domain, core mints that IAT itself, since the broker
-module already holds full admin access.
+**internal** domain, core mints that IAT itself, through a **service
+account** the broker module provisions in the realm for its own use.
+
+That service account is distinct from the human realm administrator of
+[one-time provisioning](#one-time-provisioning), and is the one piece of
+realm configuration core keeps depending on after creation: an
+administrator who deletes it, or strips its permissions, silently breaks
+registration of any further application. Handing the console to the
+administrator means this account has to be recognizable as core-owned.
 
 An **external** domain has no such standing admin access, so its
 configuration record must carry two attributes instead of just
@@ -234,23 +330,36 @@ Together these are enough for core to keep minting IATs for new
 application registrations over time, without ever holding full admin
 rights on a broker it doesn't own.
 
-## Capability contract
+## Capability discovery
 
 Application integrations vary in how deeply they can use an OIDC domain:
-some only need authentication (the app keeps provisioning users from
-LDAP as it does today), others can also consume group membership or role
-claims from the broker and reduce their LDAP dependency.
+some only need authentication (the app keeps provisioning users from LDAP
+as it does today), others can also consume group membership or role claims
+from the broker and reduce their LDAP dependency. An application therefore
+needs to know what a domain offers before it can offer that domain to the
+administrator. No NS8-specific capability registry is needed for this:
+the broker itself is the authority, and answering the question is a
+two-step process.
 
-Rather than the application declaring an integration "tier", the broker
-advertises, per domain, which capabilities that domain supports (e.g.
-group membership claims, a specific claims-mapping contract) as part of
-the corresponding `srv/http/oidc` key. A domain's capabilities depend on
-what its upstream sources can provide, so they can change as sources are
-added or removed. Each application's own integration checks the
-advertised capabilities against what it needs, and falls back or degrades
-gracefully when a capability is not available. This keeps the compliance
-check local to each application instead of requiring a central tier
-registry.
+**First**, the application calls the existing
+`agent.list_service_providers()` and gets the user domains configured in
+the cluster, LDAP and OIDC alike. This is the same discovery function
+applications already use, and for an OIDC domain it returns the stable
+facts of the [`srv/http/oidc` key](#discovery) — enough to reach the
+broker, not enough to know what it will hand over.
+
+**Second**, for each OIDC domain, the application queries the broker's own
+endpoints to refine the picture, and filters out the domains that cannot
+satisfy its requirements. An application that needs group membership, for
+example, keeps only the domains that actually provide a group claim; the
+claim to look for is a configurable name, defaulting to `groups`. The
+domains left after filtering are the ones the application presents to the
+administrator as usable.
+
+Putting the second step on the broker rather than on the `srv` key is what
+lets the key stay write-once. The broker's answer reflects the realm as it
+is now, including whatever the administrator changed in the console after
+provisioning, and it costs core nothing to keep current.
 
 [Nextcloud's `user_oidc` app](https://github.com/nextcloud/user_oidc) is
 a mature, broadly deployed reference implementation of this pattern
@@ -267,20 +376,23 @@ domain for user and group provisioning while delegating authentication
 to an OIDC domain's broker.
 
 The two domain types aren't mutually exclusive at the identity-source
-level either: a broker may itself use LDAP user federation against an
-existing NS8 LDAP domain as one of its identity sources, in which case
-authenticating through the OIDC domain and provisioning through the LDAP
-domain ultimately point at the same underlying user base. Mapping an
+level either: this is exactly [branch 1](#branch-1-federate-an-existing-ldap-domain)
+of provisioning, where the broker federates an existing NS8 LDAP domain,
+so authenticating through the OIDC domain and provisioning through the
+LDAP domain point at the same underlying user base. Mapping an
 authenticated OIDC identity back to an existing LDAP user (or
 provisioning a new one) is left to each application's own integration,
-guided by the capability contract above.
+guided by the claims the domain turns out to provide.
 
-When a domain combines more than one identity source, the broker needs
-a way to recognize the same person across sources — typically by
-matching a claimed email address. This must be an explicit, surfaced
-choice for the administrator to enable, not a silent default: trusting
-an upstream-claimed email as a match key is also a potential
-impersonation vector.
+A core-provisioned domain has at most one upstream source, so it never
+has to recognize the same person across sources. That question appears
+only once the administrator adds a second source in the Keycloak console,
+and it is answered there: Keycloak's first-broker-login flow prompts for
+account linking rather than silently trusting a claimed email address.
+Administrators should keep it that way — configuring automatic linking on
+an upstream-claimed email turns that claim into an impersonation vector —
+but this is console guidance for the administrator, not a behaviour core
+enforces.
 
 ## Consuming brokered identities: OIDC apps vs legacy LDAP apps
 
@@ -322,12 +434,24 @@ own integration to adopt where it fits.
 
 ## Non-goals
 
-- Implementing a broker module (e.g. Keycloak) and its management API
-  adapter, including support for running broker replicas of the same
-  OIDC domain: tracked by a follow-up issue.
-- Supporting broker products beyond the first adapter core ships:
-  additional adapters (Authentik, Auth0, Okta...) are added on demand, as
-  follow-up issues.
+- Implementing the Keycloak broker module and its management API adapter,
+  including support for running broker replicas of the same OIDC domain:
+  tracked by a follow-up issue.
+- Supporting broker products other than Keycloak: additional adapters
+  (Authentik, Auth0, Okta...) are added on demand, as follow-up issues.
+- Refining an OIDC domain's configuration from core after creation:
+  provisioning is one-shot and post-creation changes are made in the
+  Keycloak admin console, see [One-time
+  provisioning](#one-time-provisioning). Reopening this — a core-side UI
+  for identity providers, federation sources or authentication flows — is
+  a follow-up design issue, should the need arise.
+- Managing the users and groups of a broker's local user store from core,
+  the way core manages an LDAP domain's: the Keycloak console is the
+  management surface, and core only creates the initial administrator
+  account at provisioning time.
+- Provisioning more than one upstream identity source per domain, or any
+  identity brokering at all: core federates at most one existing LDAP
+  domain, at creation time.
 - Modeling a plain external identity provider (a raw Entra ID tenant or
   Google Workspace account with no broker in front of it) as a core
   domain: each application configures it directly against its own admin
@@ -340,7 +464,7 @@ own integration to adopt where it fits.
   user's behalf: this is a machine-to-machine flow (e.g. OAuth token
   exchange, RFC 8693) rather than the browser-based authorization code
   flow this document assumes, and does not require reopening the
-  domain/broker model above — a broker can advertise support for it as
-  a future capability, the same way other per-domain capabilities are
-  advertised today. Left to a follow-up design issue, should the need
-  arise.
+  domain/broker model above — token exchange is a standard grant type, so
+  a broker supporting it advertises it the same way it advertises any
+  other, see [Capability discovery](#capability-discovery). Left to a
+  follow-up design issue, should the need arise.
