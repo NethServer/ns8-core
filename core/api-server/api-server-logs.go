@@ -25,10 +25,7 @@ package main
 import (
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/socket"
-	"github.com/NethServer/ns8-core/core/api-server/utils"
-	"github.com/pkg/errors"
 
-	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
@@ -48,6 +45,7 @@ var (
 	searchFlag     = ""
 	timezone       = ""
 	instance       = ""
+	regexpFlag     = false
 )
 
 var RootCmd = &cobra.Command{
@@ -86,6 +84,7 @@ func Execute() {
 	LogsCmd.Flags().StringVarP(&searchFlag, "search", "s", "", "get logs for a specific search string")
 	LogsCmd.Flags().StringVarP(&timezone, "timezone", "z", "", "get logs in a specific timezone")
 	LogsCmd.Flags().StringVarP(&instance, "instance", "i", "", "search for logs in a specific instance. (Example: loki1, loki2, ...)")
+	LogsCmd.Flags().BoolVarP(&regexpFlag, "regexp", "r", false, "treat the search string as a regular expression instead of a substring")
 
 	// check errors on cmd execution
 	if err := RootCmd.Execute(); err != nil {
@@ -99,29 +98,22 @@ func Logs() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	// define payload
-	payload := `
-  {
-   "action": "logs-start",
-   "payload": {
-      "id": "` + uuid.New().String() + `",
-      "mode": "` + modeFlag + `",
-      "lines": "` + linesFlag + `",
-      "filter": "` + searchFlag + `",
-      "from": "` + fromFlag + `",
-      "to": "` + toFlag + `",
-      "entity": "` + entityFlag + `",
-      "entity_name": "` + entityNameFlag + `",
-      "timezone": "` + timezone + `",
-      "instance": "` + instance + `"
-   }
-  }
-  `
-
 	// init command to execute
-	var action models.SocketAction
-	if errAction := json.Unmarshal([]byte(payload), &action); errAction != nil {
-		utils.LogError(errors.Wrap(errAction, "[LOG-CLI] error in Action json unmarshal"))
+	action := models.SocketAction{
+		Action: "logs-start",
+		Payload: models.LogsStartAction{
+			Id:         uuid.New().String(),
+			Mode:       modeFlag,
+			Lines:      linesFlag,
+			Filter:     searchFlag,
+			From:       fromFlag,
+			To:         toFlag,
+			Entity:     entityFlag,
+			EntityName: entityNameFlag,
+			TimeZone:   timezone,
+			Instance:   instance,
+			Regexp:     regexpFlag,
+		},
 	}
 
 	// execute command
