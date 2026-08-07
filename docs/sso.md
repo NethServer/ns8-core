@@ -78,21 +78,6 @@ with its own FQDN and certificate, keeping tenants' OIDC endpoints and
 management APIs fully separate. Consolidation and isolation are both
 valid deployment choices under the same model.
 
-Each OIDC domain can, in turn, draw identities from more than one
-upstream source: NS8's own LDAP domains via user federation, or external
-identity providers (Entra ID, Google Workspace...) via identity
-brokering — both scoped to the domain itself (a realm, in Keycloak's
-terms), not shared across the other domains a broker instance may also
-be hosting — see [Consuming brokered
-identities](#consuming-brokered-identities-oidc-apps-vs-legacy-ldap-apps)
-for how these two differ. Both are optional and managed independently of
-the OIDC domain's own lifecycle: an administrator can add or remove an
-identity provider (configured with its own `client_id`/`client_secret`)
-or a user federation source at any time, without reconfiguring the
-domain itself. This is what actually solves the multi-application
-redirect URI problem: applications are provisioned against the broker's
-management API, not against each upstream IdP's console, one-by-one.
-
 Provisioning logic is necessarily broker-product-specific (Keycloak's
 Admin REST API has nothing in common with Auth0's or Okta's Management
 API), the same way Samba AD and OpenLDAP are separate implementations
@@ -114,6 +99,49 @@ cluster-wide single-hostname assumption, so adding multi-FQDN support
 for a broker instance later is a broker-module/proxy detail, not a
 change to this architecture. Left to a follow-up implementation issue,
 should the need arise.
+
+### Cardinality between a domain and its upstream identity sources
+
+Cardinality does not stop at the broker. Each OIDC domain can, in turn,
+draw identities from more than one **upstream identity source**, through
+two distinct mechanisms:
+
+- **User federation**: the broker reads users directly from an existing
+  NS8 LDAP domain, so authenticating through the OIDC domain and
+  provisioning from the LDAP domain ultimately hit the same user base.
+- **Identity brokering**: the broker delegates authentication to an
+  external identity provider (Entra ID, Google Workspace...), acting as
+  that provider's own OIDC or SAML client.
+
+The distinction goes well beyond configuration: users reached by
+federation remain visible to LDAP-only applications, while users reached
+by brokering do not exist in LDAP at all — see [Consuming brokered
+identities](#consuming-brokered-identities-oidc-apps-vs-legacy-ldap-apps).
+
+Either way, upstream sources are scoped to the domain itself — a realm,
+in Keycloak's terms — and are not shared with the other domains the same
+broker instance may be hosting. This is what keeps the
+one-broker-many-domains cardinality of the previous section safe:
+consolidating several domains on a single instance never leaks one
+domain's upstream identities into another's.
+
+Upstream sources are also optional, and managed independently of the
+OIDC domain's own lifecycle. A domain with no upstream at all is still a
+valid domain, backed by the broker's local user store; an administrator
+can add an identity provider (configured with the
+`client_id`/`client_secret` issued by that provider's own console) or a
+user federation source at any time, and remove it later, without
+reconfiguring the domain, its `srv/http/oidc` key, or the application
+clients already registered against it.
+
+This layering is what actually solves the multi-application redirect URI
+problem. Registering applications directly with an external IdP means
+one manual console registration per application, repeated for every IdP
+and redone whenever an application's FQDN changes. With a broker in
+front, the broker is the only client registered upstream, once, and
+applications are provisioned against the broker's management API
+instead — a step core can automate, see [Client
+credentials](#client-credentials).
 
 ## Broker endpoint and TLS
 
