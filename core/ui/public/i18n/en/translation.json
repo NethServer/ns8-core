@@ -868,7 +868,7 @@
         "trust_depth": "Trust depth",
         "trust_depth_helper": "Number of frontend proxy levels",
         "trust_depth_tooltip": "With a trust depth of 1, the client IP address is read from the last entry of the X-Forwarded-For header.",
-        "trust_depth_invalid": "Enter a whole number greater than or equal to 0",
+        "trust_depth_invalid": "Enter a whole number greater than or equal to 1",
         "bad_ip_address": "Invalid IP address. Enter one IPv4 or IPv6 address per line, without CIDR prefix",
         "frontend_proxy_restart_message": "HTTP clients connected to {node} will be briefly disconnected. Reload the page if necessary."
     },

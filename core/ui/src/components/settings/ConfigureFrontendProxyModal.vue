@@ -67,7 +67,7 @@
           :helper-text="$t('settings_http_routes.trust_depth_helper')"
           :invalid-message="error.depth"
           :disabled="loading.setTrustedProxies"
-          :min="0"
+          :min="1"
           :step="1"
           class="trust-depth"
           ref="depth"
@@ -172,7 +172,7 @@ export default {
         if (this.isEditing && this.proxyConfig) {
           this.selectedNodeId = this.proxyConfig.nodeId;
           this.proxies_str = this.proxyConfig.proxies_str;
-          // show the depth as returned by the backend, even if it is 0
+          // show the depth as returned by the backend:
           this.depth = this.proxyConfig.depth;
         } else {
           this.selectedNodeId = "";
@@ -265,8 +265,9 @@ export default {
           this.focusElement("depth");
           isValidationOk = false;
         }
-      } else if (!Number.isInteger(depth) || depth < 0) {
-        // the input schema requires an integer >= 0
+      } else if (!Number.isInteger(depth) || depth < 1) {
+        // a depth of 0 makes Traefik ignore X-Forwarded-For, which contradicts
+        // declaring a proxy: deleting the row is the way to reset the depth to 0
         this.error.depth = this.$t("settings_http_routes.trust_depth_invalid");
 
         if (isValidationOk) {
