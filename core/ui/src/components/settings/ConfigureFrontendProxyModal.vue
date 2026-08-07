@@ -69,7 +69,7 @@
           :disabled="loading.setTrustedProxies"
           :min="0"
           :step="1"
-          class="trust-depth mg-bottom-md"
+          class="trust-depth"
           ref="depth"
         />
         <NsInlineNotification
