@@ -92,7 +92,6 @@
               v-model.trim="internalSearchQuery"
               :placeholder="$t('common.search_placeholder')"
               :helper-text="$t('common.case_sensitive')"
-              :invalid-message="error.searchQuery"
               @keypress.enter="onEnterKeyPress()"
               class="search-query mg-bottom-md"
             >
@@ -529,7 +528,6 @@ export default {
         stopFollowing: false,
       },
       error: {
-        searchQuery: "",
         startDate: "",
         startTime: "",
         endDate: "",
@@ -854,17 +852,6 @@ export default {
       if (!this.internalSelectedLokiId) {
         this.error.selectedLoki = this.$t("common.required");
         isValidationOk = false;
-      }
-
-      if (this.internalRegexp && this.internalSearchQuery) {
-        try {
-          // catches the obvious mistakes: the backend validates again with RE2,
-          // the engine Loki actually runs
-          new RegExp(this.internalSearchQuery);
-        } catch (err) {
-          this.error.searchQuery = this.$t("system_logs.invalid_regexp");
-          isValidationOk = false;
-        }
       }
 
       if (!this.internalFollowLogs) {

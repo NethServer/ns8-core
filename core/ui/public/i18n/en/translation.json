@@ -1188,7 +1188,6 @@
         "context_module": "Application",
         "search_query": "Search query",
         "regexp": "Regular expression",
-        "invalid_regexp": "Invalid regular expression",
         "search_failed": "Log search failed",
         "showing_lines": "Showing {n} lines from {from} to {to}",
         "showing_lines_of": "Showing {n} of {max} lines from {from} to {to}",
