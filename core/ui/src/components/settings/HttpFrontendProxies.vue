@@ -9,6 +9,13 @@
       <cv-grid fullWidth class="no-padding">
         <cv-row>
           <cv-column>
+            <p class="title-description mg-bottom-md">
+              {{ $t("settings_http_routes.frontend_proxies_description") }}
+            </p>
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
             <div class="data-table-filters">
               <cv-search
                 :label="$t('common.search')"
@@ -240,7 +247,7 @@
     <!-- delete frontend proxy modal -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteProxyModal"
-      :name="proxyConfigToDelete ? proxyConfigToDelete.node : ''"
+      :name="proxyConfigToDelete ? 'node' + proxyConfigToDelete.nodeId : ''"
       :title="
         $t('settings_http_routes.delete_frontend_proxy_node', {
           node: proxyConfigToDelete ? proxyConfigToDelete.node : '',
@@ -254,7 +261,7 @@
       "
       :typeToConfirm="
         $t('common.type_to_confirm', {
-          name: proxyConfigToDelete ? proxyConfigToDelete.node : '',
+          name: proxyConfigToDelete ? 'node' + proxyConfigToDelete.nodeId : '',
         })
       "
       :loading="loading.deleteTrustedProxies"
