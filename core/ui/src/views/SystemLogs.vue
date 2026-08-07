@@ -5,10 +5,12 @@
 <template>
   <cv-grid fullWidth class="system-logs">
     <cv-row>
-      <cv-column :md="4" :xlg="10" class="page-title">
+      <cv-column class="page-title">
         <h2>{{ $t("system_logs.title") }}</h2>
       </cv-column>
-      <cv-column :md="4" :xlg="6">
+    </cv-row>
+    <cv-row>
+      <cv-column>
         <div class="page-toolbar">
           <NsButton
             kind="secondary"
@@ -16,7 +18,7 @@
             :icon="Add20"
             @click="addSearch()"
             :disabled="searches.length > 1"
-            class="page-toolbar-item"
+            class="page-toolbar-item add-search"
             >{{ $t("system_logs.add_search") }}</NsButton
           >
           <NsButton
@@ -434,6 +436,12 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
+
+// the toolbar is right-aligned: the auto margin keeps "Add search" on the left,
+// apart from the two view buttons
+.add-search {
+  margin-right: auto;
+}
 
 // cannot switch to vertical layout on small screens
 @media (max-width: $breakpoint-x-large) {
