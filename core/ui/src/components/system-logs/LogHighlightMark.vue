@@ -56,7 +56,7 @@ export default {
       required: true,
     },
     searchTerm: {
-      type: String,
+      type: [String, RegExp],
       default: "",
     },
   },
@@ -90,22 +90,49 @@ export default {
     restParts() {
       return this.splitBySearchTerm(this.afterTag);
     },
+    searchPattern() {
+      if (!this.searchTerm) {
+        return null;
+      }
+      if (this.searchTerm instanceof RegExp) {
+        const flags = this.searchTerm.flags.includes("g")
+          ? this.searchTerm.flags
+          : this.searchTerm.flags + "g";
+        return new RegExp(this.searchTerm.source, flags);
+      }
+      return new RegExp(escapeRegExp(this.searchTerm), "gi");
+    },
   },
   methods: {
     // splits a piece of text so the search term keeps its own clickable
     // mark, even when the whole containing line is also colorized by level
     splitBySearchTerm(text) {
-      if (!this.searchTerm) {
+      const re = this.searchPattern;
+
+      if (!re) {
         return [{ text, isMatch: false }];
       }
-      const re = new RegExp(`(${escapeRegExp(this.searchTerm)})`, "gi");
-      return text
-        .split(re)
-        .filter((part) => part !== "")
-        .map((part) => ({
-          text: part,
-          isMatch: part.toLowerCase() === this.searchTerm.toLowerCase(),
-        }));
+      const parts = [];
+      let cursor = 0;
+      let match;
+
+      re.lastIndex = 0;
+      while ((match = re.exec(text)) !== null) {
+        if (match.index > cursor) {
+          parts.push({ text: text.slice(cursor, match.index), isMatch: false });
+        }
+        if (match[0]) {
+          parts.push({ text: match[0], isMatch: true });
+          cursor = match.index + match[0].length;
+        } else {
+          // a pattern able to match nothing would loop forever
+          re.lastIndex++;
+        }
+      }
+      if (cursor < text.length) {
+        parts.push({ text: text.slice(cursor), isMatch: false });
+      }
+      return parts.length ? parts : [{ text, isMatch: false }];
     },
   },
 };
