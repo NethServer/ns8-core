@@ -88,7 +88,7 @@ export default {
       default: 1,
     },
     highlight: {
-      type: String,
+      type: [String, RegExp],
       default: "",
     },
     verticalLayout: Boolean,
@@ -178,9 +178,10 @@ export default {
   background-image: none;
 }
 
-// show scrollbar
+// show scrollbar, and grow so it lands on the edge, not on the longest line
 .system-logs .logs-output.bx--snippet--multi .bx--snippet-container {
   overflow-y: auto !important;
+  flex: 1 1 auto;
 }
 
 .logs-output {
