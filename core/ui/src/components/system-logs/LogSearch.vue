@@ -24,7 +24,7 @@
               {{ $t("system_logs.context") }}
             </label>
             <cv-content-switcher
-              class="mg-bottom-md"
+              class="mg-bottom-lg"
               @selected="onContextSelected"
             >
               <cv-content-switcher-button
@@ -59,7 +59,7 @@
               :auto-filter="true"
               :auto-highlight="true"
               :options="nodes"
-              class="mg-bottom-md"
+              class="mg-bottom-lg"
               key="csbNode"
             >
             </cv-combo-box>
@@ -74,7 +74,7 @@
               :auto-highlight="true"
               :options="apps"
               :disabled="loadingApps"
-              class="mg-bottom-md"
+              class="mg-bottom-lg"
               key="csbApp"
             >
             </cv-combo-box>
@@ -90,21 +90,37 @@
                 ')'
               "
               v-model.trim="internalSearchQuery"
-              :placeholder="$t('common.search_placeholder')"
-              :helper-text="$t('common.case_sensitive')"
+              :placeholder="searchPlaceholder"
+              :helper-text="searchHelperText"
               @keypress.enter="onEnterKeyPress()"
-              class="search-query mg-bottom-md"
+              class="search-query mg-bottom-lg"
             >
             </cv-text-input>
           </cv-column>
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <NsToggle
+              :label="$t('system_logs.regexp')"
+              value="regexp"
+              :form-item="true"
+              v-model="internalRegexp"
+              class="mg-bottom-lg"
+              ref="regexp"
+            >
+              <template slot="tooltip">
+                <span>{{ $t("system_logs.regexp_tooltip") }}</span>
+              </template>
+              <template slot="text-left">{{ $t("common.disabled") }}</template>
+              <template slot="text-right">{{ $t("common.enabled") }}</template>
+            </NsToggle>
+          </cv-column>
         </cv-row>
         <cv-row>
-          <cv-column :md="verticalLayout ? 8 : 4" :xlg="verticalLayout ? 8 : 4">
+          <cv-column :md="verticalLayout ? 4 : 2">
             <label class="bx--label">
               {{ $t("system_logs.mode") }}
             </label>
             <cv-content-switcher
-              class="mg-bottom-md"
+              class="mg-bottom-lg"
               @selected="onModeSelected"
             >
               <cv-content-switcher-button
@@ -128,52 +144,64 @@
               min="1"
               :max="MAX_LINES_LIMIT"
               @keypress.enter="onEnterKeyPress()"
-              class="narrow mg-bottom-md"
+              class="mg-bottom-lg"
             >
             </cv-text-input>
           </cv-column>
         </cv-row>
         <cv-row v-if="!internalFollowLogs">
           <cv-column :md="verticalLayout ? 8 : 4">
-            <cv-date-picker
-              kind="single"
-              :cal-options="calOptions"
-              :date-label="$t('system_logs.start_date')"
-              v-model="internalStartDate"
-              class="interval-date mg-bottom-md"
-              :invalid-message="error.startDate"
-            >
-            </cv-date-picker>
-            <NsTimePicker
-              hideClearButton
-              v-model="internalStartTime"
-              :label="$t('system_logs.start_time_label')"
-              class="interval-time mg-bottom-md"
-            ></NsTimePicker>
+            <div class="interval-group mg-bottom-lg">
+              <cv-date-picker
+                kind="single"
+                :cal-options="calOptions"
+                :date-label="$t('system_logs.start_date')"
+                v-model="internalStartDate"
+                class="interval-date"
+                :invalid-message="error.startDate"
+              >
+              </cv-date-picker>
+              <div class="interval-time">
+                <NsTimePicker
+                  hideClearButton
+                  v-model="internalStartTime"
+                  :label="$t('system_logs.start_time_label')"
+                ></NsTimePicker>
+                <div class="bx--form__helper-text">
+                  {{ $t("system_logs.time_format_helper") }}
+                </div>
+              </div>
+            </div>
           </cv-column>
           <cv-column :md="verticalLayout ? 8 : 4">
-            <cv-date-picker
-              kind="single"
-              :cal-options="calOptions"
-              :date-label="$t('system_logs.end_date')"
-              v-model="internalEndDate"
-              class="interval-date mg-bottom-md"
-              :invalid-message="error.endDate"
-            >
-            </cv-date-picker>
-            <NsTimePicker
-              hideClearButton
-              v-model="internalEndTime"
-              :label="$t('system_logs.end_time_label')"
-              class="interval-time mg-bottom-md"
-            ></NsTimePicker>
+            <div class="interval-group mg-bottom-lg">
+              <cv-date-picker
+                kind="single"
+                :cal-options="calOptions"
+                :date-label="$t('system_logs.end_date')"
+                v-model="internalEndDate"
+                class="interval-date"
+                :invalid-message="error.endDate"
+              >
+              </cv-date-picker>
+              <div class="interval-time">
+                <NsTimePicker
+                  hideClearButton
+                  v-model="internalEndTime"
+                  :label="$t('system_logs.end_time_label')"
+                ></NsTimePicker>
+                <div class="bx--form__helper-text">
+                  {{ $t("system_logs.time_format_helper") }}
+                </div>
+              </div>
+            </div>
           </cv-column>
         </cv-row>
         <cv-row>
           <cv-column :md="verticalLayout ? 8 : 4">
             <cv-select
               :label="$t('system_logs.timezone')"
-              class="mg-bottom-md"
+              class="mg-bottom-lg"
               v-model="internalTimezone"
             >
               <cv-select-option disabled selected hidden>{{
@@ -209,7 +237,7 @@
               :auto-highlight="true"
               :options="lokiInstances"
               :disabled="loadingLoki"
-              class="mg-bottom-md"
+              class="mg-bottom-lg"
               tooltipAlignment="center"
               tooltipDirection="top"
               ><template slot="tooltip">
@@ -248,6 +276,13 @@
               >"</span
             >
             <span class="filter-collapsed"
+              ><strong>{{ $t("system_logs.regexp") }}</strong
+              >:
+              <span>{{
+                internalRegexp ? $t("common.enabled") : $t("common.disabled")
+              }}</span></span
+            >
+            <span class="filter-collapsed"
               ><strong>{{ $t("system_logs.start") }}</strong
               >:
               <span>{{
@@ -279,15 +314,14 @@
           </div>
         </cv-column>
       </cv-row>
-      <cv-row>
+      <cv-row v-if="logsError">
         <cv-column>
-          <cv-link @click="toggleFilters" class="toggle-filters">
-            {{
-              filtersShown
-                ? $t("system_logs.collapse_filters")
-                : $t("system_logs.expand_filters")
-            }}
-          </cv-link>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('system_logs.search_failed')"
+            :description="logsError"
+            :showCloseButton="false"
+          />
         </cv-column>
       </cv-row>
       <cv-row>
@@ -348,9 +382,15 @@
               />
             </div>
           </template>
+          <span
+            v-if="searchStarted && !loading.logs && outputLines.length"
+            class="results-feedback mg-bottom-sm"
+          >
+            {{ resultsFeedback }}
+          </span>
         </cv-column>
       </cv-row>
-      <cv-row v-if="searchStarted">
+      <cv-row v-if="searchStarted && (outputLines.length || !logsError)">
         <cv-column>
           <LogOutput
             :searchId="searchId"
@@ -380,6 +420,9 @@ import {
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import Close16 from "@carbon/icons-vue/es/close/16";
+
+// leading timestamp emitted by logcli, e.g. 2026-05-15T11:06:07+01:00
+const LOG_TIMESTAMP_PATTERN = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/;
 
 export default {
   name: "LogSearch",
@@ -455,6 +498,11 @@ export default {
     },
     mainSearch: Boolean,
     followLogs: Boolean,
+    regexp: Boolean,
+    filtersShown: {
+      type: Boolean,
+      default: true,
+    },
     verticalLayout: Boolean,
     loadingApps: Boolean,
     loadingLoki: Boolean,
@@ -466,9 +514,9 @@ export default {
   data() {
     return {
       MAX_LINES_LIMIT: 2000,
-      filtersShown: true,
       internalContext: "",
       internalSearchQuery: "",
+      internalRegexp: false,
       calOptions: {
         dateFormat: "Y-m-d",
       },
@@ -488,7 +536,10 @@ export default {
       scrollToBottom: true,
       searchStarted: false,
       noLogsFound: false,
+      logsError: "",
       highlight: "",
+      searchedMaxLines: "",
+      searchedFollowLogs: false,
       loading: {
         logs: false,
         stopFollowing: false,
@@ -538,6 +589,58 @@ export default {
     csbFollowModeSelected() {
       return this.internalFollowLogs;
     },
+    searchPlaceholder() {
+      // not translated: log lines are English whatever the UI locale
+      return this.internalRegexp
+        ? this.$t("common.eg_value", { value: "(?i)(error|failed)" })
+        : this.$t("common.eg_value", { value: "Connect call failed" });
+    },
+    searchHelperText() {
+      return this.internalRegexp
+        ? this.$t("system_logs.regexp_helper")
+        : this.$t("common.case_sensitive");
+    },
+    logsInterval() {
+      // dump output is reversed by the backend, so sort instead of assuming
+      const boundaries = [
+        this.findTimestamp(false),
+        this.findTimestamp(true),
+      ].filter(Boolean);
+
+      if (!boundaries.length) {
+        return null;
+      }
+      boundaries.sort();
+      return {
+        from: boundaries[0],
+        to: boundaries[boundaries.length - 1],
+      };
+    },
+    resultsFeedback() {
+      const numLines = this.outputLines.length;
+      const interval = this.logsInterval;
+
+      if (this.searchedFollowLogs) {
+        return interval
+          ? this.$t("system_logs.showing_lines", {
+              n: numLines,
+              from: interval.from,
+              to: interval.to,
+            })
+          : this.$t("system_logs.showing_lines_no_interval", { n: numLines });
+      }
+      return interval
+        ? this.$t("system_logs.showing_lines_of", {
+            n: numLines,
+            max: this.searchedMaxLines,
+            from: interval.from,
+            to: interval.to,
+          })
+        : this.$t("system_logs.showing_lines_of_no_interval", {
+            n: numLines,
+            max: this.searchedMaxLines,
+          });
+    },
   },
   watch: {
     searchQuery: function () {
@@ -546,8 +649,23 @@ export default {
       }
     },
     internalSearchQuery: function () {
+      // the banner would stay up while the pattern is being corrected
+      this.logsError = "";
+
       if (this.mainSearch) {
         this.$emit("updateSearchQuery", this.internalSearchQuery);
+      }
+    },
+    regexp: function () {
+      if (this.mainSearch) {
+        this.internalRegexp = this.regexp;
+      }
+    },
+    internalRegexp: function () {
+      this.logsError = "";
+
+      if (this.mainSearch) {
+        this.$emit("updateRegexp", this.internalRegexp);
       }
     },
     timezone: function () {
@@ -697,17 +815,12 @@ export default {
     this.initFilters();
 
     // register event listeners
-    this.$root.$on(
-      `collapseSystemLogsFilters-${this.searchId}`,
-      this.collapseFilters
-    );
     this.$root.$on("logSearchClosed", this.onLogSearchClosed);
   },
   beforeDestroy() {
     // remove event listeners
     this.$root.$off(`logsStart-${this.searchId}`);
     this.$root.$off(`logsStop-${this.searchId}`);
-    this.$root.$off(`collapseSystemLogsFilters-${this.searchId}`);
     this.$root.$off("logSearchClosed");
 
     if (this.pid) {
@@ -715,11 +828,36 @@ export default {
     }
   },
   methods: {
-    toggleFilters() {
-      this.filtersShown = !this.filtersShown;
+    // vue-text-highlight matches a string with indexOf, so only a RegExp
+    // highlights. JavaScript has no inline flags: (?i) becomes the i flag.
+    buildHighlight() {
+      if (!this.internalRegexp || !this.internalSearchQuery) {
+        return this.internalSearchQuery;
+      }
+      const inlineFlags = /^\(\?([ims]+)\)/.exec(this.internalSearchQuery);
+      const source = inlineFlags
+        ? this.internalSearchQuery.slice(inlineFlags[0].length)
+        : this.internalSearchQuery;
+
+      try {
+        return new RegExp(source, inlineFlags ? inlineFlags[1] : "");
+      } catch (e) {
+        return this.internalSearchQuery;
+      }
     },
-    collapseFilters() {
-      this.filtersShown = false;
+    // the raw prefix is reused as-is: it already honours the query timezone
+    findTimestamp(fromEnd) {
+      const numLines = this.outputLines.length;
+
+      for (let i = 0; i < numLines; i++) {
+        const line = this.outputLines[fromEnd ? numLines - 1 - i : i];
+        const match = LOG_TIMESTAMP_PATTERN.exec(line);
+
+        if (match) {
+          return `${match[1]} ${match[2]}`;
+        }
+      }
+      return null;
     },
     onContextSelected(value) {
       this.internalContext = value;
@@ -742,6 +880,7 @@ export default {
       this.internalTimezone = "local";
       this.internalMaxLines = "500";
       this.internalFollowLogs = false;
+      this.internalRegexp = false;
     },
     validateSearchLogs() {
       this.clearErrors();
@@ -807,6 +946,7 @@ export default {
       }
       this.loading.logs = true;
       this.noLogsFound = false;
+      this.logsError = "";
       this.searchStarted = true;
       const mode = this.internalFollowLogs ? "tail" : "dump";
 
@@ -820,7 +960,9 @@ export default {
       const format = "yyyy-MM-dd'T'HH:mm:ssX";
       const startUtcString = this.formatInTimeZone(startLocal, format, "UTC");
       const endUtcString = this.formatInTimeZone(endLocal, format, "UTC");
-      this.highlight = this.internalSearchQuery;
+      this.highlight = this.buildHighlight();
+      this.searchedMaxLines = this.internalMaxLines;
+      this.searchedFollowLogs = this.internalFollowLogs;
       this.clearLogs();
       let entityName;
       let timezone = "UTC";
@@ -860,6 +1002,7 @@ export default {
           id: this.searchId,
           timezone: timezone,
           instance: this.internalSelectedLokiId,
+          regexp: this.internalRegexp,
         },
       };
 
@@ -887,6 +1030,11 @@ export default {
     onLogsStartDump(payload) {
       this.loading.logs = false;
 
+      if (payload.error) {
+        this.onLogsQueryError(payload.error);
+        return;
+      }
+
       if (!payload.message.length) {
         // show empty state in LogsOutput
         this.noLogsFound = true;
@@ -897,7 +1045,21 @@ export default {
       // signal LogOutput
       this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
+    onLogsQueryError(message) {
+      this.loading.logs = false;
+      this.loading.stopFollowing = false;
+      this.isFollowing = false;
+      this.pid = "";
+      this.noLogsFound = false;
+      this.logsError = message;
+      this.$root.$off(`logsStart-${this.searchId}`);
+    },
     onLogsStartFollow(payload) {
+      if (payload.error) {
+        this.onLogsQueryError(payload.error);
+        return;
+      }
+
       if (this.loading.logs) {
         this.loading.logs = false;
         this.isFollowing = true;
@@ -919,6 +1081,7 @@ export default {
     },
     clearLogs() {
       this.outputLines = [];
+      this.logsError = "";
     },
     onEnterKeyPress() {
       if (!this.isFollowing) {
@@ -967,13 +1130,17 @@ export default {
   position: relative;
 }
 
-.interval-date {
-  display: inline-flex;
-  margin-right: $spacing-06;
+// split evenly, one Carbon gutter apart, so the pair lines up with the single
+// fields above
+.interval-group {
+  display: flex;
+  gap: $spacing-07;
 }
 
+.interval-date,
 .interval-time {
-  display: inline-flex;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .checkbox-filter {
@@ -981,8 +1148,10 @@ export default {
   align-items: center;
 }
 
-.toggle-filters {
-  margin-bottom: $spacing-06;
+.results-feedback {
+  margin-left: auto;
+  color: $text-02;
+  font-size: 0.875rem;
 }
 
 .filter-collapsed {
@@ -997,6 +1166,10 @@ export default {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  // the buttons carry mg-bottom-sm for when the row wraps: this tops it up to
+  // the same rhythm as the filter rows, and detaches the actions from them
+  margin-top: $spacing-03;
+  margin-bottom: $spacing-06;
 
   .mg-right {
     margin-right: $spacing-06;
@@ -1009,10 +1182,41 @@ export default {
 
 // global styles
 
+// every filter field fills its grid column: Carbon caps them at 38rem, and both
+// pickers below ship a fixed pixel width
 @media (min-width: $breakpoint-medium) {
-  .system-logs .search-query .bx--text-input,
-  .system-logs .search-query .bx--text-input__field-wrapper {
+  .system-logs .log-search .bx--text-input,
+  .system-logs .log-search .bx--text-input__field-wrapper,
+  .system-logs .log-search .cv-select,
+  .system-logs .log-search .cv-combo-box {
     max-width: none;
   }
+}
+
+.system-logs .interval-date,
+.system-logs .interval-date .bx--date-picker,
+.system-logs .interval-date .bx--date-picker-container,
+.system-logs .interval-date .bx--date-picker__input {
+  width: 100%;
+}
+
+.system-logs .interval-time .bx--time-picker,
+.system-logs .interval-time .bx--time-picker__input {
+  width: 100%;
+}
+
+// the picker's scoped rule ties at (0,4,0) and is injected last, so only
+// !important gets past it
+.system-logs .interval-time .time-picker-field.narrow-width {
+  width: 100% !important;
+}
+
+.system-logs .interval-time .time-picker-field.narrow-width input {
+  width: 100% !important;
+}
+
+// Carbon sizes the content switcher on its labels; Figma gives it the column
+.system-logs .log-search .bx--content-switcher {
+  width: 100%;
 }
 </style>
