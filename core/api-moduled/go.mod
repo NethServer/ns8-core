@@ -4,6 +4,7 @@ go 1.26.0
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.3
+	github.com/appleboy/gin-jwt/v3 v3.5.1
 	github.com/gin-contrib/cors v1.6.0
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/static v1.1.6
@@ -55,5 +56,5 @@ require (
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/text v0.39.0 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )

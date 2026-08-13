@@ -4,6 +4,7 @@ go 1.26.0
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.3
+	github.com/appleboy/gin-jwt/v3 v3.5.1
 	github.com/fatih/structs v1.1.0
 	github.com/gin-contrib/cors v1.6.0
 	github.com/gin-contrib/gzip v0.0.6
@@ -54,11 +55,11 @@ require (
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/text v0.39.0 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )
 
 require (
-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/nqd/flat v0.2.0
