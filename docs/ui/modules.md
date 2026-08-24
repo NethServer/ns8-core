@@ -90,8 +90,8 @@ Developing NS8 modules UI inside a container is the recommended way, but if you 
 
 - Install Node.js and npm (LTS version, currently v22)
 - Change directory to `ui`
-- `yarn install`: project setup, needed only the first time
-- `yarn watch`: compile sources and watch for changes
+- `NODE_OPTIONS=--openssl-legacy-provider yarn install`: project setup, needed only the first time
+- `NODE_OPTIONS=--openssl-legacy-provider yarn watch`: compile sources and watch for changes
 - [Sync module sources to your NS8 development machine](#sync-module-sources-to-ns8-development-machine)
 
 ### Sync module sources to NS8 development machine
