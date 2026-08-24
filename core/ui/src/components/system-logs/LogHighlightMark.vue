@@ -3,7 +3,7 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
-  <mark :class="levelClass"
+  <mark class="log-line" :class="levelClass"
     ><span v-if="beforeTag" class="log-timestamp"
       ><template v-for="(part, i) in beforeParts"
         ><mark v-if="part.isMatch" :key="'b' + i" class="log-search-match">{{
@@ -44,10 +44,6 @@ const LOG_LEVEL_CLASSIFIERS = [
 // "2026-07-05T12:03:17+02:00 [1:traefik1:traefik] ..."
 const PROCESS_TAG_PATTERN = /^(\S+\s+)(\[[^\]]*\])/;
 
-function escapeRegExp(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 export default {
   name: "LogHighlightMark",
   props: {
@@ -55,9 +51,12 @@ export default {
       type: String,
       required: true,
     },
-    searchTerm: {
-      type: [String, RegExp],
-      default: "",
+    // match offsets computed off the main thread, one flat [start, end, ...]
+    // list per segment: [timestamp, tag, message]. Null until they arrive, or
+    // for good when the pattern turned out to be too expensive to run.
+    ranges: {
+      type: Array,
+      default: null,
     },
   },
   computed: {
@@ -82,52 +81,33 @@ export default {
         : this.text;
     },
     beforeParts() {
-      return this.splitBySearchTerm(this.beforeTag);
+      return this.splitByRanges(this.beforeTag, 0);
     },
     tagParts() {
-      return this.splitBySearchTerm(this.tagText);
+      return this.splitByRanges(this.tagText, 1);
     },
     restParts() {
-      return this.splitBySearchTerm(this.afterTag);
-    },
-    searchPattern() {
-      if (!this.searchTerm) {
-        return null;
-      }
-      if (this.searchTerm instanceof RegExp) {
-        const flags = this.searchTerm.flags.includes("g")
-          ? this.searchTerm.flags
-          : this.searchTerm.flags + "g";
-        return new RegExp(this.searchTerm.source, flags);
-      }
-      return new RegExp(escapeRegExp(this.searchTerm), "gi");
+      return this.splitByRanges(this.afterTag, 2);
     },
   },
   methods: {
-    // splits a piece of text so the search term keeps its own clickable
-    // mark, even when the whole containing line is also colorized by level
-    splitBySearchTerm(text) {
-      const re = this.searchPattern;
+    // splits a segment so the search term keeps its own clickable mark, even
+    // when the whole containing line is also colorized by level
+    splitByRanges(text, segment) {
+      const flat = this.ranges ? this.ranges[segment] : null;
 
-      if (!re) {
+      if (!flat || !flat.length) {
         return [{ text, isMatch: false }];
       }
       const parts = [];
       let cursor = 0;
-      let match;
 
-      re.lastIndex = 0;
-      while ((match = re.exec(text)) !== null) {
-        if (match.index > cursor) {
-          parts.push({ text: text.slice(cursor, match.index), isMatch: false });
+      for (let i = 0; i < flat.length; i += 2) {
+        if (flat[i] > cursor) {
+          parts.push({ text: text.slice(cursor, flat[i]), isMatch: false });
         }
-        if (match[0]) {
-          parts.push({ text: match[0], isMatch: true });
-          cursor = match.index + match[0].length;
-        } else {
-          // a pattern able to match nothing would loop forever
-          re.lastIndex++;
-        }
+        parts.push({ text: text.slice(flat[i], flat[i + 1]), isMatch: true });
+        cursor = flat[i + 1];
       }
       if (cursor < text.length) {
         parts.push({ text: text.slice(cursor), isMatch: false });
