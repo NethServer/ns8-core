@@ -106,9 +106,6 @@
               class="mg-bottom-lg"
               ref="regexp"
             >
-              <template slot="tooltip">
-                <span>{{ $t("system_logs.regexp_tooltip") }}</span>
-              </template>
               <template slot="text-left">{{ $t("common.disabled") }}</template>
               <template slot="text-right">{{ $t("common.enabled") }}</template>
             </NsToggle>
@@ -598,7 +595,7 @@ export default {
     searchHelperText() {
       return this.internalRegexp
         ? this.$t("system_logs.regexp_helper")
-        : this.$t("common.case_sensitive");
+        : this.$t("system_logs.substring_helper");
     },
     logsInterval() {
       // dump output is reversed by the backend, so sort instead of assuming
