@@ -105,7 +105,7 @@ import EditAcmeServerModal, {
 } from "@/components/settings/EditAcmeServerModal.vue";
 
 export default {
-  name: "AcmeSettings",
+  name: "AcmeSettingsPanel",
   components: { EditAcmeServerModal },
   mixins: [TaskService, UtilService, IconService],
   props: {
