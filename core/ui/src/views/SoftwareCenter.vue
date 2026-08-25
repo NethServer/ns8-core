@@ -263,10 +263,10 @@
             />
             <!-- core update -->
             <template v-if="isCoreUpdateAvailable && !loadingUpdates">
-              <h4 class="mg-bottom-sm">
+              <h4 class="mg-bottom-lg">
                 {{ $t("software_center.core_update") }}
               </h4>
-              <p class="mg-bottom-lg">
+              <p class="title-description mg-bottom-lg">
                 {{ $t("software_center.core_update_description") }}
               </p>
               <AppList
@@ -279,12 +279,12 @@
             </template>
             <!-- apps updates -->
             <template v-if="appUpdates.length && !loadingUpdates">
-              <h4 class="mg-bottom-sm">
+              <h4 class="mg-bottom-lg">
                 {{ $t("software_center.applications_update") }}
               </h4>
               <p
                 v-if="subscriptionIsActive && applyUpdatesIsActive"
-                class="mg-bottom-lg"
+                class="title-description mg-bottom-lg"
               >
                 {{ $t("software_center.applications_update_description") }}
               </p>
