@@ -106,19 +106,11 @@
 import to from "await-to-js";
 import { UtilService, TaskService } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
-
-// set-trusted-proxies validates with ipaddress.ip_address(): no CIDR ranges, and
-// no leading-zero octets, which Python rejects since 3.9.5
-const IPV4_OCTET = "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])";
-const IPV4 = `${IPV4_OCTET}(\\.${IPV4_OCTET}){3}`;
-const IPV4_PATTERN = new RegExp(`^${IPV4}$`);
-const IPV6_PATTERN = new RegExp(
-  `^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}${IPV4}|([0-9a-fA-F]{1,4}:){1,4}:${IPV4})$`
-);
+import IpAddressService from "@/mixins/ipAddress";
 
 export default {
   name: "ConfigureFrontendProxyModal",
-  mixins: [UtilService, TaskService],
+  mixins: [UtilService, TaskService, IpAddressService],
   props: {
     isShown: Boolean,
     nodes: {
@@ -235,10 +227,9 @@ export default {
         }
       } else {
         for (const proxy of proxyList) {
-          if (!IPV4_PATTERN.test(proxy) && !IPV6_PATTERN.test(proxy)) {
-            const isIPv6Like = proxy.includes(":");
+          if (!this.isIpAddress(proxy)) {
             this.error.proxies = this.$t(
-              isIPv6Like
+              this.looksLikeIpv6(proxy)
                 ? "settings_http_routes.invalid_ipv6"
                 : "settings_http_routes.invalid_ipv4",
               { ip: proxy }
