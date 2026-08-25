@@ -194,7 +194,7 @@
             </div>
           </cv-column>
         </cv-row>
-        <cv-row>
+        <cv-row v-if="!internalFollowLogs">
           <cv-column :md="verticalLayout ? 8 : 4">
             <cv-select
               :label="$t('system_logs.timezone')"
@@ -304,7 +304,7 @@
                   : $t("common.disabled")
               }}</span></span
             >
-            <span class="filter-collapsed"
+            <span v-if="!internalFollowLogs" class="filter-collapsed"
               ><strong>{{ $t("system_logs.timezone") }}</strong
               >: <span>{{ internalTimezone }}</span></span
             >
