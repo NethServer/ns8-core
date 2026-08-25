@@ -141,6 +141,9 @@ export default {
     this.highlightWorker = null;
     this.highlightTimer = null;
     this.debounceTimer = null;
+    // pattern already proven too expensive: follow mode would otherwise start
+    // a doomed worker on every batch of new lines and burn a core for nothing
+    this.abandonedPattern = "";
   },
   beforeDestroy() {
     this.$root.$off(`logsUpdated-${this.searchId}`);
@@ -175,17 +178,25 @@ export default {
       if (!this.highlight || !this.outputLines.length) {
         this.lineRanges = [];
         this.highlightUnavailable = false;
+        // a new search starts by clearing the buffer: give the pattern the
+        // benefit of the doubt again, the next result set may be smaller
+        this.abandonedPattern = "";
         return;
       }
       const pattern =
         this.highlight instanceof RegExp
           ? { source: this.highlight.source, flags: this.highlight.flags }
           : { source: escapeRegExp(this.highlight), flags: "gi" };
+      const patternKey = pattern.source + "\u0000" + pattern.flags;
 
+      if (patternKey === this.abandonedPattern) {
+        this.giveUpHighlight(patternKey);
+        return;
+      }
       const worker = createHighlightWorker();
 
       if (!worker) {
-        this.giveUpHighlight();
+        this.giveUpHighlight(patternKey);
         return;
       }
       this.highlightWorker = worker;
@@ -197,7 +208,7 @@ export default {
         this.stopHighlightWorker();
 
         if (event.data.error) {
-          this.giveUpHighlight();
+          this.giveUpHighlight(patternKey);
           return;
         }
         this.lineRanges = event.data.ranges;
@@ -206,12 +217,12 @@ export default {
       worker.onerror = () => {
         if (requestId === this.highlightRequestId) {
           this.stopHighlightWorker();
-          this.giveUpHighlight();
+          this.giveUpHighlight(patternKey);
         }
       };
       this.highlightTimer = setTimeout(() => {
         this.stopHighlightWorker();
-        this.giveUpHighlight();
+        this.giveUpHighlight(patternKey);
       }, HIGHLIGHT_TIMEOUT_MS);
 
       worker.postMessage({
@@ -224,7 +235,8 @@ export default {
     },
     // the lines themselves are still the ones the backend matched, so they stay
     // on screen: only the highlighting is dropped
-    giveUpHighlight() {
+    giveUpHighlight(patternKey) {
+      this.abandonedPattern = patternKey;
       this.lineRanges = [];
       this.highlightUnavailable = true;
     },
