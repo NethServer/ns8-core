@@ -389,17 +389,17 @@ Use "api-server-logs [command] --help" for more information about a command.
       api-server-logs logs [flags]
 
     Flags:
-      -e, --entity string   get logs for a specific entity: cluster, node, module (default "cluster")
-      -f, --from string     get logs from a specific date. ISO8601 format
-      -h, --help            help for logs
-      -i, --instance string search for logs in a specific instance. (Example: loki1, loki2, ...)
-      -l, --lines string    get logs for a specific lines in dump mode (default "25")
-      -m, --mode string     get logs in a specific mode: tail or dump (default "tail")
-      -n, --name string     get logs for a specific entity name. used in node or module
-      -r, --regexp          treat the search string as a regular expression instead of a substring
-      -s, --search string   get logs for a specific search string
-      -t, --to string       get logs to a specific date. ISO8601 format
-      -z, --timezone string get logs in a specific timezone
+      -e, --entity string     get logs for a specific entity: cluster, node, module (default "cluster")
+      -f, --from string       get logs from a specific date. ISO8601 format
+      -h, --help              help for logs
+      -i, --instance string   search for logs in a specific instance. (Example: loki1, loki2, ...)
+      -l, --lines string      get logs for a specific lines in dump mode (default "25")
+      -m, --mode string       get logs in a specific mode: tail or dump (default "tail")
+      -n, --name string       get logs for a specific entity name. used in node or module
+      -r, --regexp            treat the search string as a regular expression instead of a substring
+      -s, --search string     get logs for a specific search string
+      -z, --timezone string   get logs in a specific timezone
+      -t, --to string         get logs to a specific date. ISO8601 format
     ```
 
 -   `version`: prints the command version
