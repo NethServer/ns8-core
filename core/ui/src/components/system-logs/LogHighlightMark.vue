@@ -3,28 +3,7 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
-  <mark class="log-line" :class="levelClass"
-    ><span v-if="beforeTag" class="log-timestamp"
-      ><template v-for="(part, i) in beforeParts"
-        ><mark v-if="part.isMatch" :key="'b' + i" class="log-search-match">{{
-          part.text
-        }}</mark
-        ><template v-else>{{ part.text }}</template></template
-      ></span
-    ><span v-if="tagText" class="log-process-tag"
-      ><template v-for="(part, i) in tagParts"
-        ><mark v-if="part.isMatch" :key="'t' + i" class="log-search-match">{{
-          part.text
-        }}</mark
-        ><template v-else>{{ part.text }}</template></template
-      ></span
-    ><template v-for="(part, i) in restParts"
-      ><mark v-if="part.isMatch" :key="'r' + i" class="log-search-match">{{
-        part.text
-      }}</mark
-      ><template v-else>{{ part.text }}</template></template
-    ></mark
-  >
+  <mark class="log-line" :class="levelClass" v-html="html"></mark>
 </template>
 
 <script>
@@ -43,6 +22,13 @@ const LOG_LEVEL_CLASSIFIERS = [
 // added by the backend's LogQL line_format, e.g.
 // "2026-07-05T12:03:17+02:00 [1:traefik1:traefik] ..."
 const PROCESS_TAG_PATTERN = /^(\S+\s+)(\[[^\]]*\])/;
+
+// The log text is remote input, and it goes through v-html below. This is a
+// text context, no attribute is ever built from it, so & and < are the two
+// characters that can end it -- but they must be escaped without exception.
+function escapeHtml(text) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+}
 
 export default {
   name: "LogHighlightMark",
@@ -66,53 +52,53 @@ export default {
       );
       return level ? level.class : "";
     },
-    tagMatch() {
-      return PROCESS_TAG_PATTERN.exec(this.text);
-    },
-    beforeTag() {
-      return this.tagMatch ? this.tagMatch[1] : "";
-    },
-    tagText() {
-      return this.tagMatch ? this.tagMatch[2] : "";
-    },
-    afterTag() {
-      return this.tagMatch
-        ? this.text.slice(this.tagMatch[0].length)
-        : this.text;
-    },
-    beforeParts() {
-      return this.splitByRanges(this.beforeTag, 0);
-    },
-    tagParts() {
-      return this.splitByRanges(this.tagText, 1);
-    },
-    restParts() {
-      return this.splitByRanges(this.afterTag, 2);
+    // One string per line instead of a vnode per fragment: a search matching
+    // every other character produces tens of thousands of fragments, and the
+    // template compiler spends ten times longer diffing them than the browser
+    // spends parsing the equivalent markup.
+    html() {
+      const tag = PROCESS_TAG_PATTERN.exec(this.text);
+
+      if (!tag) {
+        return this.segmentHtml(this.text, 2);
+      }
+      return (
+        '<span class="log-timestamp">' +
+        this.segmentHtml(tag[1], 0) +
+        '</span><span class="log-process-tag">' +
+        this.segmentHtml(tag[2], 1) +
+        "</span>" +
+        this.segmentHtml(this.text.slice(tag[0].length), 2)
+      );
     },
   },
   methods: {
-    // splits a segment so the search term keeps its own clickable mark, even
-    // when the whole containing line is also colorized by level
-    splitByRanges(text, segment) {
+    // wraps the matched offsets of one segment, so the search term keeps its
+    // own mark even when the whole containing line is colorized by level
+    segmentHtml(text, segment) {
       const flat = this.ranges ? this.ranges[segment] : null;
 
       if (!flat || !flat.length) {
-        return [{ text, isMatch: false }];
+        return escapeHtml(text);
       }
       const parts = [];
       let cursor = 0;
 
       for (let i = 0; i < flat.length; i += 2) {
         if (flat[i] > cursor) {
-          parts.push({ text: text.slice(cursor, flat[i]), isMatch: false });
+          parts.push(escapeHtml(text.slice(cursor, flat[i])));
         }
-        parts.push({ text: text.slice(flat[i], flat[i + 1]), isMatch: true });
+        parts.push(
+          '<mark class="log-search-match">',
+          escapeHtml(text.slice(flat[i], flat[i + 1])),
+          "</mark>"
+        );
         cursor = flat[i + 1];
       }
       if (cursor < text.length) {
-        parts.push({ text: text.slice(cursor), isMatch: false });
+        parts.push(escapeHtml(text.slice(cursor)));
       }
-      return parts.length ? parts : [{ text, isMatch: false }];
+      return parts.join("");
     },
   },
 };

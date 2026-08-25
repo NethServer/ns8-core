@@ -72,10 +72,10 @@ import { createHighlightWorker } from "./logHighlightWorker";
 // ever trips on a pattern that would not have returned at all.
 const HIGHLIGHT_TIMEOUT_MS = 400;
 
-// safety net on render cost rather than match cost: 20000 marks already cost
-// about a second of rendering, and past that the lines are more highlight than
-// text anyway, so the worker stops marking there
-const MAX_MARKS = 20000;
+// safety net on render cost rather than match cost: the marks are built as
+// markup, which the browser parses at about 100000 of them per second, and
+// past that the lines are more highlight than text anyway
+const MAX_MARKS = 100000;
 
 // coalesces the burst of appends that follow mode produces
 const RECOMPUTE_DEBOUNCE_MS = 120;
@@ -232,7 +232,11 @@ export default {
           this.giveUpHighlight(patternKey);
           return;
         }
-        this.lineRanges = event.data.ranges;
+        // Vue 2 walks a plain array and installs a reactive accessor on every
+        // entry: on a wide match that is hundreds of thousands of offsets, and
+        // it costs more than everything else here put together. Freezing makes
+        // observe() bail out; the ranges are replaced wholesale anyway.
+        this.lineRanges = Object.freeze(event.data.ranges);
         this.highlightUnavailable = false;
       };
       worker.onerror = () => {
