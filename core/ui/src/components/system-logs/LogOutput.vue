@@ -5,10 +5,10 @@
 <template>
   <div>
     <NsInlineNotification
-      v-if="highlightUnavailable"
+      v-if="highlightNotice"
       kind="info"
-      :title="$t('system_logs.highlight_unavailable')"
-      :description="$t('system_logs.highlight_unavailable_description')"
+      :title="highlightNotice.title"
+      :description="highlightNotice.description"
       :showCloseButton="false"
     />
     <div
@@ -72,9 +72,10 @@ import { createHighlightWorker } from "./logHighlightWorker";
 // ever trips on a pattern that would not have returned at all.
 const HIGHLIGHT_TIMEOUT_MS = 400;
 
-// safety net on render cost rather than match cost: past this the marks alone
-// would take longer to build than they are worth
-const MAX_MARKS = 100000;
+// safety net on render cost rather than match cost: 20000 marks already cost
+// about a second of rendering, and past that the lines are more highlight than
+// text anyway, so the worker stops marking there
+const MAX_MARKS = 20000;
 
 // coalesces the burst of appends that follow mode produces
 const RECOMPUTE_DEBOUNCE_MS = 120;
@@ -106,6 +107,8 @@ export default {
       type: [String, RegExp],
       default: "",
     },
+    // the query is a valid RE2 pattern the browser engine cannot compile
+    highlightUnsupported: Boolean,
     verticalLayout: Boolean,
     loading: Boolean,
     wrapText: Boolean,
@@ -121,6 +124,24 @@ export default {
       lineRanges: [],
       highlightUnavailable: false,
     };
+  },
+  computed: {
+    highlightNotice() {
+      if (this.highlightUnsupported) {
+        return {
+          title: this.$t("system_logs.highlight_unsupported"),
+          description: this.$t("system_logs.highlight_unsupported_description"),
+        };
+      }
+
+      if (this.highlightUnavailable) {
+        return {
+          title: this.$t("system_logs.highlight_unavailable"),
+          description: this.$t("system_logs.highlight_unavailable_description"),
+        };
+      }
+      return null;
+    },
   },
   watch: {
     searchId: function () {
@@ -234,11 +255,13 @@ export default {
       });
     },
     // the lines themselves are still the ones the backend matched, so they stay
-    // on screen: only the highlighting is dropped
+    // on screen: only the highlighting is dropped. A plain substring cannot be
+    // expensive to match, so the notice would only puzzle the user there: it
+    // belongs to the regexp mode, which is where the cost comes from.
     giveUpHighlight(patternKey) {
       this.abandonedPattern = patternKey;
       this.lineRanges = [];
-      this.highlightUnavailable = true;
+      this.highlightUnavailable = this.highlight instanceof RegExp;
     },
     logsUpdated() {
       // new log lines are displayed

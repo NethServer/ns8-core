@@ -104,8 +104,10 @@ function highlightWorkerBody() {
       var line = lineRanges(request.lines[i], re);
       marks += (line[0].length + line[1].length + line[2].length) / 2;
       if (marks > request.maxMarks) {
-        self.postMessage({ id: request.id, error: "too_many" });
-        return;
+        // budget spent: the lines above keep their marks, the ones below are
+        // left plain. Dropping the whole highlighting would be worse, and the
+        // renderer cannot take more marks than this anyway.
+        break;
       }
       ranges.push(line);
     }
