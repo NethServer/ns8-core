@@ -73,7 +73,7 @@
               />
             </cv-data-table-cell>
             <cv-data-table-cell>
-              <div class="justify-flex-end">
+              <div class="flex justify-end">
                 <NsButton
                   kind="ghost"
                   :icon="Edit20"
@@ -306,12 +306,3 @@ export default {
   },
 };
 </script>
-
-<style scoped lang="scss">
-@import "../../styles/carbon-utils";
-
-.justify-flex-end {
-  display: flex;
-  justify-content: flex-end;
-}
-</style>
