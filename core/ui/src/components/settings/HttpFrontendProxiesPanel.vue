@@ -345,6 +345,8 @@ export default {
       currentErrorDescription: "",
       // [eventName, handler] pairs registered on $root
       readListeners: [],
+      // bumped by every read batch: an older one bails out when it resumes
+      readGeneration: 0,
       deleteListeners: [],
       loading: {
         getTrustedProxiesNum: 0,
@@ -523,6 +525,7 @@ export default {
     async getTrustedProxies() {
       // a handler of a previous round would decrement the counter of this one
       this.clearListeners(this.readListeners);
+      const generation = ++this.readGeneration;
       this.proxyConfigs = [];
       // otherwise a transient error sticks after the nodes answer again
       this.clearTableError();
@@ -559,6 +562,11 @@ export default {
             },
           })
         );
+        // clearListeners cannot stop a batch suspended here: without this the
+        // remaining iterations would decrement the counter of the newer one
+        if (generation !== this.readGeneration) {
+          return;
+        }
         const err = res[0];
 
         if (err) {
