@@ -18,14 +18,11 @@ const LOG_LEVEL_CLASSIFIERS = [
   { class: "log-level-debug", pattern: /\b(?:debug|trace)\b/i },
 ];
 
-// leading timestamp followed by the "[node_id:module_id:syslog_id]" tag
-// added by the backend's LogQL line_format, e.g.
-// "2026-07-05T12:03:17+02:00 [1:traefik1:traefik] ..."
+// e.g. "2026-07-05T12:03:17+02:00 [1:traefik1:traefik] ..."
 const PROCESS_TAG_PATTERN = /^(\S+\s+)(\[[^\]]*\])/;
 
-// The log text is remote input, and it goes through v-html below. This is a
-// text context, no attribute is ever built from it, so & and < are the two
-// characters that can end it -- but they must be escaped without exception.
+// The log text is remote input and goes through v-html: a text context, so & and
+// < are the two characters that can end it, and neither may ever slip through.
 function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 }
@@ -37,9 +34,7 @@ export default {
       type: String,
       required: true,
     },
-    // match offsets computed off the main thread, one flat [start, end, ...]
-    // list per segment: [timestamp, tag, message]. Null until they arrive, or
-    // for good when the pattern turned out to be too expensive to run.
+    // one flat [start, end, ...] list per segment: [timestamp, tag, message]
     ranges: {
       type: Array,
       default: null,
@@ -52,10 +47,8 @@ export default {
       );
       return level ? level.class : "";
     },
-    // One string per line instead of a vnode per fragment: a search matching
-    // every other character produces tens of thousands of fragments, and the
-    // template compiler spends ten times longer diffing them than the browser
-    // spends parsing the equivalent markup.
+    // One string per line, not a vnode per fragment: a wide match makes tens of
+    // thousands of them, and diffing costs ten times what parsing the markup does.
     html() {
       const tag = PROCESS_TAG_PATTERN.exec(this.text);
 
@@ -73,8 +66,7 @@ export default {
     },
   },
   methods: {
-    // wraps the matched offsets of one segment, so the search term keeps its
-    // own mark even when the whole containing line is colorized by level
+    // the search mark is nested inside the line, which level colorization owns
     segmentHtml(text, segment) {
       const flat = this.ranges ? this.ranges[segment] : null;
 

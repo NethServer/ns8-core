@@ -66,15 +66,11 @@ import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
 import LogHighlightMark from "./LogHighlightMark.vue";
 import { createHighlightWorker } from "./logHighlightWorker";
 
-// A pattern RE2 accepts can still be exponential for the JavaScript engine, so
-// the worker gets a deadline and is killed past it. Matching 2000 lines costs
-// 1-30 ms for every realistic pattern, so this leaves a wide margin and only
-// ever trips on a pattern that would not have returned at all.
+// 2000 lines cost 1-30 ms for every realistic pattern, so this only ever trips
+// on one that would not have returned at all
 const HIGHLIGHT_TIMEOUT_MS = 400;
 
-// safety net on render cost rather than match cost: the marks are built as
-// markup, which the browser parses at about 100000 of them per second, and
-// past that the lines are more highlight than text anyway
+// render cost, not match cost: the browser parses about 100000 marks per second
 const MAX_MARKS = 100000;
 
 // coalesces the burst of appends that follow mode produces
@@ -127,8 +123,7 @@ export default {
   },
   computed: {
     highlightNotice() {
-      // "matches are not highlighted" next to "no log found" reads as a
-      // failure report on a search that simply found nothing
+      // next to "no log found" the notice reads as a failed search
       if (this.loading || this.noLogsFound || !this.outputLines.length) {
         return null;
       }
@@ -162,14 +157,12 @@ export default {
   },
   created() {
     this.$root.$on(`logsUpdated-${this.searchId}`, this.logsUpdated);
-    // identifies the newest request, so a reply for a superseded one is dropped
-    // instead of being applied to a different set of lines
+    // a reply for a superseded request must not land on a different set of lines
     this.highlightRequestId = 0;
     this.highlightWorker = null;
     this.highlightTimer = null;
     this.debounceTimer = null;
-    // pattern already proven too expensive: follow mode would otherwise start
-    // a doomed worker on every batch of new lines and burn a core for nothing
+    // follow mode would otherwise start a doomed worker on every batch of lines
     this.abandonedPattern = "";
   },
   beforeDestroy() {
@@ -195,9 +188,8 @@ export default {
         this.highlightWorker = null;
       }
     },
-    // outputLines is trimmed from the front in follow mode, so index bookkeeping
-    // across updates would silently misalign: recompute the whole buffer, which
-    // the debounce above keeps cheap
+    // outputLines is trimmed from the front in follow mode, so incremental
+    // bookkeeping would misalign: recompute it all, the debounce keeps it cheap
     computeHighlight() {
       this.stopHighlightWorker();
       const requestId = ++this.highlightRequestId;
@@ -205,8 +197,7 @@ export default {
       if (!this.highlight || !this.outputLines.length) {
         this.lineRanges = [];
         this.highlightUnavailable = false;
-        // a new search starts by clearing the buffer: give the pattern the
-        // benefit of the doubt again, the next result set may be smaller
+        // a new search clears the buffer: the next result set may be smaller
         this.abandonedPattern = "";
         return;
       }
@@ -238,10 +229,8 @@ export default {
           this.giveUpHighlight(patternKey);
           return;
         }
-        // Vue 2 walks a plain array and installs a reactive accessor on every
-        // entry: on a wide match that is hundreds of thousands of offsets, and
-        // it costs more than everything else here put together. Freezing makes
-        // observe() bail out; the ranges are replaced wholesale anyway.
+        // Vue 2 would install a reactive accessor on each of the hundreds of
+        // thousands of offsets; freezing makes observe() bail out
         this.lineRanges = Object.freeze(event.data.ranges);
         this.highlightUnavailable = false;
       };
@@ -264,10 +253,8 @@ export default {
         maxMarks: MAX_MARKS,
       });
     },
-    // the lines themselves are still the ones the backend matched, so they stay
-    // on screen: only the highlighting is dropped. A plain substring cannot be
-    // expensive to match, so the notice would only puzzle the user there: it
-    // belongs to the regexp mode, which is where the cost comes from.
+    // the lines stay, only the marking goes. A substring is escaped before it is
+    // compiled, so it cannot be the expensive case the notice describes.
     giveUpHighlight(patternKey) {
       this.abandonedPattern = patternKey;
       this.lineRanges = [];
@@ -334,11 +321,8 @@ export default {
 }
 
 .logs-output {
-  // every line is wrapped in a <mark> (for level/tag detection), so drop the
-  // native browser <mark> look on that wrapper: the UA sets color too, and
-  // black-on-black would make the whole line invisible. The level rules below
-  // have the same specificity and come later, so they still win. Nested
-  // mark.log-search-match keeps its default look, still legible on black.
+  // the whole line is a <mark>: drop the native look, black-on-black would hide
+  // it. The level rules below tie on specificity and come later, so they win.
   mark.log-line {
     background: transparent;
     color: inherit;

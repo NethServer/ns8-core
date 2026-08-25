@@ -668,8 +668,7 @@ export default {
         this.$emit("updateRegexp", this.internalRegexp);
       }
     },
-    // the reply to a search in flight is lost with the connection, so the
-    // spinner would otherwise run until the page is reloaded
+    // the reply to a search in flight dies with the connection
     isWebsocketConnected: function () {
       if (
         this.isWebsocketConnected ||
@@ -841,12 +840,9 @@ export default {
     }
   },
   methods: {
-    // A substring is highlighted as it is typed. A regexp has to be compiled by
-    // the browser engine, which knows a different dialect than the RE2 Loki
-    // runs: "(?P<n>x)" and "err(?i)OR" are valid queries the engine rejects.
-    // Returning null then, rather than the pattern as literal text, is what
-    // lets LogOutput say the matches cannot be marked.
-    // JavaScript has no inline flags either: a leading (?i) becomes the i flag.
+    // The browser engine knows a different dialect than the RE2 Loki runs, and
+    // rejects valid queries like "(?P<n>x)": null then, so LogOutput can say the
+    // matches cannot be marked. No inline flags either, a leading (?i) becomes i.
     buildHighlight() {
       if (!this.internalRegexp || !this.internalSearchQuery) {
         return this.internalSearchQuery;
@@ -1063,8 +1059,7 @@ export default {
       // signal LogOutput
       this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
-    // the backend flags what the user can fix, so it gets a translated wording:
-    // any other failure is a server-side message with no key to translate
+    // the backend flags what the user can fix: anything else has no key
     onLogsQueryError(payload) {
       this.loading.logs = false;
       this.loading.stopFollowing = false;
@@ -1159,8 +1154,7 @@ export default {
   position: relative;
 }
 
-// split evenly, one Carbon gutter apart, so the pair lines up with the single
-// fields above
+// one Carbon gutter apart, so the pair lines up with the single fields above
 .interval-group {
   display: flex;
   gap: $spacing-07;
@@ -1195,8 +1189,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  // the buttons carry mg-bottom-sm for when the row wraps: this tops it up to
-  // the same rhythm as the filter rows, and detaches the actions from them
+  // tops up the buttons' mg-bottom-sm to the rhythm of the filter rows
   margin-top: $spacing-03;
   margin-bottom: $spacing-06;
 
@@ -1211,8 +1204,7 @@ export default {
 
 // global styles
 
-// every filter field fills its grid column: Carbon caps them at 38rem, and both
-// pickers below ship a fixed pixel width
+// Carbon caps fields at 38rem and both pickers ship a fixed pixel width
 @media (min-width: $breakpoint-medium) {
   .system-logs .log-search .bx--text-input,
   .system-logs .log-search .bx--text-input__field-wrapper,

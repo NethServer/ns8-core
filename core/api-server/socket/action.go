@@ -302,8 +302,8 @@ func writeLogsError(s *melody.Session, id string, message string, wg *sync.WaitG
 	writeLogsQueryError(s, id, "", message, wg)
 }
 
-// Same, for a query the user can fix: the code tells the frontend which
-// translated wording to use, and nothing is logged server-side.
+// Same, for a query the user can fix: the code picks the frontend wording, and
+// a typo is not a server fault, so nothing is logged.
 func writeLogsQueryError(s *melody.Session, id string, code string, message string, wg *sync.WaitGroup) {
 	if s != nil {
 		writeSocketResponse(s, "logs-start", gin.H{"id": id, "pid": "", "message": "", "error": message, "error_code": code})
