@@ -336,16 +336,10 @@
                       >{{ $t("common.node") }} {{ instance.node }}</span
                     >
                   </div>
-                  <div class="row version-row">
+                  <div class="row">
                     <span
                       >{{ $t("common.version") }} {{ instance.version }}</span
                     >
-                    <cv-tag
-                      v-if="isUpdatesDisabledShown(instance)"
-                      kind="high-contrast"
-                      :label="$t('software_center.updates_disabled')"
-                      class="mg-left-sm"
-                    />
                   </div>
                   <div
                     v-if="isStableUpdateAvailable(app, instance)"
@@ -356,6 +350,12 @@
                         version: stableUpdateVersion(app, instance),
                       })
                     }}
+                  </div>
+                  <div v-if="isUpdatesDisabledShown(instance)" class="row">
+                    <cv-tag
+                      kind="high-contrast"
+                      :label="$t('software_center.updates_disabled')"
+                    />
                   </div>
                   <div
                     v-if="
@@ -1014,12 +1014,6 @@ export default {
 
 .instance-card-content .row:last-child {
   margin-bottom: 0;
-}
-
-.instance-card-content .version-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .actions {
