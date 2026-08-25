@@ -214,7 +214,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 				if err != nil {
 					// logs-stop kills the process: that exit is expected
 					if exitErr, isExitErr := err.(*exec.ExitError); isExitErr {
-						if status, isStatus := exitErr.Sys().(syscall.WaitStatus); isStatus && status.Signaled() {
+						if status, isStatus := exitErr.Sys().(syscall.WaitStatus); isStatus && status.Signal() == syscall.SIGTERM {
 							return
 						}
 					}
