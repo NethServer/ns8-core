@@ -97,19 +97,18 @@ function highlightWorkerBody() {
       return;
     }
 
-    var ranges = [];
+    var ranges = new Array(request.lines.length);
     var marks = 0;
 
-    for (var i = 0; i < request.lines.length; i++) {
+    // from the end: the viewer scrolls to the bottom in both modes, so when the
+    // budget runs out the lines left unmarked are the ones off screen
+    for (var i = request.lines.length - 1; i >= 0; i--) {
       var line = lineRanges(request.lines[i], re);
       marks += (line[0].length + line[1].length + line[2].length) / 2;
       if (marks > request.maxMarks) {
-        // budget spent: the lines above keep their marks, the ones below are
-        // left plain. Dropping the whole highlighting would be worse, and the
-        // renderer cannot take more marks than this anyway.
         break;
       }
-      ranges.push(line);
+      ranges[i] = line;
     }
     self.postMessage({ id: request.id, ranges: ranges });
   };
