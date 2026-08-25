@@ -299,7 +299,7 @@ import { mapState } from "vuex";
 import ConfigureFrontendProxyModal from "@/components/settings/ConfigureFrontendProxyModal.vue";
 
 export default {
-  name: "HttpFrontendProxies",
+  name: "HttpFrontendProxiesPanel",
   components: {
     ConfigureFrontendProxyModal,
   },

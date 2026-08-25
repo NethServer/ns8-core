@@ -275,7 +275,7 @@
               :label="$t('settings_http_routes.frontend_proxies')"
               :selected="q.view === 'frontend-proxies'"
             >
-              <HttpFrontendProxies
+              <HttpFrontendProxiesPanel
                 :nodes="internalNodes"
                 :traefikInstances="traefikInstances"
                 :isLoadingInstances="loading.listInstalledModules"
@@ -361,7 +361,7 @@ import {
 import { mapState } from "vuex";
 import HttpRouteDetailModal from "@/components/settings/HttpRouteDetailModal.vue";
 import CreateOrEditHttpRouteModal from "@/components/settings/CreateOrEditHttpRouteModal.vue";
-import HttpFrontendProxies from "@/components/settings/HttpFrontendProxies.vue";
+import HttpFrontendProxiesPanel from "@/components/settings/HttpFrontendProxiesPanel.vue";
 import _cloneDeep from "lodash/cloneDeep";
 import WarningAltFilled16 from "@carbon/icons-vue/es/warning--alt--filled/16";
 
@@ -373,7 +373,7 @@ export default {
   components: {
     HttpRouteDetailModal,
     CreateOrEditHttpRouteModal,
-    HttpFrontendProxies,
+    HttpFrontendProxiesPanel,
     WarningAltFilled16,
   },
   mixins: [
