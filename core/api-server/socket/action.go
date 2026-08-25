@@ -145,7 +145,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// Compose and append the query strings to logcli arguments
 		query, errQuery := buildLogqlQuery(logsAction)
 		if errQuery != nil {
-			writeLogsError(s, logsAction.Id, errQuery.Error(), wg)
+			writeLogsQueryError(s, logsAction.Id, "invalid_regexp", errQuery.Error(), wg)
 			return
 		}
 		args = append(args, query)
@@ -299,9 +299,14 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 // Reuses logs-start so the frontend one-shot listener is released.
 func writeLogsError(s *melody.Session, id string, message string, wg *sync.WaitGroup) {
 	utils.LogError(errors.New("[SOCKET] logs query failed: " + message))
+	writeLogsQueryError(s, id, "", message, wg)
+}
 
+// Same, for a query the user can fix: the code tells the frontend which
+// translated wording to use, and nothing is logged server-side.
+func writeLogsQueryError(s *melody.Session, id string, code string, message string, wg *sync.WaitGroup) {
 	if s != nil {
-		writeSocketResponse(s, "logs-start", gin.H{"id": id, "pid": "", "message": "", "error": message})
+		writeSocketResponse(s, "logs-start", gin.H{"id": id, "pid": "", "message": "", "error": message, "error_code": code})
 	} else {
 		fmt.Fprintln(os.Stderr, message)
 		wg.Done()

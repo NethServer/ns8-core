@@ -534,6 +534,7 @@ export default {
       searchStarted: false,
       noLogsFound: false,
       logsError: "",
+      logsErrorTitle: "",
       highlight: "",
       searchedMaxLines: "",
       searchedFollowLogs: false,
@@ -1028,7 +1029,7 @@ export default {
       this.loading.logs = false;
 
       if (payload.error) {
-        this.onLogsQueryError(payload.error);
+        this.onLogsQueryError(payload);
         return;
       }
 
@@ -1042,18 +1043,29 @@ export default {
       // signal LogOutput
       this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
-    onLogsQueryError(message) {
+    // the backend flags what the user can fix, so it gets a translated wording:
+    // any other failure is a server-side message with no key to translate
+    onLogsQueryError(payload) {
       this.loading.logs = false;
       this.loading.stopFollowing = false;
       this.isFollowing = false;
       this.pid = "";
       this.noLogsFound = false;
-      this.logsError = message;
+
+      if (payload.error_code === "invalid_regexp") {
+        this.logsErrorTitle = this.$t("system_logs.invalid_regexp");
+        this.logsError = this.$t("system_logs.invalid_regexp_description", {
+          detail: payload.error,
+        });
+      } else {
+        this.logsErrorTitle = this.$t("system_logs.search_failed");
+        this.logsError = payload.error;
+      }
       this.$root.$off(`logsStart-${this.searchId}`);
     },
     onLogsStartFollow(payload) {
       if (payload.error) {
-        this.onLogsQueryError(payload.error);
+        this.onLogsQueryError(payload);
         return;
       }
 

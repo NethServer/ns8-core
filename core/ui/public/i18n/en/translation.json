@@ -1194,6 +1194,8 @@
         "highlight_unavailable": "Matches are not highlighted",
         "highlight_unavailable_description": "Finding where this pattern matches inside each line would take too long, so the matches below are not marked. The search itself is unaffected: these are the lines that matched.",
         "search_failed": "Log search failed",
+        "invalid_regexp": "Invalid regular expression",
+        "invalid_regexp_description": "The search pattern is not valid RE2 syntax: {detail}",
         "showing_lines": "Showing {n} lines from {from} to {to}",
         "showing_lines_of": "Showing {n} of {max} lines from {from} to {to}",
         "showing_lines_no_interval": "Showing {n} lines",
