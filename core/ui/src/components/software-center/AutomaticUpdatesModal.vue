@@ -56,14 +56,9 @@ export default {
   },
   data() {
     return {
-      // a lost task notification must not keep the modal locked
-      TASK_TIMEOUT: 120000,
       loading: false,
-      // action being confirmed, frozen at open: the caller flips its own state
-      // while this modal is still fading out
+      // frozen at open: the caller flips its own state while the modal closes
       pendingEnable: false,
-      taskEvents: [],
-      taskTimeout: 0,
       error: {
         setAutomaticUpdates: "",
       },
@@ -130,34 +125,18 @@ export default {
       const taskAction = "set-automatic-updates";
       const eventId = this.getUuid();
 
-      // every terminal outcome must clear loading, or the modal cannot be closed
-      this.registerTaskEvent(`${taskAction}-completed-${eventId}`, () => {
-        this.onTaskEnded();
-        // close first: the caller flips its state on a modal already closing
-        this.$emit("hide");
-        this.$emit("completed", this.pendingEnable);
-      });
-      this.registerTaskEvent(
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.setAutomaticUpdatesCompleted
+      );
+      this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        (taskResult) => {
-          console.error(`${taskAction} aborted`, taskResult);
-          this.onTaskEnded();
-          this.error.setAutomaticUpdates = this.$t("error.generic_error");
-        }
+        this.setAutomaticUpdatesAborted
       );
-      this.registerTaskEvent(
+      this.$root.$once(
         `${taskAction}-validation-failed-${eventId}`,
-        (validationErrors) => {
-          console.error(`${taskAction} validation failed`, validationErrors);
-          this.onTaskEnded();
-          this.error.setAutomaticUpdates = this.$t("error.generic_error");
-        }
+        this.setAutomaticUpdatesValidationFailed
       );
-      this.taskTimeout = setTimeout(() => {
-        console.error(`${taskAction} timed out waiting for its outcome`);
-        this.onTaskEnded();
-        this.error.setAutomaticUpdates = this.$t("error.generic_error");
-      }, this.TASK_TIMEOUT);
 
       const res = await to(
         this.createClusterTask({
@@ -172,26 +151,28 @@ export default {
       const err = res[0];
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.onTaskEnded();
         this.error.setAutomaticUpdates = this.getErrorMessage(err);
+        this.loading = false;
       }
     },
-    registerTaskEvent(eventName, handler) {
-      this.taskEvents.push({ eventName, handler });
-      this.$root.$once(eventName, handler);
-    },
-    onTaskEnded() {
-      clearTimeout(this.taskTimeout);
-      this.taskTimeout = 0;
-      this.releaseTaskEvents();
+    setAutomaticUpdatesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setAutomaticUpdates = this.$t("error.generic_error");
       this.loading = false;
     },
-    releaseTaskEvents() {
-      // a $once listener that never fires stays on $root forever
-      this.taskEvents.forEach(({ eventName, handler }) => {
-        this.$root.$off(eventName, handler);
-      });
-      this.taskEvents = [];
+    setAutomaticUpdatesValidationFailed(validationErrors) {
+      console.error(
+        "set-automatic-updates validation failed",
+        validationErrors
+      );
+      this.error.setAutomaticUpdates = this.$t("error.generic_error");
+      this.loading = false;
+    },
+    setAutomaticUpdatesCompleted() {
+      this.loading = false;
+      // close before the caller flips its state
+      this.$emit("hide");
+      this.$emit("completed", this.pendingEnable);
     },
     onModalHideRequest() {
       // stay open while the task runs, so a failure stays visible
@@ -201,10 +182,6 @@ export default {
       this.error.setAutomaticUpdates = "";
       this.$emit("hide");
     },
-  },
-  beforeDestroy() {
-    clearTimeout(this.taskTimeout);
-    this.releaseTaskEvents();
   },
 };
 </script>
