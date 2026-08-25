@@ -126,6 +126,8 @@ export default {
   data() {
     return {
       selectedNodeId: "",
+      // [eventName, handler] pairs registered on $root, cleared on destroy
+      setTrustedProxiesListeners: [],
       nodeComboBoxKey: 0,
       proxies_str: "",
       depth: 1,
@@ -185,7 +187,20 @@ export default {
       }
     },
   },
+  beforeDestroy() {
+    this.clearListeners(this.setTrustedProxiesListeners);
+  },
   methods: {
+    registerListener(eventName, handler) {
+      this.$root.$once(eventName, handler);
+      this.setTrustedProxiesListeners.push([eventName, handler]);
+    },
+    clearListeners(listeners) {
+      listeners.forEach(([eventName, handler]) => {
+        this.$root.$off(eventName, handler);
+      });
+      listeners.splice(0);
+    },
     onModalHidden() {
       this.clearErrors();
       this.$emit("hide");
@@ -282,24 +297,26 @@ export default {
       const taskAction = "set-trusted-proxies";
       const eventId = this.getUuid();
 
-      // register to task events
+      // only one of validation-failed and completed ever fires: clear the
+      // previous save before registering, and again on destroy
+      this.clearListeners(this.setTrustedProxiesListeners);
 
-      this.$root.$once(
+      this.registerListener(
         `${taskAction}-aborted-${eventId}`,
         this.setTrustedProxiesAborted
       );
 
-      this.$root.$once(
+      this.registerListener(
         `${taskAction}-validation-failed-${eventId}`,
         this.setTrustedProxiesValidationFailed
       );
 
-      this.$root.$once(
+      this.registerListener(
         `${taskAction}-validation-ok-${eventId}`,
         this.setTrustedProxiesValidationOk
       );
 
-      this.$root.$once(
+      this.registerListener(
         `${taskAction}-completed-${eventId}`,
         this.setTrustedProxiesCompleted
       );

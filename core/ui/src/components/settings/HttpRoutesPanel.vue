@@ -362,8 +362,9 @@ export default {
       currentRoute: null,
       routeToDelete: null,
       isEditingRoute: false,
-      // [eventName, handler] pairs registered on $root for the read chain
+      // [eventName, handler] pairs registered on $root, cleared on destroy
       readListeners: [],
+      deleteListeners: [],
       pendingCertificatesLogsPath: {},
       loading: {
         listRoutesNum: 0,
@@ -510,6 +511,7 @@ export default {
   beforeDestroy() {
     // a task completing after destroy would re-fire the read chain
     this.clearListeners(this.readListeners);
+    this.clearListeners(this.deleteListeners);
   },
   methods: {
     showCreateRouteModal() {
@@ -700,13 +702,15 @@ export default {
       const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$once(
+      this.registerListener(
+        this.deleteListeners,
         `${taskAction}-aborted-${eventId}`,
         this.deleteRouteAborted
       );
 
       // register to task completion
-      this.$root.$once(
+      this.registerListener(
+        this.deleteListeners,
         `${taskAction}-completed-${eventId}`,
         this.deleteRouteCompleted
       );
