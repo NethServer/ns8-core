@@ -77,7 +77,6 @@ const routes = [
       ),
   },
   {
-    // the ACME settings are now a tab of the TLS certificates page
     path: "/settings/acme-servers",
     redirect: {
       name: "SettingsTlsCertificates",

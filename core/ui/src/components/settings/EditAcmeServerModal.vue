@@ -23,7 +23,6 @@
             })
           }}
         </div>
-        <!-- set-acme-server restarts Traefik on the edited node, whichever it is -->
         <NsInlineNotification
           v-if="server"
           kind="warning"
@@ -132,7 +131,6 @@ export default {
         url: "",
         challenge: "",
       },
-      // [eventName, handler] pairs registered on $root
       taskListeners: [],
     };
   },
@@ -147,9 +145,8 @@ export default {
   },
   watch: {
     isWebsocketConnected: function (isConnected) {
-      // the restart cut the request off before any task event was delivered:
-      // the outcome is unknown, so keep the modal open and say so instead of
-      // closing as if the save had succeeded
+      // the restart cut the request off before any task event: the outcome is
+      // unknown, so say so instead of closing as if the save had succeeded
       if (isConnected && this.loading.setAcmeServer) {
         this.clearTaskListeners();
         this.loading.setAcmeServer = false;
@@ -204,8 +201,6 @@ export default {
         }
       }
 
-      // challenge
-
       if (this.isChallengeSupported && !this.challenge) {
         this.error.challenge = this.$t("common.required");
 
@@ -255,8 +250,8 @@ export default {
       }
 
       if (this.server.email) {
-        // the action resets the email when the field is missing, and its schema
-        // may reject an empty string: forward it only when there is one
+        // a missing field resets the email, and the schema may reject an empty
+        // string: forward it only when there is one
         data.email = this.server.email;
       }
 
@@ -336,8 +331,8 @@ export default {
   max-width: 38rem;
 }
 
-// Carbon reveals .bx--form-requirement only next to a [data-invalid] wrapper,
-// which a radio group never is; $text-error is not reachable from carbon-utils
+// carbon reveals .bx--form-requirement only next to a [data-invalid] wrapper,
+// which a radio group never is; $text-error is unreachable from carbon-utils
 .challenge-error {
   display: block;
   max-height: none;

@@ -5,10 +5,9 @@
 <template>
   <div>
     <cv-tile light>
-      <!-- no nested cv-grid: bx--grid caps at 99rem and centers, which leaves
-           empty gutters on screens wider than 1584px -->
-      <!-- NsDataTable replaces the rows with its error: report a partial
-           failure here, so the nodes that did answer stay readable -->
+      <!-- no nested cv-grid: bx--grid caps at 99rem and centers, leaving empty
+           gutters above 1584px -->
+      <!-- NsDataTable would replace the rows: report partial failures here -->
       <NsInlineNotification
         v-if="tableError && servers.length"
         kind="error"
@@ -124,7 +123,6 @@ export default {
     return {
       tablePage: [],
       tableColumns: ["node", "url", "challenge"],
-      // the raw columns are row property names: labels need their own keys
       tableColumnLabelKeys: [
         "settings_acme_servers.node",
         "settings_acme_servers.acme_directory_url",
@@ -135,7 +133,6 @@ export default {
       currentErrorAction: "",
       currentErrorDescription: "",
       currentServer: null,
-      // [eventName, handler] pairs registered on $root
       taskListeners: [],
       loading: {
         getAcmeServerNum: 0,
@@ -165,8 +162,8 @@ export default {
     },
   },
   watch: {
-    // the parent republishes the instances after a Traefik restart killed the
-    // websocket, which is also how this table recovers
+    // a Traefik restart kills the websocket: the parent republishes, so this
+    // reload is also how the table recovers
     traefikInstances: function () {
       this.getAcmeServer();
     },
@@ -221,8 +218,7 @@ export default {
       this.servers = [];
       // otherwise a transient error sticks after the nodes answer again
       this.clearTableError();
-      // count the whole batch upfront: the counter must not reach zero between
-      // two iterations
+      // count upfront: the counter must not hit zero between two iterations
       this.loading.getAcmeServerNum = this.traefikInstances.length;
 
       for (const traefikInstance of this.traefikInstances) {

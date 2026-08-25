@@ -121,7 +121,6 @@ export default {
       acmeTabVisited: false,
       internalNodes: [],
       traefikInstances: [],
-      // [eventName, handler] pairs registered on $root
       taskListeners: [],
       loading: {
         listInstalledModules: false,

@@ -489,7 +489,6 @@ export default {
       isShownDeleteCertificateModal: false,
       isShownDeleteObsoleteCertificatesModal: false,
       currentCertificate: null,
-      // [eventName, handler] pairs registered on $root
       taskListeners: [],
       filter: {
         text: "",
@@ -740,8 +739,7 @@ export default {
       this.clearTaskListeners();
       this.offlineTraefikInstances = [];
       this.listCertificatesErrors = [];
-      // count the whole batch upfront: the counter must not reach zero between
-      // two iterations
+      // count upfront: the counter must not hit zero between two iterations
       this.loading.listCertificatesNum = this.traefikInstances.length;
 
       for (const traefikInstance of this.traefikInstances) {
