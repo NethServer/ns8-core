@@ -57,7 +57,7 @@
               :disabled="loadingProxies"
               @click="showAddProxyModal"
               data-test-id="add-frontend-proxy"
-              >{{ $t("settings_http_routes.add_frontend_proxy") }}
+              >{{ $t("common.add_frontend_proxy") }}
             </NsButton>
             <cv-tooltip
               v-else
@@ -72,7 +72,7 @@
                 :icon="Add20"
                 disabled
                 data-test-id="add-frontend-proxy"
-                >{{ $t("settings_http_routes.add_frontend_proxy") }}
+                >{{ $t("common.add_frontend_proxy") }}
               </NsButton>
             </cv-tooltip>
           </cv-column>
@@ -160,7 +160,7 @@
                           :disabled="loadingProxies"
                           @click="showAddProxyModal"
                           data-test-id="add-frontend-proxy-empty-state"
-                          >{{ $t("settings_http_routes.add_frontend_proxy") }}
+                          >{{ $t("common.add_frontend_proxy") }}
                         </NsButton>
                         <!-- no node to configure: the modal would open on an empty combo box -->
                         <cv-tooltip
@@ -178,7 +178,7 @@
                             :icon="Add20"
                             disabled
                             data-test-id="add-frontend-proxy-empty-state"
-                            >{{ $t("settings_http_routes.add_frontend_proxy") }}
+                            >{{ $t("common.add_frontend_proxy") }}
                           </NsButton>
                         </cv-tooltip>
                       </div>

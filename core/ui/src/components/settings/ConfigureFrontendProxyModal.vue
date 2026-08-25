@@ -16,7 +16,7 @@
         ? $t("settings_http_routes.edit_frontend_proxy_node", {
             node: proxyConfig ? proxyConfig.nodeLabel : "",
           })
-        : $t("settings_http_routes.add_frontend_proxy")
+        : $t("common.add_frontend_proxy")
     }}</template>
     <template slot="content">
       <cv-form @submit.prevent="setTrustedProxies">
@@ -39,7 +39,7 @@
         />
         <cv-text-area
           v-model.trim="proxies_str"
-          :placeholder="$t('settings_http_routes.frontend_proxies_placeholder')"
+          :placeholder="$t('common.eg_value', { value: '192.168.1.10' })"
           :label="$t('settings_http_routes.frontend_proxies')"
           :helper-text="$t('settings_http_routes.frontend_proxies_helper')"
           :invalid-message="error.proxies"
@@ -97,7 +97,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      isEditing ? $t("common.save") : $t("common.add")
+      isEditing ? $t("common.save") : $t("common.add_frontend_proxy")
     }}</template>
   </NsModal>
 </template>
