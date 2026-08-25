@@ -453,6 +453,13 @@ export default {
     traefikInstances: function () {
       this.getTrustedProxies();
     },
+    instancesError: function (instancesError) {
+      // the proxies chain will not run: release its skeleton rows
+      if (instancesError) {
+        this.clearListeners(this.readListeners);
+        this.loading.getTrustedProxiesNum = 0;
+      }
+    },
     isWebsocketConnected: function (isConnected) {
       // safety net: nothing else clears the pending state if the request was cut off
       if (isConnected && this.loading.deleteTrustedProxies) {

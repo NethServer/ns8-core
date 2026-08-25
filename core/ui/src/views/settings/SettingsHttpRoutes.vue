@@ -162,7 +162,10 @@ export default {
     next();
   },
   created() {
-    this.listInstalledModules();
+    // the watcher fires the first read when the websocket is not up yet
+    if (this.isWebsocketConnected) {
+      this.listInstalledModules();
+    }
   },
   beforeDestroy() {
     // a task completing after destroy would re-fire the whole read chain
