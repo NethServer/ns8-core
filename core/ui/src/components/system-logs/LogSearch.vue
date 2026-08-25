@@ -668,6 +668,19 @@ export default {
         this.$emit("updateRegexp", this.internalRegexp);
       }
     },
+    // the reply to a search in flight is lost with the connection, so the
+    // spinner would otherwise run until the page is reloaded
+    isWebsocketConnected: function () {
+      if (
+        this.isWebsocketConnected ||
+        !(this.loading.logs || this.isFollowing)
+      ) {
+        return;
+      }
+      this.onLogsQueryError({
+        error: this.$t("system_logs.websocket_disconnected"),
+      });
+    },
     timezone: function () {
       if (this.mainSearch) {
         this.internalTimezone = this.timezone;

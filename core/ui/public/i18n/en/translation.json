@@ -1196,6 +1196,7 @@
         "highlight_unsupported": "Matches are not highlighted",
         "highlight_unsupported_description": "The browser cannot run this pattern: it is valid for the log search, which accepts RE2 syntax, but the browser regular expression engine does not understand it. The search itself is unaffected: these are the lines that matched.",
         "search_failed": "Log search failed",
+        "websocket_disconnected": "The connection to the server was lost while the query was running. Run the search again.",
         "invalid_regexp": "Invalid regular expression",
         "invalid_regexp_description": "The search pattern is not valid RE2 syntax: {detail}",
         "showing_lines": "Showing {n} lines from {from} to {to}",
