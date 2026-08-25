@@ -238,7 +238,7 @@
                     }}</span>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
-                    <div class="version-cell">
+                    <div class="flex items-center">
                       <span>{{ row.version }}</span>
                       <cv-tag
                         v-if="row.update"
@@ -1123,11 +1123,6 @@ export default {
 .search-limited-width {
   max-width: 16.625rem; // 266px / 16
   min-width: 11.25rem; // 180px / 16
-}
-
-.version-cell {
-  display: flex;
-  align-items: center;
 }
 
 .module-logo {
