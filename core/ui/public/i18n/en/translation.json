@@ -934,7 +934,7 @@
     },
     "settings_acme_servers": {
         "acme_settings": "ACME settings",
-        "search_acme_settings": "Search ACME settings",
+        "search_acme_settings": "Search",
         "no_acme_settings": "No ACME settings",
         "no_acme_settings_description": "No cluster node has ACME settings configured",
         "acme_directory_url": "ACME directory URL",
@@ -945,7 +945,7 @@
         "challenge_tls_alpn_01": "TLS-ALPN-01",
         "edit_acme_settings": "Edit ACME settings",
         "acme_settings_for_node": "ACME settings for {node}",
-        "acme_restart_message": "HTTP clients on {node} will be briefly disconnected. Reload the page if necessary.",
+        "acme_restart_message": "HTTP clients on {node} will be briefly disconnected. The page should reload automatically — otherwise, reload it manually.",
         "save_result_unknown": "Traefik restarted before the result was known. Check the ACME settings of the node and try again if needed."
     },
     "apps_lets_encrypt": {
