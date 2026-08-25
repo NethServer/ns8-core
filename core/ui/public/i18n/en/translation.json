@@ -1193,6 +1193,8 @@
         "substring_helper": "Exact and case-sensitive substring match",
         "highlight_unavailable": "Matches are not highlighted",
         "highlight_unavailable_description": "Finding where this pattern matches inside each line would take too long, so the matches below are not marked. The search itself is unaffected: these are the lines that matched.",
+        "highlight_unsupported": "Matches are not highlighted",
+        "highlight_unsupported_description": "The browser cannot run this pattern: it is valid for the log search, which accepts RE2 syntax, but the browser regular expression engine does not understand it. The search itself is unaffected: these are the lines that matched.",
         "search_failed": "Log search failed",
         "invalid_regexp": "Invalid regular expression",
         "invalid_regexp_description": "The search pattern is not valid RE2 syntax: {detail}",

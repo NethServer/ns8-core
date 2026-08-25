@@ -400,6 +400,7 @@
             :light="false"
             :outputLines="outputLines"
             :highlight="highlight"
+            :highlightUnsupported="highlightUnsupported"
             :key="'logOutput-' + searchId"
           />
         </cv-column>
@@ -535,6 +536,7 @@ export default {
       noLogsFound: false,
       logsError: "",
       logsErrorTitle: "",
+      highlightUnsupported: false,
       highlight: "",
       searchedMaxLines: "",
       searchedFollowLogs: false,
@@ -826,8 +828,12 @@ export default {
     }
   },
   methods: {
-    // vue-text-highlight matches a string with indexOf, so only a RegExp
-    // highlights. JavaScript has no inline flags: (?i) becomes the i flag.
+    // A substring is highlighted as it is typed. A regexp has to be compiled by
+    // the browser engine, which knows a different dialect than the RE2 Loki
+    // runs: "(?P<n>x)" and "err(?i)OR" are valid queries the engine rejects.
+    // Returning null then, rather than the pattern as literal text, is what
+    // lets LogOutput say the matches cannot be marked.
+    // JavaScript has no inline flags either: a leading (?i) becomes the i flag.
     buildHighlight() {
       if (!this.internalRegexp || !this.internalSearchQuery) {
         return this.internalSearchQuery;
@@ -840,7 +846,7 @@ export default {
       try {
         return new RegExp(source, inlineFlags ? inlineFlags[1] : "");
       } catch (e) {
-        return this.internalSearchQuery;
+        return null;
       }
     },
     // the raw prefix is reused as-is: it already honours the query timezone
@@ -959,6 +965,7 @@ export default {
       const startUtcString = this.formatInTimeZone(startLocal, format, "UTC");
       const endUtcString = this.formatInTimeZone(endLocal, format, "UTC");
       this.highlight = this.buildHighlight();
+      this.highlightUnsupported = this.highlight === null;
       this.searchedMaxLines = this.internalMaxLines;
       this.searchedFollowLogs = this.internalFollowLogs;
       this.clearLogs();
