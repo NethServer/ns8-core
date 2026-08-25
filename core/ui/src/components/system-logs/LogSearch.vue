@@ -311,16 +311,6 @@
           </div>
         </cv-column>
       </cv-row>
-      <cv-row v-if="logsError">
-        <cv-column>
-          <NsInlineNotification
-            kind="error"
-            :title="$t('system_logs.search_failed')"
-            :description="logsError"
-            :showCloseButton="false"
-          />
-        </cv-column>
-      </cv-row>
       <cv-row>
         <cv-column class="logs-output-toolbar">
           <NsButton
@@ -385,6 +375,16 @@
           >
             {{ resultsFeedback }}
           </span>
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="logsError">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="logsErrorTitle"
+            :description="logsError"
+            :showCloseButton="false"
+          />
         </cv-column>
       </cv-row>
       <cv-row v-if="searchStarted && (outputLines.length || !logsError)">
