@@ -127,6 +127,12 @@ export default {
   },
   computed: {
     highlightNotice() {
+      // "matches are not highlighted" next to "no log found" reads as a
+      // failure report on a search that simply found nothing
+      if (this.loading || this.noLogsFound || !this.outputLines.length) {
+        return null;
+      }
+
       if (this.highlightUnsupported) {
         return {
           title: this.$t("system_logs.highlight_unsupported"),
