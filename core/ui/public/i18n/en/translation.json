@@ -1189,7 +1189,7 @@
         "context_module": "Application",
         "search_query": "Search query",
         "regexp": "Regular expression",
-        "regexp_helper": "RE2 syntax is accepted, matches are not highlighted. Hint: '(?i)' ignores case, '|' matches any of the words",
+        "regexp_helper": "RE2 syntax is accepted. Hint: '(?i)' ignores case, '|' matches any of the words",
         "substring_helper": "Exact and case-sensitive substring match",
         "search_failed": "Log search failed",
         "websocket_disconnected": "The connection to the server was lost while the query was running. Run the search again.",
