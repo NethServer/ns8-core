@@ -25,7 +25,7 @@
                 v-model="internalSelectedNodeId"
                 :label="$t('common.choose')"
                 :title="$t('common.node')"
-                :auto-filter="true"
+                :auto-filter="false"
                 :auto-highlight="true"
                 :options="nodesForFilter"
                 :disabled="isLoadingInstances"
