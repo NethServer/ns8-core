@@ -16,7 +16,7 @@
         ? $t("settings_http_routes.edit_frontend_proxy_node", {
             node: proxyConfig ? proxyConfig.nodeLabel : "",
           })
-        : $t("common.add_frontend_proxy")
+        : $t("settings_http_routes.add_frontend_proxy")
     }}</template>
     <template slot="content">
       <cv-form @submit.prevent="setTrustedProxies">
@@ -97,7 +97,9 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      isEditing ? $t("common.save") : $t("common.add_frontend_proxy")
+      isEditing
+        ? $t("common.save")
+        : $t("settings_http_routes.add_frontend_proxy")
     }}</template>
   </NsModal>
 </template>
