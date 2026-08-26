@@ -298,20 +298,27 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 
 // Reuses logs-start so the frontend one-shot listener is released.
 func writeLogsError(s *melody.Session, id string, message string, wg *sync.WaitGroup) {
+	// on the CLI this is what prints the message
 	utils.LogError(errors.New("[SOCKET] logs query failed: " + message))
-	writeLogsQueryError(s, id, "", message, wg)
+
+	if s != nil {
+		writeSocketResponse(s, "logs-start", gin.H{"id": id, "pid": "", "message": "", "error": message, "error_code": ""})
+		return
+	}
+	wg.Done()
+	os.Exit(1)
 }
 
 // Same, for a query the user can fix: the code picks the frontend wording, and
-// a typo is not a server fault, so nothing is logged.
+// a typo is not a server fault, so it is reported without being logged.
 func writeLogsQueryError(s *melody.Session, id string, code string, message string, wg *sync.WaitGroup) {
 	if s != nil {
 		writeSocketResponse(s, "logs-start", gin.H{"id": id, "pid": "", "message": "", "error": message, "error_code": code})
-	} else {
-		fmt.Fprintln(os.Stderr, message)
-		wg.Done()
-		os.Exit(1)
+		return
 	}
+	fmt.Fprintln(os.Stderr, message)
+	wg.Done()
+	os.Exit(1)
 }
 
 // LogQL strings use Go escape rules: a raw backslash must be doubled.
