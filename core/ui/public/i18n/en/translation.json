@@ -945,7 +945,7 @@
         "challenge_tls_alpn_01": "TLS-ALPN-01",
         "edit_acme_settings": "Edit ACME settings",
         "acme_settings_for_node": "ACME settings for {node}",
-        "acme_restart_message": "HTTP clients on {node} will be briefly disconnected. The page should reload automatically — otherwise, reload it manually.",
+        "acme_restart_message": "HTTP clients on {node} will be briefly disconnected. The connection should resume automatically — otherwise, reload the page manually.",
         "save_result_unknown": "Traefik restarted before the result was known. Check the ACME settings of the node and try again if needed."
     },
     "apps_lets_encrypt": {
