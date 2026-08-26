@@ -980,7 +980,9 @@ export default {
         this.$root.$once(`logsStart-${this.searchId}`, this.onLogsStartDump);
       }
 
-      if (this.internalTimezone == "local") {
+      // follow mode hides the timezone field, so a UTC left over from a previous
+      // dump search must not keep driving the timestamps of live lines
+      if (this.internalFollowLogs || this.internalTimezone == "local") {
         timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       }
 
