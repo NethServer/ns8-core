@@ -323,6 +323,10 @@ export default {
       type: String,
       default: "",
     },
+    selectedNodeId: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -330,7 +334,6 @@ export default {
       // must match row properties: NsDataTable searches and sorts on them
       tableColumns: ["node", "proxies", "depth"],
       proxyConfigs: [],
-      // local on purpose: the parent binds q.selectedNodeId to the Routes tab filter
       filter: {
         text: "",
         // set to the "all" sentinel by repaintNodeFilter(), once the options exist
@@ -441,6 +444,17 @@ export default {
     },
   },
   watch: {
+    selectedNodeId: function (selectedNodeId) {
+      if (selectedNodeId !== this.filter.nodeId) {
+        this.filter.nodeId = selectedNodeId;
+      }
+    },
+    "filter.nodeId": function (nodeId) {
+      // "" is a repaint artifact, never a user choice: keep it out of the URL
+      if (nodeId && nodeId !== this.selectedNodeId) {
+        this.$emit("update:selectedNodeId", nodeId);
+      }
+    },
     // NsComboBox paints its text from the options only when the value changes,
     // and the parent publishes the nodes well after this component is created
     nodesForFilter: function (nodesForFilter) {
@@ -469,6 +483,8 @@ export default {
     },
   },
   created() {
+    this.filter.nodeId = this.selectedNodeId;
+
     if (this.traefikInstances.length) {
       this.getTrustedProxies();
     }

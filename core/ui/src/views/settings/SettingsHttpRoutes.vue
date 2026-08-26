@@ -67,6 +67,7 @@
                 :traefikInstances="traefikInstances"
                 :isLoadingInstances="loading.listInstalledModules"
                 :instancesError="error.listInstalledModules"
+                :selectedNodeId.sync="q.proxyNodeId"
               />
             </cv-tab>
           </NsTabs>
@@ -106,6 +107,8 @@ export default {
       q: {
         view: "",
         selectedNodeId: "",
+        // one param per tab: the two tables filter independently
+        proxyNodeId: "",
       },
       traefikInstances: [],
       // [eventName, handler] pairs registered on $root for the read chain
