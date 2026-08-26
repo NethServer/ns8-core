@@ -400,7 +400,6 @@
             :light="false"
             :outputLines="outputLines"
             :highlight="highlight"
-            :highlightUnsupported="highlightUnsupported"
             :key="'logOutput-' + searchId"
           />
         </cv-column>
@@ -536,7 +535,6 @@ export default {
       noLogsFound: false,
       logsError: "",
       logsErrorTitle: "",
-      highlightUnsupported: false,
       highlight: "",
       searchedMaxLines: "",
       searchedFollowLogs: false,
@@ -840,24 +838,6 @@ export default {
     }
   },
   methods: {
-    // The browser engine knows a different dialect than the RE2 Loki runs, and
-    // rejects valid queries like "(?P<n>x)": null then, so LogOutput can say the
-    // matches cannot be marked. No inline flags either, a leading (?i) becomes i.
-    buildHighlight() {
-      if (!this.internalRegexp || !this.internalSearchQuery) {
-        return this.internalSearchQuery;
-      }
-      const inlineFlags = /^\(\?([ims]+)\)/.exec(this.internalSearchQuery);
-      const source = inlineFlags
-        ? this.internalSearchQuery.slice(inlineFlags[0].length)
-        : this.internalSearchQuery;
-
-      try {
-        return new RegExp(source, inlineFlags ? inlineFlags[1] : "");
-      } catch (e) {
-        return null;
-      }
-    },
     // the raw prefix is reused as-is: it already honours the query timezone
     findTimestamp(fromEnd) {
       const numLines = this.outputLines.length;
@@ -973,8 +953,9 @@ export default {
       const format = "yyyy-MM-dd'T'HH:mm:ssX";
       const startUtcString = this.formatInTimeZone(startLocal, format, "UTC");
       const endUtcString = this.formatInTimeZone(endLocal, format, "UTC");
-      this.highlight = this.buildHighlight();
-      this.highlightUnsupported = this.highlight === null;
+      // a pattern written for RE2 is not one the browser engine can locate, so
+      // the regexp mode leaves the lines unmarked
+      this.highlight = this.internalRegexp ? "" : this.internalSearchQuery;
       this.searchedMaxLines = this.internalMaxLines;
       this.searchedFollowLogs = this.internalFollowLogs;
       this.clearLogs();

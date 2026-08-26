@@ -3,7 +3,28 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
-  <mark class="log-line" :class="levelClass" v-html="html"></mark>
+  <mark :class="levelClass"
+    ><span v-if="beforeTag" class="log-timestamp"
+      ><template v-for="(part, i) in beforeParts"
+        ><mark v-if="part.isMatch" :key="'b' + i" class="log-search-match">{{
+          part.text
+        }}</mark
+        ><template v-else>{{ part.text }}</template></template
+      ></span
+    ><span v-if="tagText" class="log-process-tag"
+      ><template v-for="(part, i) in tagParts"
+        ><mark v-if="part.isMatch" :key="'t' + i" class="log-search-match">{{
+          part.text
+        }}</mark
+        ><template v-else>{{ part.text }}</template></template
+      ></span
+    ><template v-for="(part, i) in restParts"
+      ><mark v-if="part.isMatch" :key="'r' + i" class="log-search-match">{{
+        part.text
+      }}</mark
+      ><template v-else>{{ part.text }}</template></template
+    ></mark
+  >
 </template>
 
 <script>
@@ -18,13 +39,13 @@ const LOG_LEVEL_CLASSIFIERS = [
   { class: "log-level-debug", pattern: /\b(?:debug|trace)\b/i },
 ];
 
-// e.g. "2026-07-05T12:03:17+02:00 [1:traefik1:traefik] ..."
+// leading timestamp followed by the "[node_id:module_id:syslog_id]" tag
+// added by the backend's LogQL line_format, e.g.
+// "2026-07-05T12:03:17+02:00 [1:traefik1:traefik] ..."
 const PROCESS_TAG_PATTERN = /^(\S+\s+)(\[[^\]]*\])/;
 
-// The log text is remote input and goes through v-html: a text context, so & and
-// < are the two characters that can end it, and neither may ever slip through.
-function escapeHtml(text) {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export default {
@@ -34,10 +55,9 @@ export default {
       type: String,
       required: true,
     },
-    // one flat [start, end, ...] list per segment: [timestamp, tag, message]
-    ranges: {
-      type: Array,
-      default: null,
+    searchTerm: {
+      type: String,
+      default: "",
     },
   },
   computed: {
@@ -47,50 +67,45 @@ export default {
       );
       return level ? level.class : "";
     },
-    // One string per line, not a vnode per fragment: a wide match makes tens of
-    // thousands of them, and diffing costs ten times what parsing the markup does.
-    html() {
-      const tag = PROCESS_TAG_PATTERN.exec(this.text);
-
-      if (!tag) {
-        return this.segmentHtml(this.text, 2);
-      }
-      return (
-        '<span class="log-timestamp">' +
-        this.segmentHtml(tag[1], 0) +
-        '</span><span class="log-process-tag">' +
-        this.segmentHtml(tag[2], 1) +
-        "</span>" +
-        this.segmentHtml(this.text.slice(tag[0].length), 2)
-      );
+    tagMatch() {
+      return PROCESS_TAG_PATTERN.exec(this.text);
+    },
+    beforeTag() {
+      return this.tagMatch ? this.tagMatch[1] : "";
+    },
+    tagText() {
+      return this.tagMatch ? this.tagMatch[2] : "";
+    },
+    afterTag() {
+      return this.tagMatch
+        ? this.text.slice(this.tagMatch[0].length)
+        : this.text;
+    },
+    beforeParts() {
+      return this.splitBySearchTerm(this.beforeTag);
+    },
+    tagParts() {
+      return this.splitBySearchTerm(this.tagText);
+    },
+    restParts() {
+      return this.splitBySearchTerm(this.afterTag);
     },
   },
   methods: {
-    // the search mark is nested inside the line, which level colorization owns
-    segmentHtml(text, segment) {
-      const flat = this.ranges ? this.ranges[segment] : null;
-
-      if (!flat || !flat.length) {
-        return escapeHtml(text);
+    // splits a piece of text so the search term keeps its own clickable
+    // mark, even when the whole containing line is also colorized by level
+    splitBySearchTerm(text) {
+      if (!this.searchTerm) {
+        return [{ text, isMatch: false }];
       }
-      const parts = [];
-      let cursor = 0;
-
-      for (let i = 0; i < flat.length; i += 2) {
-        if (flat[i] > cursor) {
-          parts.push(escapeHtml(text.slice(cursor, flat[i])));
-        }
-        parts.push(
-          '<mark class="log-search-match">',
-          escapeHtml(text.slice(flat[i], flat[i + 1])),
-          "</mark>"
-        );
-        cursor = flat[i + 1];
-      }
-      if (cursor < text.length) {
-        parts.push(escapeHtml(text.slice(cursor)));
-      }
-      return parts.join("");
+      const re = new RegExp(`(${escapeRegExp(this.searchTerm)})`, "gi");
+      return text
+        .split(re)
+        .filter((part) => part !== "")
+        .map((part) => ({
+          text: part,
+          isMatch: part.toLowerCase() === this.searchTerm.toLowerCase(),
+        }));
     },
   },
 };
