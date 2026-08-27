@@ -255,13 +255,12 @@
                     <a @click="showAppInfo(row.appInfoData)">
                       <img
                         :src="
-                          row.logo && !row.logoFailed
+                          row.logo
                             ? row.logo
                             : require('@/assets/module_default_logo.png')
                         "
                         :alt="row.name + ' logo'"
                         class="module-logo"
-                        @error="row.logoFailed = true"
                       />
                       <span class="app-name">{{ row.module }}</span>
                     </a>
@@ -1045,11 +1044,11 @@ export default {
           const installedData = updateEntry || item;
           extractedModules.push({
             id: installedData.id || "",
-            // a repository app carries an absolute URL, an app installed
-            // outside any repository a path to its own published bundle
-            logo: moduleData.logo || installedData.logo || "",
-            // a published bundle can go away: fall back on the default logo
-            logoFailed: false,
+            // Use module logo URL if available, else fallback to instance logo later in the template
+            logo:
+              moduleData.logo && moduleData.logo.startsWith("http")
+                ? moduleData.logo
+                : "",
             module: moduleData.name || "", // we want a humanized module name
             node: installedData.node || "",
             node_ui_name: installedData.node_ui_name || "",
