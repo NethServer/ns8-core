@@ -891,6 +891,8 @@ export default {
     },
     removeModuleCompleted() {
       this.listModules();
+      // the drawer lists the same estate: it would keep the removed app
+      this.$root.$emit("reloadAppDrawer");
     },
     showRestartModuleModal(instance) {
       this.instanceToRestart = instance;
