@@ -29,12 +29,12 @@
         <cv-column :md="4" :xlg="6">
           <div class="page-toolbar">
             <NsButton
-              kind="tertiary"
+              kind="secondary"
               size="field"
               :icon="ArrowRight20"
               @click="showSoftwareCenterCoreApps()"
               class="page-toolbar-item"
-              >{{ $t("software_center.go_to_core_applications") }}</NsButton
+              >{{ $t("software_center.core_applications") }}</NsButton
             >
             <NsIconMenu
               :flipMenu="true"
