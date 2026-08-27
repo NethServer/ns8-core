@@ -1126,7 +1126,6 @@
         "disable_instance_automatic_updates_description2": "You can still update it manually.",
         "go_to_updates": "Go to Updates",
         "go_to_core_applications": "Go to Core applications",
-        "core_applications": "Core applications",
         "go_to_software_repositories": "Go to Software repositories",
         "updates_disabled": "Updates disabled",
         "update_all_instances": "Update all applications",
