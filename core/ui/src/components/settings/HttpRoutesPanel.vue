@@ -7,6 +7,17 @@
     <cv-tile light>
       <!-- fullWidth: without it Carbon caps the grid at 99rem and centers it -->
       <cv-grid fullWidth class="no-padding">
+        <cv-row class="toolbar">
+          <cv-column>
+            <NsButton
+              kind="primary"
+              :icon="Add20"
+              @click="showCreateRouteModal"
+              data-test-id="create-route"
+              >{{ $t("settings_http_routes.create_route") }}
+            </NsButton>
+          </cv-column>
+        </cv-row>
         <cv-row>
           <cv-column>
             <div class="data-table-filters">
@@ -36,17 +47,6 @@
                 >{{ $t("common.clear_filters") }}
               </cv-link>
             </div>
-          </cv-column>
-        </cv-row>
-        <cv-row class="toolbar">
-          <cv-column>
-            <NsButton
-              kind="primary"
-              :icon="Add20"
-              @click="showCreateRouteModal"
-              data-test-id="create-route"
-              >{{ $t("settings_http_routes.create_route") }}
-            </NsButton>
           </cv-column>
         </cv-row>
         <cv-row>

@@ -14,6 +14,36 @@
             </p>
           </cv-column>
         </cv-row>
+        <!-- with no proxy configured, the button lives in the empty state -->
+        <cv-row v-if="proxyConfigs.length" class="toolbar">
+          <cv-column>
+            <NsButton
+              v-if="unconfiguredNodes.length || loadingProxies"
+              kind="primary"
+              :icon="Add20"
+              :disabled="loadingProxies"
+              @click="showAddProxyModal"
+              data-test-id="add-frontend-proxy"
+              >{{ $t("settings_http_routes.add_frontend_proxy") }}
+            </NsButton>
+            <cv-tooltip
+              v-else
+              alignment="start"
+              direction="top"
+              :tip="
+                $t('settings_http_routes.add_frontend_proxy_disabled_message')
+              "
+            >
+              <NsButton
+                kind="primary"
+                :icon="Add20"
+                disabled
+                data-test-id="add-frontend-proxy"
+                >{{ $t("settings_http_routes.add_frontend_proxy") }}
+              </NsButton>
+            </cv-tooltip>
+          </cv-column>
+        </cv-row>
         <cv-row>
           <cv-column>
             <div class="data-table-filters">
@@ -45,36 +75,6 @@
                 >{{ $t("common.clear_filters") }}
               </cv-link>
             </div>
-          </cv-column>
-        </cv-row>
-        <!-- with no proxy configured, the button lives in the empty state -->
-        <cv-row v-if="proxyConfigs.length" class="toolbar">
-          <cv-column>
-            <NsButton
-              v-if="unconfiguredNodes.length || loadingProxies"
-              kind="primary"
-              :icon="Add20"
-              :disabled="loadingProxies"
-              @click="showAddProxyModal"
-              data-test-id="add-frontend-proxy"
-              >{{ $t("settings_http_routes.add_frontend_proxy") }}
-            </NsButton>
-            <cv-tooltip
-              v-else
-              alignment="start"
-              direction="top"
-              :tip="
-                $t('settings_http_routes.add_frontend_proxy_disabled_message')
-              "
-            >
-              <NsButton
-                kind="primary"
-                :icon="Add20"
-                disabled
-                data-test-id="add-frontend-proxy"
-                >{{ $t("settings_http_routes.add_frontend_proxy") }}
-              </NsButton>
-            </cv-tooltip>
           </cv-column>
         </cv-row>
         <cv-row>
