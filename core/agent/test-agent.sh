@@ -43,7 +43,7 @@ buildah run "${bcontainer}" sh -c "cd /usr/src && CGO_ENABLED=0 go build -v ."
 if ! podman container exists test-agent-redis; then
     podman run -d -q --rm --replace \
         --name test-agent-redis \
-        --network=slirp4netns \
+        --network=private \
         docker.io/redis:6-alpine \
         --port 6379 --save 5 1 --protected-mode no --loglevel debug
 fi
