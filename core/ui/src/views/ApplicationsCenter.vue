@@ -36,6 +36,32 @@
               class="page-toolbar-item"
               >{{ $t("software_center.go_to_core_applications") }}</NsButton
             >
+            <NsIconMenu
+              :flipMenu="true"
+              tipPosition="top"
+              tipAlignment="end"
+              class="page-toolbar-item"
+            >
+              <cv-overflow-menu-item
+                v-if="subscriptionIsActive"
+                @click="toggleAutomaticUpdates()"
+              >
+                <NsMenuItem
+                  :icon="applyUpdatesIsActive ? PauseOutline20 : PlayOutline20"
+                  :label="
+                    applyUpdatesIsActive
+                      ? $t('software_center.disable_automatic_updates')
+                      : $t('software_center.enable_automatic_updates')
+                  "
+                />
+              </cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="goToSoftwareCenter()">
+                <NsMenuItem
+                  :icon="ArrowRight20"
+                  :label="$t('applications.go_to_software_center')"
+                />
+              </cv-overflow-menu-item>
+            </NsIconMenu>
           </div>
         </cv-column>
       </cv-row>
@@ -45,6 +71,20 @@
             kind="error"
             :title="$t('action.list-modules')"
             :description="error.listModules"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="subscriptionIsActive && !applyUpdatesIsActive">
+        <cv-column>
+          <NsInlineNotification
+            kind="warning"
+            :title="$t('software_center.automatic_updates_disabled_title')"
+            :description="
+              $t('software_center.automatic_updates_disabled_description')
+            "
+            :actionLabel="$t('software_center.enable_automatic_updates')"
+            @action="toggleAutomaticUpdates"
             :showCloseButton="false"
           />
         </cv-column>
@@ -429,10 +469,10 @@
     <!-- automatic updates modal -->
     <AutomaticUpdatesModal
       :visible="isShownAutomaticUpdatesModal"
-      :enable="enableAutomaticUpdatesForInstance"
+      :enable="enableAutomaticUpdates"
       :instance="instanceToToggleAutomaticUpdates"
       @hide="isShownAutomaticUpdatesModal = false"
-      @completed="onInstanceAutomaticUpdatesChanged"
+      @completed="onAutomaticUpdatesChanged"
     />
     <!-- Restart instance modal -->
     <RestartModuleModal
@@ -655,9 +695,12 @@ export default {
     isAutomaticUpdatesOptOutAvailable() {
       return this.subscriptionIsActive && this.applyUpdatesIsActive;
     },
-    enableAutomaticUpdatesForInstance() {
+    // no instance means the modal was opened for the cluster-wide toggle
+    enableAutomaticUpdates() {
       const instance = this.instanceToToggleAutomaticUpdates;
-      return instance ? instance.automatic_updates === false : false;
+      return instance
+        ? instance.automatic_updates === false
+        : !this.applyUpdatesIsActive;
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -689,11 +732,19 @@ export default {
       this.instanceToToggleAutomaticUpdates = row;
       this.isShownAutomaticUpdatesModal = true;
     },
-    onInstanceAutomaticUpdatesChanged(enable) {
+    toggleAutomaticUpdates() {
+      // the previous instance outlives its modal: clear it or the cluster-wide
+      // toggle would retarget the last app the user opted out
+      this.instanceToToggleAutomaticUpdates = null;
+      this.isShownAutomaticUpdatesModal = true;
+    },
+    onAutomaticUpdatesChanged(enable) {
       // apply the reported value instead of re-listing the whole catalogue.
       // the instance is kept until the next toggle: the closing modal reads it
       if (this.instanceToToggleAutomaticUpdates) {
         this.instanceToToggleAutomaticUpdates.automatic_updates = enable;
+      } else {
+        this.applyUpdatesIsActive = enable;
       }
     },
     onClose() {
