@@ -377,17 +377,7 @@
           </span>
         </cv-column>
       </cv-row>
-      <cv-row v-if="logsError">
-        <cv-column>
-          <NsInlineNotification
-            kind="error"
-            :title="logsErrorTitle"
-            :description="logsError"
-            :showCloseButton="false"
-          />
-        </cv-column>
-      </cv-row>
-      <cv-row v-if="searchStarted && (outputLines.length || !logsError)">
+      <cv-row v-if="searchStarted">
         <cv-column>
           <LogOutput
             :searchId="searchId"
@@ -533,8 +523,6 @@ export default {
       scrollToBottom: true,
       searchStarted: false,
       noLogsFound: false,
-      logsError: "",
-      logsErrorTitle: "",
       highlight: "",
       searchedMaxLines: "",
       searchedFollowLogs: false,
@@ -647,9 +635,6 @@ export default {
       }
     },
     internalSearchQuery: function () {
-      // the banner would stay up while the pattern is being corrected
-      this.logsError = "";
-
       if (this.mainSearch) {
         this.$emit("updateSearchQuery", this.internalSearchQuery);
       }
@@ -660,8 +645,6 @@ export default {
       }
     },
     internalRegexp: function () {
-      this.logsError = "";
-
       if (this.mainSearch) {
         this.$emit("updateRegexp", this.internalRegexp);
       }
@@ -674,9 +657,7 @@ export default {
       ) {
         return;
       }
-      this.onLogsQueryError({
-        error: this.$t("system_logs.websocket_disconnected"),
-      });
+      this.onQueryAborted(this.$t("system_logs.websocket_disconnected"));
     },
     timezone: function () {
       if (this.mainSearch) {
@@ -939,7 +920,6 @@ export default {
       }
       this.loading.logs = true;
       this.noLogsFound = false;
-      this.logsError = "";
       this.searchStarted = true;
       const mode = this.internalFollowLogs ? "tail" : "dump";
 
@@ -976,6 +956,8 @@ export default {
 
       if (this.internalFollowLogs) {
         this.$root.$on(`logsStart-${this.searchId}`, this.onLogsStartFollow);
+        // the stream also ends without us asking: a logcli failure, a clean exit
+        this.$root.$once(`logsStop-${this.searchId}`, this.onLogsStop);
       } else {
         this.$root.$once(`logsStart-${this.searchId}`, this.onLogsStartDump);
       }
@@ -1020,17 +1002,14 @@ export default {
       this.$socket.sendObj(logsStopObj);
     },
     onLogsStop() {
+      this.loading.logs = false;
       this.loading.stopFollowing = false;
       this.isFollowing = false;
       this.pid = "";
+      this.$root.$off(`logsStart-${this.searchId}`);
     },
     onLogsStartDump(payload) {
       this.loading.logs = false;
-
-      if (payload.error) {
-        this.onLogsQueryError(payload);
-        return;
-      }
 
       if (!payload.message.length) {
         // show empty state in LogsOutput
@@ -1042,31 +1021,19 @@ export default {
       // signal LogOutput
       this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
-    // the backend flags what the user can fix: anything else has no key
-    onLogsQueryError(payload) {
+    // a query dying in the browser reads like one dying on the server: the
+    // reason is printed where the logs are
+    onQueryAborted(message) {
       this.loading.logs = false;
       this.loading.stopFollowing = false;
       this.isFollowing = false;
       this.pid = "";
       this.noLogsFound = false;
-
-      if (payload.error_code === "invalid_regexp") {
-        this.logsErrorTitle = this.$t("system_logs.invalid_regexp");
-        this.logsError = this.$t("system_logs.invalid_regexp_description", {
-          detail: payload.error,
-        });
-      } else {
-        this.logsErrorTitle = this.$t("system_logs.search_failed");
-        this.logsError = payload.error;
-      }
+      this.outputLines = [...this.outputLines, message];
       this.$root.$off(`logsStart-${this.searchId}`);
+      this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
     onLogsStartFollow(payload) {
-      if (payload.error) {
-        this.onLogsQueryError(payload);
-        return;
-      }
-
       if (this.loading.logs) {
         this.loading.logs = false;
         this.isFollowing = true;
@@ -1088,7 +1055,6 @@ export default {
     },
     clearLogs() {
       this.outputLines = [];
-      this.logsError = "";
     },
     onEnterKeyPress() {
       if (!this.isFollowing) {

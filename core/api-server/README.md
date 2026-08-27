@@ -286,7 +286,7 @@ OUTPUT
 -   `payload`: contains the response logs
     -   `message`: contains the log message
     -   `pid`: is the pid of the process that actually reads log
-    -   `error`: present only when the query failed (invalid regexp, `logcli` error). `message` is empty in that case
+    -   a failed query has no attribute of its own: the `logcli` error text is sent as `message`, and in `tail` mode a `logs-stop` follows it
 -   `timestamp`: timestamp of the action
 -   `type`: used to identify the websocket outputs
 
