@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"deallocate-ports output","$id":"http://schema.nethserver.org/node/deallocate-ports-output.json","description":"Return an array of tuples, with old port ranges deallocated","type":"array"}
