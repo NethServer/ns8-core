@@ -180,6 +180,7 @@ subsections for more information.
 |cluster/override/modules               |HASH       |Maps (image name) => (image URL), overriding the standard image name/URL resolution function |
 |cluster/subscription                   |HASH       |[Subscription]({{site.baseurl}}/core/subscription) attributes in key/value pairs|
 |cluster/apply_updates                  |HASH       |[Scheduled updates]({{site.baseurl}}/core/updates) attributes in key/value pairs|
+|cluster/module_automatic_update        |HASH       |Per-instance [automatic updates]({{site.baseurl}}/core/updates) policy. Hash key is MODULE_ID, hash value is `1` (enabled, default) or `0` (disabled).|
 |cluster/tcp_ports_demand               |HASH       |Max TCP ports a module can request. Hash key is MODULE_ID, hash value is the max TCP ports.|
 |cluster/udp_ports_demand               |HASH       |Max UDP ports a module can request. Hash key is MODULE_ID, hash value is the max UDP ports.|
 |cluster/password_warning/{domain}      |HASH       |Password warning settings for a user domain|

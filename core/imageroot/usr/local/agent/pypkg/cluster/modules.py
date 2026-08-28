@@ -676,11 +676,17 @@ def decorate_without_core_module_instances(rdb, available_modules):
 
 def decorate_with_installed(rdb, available_modules):
     """Decorate each item of available_modules list with an
-    "installed" attribute. This procedure has no return value, it modifies
-    its argument directly."""
+    "installed" attribute. Each installed instance is further decorated
+    with an "automatic_updates" boolean attribute, read from the
+    cluster/module_automatic_update Redis HASH (values "1"/"0"), keyed by
+    instance id, defaulting to True when unset. This procedure has no
+    return value, it modifies its argument directly."""
     installed = cluster.modules.list_installed(rdb, skip_core_modules = False)
+    module_automatic_update = rdb.hgetall('cluster/module_automatic_update') or {}
     for oamodule in available_modules:
         oamodule["installed"] = installed.get(oamodule["source"], [])
+        for oinstance in oamodule["installed"]:
+            oinstance["automatic_updates"] = module_automatic_update.get(oinstance["id"], "1") == "1"
 
 def decorate_with_updates(rdb, available_modules):
     """Decorate each item of available_modules list with an
@@ -689,3 +695,43 @@ def decorate_with_updates(rdb, available_modules):
     updates = cluster.modules.list_updates(rdb, skip_core_modules=True, with_testing_update=True)
     for oamodule in available_modules:
         oamodule["updates"] = list(filter(lambda mup: mup["source"] == oamodule["source"], updates))
+
+def _apply_updates_is_active(rdb):
+    """Return True if the cluster-wide automatic updates timer is active,
+    reading the cluster/apply_updates.is_active Redis key."""
+    return rdb.hget('cluster/apply_updates', 'is_active') == '1'
+
+def _has_subscription(rdb):
+    """Return True if the cluster has an active Nethesis subscription.
+    This is a private copy of agent.facts.has_subscription(): this module
+    intentionally avoids depending on other packages, since it is a
+    critical component and an import error here can permanently isolate
+    the system."""
+    provider = rdb.hget('cluster/subscription', 'provider')
+    return provider in ["nscom", "nsent"]
+
+def decorate_with_automatic_updates(rdb, available_modules):
+    """Decorate each item of available_modules list with the cluster-wide
+    automatic updates and subscription status. They are global flags
+    repeated for every module because of the array output format
+    limitation."""
+    apply_updates_is_active = _apply_updates_is_active(rdb)
+    subscription_is_active = _has_subscription(rdb)
+    for oamodule in available_modules:
+        oamodule['apply_updates_is_active'] = apply_updates_is_active
+        oamodule['subscription_is_active'] = subscription_is_active
+
+def filter_automatic_updates(rdb, updates):
+    """Given a list of update objects as returned by list_updates(), keep
+    only the instances whose automatic_updates policy is enabled,
+    reading the cluster/module_automatic_update Redis HASH (values "1"/"0"),
+    keyed by instance id, defaulting to enabled when unset. Excluded
+    instances are logged to stderr."""
+    module_automatic_update = rdb.hgetall('cluster/module_automatic_update') or {}
+    filtered_updates = []
+    for uo in updates:
+        if module_automatic_update.get(uo['id'], "1") == "1":
+            filtered_updates.append(uo)
+        else:
+            print(agent.SD_INFO + f"Skipping update of {uo['id']} ({uo['source']}:{uo['update']}): automatic updates disabled by policy", file=sys.stderr)
+    return filtered_updates
