@@ -24,7 +24,6 @@ package socket
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -156,45 +155,38 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		if logsAction.Mode == "tail" {
 			// execute command follow mode
 			go func() {
-				pid := ""
-
 				// whatever ends the stream - an error, a clean logcli exit,
 				// logs-stop - the frontend must leave the follow state
 				if s != nil {
 					defer func() {
-						writeSocketResponse(s, "logs-stop", gin.H{"id": logsAction.Id, "pid": pid, "message": "logs follow stopped"})
+						writeSocketResponse(s, "logs-stop", gin.H{"id": logsAction.Id, "pid": "", "message": "logs follow stopped"})
 					}()
 				}
 
-				var stderrBuf bytes.Buffer
-				cmd.Stderr = &stderrBuf
-
-				// create a pipe for the output of the script
-				stdout, errStdOut := cmd.StdoutPipe()
-				if errStdOut != nil {
-					writeLogsError(s, logsAction.Id, errStdOut.Error())
+				// stdout and stderr share one pipe: what logcli writes about a
+				// failure is log text like any other, and a single descriptor
+				// keeps it in order with the lines around it
+				pipeReader, pipeWriter, errPipe := os.Pipe()
+				if errPipe != nil {
+					writeLogsError(s, logsAction.Id, errPipe.Error())
 					return
 				}
-
-				// create scanner to listen to command outputs
-				scannerStdOut := bufio.NewScanner(stdout)
-				go func() {
-					// foreach command outputs send to websocket
-					for scannerStdOut.Scan() {
-						if s != nil {
-							writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": scannerStdOut.Text()})
-						} else {
-							fmt.Println(scannerStdOut.Text())
-						}
-					}
-				}()
+				cmd.Stdout = pipeWriter
+				cmd.Stderr = pipeWriter
 
 				// start command
 				err = cmd.Start()
 				if err != nil {
+					pipeWriter.Close()
+					pipeReader.Close()
 					writeLogsError(s, logsAction.Id, err.Error())
 					return
 				}
+
+				// the child holds its own copy of the write end: drop ours, or
+				// the reader never reaches EOF
+				pipeWriter.Close()
+				defer pipeReader.Close()
 
 				if s != nil {
 					// In a Melody session, store the command pid so it
@@ -211,6 +203,22 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 					writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": strconv.Itoa(cmd.Process.Pid), "message": ""})
 				}
 
+				// read to EOF before Wait: the command output reaches the
+				// frontend whole, whether the stream ends well or badly
+				wroteOutput := false
+				scannerOutput := bufio.NewScanner(pipeReader)
+				for scannerOutput.Scan() {
+					wroteOutput = true
+					if s != nil {
+						// the pid matters only in the first logs-start
+						// message, where the frontend picks it up to stop
+						// the follow later on
+						writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": scannerOutput.Text()})
+					} else {
+						fmt.Println(scannerOutput.Text())
+					}
+				}
+
 				// use Wait to avoid defunct process when killed
 				err = cmd.Wait()
 				if err != nil {
@@ -221,11 +229,11 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 						}
 					}
 
-					message := strings.TrimSpace(stderrBuf.String())
-					if message == "" {
-						message = err.Error()
+					// a command that said nothing at all still owes the
+					// frontend a reason for the empty output area
+					if !wroteOutput {
+						writeLogsError(s, logsAction.Id, err.Error())
 					}
-					writeLogsError(s, logsAction.Id, message)
 					return
 				}
 			}()
