@@ -266,10 +266,11 @@
 <script>
 import to from "await-to-js";
 import { UtilService, TaskService } from "@nethserver/ns8-ui-lib";
+import IpAddressService from "@/mixins/ipAddress";
 
 export default {
   name: "CreateOrEditHttpRouteModal",
-  mixins: [UtilService, TaskService],
+  mixins: [UtilService, TaskService, IpAddressService],
   props: {
     isShown: Boolean,
     nodes: {
@@ -499,19 +500,10 @@ export default {
       // IP allow list
       if (this.ip_allowlist_str) {
         const ipList = this.ip_allowlist_str.split("\n").map((ip) => ip.trim());
-        // IPv4 and IPv4 CIDR pattern
-        const ipv4Pattern =
-          /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
-        // IPv6 and IPv6 CIDR pattern
-        const ipv6Pattern =
-          /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$/;
-
         for (const ip of ipList) {
-          if (!ipv4Pattern.test(ip) && !ipv6Pattern.test(ip)) {
-            // Determine if it looks like an IPv6 address
-            const isIPv6Like = ip.includes(":") || ip.includes("::");
+          if (!this.isIpAddressOrCidr(ip)) {
             this.error.ip_allowlist = this.$t(
-              isIPv6Like
+              this.looksLikeIpv6(ip)
                 ? "settings_http_routes.invalid_ipv6"
                 : "settings_http_routes.invalid_ipv4",
               { ip: ip }
