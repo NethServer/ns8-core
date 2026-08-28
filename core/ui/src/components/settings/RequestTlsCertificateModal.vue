@@ -137,7 +137,9 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("settings_tls_certificates.request_certificate")
+      certificate
+        ? $t("common.save")
+        : $t("settings_tls_certificates.request_certificate")
     }}</template>
   </NsModal>
 </template>

@@ -848,6 +848,7 @@
     },
     "settings_tls_certificates": {
         "title": "TLS certificates",
+        "certificates": "Certificates",
         "show_all": "Show all",
         "request_certificate": "Request certificate",
         "filter_certificates": "Filter certificates",
@@ -889,6 +890,7 @@
         "uploaded": "Uploaded",
         "automatic": "Automatic",
         "obsolete": "Obsolete",
+        "obsolete_tooltip": "No longer referenced by any application, HTTP route, or user request. It may still be reachable by clients until renewed or deleted.",
         "valid": "Valid",
         "expiring": "Expiring",
         "expired": "Expired",
@@ -931,16 +933,20 @@
         "certificates_not_displayed": "Certificates configured on {instanceId} are not displayed"
     },
     "settings_acme_servers": {
-        "title": "ACME servers",
-        "search_acme_server": "Search ACME server",
-        "no_acme_server": "No ACME server",
-        "no_acme_server_description": "There is no ACME server configured",
-        "url": "URL",
+        "acme_settings": "ACME settings",
+        "search_acme_settings": "Search",
+        "no_acme_settings": "No ACME settings",
+        "no_acme_settings_description": "No cluster node has ACME settings configured",
+        "acme_directory_url": "ACME directory URL",
+        "acme_directory_url_helper": "URL of the ACME provider used to issue certificates.",
         "node": "Node",
-        "edit_acme_server": "Edit ACME server",
-        "edit_acme_server_for_node": "Edit ACME server for {node}",
-        "reload_page": "Page reload needed",
-        "edit_acme_server_leader_node_warning": "You are editing the ACME server for the leader node. After you click 'Edit ACME server' you'll need to reload the page"
+        "challenge": "Challenge type",
+        "challenge_http_01": "HTTP-01",
+        "challenge_tls_alpn_01": "TLS-ALPN-01",
+        "edit_acme_settings": "Edit ACME settings",
+        "acme_settings_for_node": "ACME settings for {node}",
+        "acme_restart_message": "HTTP clients on {node} will be briefly disconnected. The connection should resume automatically — otherwise, reload the page manually.",
+        "save_result_unknown": "Traefik restarted before the result was known. Check the ACME settings of the node and try again if needed."
     },
     "apps_lets_encrypt": {
         "lets_encrypt_tips": "Requests a Let's Encrypt TLS certificate automatically. Disabling this option deletes the existing certificate (if any). You can also view or delete it in Cluster settings > TLS certificates.",

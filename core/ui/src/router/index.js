@@ -78,11 +78,10 @@ const routes = [
   },
   {
     path: "/settings/acme-servers",
-    name: "SettingsAcmeServers",
-    component: () =>
-      import(
-        /* webpackChunkName: "settings-acme-servers" */ "../views/settings/SettingsAcmeServers.vue"
-      ),
+    redirect: {
+      name: "SettingsTlsCertificates",
+      query: { view: "acme" },
+    },
   },
   {
     path: "/settings/account",
