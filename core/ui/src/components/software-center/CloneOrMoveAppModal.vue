@@ -674,6 +674,9 @@ export default {
 
       // reload instances and highlight cloned/moved instance
       this.$emit("cloneOrMoveCompleted", newModuleId);
+
+      // a clone adds an app, a move changes its node: the drawer lists both
+      this.$root.$emit("reloadAppDrawer");
     },
     onSelectNode(selectedNode) {
       this.selectedNode = selectedNode;

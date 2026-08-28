@@ -31,11 +31,37 @@
             <NsButton
               kind="tertiary"
               size="field"
-              :icon="Application20"
+              :icon="ArrowRight20"
               @click="showSoftwareCenterCoreApps()"
               class="page-toolbar-item"
-              >{{ $t("software_center.core_apps") }}</NsButton
+              >{{ $t("software_center.go_to_core_applications") }}</NsButton
             >
+            <NsIconMenu
+              :flipMenu="true"
+              tipPosition="top"
+              tipAlignment="end"
+              class="page-toolbar-item"
+            >
+              <cv-overflow-menu-item
+                v-if="subscriptionIsActive"
+                @click="toggleAutomaticUpdates()"
+              >
+                <NsMenuItem
+                  :icon="applyUpdatesIsActive ? PauseOutline20 : PlayOutline20"
+                  :label="
+                    applyUpdatesIsActive
+                      ? $t('software_center.disable_automatic_updates')
+                      : $t('software_center.enable_automatic_updates')
+                  "
+                />
+              </cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="goToSoftwareCenter()">
+                <NsMenuItem
+                  :icon="ArrowRight20"
+                  :label="$t('applications.go_to_software_center')"
+                />
+              </cv-overflow-menu-item>
+            </NsIconMenu>
           </div>
         </cv-column>
       </cv-row>
@@ -45,6 +71,20 @@
             kind="error"
             :title="$t('action.list-modules')"
             :description="error.listModules"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="subscriptionIsActive && !applyUpdatesIsActive">
+        <cv-column>
+          <NsInlineNotification
+            kind="warning"
+            :title="$t('software_center.automatic_updates_disabled_title')"
+            :description="
+              $t('software_center.automatic_updates_disabled_description')
+            "
+            :actionLabel="$t('software_center.enable_automatic_updates')"
+            @action="toggleAutomaticUpdates"
             :showCloseButton="false"
           />
         </cv-column>
@@ -238,13 +278,21 @@
                     }}</span>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
-                    <span>{{ row.version }}</span>
-                    <cv-tag
-                      v-if="row.update"
-                      class="mg-left-sm"
-                      kind="green"
-                      :label="$t('applications.update_available')"
-                    />
+                    <div class="flex items-center">
+                      <span>{{ row.version }}</span>
+                      <cv-tag
+                        v-if="row.update"
+                        class="mg-left-sm"
+                        kind="green"
+                        :label="$t('applications.update_available')"
+                      />
+                      <cv-tag
+                        v-if="isUpdatesDisabledShown(row)"
+                        class="mg-left-sm"
+                        kind="high-contrast"
+                        :label="$t('software_center.updates_disabled')"
+                      />
+                    </div>
                   </cv-data-table-cell>
                   <cv-data-table-cell class="table-overflow-menu-cell">
                     <cv-overflow-menu flip-menu class="table-overflow-menu">
@@ -299,6 +347,24 @@
                           :icon="Upgrade20"
                           :label="
                             $t('software_center.update_to_testing_version')
+                          "
+                        />
+                      </cv-overflow-menu-item>
+                      <!-- enable/disable automatic updates -->
+                      <cv-overflow-menu-item
+                        v-if="isAutomaticUpdatesOptOutAvailable"
+                        @click="toggleInstanceAutomaticUpdates(row)"
+                      >
+                        <NsMenuItem
+                          :icon="
+                            row.automatic_updates
+                              ? PauseOutline20
+                              : PlayOutline20
+                          "
+                          :label="
+                            row.automatic_updates
+                              ? $t('software_center.disable_automatic_updates')
+                              : $t('software_center.enable_automatic_updates')
                           "
                         />
                       </cv-overflow-menu-item>
@@ -400,6 +466,14 @@
       @hide="isShownUninstallModal = false"
       @confirmDelete="uninstallInstance"
     />
+    <!-- automatic updates modal -->
+    <AutomaticUpdatesModal
+      :visible="isShownAutomaticUpdatesModal"
+      :enable="enableAutomaticUpdates"
+      :instance="instanceToToggleAutomaticUpdates"
+      @hide="isShownAutomaticUpdatesModal = false"
+      @completed="onAutomaticUpdatesChanged"
+    />
     <!-- Restart instance modal -->
     <RestartModuleModal
       :visible="isShowRestartModuleModal"
@@ -451,7 +525,10 @@ import SetInstanceLabelModal from "@/components/software-center/SetInstanceLabel
 import RestartModuleModal from "@/components/software-center/RestartModuleModal.vue";
 import AddNoteModal from "@/components/applications-center/AddNoteModal.vue";
 import RequestQuote20 from "@carbon/icons-vue/es/request-quote/20";
+import PauseOutline20 from "@carbon/icons-vue/es/pause--outline/20";
+import PlayOutline20 from "@carbon/icons-vue/es/play--outline/20";
 import AppInfoModal from "@/components/software-center/AppInfoModal.vue";
+import AutomaticUpdatesModal from "@/components/software-center/AutomaticUpdatesModal";
 
 import {
   QueryParamService,
@@ -473,6 +550,7 @@ export default {
     AddNoteModal,
     RequestQuote20,
     AppInfoModal,
+    AutomaticUpdatesModal,
   },
   mixins: [
     IconService,
@@ -513,6 +591,12 @@ export default {
       appUpdates: [],
       app: null,
       modules: [],
+      PauseOutline20,
+      PlayOutline20,
+      subscriptionIsActive: false,
+      applyUpdatesIsActive: false,
+      isShownAutomaticUpdatesModal: false,
+      instanceToToggleAutomaticUpdates: null,
       tableColumns: ["name", "type", "node", "version"],
       tablePage: [],
       filter: {
@@ -607,6 +691,17 @@ export default {
 
       return filteredModules;
     },
+    // gates both the menu entry and the tag, which must not diverge
+    isAutomaticUpdatesOptOutAvailable() {
+      return this.subscriptionIsActive && this.applyUpdatesIsActive;
+    },
+    // no instance means the modal was opened for the cluster-wide toggle
+    enableAutomaticUpdates() {
+      const instance = this.instanceToToggleAutomaticUpdates;
+      return instance
+        ? instance.automatic_updates === false
+        : !this.applyUpdatesIsActive;
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -626,6 +721,31 @@ export default {
     showAppInfo(app) {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
+    },
+    isUpdatesDisabledShown(row) {
+      return (
+        this.isAutomaticUpdatesOptOutAvailable &&
+        row.automatic_updates === false
+      );
+    },
+    toggleInstanceAutomaticUpdates(row) {
+      this.instanceToToggleAutomaticUpdates = row;
+      this.isShownAutomaticUpdatesModal = true;
+    },
+    toggleAutomaticUpdates() {
+      // the previous instance outlives its modal: clear it or the cluster-wide
+      // toggle would retarget the last app the user opted out
+      this.instanceToToggleAutomaticUpdates = null;
+      this.isShownAutomaticUpdatesModal = true;
+    },
+    onAutomaticUpdatesChanged(enable) {
+      // apply the reported value instead of re-listing the whole catalogue.
+      // the instance is kept until the next toggle: the closing modal reads it
+      if (this.instanceToToggleAutomaticUpdates) {
+        this.instanceToToggleAutomaticUpdates.automatic_updates = enable;
+      } else {
+        this.applyUpdatesIsActive = enable;
+      }
     },
     onClose() {
       const context = this;
@@ -837,6 +957,8 @@ export default {
     },
     removeModuleCompleted() {
       this.listModules();
+      // the drawer lists the same estate: it would keep the removed app
+      this.$root.$emit("reloadAppDrawer");
     },
     showSetInstanceLabelModal(instance) {
       this.currentInstance = instance;
@@ -934,6 +1056,7 @@ export default {
             ui_note: installedData.ui_note || "",
             version: installedData.version || "",
             update: installedData.update || "",
+            automatic_updates: item.automatic_updates,
             appInfoData: moduleData, // needed for clone/move/info modals
           });
         }
@@ -941,6 +1064,12 @@ export default {
       // sort by id
       extractedModules.sort(this.sortByProperty("id"));
       this.modules = extractedModules;
+
+      // flags are repeated on every module: an empty list carries none
+      if (modules.length) {
+        this.subscriptionIsActive = !!modules[0].subscription_is_active;
+        this.applyUpdatesIsActive = !!modules[0].apply_updates_is_active;
+      }
 
       // map module types for filter
       const moduleTypes = [

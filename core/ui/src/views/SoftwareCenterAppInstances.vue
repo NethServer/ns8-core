@@ -273,6 +273,24 @@
                       :label="$t('software_center.restart_instance')"
                     />
                   </cv-overflow-menu-item>
+                  <!-- enable/disable automatic updates -->
+                  <cv-overflow-menu-item
+                    v-if="isAutomaticUpdatesOptOutAvailable"
+                    @click="toggleInstanceAutomaticUpdates(instance)"
+                  >
+                    <NsMenuItem
+                      :icon="
+                        instance.automatic_updates
+                          ? PauseOutline20
+                          : PlayOutline20
+                      "
+                      :label="
+                        instance.automatic_updates
+                          ? $t('software_center.disable_automatic_updates')
+                          : $t('software_center.enable_automatic_updates')
+                      "
+                    />
+                  </cv-overflow-menu-item>
                   <cv-overflow-menu-item
                     @click="showCloneAppModal(instance)"
                     :data-test-id="index == 0 ? 'first-clone' : ''"
@@ -319,7 +337,9 @@
                     >
                   </div>
                   <div class="row">
-                    {{ $t("common.version") }} {{ instance.version }}
+                    <span
+                      >{{ $t("common.version") }} {{ instance.version }}</span
+                    >
                   </div>
                   <div
                     v-if="isStableUpdateAvailable(app, instance)"
@@ -330,6 +350,12 @@
                         version: stableUpdateVersion(app, instance),
                       })
                     }}
+                  </div>
+                  <div v-if="isUpdatesDisabledShown(instance)" class="row">
+                    <cv-tag
+                      kind="high-contrast"
+                      :label="$t('software_center.updates_disabled')"
+                    />
                   </div>
                   <div
                     v-if="
@@ -389,6 +415,14 @@
       :isUpdatingToTestingVersion="isUpdatingToTestingVersion"
       @hide="isShownUpdateModal = false"
       @updateCompleted="onUpdateCompleted"
+    />
+    <!-- automatic updates modal -->
+    <AutomaticUpdatesModal
+      :visible="isShownAutomaticUpdatesModal"
+      :enable="enableAutomaticUpdatesForInstance"
+      :instance="instanceToToggleAutomaticUpdates"
+      @hide="isShownAutomaticUpdatesModal = false"
+      @completed="onInstanceAutomaticUpdatesChanged"
     />
     <!-- Restart instance modal -->
     <RestartModuleModal
@@ -460,6 +494,9 @@ import UpdateAppModal from "../components/software-center/UpdateAppModal";
 import SetInstanceLabelModal from "@/components/software-center/SetInstanceLabelModal.vue";
 import RestartModuleModal from "@/components/software-center/RestartModuleModal.vue";
 import Information16 from "@carbon/icons-vue/es/information/16";
+import PauseOutline20 from "@carbon/icons-vue/es/pause--outline/20";
+import PlayOutline20 from "@carbon/icons-vue/es/play--outline/20";
+import AutomaticUpdatesModal from "@/components/software-center/AutomaticUpdatesModal";
 
 export default {
   name: "SoftwareCenterAppInstances",
@@ -470,6 +507,7 @@ export default {
     Information16,
     SetInstanceLabelModal,
     RestartModuleModal,
+    AutomaticUpdatesModal,
   },
   mixins: [
     TaskService,
@@ -487,6 +525,12 @@ export default {
       UPDATE_DELAY: 10000,
       appName: "",
       app: null,
+      PauseOutline20,
+      PlayOutline20,
+      subscriptionIsActive: false,
+      applyUpdatesIsActive: false,
+      isShownAutomaticUpdatesModal: false,
+      instanceToToggleAutomaticUpdates: null,
       isShownInstallModal: false,
       isShownEditInstanceLabel: false,
       isShownUninstallModal: false,
@@ -554,6 +598,14 @@ export default {
       }
       return [];
     },
+    // gates both the menu entry and the tag, which must not diverge
+    isAutomaticUpdatesOptOutAvailable() {
+      return this.subscriptionIsActive && this.applyUpdatesIsActive;
+    },
+    enableAutomaticUpdatesForInstance() {
+      const instance = this.instanceToToggleAutomaticUpdates;
+      return instance ? instance.automatic_updates === false : false;
+    },
   },
   methods: {
     ...mapActions(["setAppDrawerShownInStore", "setUpdateInProgressInStore"]),
@@ -564,6 +616,7 @@ export default {
 
       // register to task completion
       this.$root.$once(taskAction + "-completed", this.listModulesCompleted);
+      this.$root.$once(taskAction + "-aborted", this.listModulesAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -578,8 +631,31 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
+        this.loading.modules = false;
         this.error.listModules = this.getErrorMessage(err);
         return;
+      }
+    },
+    listModulesAborted(taskResult) {
+      console.error("list-modules aborted", taskResult);
+      this.loading.modules = false;
+      this.error.listModules = this.$t("error.generic_error");
+    },
+    isUpdatesDisabledShown(instance) {
+      return (
+        this.isAutomaticUpdatesOptOutAvailable &&
+        instance.automatic_updates === false
+      );
+    },
+    toggleInstanceAutomaticUpdates(instance) {
+      this.instanceToToggleAutomaticUpdates = instance;
+      this.isShownAutomaticUpdatesModal = true;
+    },
+    onInstanceAutomaticUpdatesChanged(enable) {
+      // apply the reported value instead of re-listing the whole catalogue.
+      // the instance is kept until the next toggle: the closing modal reads it
+      if (this.instanceToToggleAutomaticUpdates) {
+        this.instanceToToggleAutomaticUpdates.automatic_updates = enable;
       }
     },
     listModulesCompleted(taskContext, taskResult) {
@@ -590,6 +666,12 @@ export default {
       if (app) {
         app.installed.sort(this.sortModuleInstances());
         this.app = app;
+      }
+
+      // flags are repeated on every module: an empty list carries none
+      if (modules.length) {
+        this.subscriptionIsActive = !!modules[0].subscription_is_active;
+        this.applyUpdatesIsActive = !!modules[0].apply_updates_is_active;
       }
 
       // highlight instance
@@ -809,6 +891,8 @@ export default {
     },
     removeModuleCompleted() {
       this.listModules();
+      // the drawer lists the same estate: it would keep the removed app
+      this.$root.$emit("reloadAppDrawer");
     },
     showRestartModuleModal(instance) {
       this.instanceToRestart = instance;

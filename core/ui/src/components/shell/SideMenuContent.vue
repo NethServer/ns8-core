@@ -129,7 +129,10 @@ export default {
       return this.$route.path.includes(path);
     },
     goTo(path) {
-      this.$router.push(path);
+      // avoid NavigationDuplicated when clicking the already active menu item
+      if (this.$route.fullPath !== path) {
+        this.$router.push(path);
+      }
       this.setMobileSideMenuShownInStore(false);
     },
   },
