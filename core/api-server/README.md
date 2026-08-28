@@ -248,7 +248,9 @@ INPUT
       "to": "2021-01-19T20:00:00Z",
       "entity" :"module",
       "entity_name": "traefik1",
-      "timezone": "Europe/Rome"
+      "timezone": "Europe/Rome",
+      "instance": "loki1",
+      "regexp": false
    }
 }
 ```
@@ -264,6 +266,8 @@ INPUT
     -   `entity`: must be `cluster` or `node` or `module` - `string`
     -   `entity_name`: could be empty (`cluster` case) or name of the entity - `string` (ex. hostname of the node or module id like `traefik1`)
     -   `timezone`: could be empty (default UTC) or a specific valid timezone (eg. Europe/Rome)
+    -   `instance`: could be empty (default loki instance) or the id of a specific loki instance - `string` (ex. `loki1`)
+    -   `regexp`: could be empty (default `false`) - `bool` (when `true` the `filter` is a RE2 regular expression instead of a substring)
 
 ```json
 OUTPUT
@@ -282,6 +286,7 @@ OUTPUT
 -   `payload`: contains the response logs
     -   `message`: contains the log message
     -   `pid`: is the pid of the process that actually reads log
+    -   a failed query has no attribute of its own: the `logcli` error text is sent as `message`, and in `tail` mode a `logs-stop` follows it
 -   `timestamp`: timestamp of the action
 -   `type`: used to identify the websocket outputs
 
@@ -384,15 +389,17 @@ Use "api-server-logs [command] --help" for more information about a command.
       api-server-logs logs [flags]
 
     Flags:
-      -e, --entity string   get logs for a specific entity: cluster, node, module (default "cluster")
-      -f, --from string     get logs from a specific date. ISO8601 format
-      -h, --help            help for logs
-      -l, --lines string    get logs for a specific lines in dump mode (default "25")
-      -m, --mode string     get logs in a specific mode: tail or dump (default "tail")
-      -n, --name string     get logs for a specific entity name. used in node or module
-      -s, --search string   get logs for a specific search string
-      -t, --to string       get logs to a specific date. ISO8601 format
-      -z, --timezone string get logs in a specific timezone
+      -e, --entity string     get logs for a specific entity: cluster, node, module (default "cluster")
+      -f, --from string       get logs from a specific date. ISO8601 format
+      -h, --help              help for logs
+      -i, --instance string   search for logs in a specific instance. (Example: loki1, loki2, ...)
+      -l, --lines string      get logs for a specific lines in dump mode (default "25")
+      -m, --mode string       get logs in a specific mode: tail or dump (default "tail")
+      -n, --name string       get logs for a specific entity name. used in node or module
+      -r, --regexp            treat the search string as a regular expression instead of a substring
+      -s, --search string     get logs for a specific search string
+      -z, --timezone string   get logs in a specific timezone
+      -t, --to string         get logs to a specific date. ISO8601 format
     ```
 
 -   `version`: prints the command version

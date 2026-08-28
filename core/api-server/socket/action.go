@@ -100,9 +100,6 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 
 		// filter logs params
 		var mode = ""
-		var filter = ""
-		var streamSelector = ""
-		var logqlPipeline = ""
 		var from = ""
 		var to = ""
 		var timezone = "UTC"
@@ -143,29 +140,8 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		}
 		args = append(args, mode)
 
-		// check filter
-		if len(logsAction.Filter) > 0 {
-			filter = ` |= "` + strings.ReplaceAll(logsAction.Filter, `"`, `\"`) + `"`
-		} else {
-			filter = ``
-		}
-
-		// switch entity
-		switch logsAction.Entity {
-		default:
-			streamSelector = `{node_id=~".+"}`
-
-		case "node":
-			streamSelector = `{node_id="` + logsAction.EntityName + `"}`
-
-		case "module":
-			streamSelector = `{module_id="` + logsAction.EntityName + `"}`
-		}
-
-		logqlPipeline = ` | json syslog_id="SYSLOG_IDENTIFIER", message="MESSAGE" | line_format "[{{.node_id}}:{{.module_id}}:{{.syslog_id}}] {{.message}}"`
-
 		// Compose and append the query strings to logcli arguments
-		args = append(args, streamSelector+logqlPipeline+filter)
+		args = append(args, buildLogqlQuery(logsAction))
 
 		// define command
 		cmd := exec.Command("/usr/local/bin/logcli", args...)
@@ -179,32 +155,38 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		if logsAction.Mode == "tail" {
 			// execute command follow mode
 			go func() {
-				pid := ""
-
-				// create a pipe for the output of the script
-				stdout, errStdOut := cmd.StdoutPipe()
-				if errStdOut != nil {
-					return
+				// whatever ends the stream - an error, a clean logcli exit,
+				// logs-stop - the frontend must leave the follow state
+				if s != nil {
+					defer func() {
+						writeSocketResponse(s, "logs-stop", gin.H{"id": logsAction.Id, "pid": "", "message": "logs follow stopped"})
+					}()
 				}
 
-				// create scanner to listen to command outputs
-				scannerStdOut := bufio.NewScanner(stdout)
-				go func() {
-					// foreach command outputs send to websocket
-					for scannerStdOut.Scan() {
-						if s != nil {
-							writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": scannerStdOut.Text()})
-						} else {
-							fmt.Println(scannerStdOut.Text())
-						}
-					}
-				}()
+				// stdout and stderr share one pipe: what logcli writes about a
+				// failure is log text like any other, and a single descriptor
+				// keeps it in order with the lines around it
+				pipeReader, pipeWriter, errPipe := os.Pipe()
+				if errPipe != nil {
+					writeLogsError(s, logsAction.Id, errPipe.Error())
+					return
+				}
+				cmd.Stdout = pipeWriter
+				cmd.Stderr = pipeWriter
 
 				// start command
 				err = cmd.Start()
 				if err != nil {
+					pipeWriter.Close()
+					pipeReader.Close()
+					writeLogsError(s, logsAction.Id, err.Error())
 					return
 				}
+
+				// the child holds its own copy of the write end: drop ours, or
+				// the reader never reaches EOF
+				pipeWriter.Close()
+				defer pipeReader.Close()
 
 				if s != nil {
 					// In a Melody session, store the command pid so it
@@ -221,9 +203,37 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 					writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": strconv.Itoa(cmd.Process.Pid), "message": ""})
 				}
 
+				// read to EOF before Wait: the command output reaches the
+				// frontend whole, whether the stream ends well or badly
+				wroteOutput := false
+				scannerOutput := bufio.NewScanner(pipeReader)
+				for scannerOutput.Scan() {
+					wroteOutput = true
+					if s != nil {
+						// the pid matters only in the first logs-start
+						// message, where the frontend picks it up to stop
+						// the follow later on
+						writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": scannerOutput.Text()})
+					} else {
+						fmt.Println(scannerOutput.Text())
+					}
+				}
+
 				// use Wait to avoid defunct process when killed
 				err = cmd.Wait()
 				if err != nil {
+					// logs-stop kills the process: that exit is expected
+					if exitErr, isExitErr := err.(*exec.ExitError); isExitErr {
+						if status, isStatus := exitErr.Sys().(syscall.WaitStatus); isStatus && status.Signal() == syscall.SIGTERM {
+							return
+						}
+					}
+
+					// a command that said nothing at all still owes the
+					// frontend a reason for the empty output area
+					if !wroteOutput {
+						writeLogsError(s, logsAction.Id, err.Error())
+					}
 					return
 				}
 			}()
@@ -233,7 +243,12 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			go func() {
 				out, err := cmd.Output()
 				if err != nil {
-					utils.LogError(errors.Wrap(err, "[SOCKET] error executing Cmd for dump"))
+					message := err.Error()
+					if exitErr, isExitErr := err.(*exec.ExitError); isExitErr && len(exitErr.Stderr) > 0 {
+						message = strings.TrimSpace(string(exitErr.Stderr))
+					}
+					writeLogsError(s, logsAction.Id, message)
+					return
 				}
 
 				// reverse logs orders
@@ -289,6 +304,53 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// Do not send back any message to a successfully authorized
 		// session, just keep the socket open.
 	}
+}
+
+// A failed query is log text like any other: logcli and Loki word it, and the
+// frontend prints it in the output area without a case of its own.
+func writeLogsError(s *melody.Session, id string, message string) {
+	if s == nil {
+		// nothing waits for the WaitGroup of the CLI: the exit ends the process
+		fmt.Fprintln(os.Stderr, message)
+		os.Exit(1)
+	}
+
+	writeSocketResponse(s, "logs-start", gin.H{"id": id, "pid": "", "message": message})
+}
+
+// LogQL strings use Go escape rules: a raw backslash must be doubled.
+func escapeLogqlString(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	return strings.ReplaceAll(s, `"`, `\"`)
+}
+
+func buildLogqlQuery(logsAction models.LogsStartAction) string {
+	var streamSelector string
+
+	switch logsAction.Entity {
+	default:
+		streamSelector = `{node_id=~".+"}`
+
+	case "node":
+		streamSelector = `{node_id="` + escapeLogqlString(logsAction.EntityName) + `"}`
+
+	case "module":
+		streamSelector = `{module_id="` + escapeLogqlString(logsAction.EntityName) + `"}`
+	}
+
+	logqlPipeline := ` | json syslog_id="SYSLOG_IDENTIFIER", message="MESSAGE" | line_format "[{{.node_id}}:{{.module_id}}:{{.syslog_id}}] {{.message}}"`
+
+	filter := ""
+	if len(logsAction.Filter) > 0 {
+		operator := `|=`
+		if logsAction.Regexp {
+			// a bad pattern is rejected by Loki, which compiles it anyway
+			operator = `|~`
+		}
+		filter = ` ` + operator + ` "` + escapeLogqlString(logsAction.Filter) + `"`
+	}
+
+	return streamSelector + logqlPipeline + filter
 }
 
 func reverse(ss []string) []string {

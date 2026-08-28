@@ -44,6 +44,9 @@ func Instance() *melody.Melody {
 		muClock = new(utils.MuClock)
 		muClock.Sync()
 		socketConnection = melody.New()
+		// melody defaults to 512 bytes and closes the connection past it: a
+		// logs-start payload is 280 bytes with an empty search query
+		socketConnection.Config.MaxMessageSize = 65536
 		socketConnection.HandleDisconnect(onDisconnect)
 		socketConnection.HandleMessage(onMessage)
 		socketConnection.HandlePong(onPong)
