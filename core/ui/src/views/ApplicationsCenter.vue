@@ -254,13 +254,10 @@
                   <cv-data-table-cell>
                     <a @click="showAppInfo(row.appInfoData)">
                       <img
-                        :src="
-                          row.logo
-                            ? row.logo
-                            : require('@/assets/module_default_logo.png')
-                        "
+                        :src="getLogo(row)"
                         :alt="row.name + ' logo'"
                         class="module-logo"
+                        @error="onLogoError(row)"
                       />
                       <span class="app-name">{{ row.module }}</span>
                     </a>
@@ -718,6 +715,18 @@ export default {
   },
   methods: {
     ...mapActions(["setUpdateInProgressInStore", "setAppDrawerShownInStore"]),
+    getLogo(row) {
+      return (
+        row.logoCandidates[row.logoIndex] ||
+        require("@/assets/module_default_logo.png")
+      );
+    },
+    onLogoError(row) {
+      // walk down to the next candidate, ending on the shipped asset
+      if (row.logoIndex < row.logoCandidates.length) {
+        row.logoIndex++;
+      }
+    },
     showAppInfo(app) {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
@@ -1044,11 +1053,13 @@ export default {
           const installedData = updateEntry || item;
           extractedModules.push({
             id: installedData.id || "",
-            // Use module logo URL if available, else fallback to instance logo later in the template
-            logo:
-              moduleData.logo && moduleData.logo.startsWith("http")
-                ? moduleData.logo
-                : "",
+            // the repository logo first, then the one the app published with
+            // its own bundle: a candidate can also fail to load, so keep the
+            // whole chain and walk it in getLogo()
+            logoCandidates: [
+              ...new Set([moduleData.logo, installedData.logo].filter(Boolean)),
+            ],
+            logoIndex: 0,
             module: moduleData.name || "", // we want a humanized module name
             node: installedData.node || "",
             node_ui_name: installedData.node_ui_name || "",
