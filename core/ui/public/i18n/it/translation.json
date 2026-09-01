@@ -32,6 +32,7 @@
         "core_update": "Aggiornamento di base",
         "core_apps": "Applicazioni core",
         "app_categories": {
+            "AI": "IA",
             "development": "Sviluppo",
             "database": "Database",
             "collaboration": "Collaborazione",

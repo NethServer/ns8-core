@@ -1171,6 +1171,7 @@
         "restart_instance_name": "Restart application {instance}",
         "restart_application": "Restart application",
         "app_categories": {
+            "AI": "AI",
             "core": "Core",
             "development": "Development",
             "collaboration": "Collaboration",
