@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import agent
+import os
+
+update_core_response = agent.tasks.run(
+    agent_id='cluster',
+    action='update-core',
+    data={'nodes': [1]}, # always 1 in a new cluster
+    endpoint="redis://cluster-leader",
+)
+if update_core_response['exit_code'] != 0:
+    print(agent.SD_ERR + "update-core failed", file=sys.stderr)
+    sys.exit(1)

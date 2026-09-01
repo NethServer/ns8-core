@@ -9,6 +9,10 @@ import json
 import sys
 import agent
 
+agent.set_weight("00validate_cluster", 0)
+agent.set_weight("10validate_network", 0)
+agent.set_weight("40update_cluster", 3)
+
 request = json.load(sys.stdin)
 
 rdb = agent.redis_connect()
