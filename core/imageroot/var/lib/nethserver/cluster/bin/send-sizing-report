@@ -1,0 +1,792 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
+'''
+Build the daily fleet-sizing report -- per-node hardware and Prometheus
+utilization percentiles for the last complete UTC day, plus per-module
+workload counts from get-facts and cluster user_domains counters -- and
+send it to the insights server. Never emits identifying strings (FQDN, IP,
+hostname, serial): only numeric workload values are ever forwarded.
+
+The wire contract is documented server-side in nethesis-insights:
+docs/specs/2026-09-02-sizing-ingest-contract.md
+
+Run with --print to build the report and write it to stdout instead of
+sending it: useful to preview the payload, or to run outside a cluster with
+a subscription configured.
+'''
+
+import sys
+import os
+import re
+import json
+import gzip
+import time
+import argparse
+import datetime
+import math
+import requests
+import agent
+import agent.tasks
+import cluster.modules
+
+
+# --- Sizing contract: constants, PromQL, sanitizing rules ------------------
+
+SCHEMA_VERSION = 1
+REPORTER_VERSION = "1.1.0"
+
+# ^[a-z][a-z0-9_]{0,39}$ -- the server enforces the same shape and counts what
+# it rejects. A key that does not match is DROPPED rather than repaired: a
+# truncated or rewritten key is one the module never emitted, two long keys
+# sharing a prefix would silently sum into one metric, and the server cannot
+# report a fabrication the way it reports a rejection.
+WORKLOAD_KEY_RE = re.compile(r'^[a-z][a-z0-9_]{0,39}$')
+
+# Shape caps. The server truncates and counts each of these, so the reporter
+# does not pre-truncate: a locally dropped metric is invisible in the server's
+# truncated_* counters, and those counters are how an operator sees that a
+# cluster is contributing less than it should. Only the node cap is applied
+# locally, because it bounds the work this script does.
+MAX_METRICS_PER_FAMILY = 32
+MAX_FAMILIES_PER_NODE = 64
+MAX_NODES_PER_REPORT = 16
+
+# Days a single run may backfill, newest last. The server accepts a day in
+# [today-15, today-1]; 7 keeps a week of outage recoverable without making one
+# missed run produce a fifteen-day report.
+MAX_BACKFILL_DAYS = 7
+
+# 5-minute subquery resolution over 24 hours. This is the denominator of
+# sample_coverage and it does NOT depend on the scrape interval: the
+# [1d:5m] subquery resamples whatever the interval is.
+EXPECTED_SAMPLES_PER_DAY = 24 * 60 // 5
+
+# The per-sample iowait level that counts as "busy". The contract's 0.05/0.40
+# pair are knees of the resulting fraction-of-day, not of the level, so this
+# constant has to be pinned somewhere and kept identical to the value recorded
+# in the ingest contract -- otherwise the server calibrates a number the
+# reporter is not sending.
+IOWAIT_BUSY_LEVEL = 0.1
+
+# Filesystems worth reporting. An allowlist and not a blocklist: a read-only
+# squashfs or an image mount sits at 100 % used forever, and the server treats
+# >= 0.98 as terminal (pressure 100). node_filesystem_readonly == 0 removes the
+# rest. Verified on rl1: the node has xfs plus tmpfs, and the guarded
+# expression returns a single value (0.515).
+FS_TYPES = "ext2|ext3|ext4|xfs|btrfs|zfs"
+
+# The contract's two fixed vocabularies. A field in the wrong object is not an
+# error on the server -- the JSON key simply does not exist on the struct it
+# was sent to, so it is dropped with no counter and no log line. Keeping both
+# sets here, next to the code that fills them, is what makes that class of
+# mistake testable.
+RESOURCE_FIELDS = {
+    "ram_util_p95",
+    "ram_used_bytes_p95",
+    "cpu_util_p95",
+    "cpu_cores_used_p95",
+    "load15_per_core_p95",
+    "fs_used_frac_max",
+    "fs_days_to_full",
+    "disk_io_util_p95",
+}
+
+STRESS_FIELDS = {
+    "iowait_busy_frac",
+    "swapin_pps_p95",
+    "oom_kills",
+    "reboots",
+}
+
+
+def sanitize_key(key):
+    """Return the workload key if it already has the contract's shape, else
+       None. Lowercasing is the one repair allowed -- it cannot invent a key
+       that collides with a different one from the same module."""
+    key = str(key).lower()
+    return key if WORKLOAD_KEY_RE.match(key) else None
+
+
+def numeric_workload(facts):
+    """Keep only finite, non-negative numeric fields.
+
+       This filter is the whole privacy control: an FQDN, an IP address, a
+       hostname or a DMI serial cannot be encoded in a number, so a module's
+       get-facts output can be forwarded wholesale without a per-module
+       allowlist. Booleans are excluded before the numeric test because in
+       Python a bool IS an int, and 'feature enabled' is not a workload."""
+    out = {}
+    for k, v in sorted(facts.items()):
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            continue
+        if not math.isfinite(v) or v < 0:
+            continue
+        key = sanitize_key(k)
+        if key:
+            out[key] = v
+    return out
+
+
+def day_window(day):
+    """(start, end) unix seconds for one absolute UTC day.
+
+       Absolute, never a relative [24h]: it is what makes a redelivery of the
+       same day a byte-identical restatement, which is what makes the server's
+       recompute-on-upsert safe and retries free."""
+    start = datetime.datetime(day.year, day.month, day.day,
+                              tzinfo=datetime.timezone.utc)
+    return int(start.timestamp()), int(start.timestamp()) + 86400
+
+
+def days_to_send(now, last_acked_day):
+    """Complete UTC days still owed to the server, oldest first.
+
+       Redelivery is free by construction -- a day is an absolute fact and the
+       server recomputes the row rather than accumulating into it -- so the
+       marker only has to be monotone, and a lost or corrupt one costs one
+       redundant send rather than a wrong number."""
+    window = recent_days(now, MAX_BACKFILL_DAYS)
+    try:
+        acked = datetime.date.fromisoformat(last_acked_day)
+    except (TypeError, ValueError):
+        return window[-1:]
+    return [d for d in window if d > acked]
+
+
+def recent_days(now, count):
+    """The `count` most recent complete UTC days, oldest first.
+
+       Yesterday is the newest complete day; today is still accumulating and a
+       partial day stored under a day label is exactly the undefined report the
+       contract exists to prevent."""
+    yesterday = now.astimezone(datetime.timezone.utc).date() - datetime.timedelta(days=1)
+    return [yesterday - datetime.timedelta(days=i) for i in range(count - 1, -1, -1)]
+
+
+def as_int(value, default=0):
+    """Coerce a hardware or inventory count to a JSON integer.
+
+       Prometheus has no integer type, so every number that comes back from a
+       query is a float and json.dump would write "8054087680.0". Go's decoder
+       refuses a fractional literal for an integer field and rejects the whole
+       report, so this is not cosmetic: it is the difference between a stored
+       cluster-day and a 400."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return default
+    if not math.isfinite(value) or value < 0:
+        return default
+    return int(value)
+
+
+def split_measurements(values):
+    """Route one flat mapping into the contract's (resources, stress) pair.
+
+       A value of None is omitted rather than sent as 0: on the server an
+       absent field makes its penalty term absent, while a zero says
+       "measured, and fine" -- the opposite claim."""
+    resources = {k: v for k, v in sorted(values.items())
+                 if k in RESOURCE_FIELDS and v is not None}
+    stress = {k: v for k, v in sorted(values.items())
+              if k in STRESS_FIELDS and v is not None}
+    return resources, stress
+
+
+def sample_coverage_expr(node_id):
+    # rl1: 1 series, value 288 (a full day at 5-minute resolution).
+    # target_type="node" matters: up{node="1"} alone matches the node exporter
+    # AND every module exporter, and result[0] was crowdsec1.
+    return f'count_over_time(up{{node="{node_id}",target_type="node"}}[1d:5m])'
+
+
+def ram_util_p95_expr(node_id):
+    # MemAvailable, never MemFree: on a healthy Linux box MemFree is near zero
+    # because the page cache holds the rest, and a report built on it says
+    # every node in the fleet is full.
+    return (f'quantile_over_time(0.95, (1 - (node_memory_MemAvailable_bytes{{node="{node_id}"}} '
+            f'/ node_memory_MemTotal_bytes{{node="{node_id}"}}))[1d:5m])')
+
+
+def ram_used_bytes_p95_expr(node_id):
+    return (f'quantile_over_time(0.95, (node_memory_MemTotal_bytes{{node="{node_id}"}} '
+            f'- node_memory_MemAvailable_bytes{{node="{node_id}"}})[1d:5m])')
+
+
+def cpu_util_p95_expr(node_id):
+    # rl1: 1 series, 0.0349. Without `avg by (node)` this returns one series
+    # per core and scalar() picks an arbitrary one.
+    return (f'quantile_over_time(0.95, (1 - avg by (node) '
+            f'(rate(node_cpu_seconds_total{{node="{node_id}",mode="idle"}}[5m])))[1d:5m])')
+
+
+def cpu_cores_used_p95_expr(node_id):
+    # rl1: 1 series, 0.186. Summing the non-idle modes across cores IS the
+    # number of cores busy, so this is measured rather than derived from
+    # cpu_util x cores.
+    return (f'quantile_over_time(0.95, sum by (node) '
+            f'(rate(node_cpu_seconds_total{{node="{node_id}",mode!="idle"}}[5m]))[1d:5m])')
+
+
+def load15_p95_expr(node_id):
+    return f'quantile_over_time(0.95, node_load15{{node="{node_id}"}}[1d:5m])'
+
+
+def iowait_busy_frac_expr(node_id):
+    # A duration, not a mean and not a max: the fraction of the day the node
+    # spent above IOWAIT_BUSY_LEVEL. rl1: 1 series, value 0.
+    return (f'avg_over_time((avg by (node) '
+            f'(rate(node_cpu_seconds_total{{node="{node_id}",mode="iowait"}}[5m])) '
+            f'> bool {IOWAIT_BUSY_LEVEL})[1d:5m])')
+
+
+def swapin_pps_p95_expr(node_id):
+    # Swap IN, not out: eviction is routine, a page read back proves a stall.
+    return (f'quantile_over_time(0.95, '
+            f'rate(node_vmstat_pswpin{{node="{node_id}"}}[5m])[1d:5m])')
+
+
+def disk_io_util_p95_expr(node_id):
+    return (f'max(quantile_over_time(0.95, '
+            f'rate(node_disk_io_time_seconds_total{{node="{node_id}"}}[5m])[1d:5m]))')
+
+
+def fs_used_frac_max_expr(node_id):
+    # A filesystem level, so a max over the day IS the right aggregator -- it
+    # is a level and not a rate. rl1: 1 series, 0.515.
+    sel = f'node="{node_id}",fstype=~"{FS_TYPES}"'
+    return (f'max(max_over_time((1 - (node_filesystem_avail_bytes{{{sel}}} '
+            f'/ node_filesystem_size_bytes{{{sel}}}))[1d:5m]) '
+            f'and on (device,mountpoint,fstype,instance) '
+            f'node_filesystem_readonly{{{sel}}} == 0)')
+
+
+def fs_avail_bytes_expr(node_id):
+    """Per-mountpoint available bytes, for the days-to-full projection."""
+    sel = f'node="{node_id}",fstype=~"{FS_TYPES}"'
+    return (f'node_filesystem_avail_bytes{{{sel}}} '
+            f'and on (device,mountpoint,fstype,instance) '
+            f'node_filesystem_readonly{{{sel}}} == 0')
+
+
+def oom_kills_expr(node_id):
+    return f'increase(node_vmstat_oom_kill{{node="{node_id}"}}[1d])'
+
+
+def reboots_expr(node_id):
+    return f'changes(node_boot_time_seconds{{node="{node_id}"}}[1d])'
+
+
+def collect_measurements(query_url, node_id, cpu_cores, day_start_ts, day_end_ts):
+    """Run every day-windowed query for one node and return a flat mapping of
+       contract field name -> value (or None when Prometheus had no data)."""
+    cores = max(1, cpu_cores)
+    at = {"time": day_end_ts}
+    load15 = prom_scalar(query_url, load15_p95_expr(node_id), default=None, **at)
+    return {
+        "ram_util_p95": prom_scalar(query_url, ram_util_p95_expr(node_id), default=None, **at),
+        "ram_used_bytes_p95": prom_scalar(query_url, ram_used_bytes_p95_expr(node_id), default=None, **at),
+        "cpu_util_p95": prom_scalar(query_url, cpu_util_p95_expr(node_id), default=None, **at),
+        "cpu_cores_used_p95": prom_scalar(query_url, cpu_cores_used_p95_expr(node_id), default=None, **at),
+        "load15_per_core_p95": None if load15 is None else load15 / cores,
+        "fs_used_frac_max": prom_scalar(query_url, fs_used_frac_max_expr(node_id), default=None, **at),
+        "disk_io_util_p95": prom_scalar(query_url, disk_io_util_p95_expr(node_id), default=None, **at),
+        "iowait_busy_frac": prom_scalar(query_url, iowait_busy_frac_expr(node_id), default=None, **at),
+        "swapin_pps_p95": prom_scalar(query_url, swapin_pps_p95_expr(node_id), default=None, **at),
+        "oom_kills": as_int(prom_scalar(query_url, oom_kills_expr(node_id), default=0, **at)),
+        "reboots": as_int(prom_scalar(query_url, reboots_expr(node_id), default=0, **at)),
+    }
+
+
+def os_info_expr(node_id):
+    # rl1: 1 series, labels id="rocky", version_id="9.8".
+    return f'node_os_info{{node="{node_id}"}}'
+
+
+def uname_expr(node_id):
+    # rl1: 1 series, label release="5.14.0-687.10.1.el9_8.0.1.x86_64".
+    # This series also carries nodename -- read `release` and nothing else.
+    return f'node_uname_info{{node="{node_id}"}}'
+
+
+def build_hardware(cpu_cores, mem_total_bytes, cpu_model=None, os_id=None,
+                   os_version=None, kernel_release=None, virtualization=None):
+    """Assemble the hardware block, omitting descriptors we could not read.
+
+       What is deliberately absent: nodename, FQDN, main IP address, DMI serial
+       and board asset tag. They identify a customer's machine, the server has
+       no use for them, and its operator UI is unauthenticated and fleet-wide."""
+    hardware = {
+        "cpu_cores": as_int(cpu_cores),
+        "mem_total_bytes": as_int(mem_total_bytes),
+    }
+    for key, value in (("cpu_model", cpu_model), ("os_id", os_id),
+                       ("os_version", os_version),
+                       ("kernel_release", kernel_release),
+                       ("virtualization", virtualization)):
+        if value:
+            hardware[key] = str(value)
+    return hardware
+
+
+# --- Prometheus client -------------------------------------------------
+
+PROM_BASE_URL = "http://127.0.0.1:9091"
+
+
+def discover_prom_query_url(base_url=PROM_BASE_URL):
+    """Resolve the full Prometheus API query endpoint, following the
+       reverse-proxy path prefix if the local base_url needs one."""
+    api_path = '/api/v1/query'
+    try:
+        # Check if prefix is not necessary:
+        r = requests.get(base_url + '/-/ready', allow_redirects=False, timeout=2)
+        if r.status_code != 200:
+            # Extend base_url with the API path prefix, obtained from
+            # the Location header:
+            r = requests.get(base_url, allow_redirects=False, timeout=2)
+            if r.status_code == 302 and 'Location' in r.headers:
+                base_url += r.headers['Location']
+    except Exception as ex:
+        print("discover_prom_query_url(): cannot parse Metrics/Prometheus headers. Reason: ", ex, file=sys.stderr)
+    return base_url + api_path
+
+
+def prom_query(query_url, expr, time=None):
+    """Query Prometheus and return a list of results. `time`, if given, is
+       a unix timestamp (int/float): it lets a subquery like foo[1d:5m]
+       evaluate as of a historical instant instead of "now"."""
+    params = {"query": expr}
+    if time is not None:
+        params["time"] = time
+    try:
+        r = requests.get(query_url, params=params)
+        r.raise_for_status()
+        return r.json()["data"]["result"]
+    except Exception as ex:
+        print("prom_query(): cannot parse Metrics/Prometheus response. Reason: ", ex, file=sys.stderr)
+        return []
+
+
+def prom_scalar(query_url, expr, time=None, default=0):
+    """First value of a query result, or `default` when there is none.
+
+       Pass default=None when the caller must distinguish "not measured" from
+       "measured, and zero" -- the sizing report does, because on the server an
+       absent field makes its penalty term absent while a zero asserts the node
+       is fine."""
+    res = prom_query(query_url, expr, time=time)
+    try:
+        value = float(res[0]["value"][1])
+    except Exception:
+        return default
+    if not math.isfinite(value):
+        return default
+    return value
+
+
+def prom_label(query_url, expr, name, time=None, default=""):
+    """Read one label off the first series of a query.
+
+       Deliberately one label at a time: node_uname_info also carries
+       `nodename` and node_os_info carries `pretty_name`, and the sizing report
+       must never forward an identifying string."""
+    res = prom_query(query_url, expr, time=time)
+    try:
+        return str(res[0]["metric"].get(name, default))
+    except Exception:
+        return default
+
+
+def prom_is_reachable(query_url):
+    """Cheap liveness probe: is Prometheus actually answering queries?"""
+    return bool(prom_query(query_url, "up"))
+
+
+# --- Report building -----------------------------------------------------
+
+def get_node_list(rdb):
+    result = agent.tasks.run(
+        agent_id='cluster',
+        action='list-nodes',
+        extra={'isNotificationHidden': True},
+        endpoint="redis://cluster-leader",
+    )
+    if not result or result['exit_code'] != 0:
+        raise RuntimeError("cluster/list-nodes failed")
+    nodes = result['output'].get('nodes', [])
+    # ns7migration entries carry no cpu/memory block: they are not real
+    # NS8 nodes yet and cannot be sized.
+    return [n for n in nodes if n.get('role') != 'ns7migration'][:MAX_NODES_PER_REPORT]
+
+
+def get_node_facts(node_id):
+    """The node's own get-facts (ansible 'setup' facts). It is the source of
+       the descriptors node_exporter does not expose (virtualization) and the
+       whole hardware block on the degraded path, so it is fetched once per
+       node and reused by whichever branch runs."""
+    try:
+        result = agent.tasks.run(
+            agent_id='node/' + str(node_id),
+            action='get-facts',
+            extra={'isNotificationHidden': True},
+            endpoint="redis://cluster-leader",
+        )
+        return result['output'].get(str(node_id), {}) if result and result['exit_code'] == 0 else {}
+    except Exception as ex:
+        print(agent.SD_WARNING + f"node/{node_id}/get-facts failed:", ex, file=sys.stderr)
+        return {}
+
+
+def node_hardware(node, query_url, day_end_ts, facts):
+    cpu = node.get('cpu', {})
+    memory = node.get('memory', {})
+    node_id = node['node_id']
+    distro = facts.get('distro', {})
+    return build_hardware(
+        cpu_cores=cpu.get('count'),
+        mem_total_bytes=memory.get('total'),
+        cpu_model=cpu.get('model_name') or cpu.get('model', ''),
+        os_id=prom_label(query_url, os_info_expr(node_id), 'id',
+                         time=day_end_ts) or distro.get('name', '').lower(),
+        os_version=prom_label(query_url, os_info_expr(node_id), 'version_id',
+                              time=day_end_ts) or distro.get('version', ''),
+        kernel_release=prom_label(query_url, uname_expr(node_id), 'release',
+                                  time=day_end_ts) or facts.get('kernel_version', ''),
+        virtualization=facts.get('virtual', ''),
+    )
+
+
+def node_hardware_fallback(facts):
+    """Prometheus is down or absent: build the same block from get-facts
+       alone."""
+    processors = facts.get('processors', {})
+    memory = facts.get('memory', {}).get('system', {})
+    distro = facts.get('distro', {})
+    # node/get-facts names these fields *_bytes, but they actually hold
+    # ansible_memory_mb values (megabytes) -- convert for the wire contract.
+    mem_total_mb = as_int(memory.get('used_bytes')) + as_int(memory.get('available_bytes'))
+    return build_hardware(
+        cpu_cores=processors.get('count'),
+        mem_total_bytes=mem_total_mb * 1024 * 1024,
+        cpu_model=processors.get('model', ''),
+        os_id=distro.get('name', '').lower(),
+        os_version=distro.get('version', ''),
+        kernel_release=facts.get('kernel_version', ''),
+        virtualization=facts.get('virtual', ''),
+    )
+
+
+def node_sample_coverage(query_url, node_id, day_end_ts):
+    n = prom_scalar(query_url, sample_coverage_expr(node_id), time=day_end_ts, default=0)
+    return min(1.0, n / EXPECTED_SAMPLES_PER_DAY)
+
+
+def compute_fs_days_to_full(query_url, node_id, day_start_ts, day_end_ts):
+    def avail_by_mount(ts):
+        return {r["metric"]["mountpoint"]: float(r["value"][1])
+                for r in prom_query(query_url, fs_avail_bytes_expr(node_id), time=ts)}
+
+    a0 = avail_by_mount(day_start_ts)
+    a1 = avail_by_mount(day_end_ts)
+    elapsed = day_end_ts - day_start_ts
+    best = None
+    for mount, v1 in a1.items():
+        v0 = a0.get(mount)
+        if v0 is None:
+            continue
+        shrink_per_sec = (v0 - v1) / elapsed
+        if shrink_per_sec > 0:
+            days = v1 / shrink_per_sec / 86400.0
+            best = days if best is None else min(best, days)
+    return best  # None when no filesystem is shrinking: the contract says omit
+
+
+def node_resources_and_stress(query_url, node_id, cpu_cores, day_start_ts, day_end_ts):
+    values = collect_measurements(query_url, node_id, cpu_cores, day_start_ts, day_end_ts)
+    values["fs_days_to_full"] = compute_fs_days_to_full(
+        query_url, node_id, day_start_ts, day_end_ts)
+    return split_measurements(values)
+
+
+def get_installed_modules(rdb):
+    available = cluster.modules.list_available(rdb, skip_core_modules=False)
+    cluster.modules.decorate_with_installed(rdb, available)
+    installed_modules = []
+    for srcapp in available:
+        installed_modules.extend(srcapp['installed'])
+    return installed_modules
+
+
+def node_modules(node_id, installed_modules):
+    by_family = {}
+    for module in installed_modules:
+        if module.get('node') != str(node_id):
+            continue
+        family = module['module']
+        agg = by_family.setdefault(family, {"instances": 0, "facts_ok": 0,
+                                            "versions": [], "workload": {}})
+        agg["instances"] += 1
+        version = module.get('version', '')
+        if version and version not in agg["versions"]:
+            agg["versions"].append(version)
+        try:
+            list_actions_result = agent.tasks.run(
+                agent_id='module/' + module['id'],
+                action='list-actions',
+                extra={'isNotificationHidden': True},
+                endpoint="redis://cluster-leader",
+            )
+            if not list_actions_result or list_actions_result['exit_code'] != 0:
+                raise Exception("list-actions failed")
+            if 'get-facts' not in list_actions_result.get('output', []):
+                continue
+
+            get_facts_result = agent.tasks.run(
+                agent_id='module/' + module['id'],
+                action='get-facts',
+                extra={'isNotificationHidden': True},
+                endpoint="redis://cluster-leader",
+            )
+            if not get_facts_result or get_facts_result['exit_code'] != 0:
+                raise Exception("get-facts failed")
+
+            agg["facts_ok"] += 1
+            for k, v in numeric_workload(get_facts_result['output']).items():
+                agg["workload"][k] = agg["workload"].get(k, 0) + v
+        except Exception as ex:
+            print(agent.SD_WARNING + f"node_modules(): module/{module['id']} get-facts failed:", ex, file=sys.stderr)
+
+    # No local truncation: the server truncates and counts, and a family
+    # dropped here is invisible in its truncated_families counter.
+    return [{"family": f,
+             "instances": as_int(a["instances"]),
+             "facts_ok": as_int(a["facts_ok"]),
+             "versions": sorted(a["versions"]),
+             "workload": a["workload"]}
+            for f, a in sorted(by_family.items())]
+
+
+def cluster_user_domains():
+    try:
+        result = agent.tasks.run(
+            agent_id='cluster',
+            action='get-facts',
+            extra={'isNotificationHidden': True},
+            endpoint="redis://cluster-leader",
+        )
+    except Exception as ex:
+        print(agent.SD_WARNING + "cluster/get-facts failed:", ex, file=sys.stderr)
+        return []
+    if not result or result['exit_code'] != 0:
+        print(agent.SD_WARNING + "cluster/get-facts failed", file=sys.stderr)
+        return []
+    return [numeric_workload(dom) for dom in result['output'].get('user_domains', [])]
+
+
+def collect_inventory(rdb):
+    """Everything that does not depend on which day is being reported.
+
+       The node list, every node/get-facts and every module get-facts call are
+       made once per run and reused for each day in the payload: measurements
+       are day-windowed Prometheus queries, but get-facts has no history. A
+       backfilled day therefore carries today's inventory and workload, not
+       that day's -- an approximation the following day's send corrects,
+       because the server recomputes the row rather than accumulating into it.
+    """
+    query_url = discover_prom_query_url()
+    metrics_module_present = bool(rdb.get("cluster/default_instance/metrics"))
+    nodes_meta = get_node_list(rdb)
+    installed_modules = get_installed_modules(rdb)
+    return {
+        "query_url": query_url,
+        "prom_reachable": metrics_module_present and prom_is_reachable(query_url),
+        "nodes_meta": nodes_meta,
+        "facts": {node['node_id']: get_node_facts(node['node_id']) for node in nodes_meta},
+        "modules": {node['node_id']: node_modules(node['node_id'], installed_modules)
+                    for node in nodes_meta},
+        "user_domains": cluster_user_domains(),
+    }
+
+
+def build_day_report(inventory, day):
+    day_start_ts, day_end_ts = day_window(day)
+    query_url = inventory["query_url"]
+    prom_reachable = inventory["prom_reachable"]
+
+    nodes = []
+    for node in inventory["nodes_meta"]:
+        node_id = node['node_id']
+        record = {"node_id": as_int(node_id)}
+        facts = inventory["facts"][node_id]
+
+        coverage = node_sample_coverage(query_url, node_id, day_end_ts) if prom_reachable else 0.0
+        if prom_reachable and coverage > 0.0:
+            hardware = node_hardware(node, query_url, day_end_ts, facts)
+            resources, stress = node_resources_and_stress(
+                query_url, node_id, hardware["cpu_cores"], day_start_ts, day_end_ts)
+            record.update({
+                "metrics_present": True,
+                "sample_coverage": round(coverage, 4),
+                "hardware": hardware,
+                "resources": resources,
+                "stress": stress,
+            })
+        else:
+            record.update({
+                "metrics_present": False,
+                "hardware": node_hardware_fallback(facts),
+            })
+
+        record["modules"] = inventory["modules"][node_id]
+        nodes.append(record)
+
+    return {
+        "day": day.isoformat(),
+        "nodes": nodes,
+        "cluster": {"user_domains": inventory["user_domains"]},
+    }
+
+
+def build_payload(rdb, system_id, days):
+    inventory = collect_inventory(rdb)
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "system_id": system_id,
+        "reporter_version": REPORTER_VERSION,
+        "days": [build_day_report(inventory, day) for day in days],
+    }
+
+
+# --- Sending ---------------------------------------------------------------
+
+def insights_endpoint(rdb):
+    """(url, verify_tls) for the insights server, read from the environment
+       or, failing that, from the module holding the cluster's default
+       instance of the metrics stack."""
+    url = os.environ.get('INSIGHTS_SERVER_URL', '')
+    verify_tls = os.environ.get('INSIGHTS_VERIFY_TLS', '')
+    if not url:
+        module_id = rdb.get('cluster/default_instance/loki')
+        if module_id:
+            url = rdb.hget(f'module/{module_id}/environment', 'INSIGHTS_SERVER_URL') or ''
+            verify_tls = rdb.hget(f'module/{module_id}/environment', 'INSIGHTS_VERIFY_TLS') or ''
+    return url, verify_tls
+
+
+# HTTP codes treated as transient and worth a retry. A 400, 403 or 413 is a
+# reporter bug and must not be retried.
+RETRYABLE_STATUS_CODES = {408, 429, 500, 502, 503, 504}
+
+
+def post_report(url, system_id, auth_token, gz_body, verify_tls, retries=3, timeout=180):
+    verify = verify_tls != "0"
+    headers = {"Content-Type": "application/json", "Content-Encoding": "gzip"}
+    last_exc = None
+    for attempt in range(retries + 1):
+        try:
+            r = requests.post(url, auth=(system_id, auth_token), headers=headers,
+                              data=gz_body, timeout=timeout, verify=verify)
+        except requests.RequestException as ex:
+            last_exc = ex
+            if attempt < retries:
+                time.sleep(2 ** attempt)
+                continue
+            raise
+        if r.status_code in RETRYABLE_STATUS_CODES and attempt < retries:
+            time.sleep(2 ** attempt)
+            continue
+        return r
+    raise last_exc
+
+
+def send_report(rdb, payload, days):
+    url, verify_tls = insights_endpoint(rdb)
+    if not url:
+        return
+
+    body = json.dumps(payload).encode()
+
+    # The server's 8 MiB limit applies AFTER decompression, so the guard has
+    # to measure the plain body: a compressible over-size report would
+    # otherwise pass here and be truncated into a 400 there.
+    max_bytes = 8 * 1024 * 1024
+    if len(body) > max_bytes:
+        print(agent.SD_WARNING + f"sizing report exceeds 8MiB uncompressed ({len(body)} bytes), skipped", file=sys.stderr)
+        return
+
+    gz_body = gzip.compress(body, mtime=0)
+    system_id = payload["system_id"]
+    auth_token = rdb.hget('cluster/subscription', 'auth_token')
+
+    try:
+        r = post_report(url.rstrip('/') + '/v1/sizing-reports', system_id, auth_token, gz_body, verify_tls)
+    except requests.RequestException as ex:
+        print(agent.SD_WARNING + f"sizing report POST failed: {ex}", file=sys.stderr)
+        return
+
+    days_str = " ".join(d.isoformat() for d in days)
+    if r.status_code == 202:
+        rdb.hset('cluster/sizing_report', 'last_acked_day', days[-1].isoformat())
+        print(agent.SD_NOTICE + f"sizing report accepted for {days_str}: {r.text[:512]}")
+    else:
+        print(agent.SD_WARNING + f"sizing report POST returned {r.status_code}: {r.text[:512]}", file=sys.stderr)
+
+
+# --- Entry point -------------------------------------------------------
+
+def main():
+    argp = argparse.ArgumentParser(description=__doc__)
+    argp.add_argument('days', nargs='*',
+                      help="ISO dates to report. Default: the automatic backfill "
+                           "window when sending, or yesterday when printing")
+    argp.add_argument('--print', action='store_true', dest='print_only',
+                      help="print the report to stdout instead of sending it")
+    args = argp.parse_args()
+
+    rdb = agent.redis_connect(privileged=True)
+
+    if not args.print_only:
+        leader_id = rdb.hget('cluster/environment', 'NODE_ID')
+        if os.environ.get('NODE_ID') != leader_id:
+            # Defense in depth: check-subscription already gates this timer to
+            # the leader only, but a stray manual start on a worker must still
+            # no-op.
+            sys.exit(0)
+
+        auth_token = rdb.hget('cluster/subscription', 'auth_token')
+        system_id = rdb.hget('cluster/subscription', 'system_id')
+        if not system_id or not auth_token:
+            # Subscription not configured: the feature just isn't active.
+            sys.exit(0)
+
+        if args.days:
+            days = [datetime.date.fromisoformat(d) for d in args.days]
+        else:
+            last_acked = rdb.hget('cluster/sizing_report', 'last_acked_day')
+            days = days_to_send(datetime.datetime.now(datetime.timezone.utc), last_acked)
+            if not days:
+                # Every complete day is already stored server-side.
+                sys.exit(0)
+    else:
+        system_id = rdb.hget('cluster/subscription', 'system_id')
+        if not system_id:
+            print(agent.SD_ERR + "cluster/subscription has no system_id", file=sys.stderr)
+            sys.exit(1)
+        days = [datetime.date.fromisoformat(d) for d in args.days] if args.days \
+            else recent_days(datetime.datetime.now(datetime.timezone.utc), 1)
+
+    payload = build_payload(rdb, system_id, days)
+
+    if args.print_only:
+        json.dump(payload, sys.stdout)
+        return
+
+    send_report(rdb, payload, days)
+
+
+if __name__ == "__main__":
+    main()

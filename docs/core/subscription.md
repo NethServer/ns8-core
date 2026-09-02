@@ -30,6 +30,10 @@ managed by `check-subscription`:
 - `send-inventory` (leader only) Run at night, send the cluster inventory to the provider
 - `send-heartbeat` (leader only) Run every 10 minutes to signal the cluster liveness
 - `send-backup` (leader only) Run at night, send the cluster encrypted backup to the provider
+- `send-sizing-report` (leader only) Run once a day, send an anonymized
+  hardware/utilization/workload sizing report for the previous UTC day to
+  the insights server, when insights reporting is configured. A day that
+  could not be delivered is retried on the following runs, up to a week back.
 - `apply-updates` (leader only) Run at night, apply core, modules and OS
   updates according to configuration in Redis key `cluster/apply_updates`.
   See also [core updates]({{site.baseurl}}/core/updates)

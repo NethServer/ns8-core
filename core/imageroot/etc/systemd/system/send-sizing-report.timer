@@ -1,0 +1,14 @@
+[Unit]
+Description=Send the daily cluster sizing report overnight
+
+[Timer]
+# Once-daily, unlike send-inventory.timer's three fires: a missed run must
+# catch up on next boot rather than silently skip a day (Persistent=true),
+# so this follows send-backup.timer's shape instead.
+OnCalendar=03:00:00
+RandomizedDelaySec=2h
+FixedRandomDelay=true
+Persistent=true
+
+[Install]
+WantedBy=timers.target
