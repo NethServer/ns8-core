@@ -35,6 +35,15 @@ _SCOPE_RE = re.compile(r"/libpod-([0-9a-f]{64})\.scope$")
 _UID_RE = re.compile(r"/user-(\d+)\.slice/")
 
 
+def _read_text(path):
+    """Read a small file, returning None when it does not exist."""
+    try:
+        with open(path) as fp:
+            return fp.read()
+    except OSError:
+        return None
+
+
 def discover_scopes(cgroup_root=DEFAULT_CGROUP_ROOT):
     """Return the live container scopes found under cgroup_root."""
     scopes = []
@@ -97,3 +106,68 @@ def storage_roots(uids, rootfull_storage_root=ROOTFULL_STORAGE_ROOT, passwd_look
             continue
         roots.append(os.path.join(home, ".local/share/containers/storage"))
     return roots
+
+
+NETHSERVER_ROOT = "/var/lib/nethserver"
+RESERVED_MODULE_DIRS = frozenset(["cluster", "node", "api-server"])
+
+_UNIT_PATTERNS = (
+    "system.slice/*.service",
+    "user.slice/user-*.slice/user@*.service/app.slice/*.service",
+)
+
+_CONMON_CID_RE = re.compile(r"\x00-c\x00([0-9a-f]{64})\x00")
+
+
+def map_units(cgroup_root=DEFAULT_CGROUP_ROOT, proc_root=DEFAULT_PROC_ROOT):
+    """Map container id to the systemd unit whose conmon supervises it."""
+    units = {}
+    for pattern in _UNIT_PATTERNS:
+        for unit_path in glob.glob(os.path.join(cgroup_root, pattern)):
+            unit = os.path.basename(unit_path)
+            procs = _read_text(os.path.join(unit_path, "cgroup.procs"))
+            if not procs:
+                continue
+            for pid in procs.split():
+                try:
+                    with open(os.path.join(proc_root, pid, "cmdline"), "rb") as fp:
+                        cmdline = fp.read().decode("utf-8", "replace")
+                except OSError:
+                    continue
+                if "conmon" not in cmdline.split("\x00")[0]:
+                    continue
+                match = _CONMON_CID_RE.search(cmdline)
+                if match is not None:
+                    units[match.group(1)] = unit
+    return units
+
+
+def list_module_ids(nethserver_root=NETHSERVER_ROOT):
+    """Rootfull module ids, longest first so prefix matching is unambiguous."""
+    try:
+        names = os.listdir(nethserver_root)
+    except OSError:
+        return []
+    ids = [
+        name
+        for name in names
+        if name not in RESERVED_MODULE_DIRS
+        and os.path.isdir(os.path.join(nethserver_root, name))
+    ]
+    ids.sort(key=lambda name: (-len(name), name))
+    return ids
+
+
+def resolve_module(scope, unit, module_ids, passwd_lookup=pwd.getpwuid):
+    """Return the NS8 module id owning this container, or "node" for core."""
+    if scope["rootless"]:
+        try:
+            return passwd_lookup(scope["uid"]).pw_name
+        except KeyError:
+            return "unknown"
+    if unit:
+        name = unit[: -len(".service")] if unit.endswith(".service") else unit
+        for module_id in module_ids:
+            if name == module_id or name.startswith(module_id + "-"):
+                return module_id
+    return "node"
