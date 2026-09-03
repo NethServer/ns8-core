@@ -83,6 +83,11 @@ Redelivering a day is safe: a day is an absolute fact and the server
 recomputes the stored row instead of accumulating into it. If the field is
 missing or unparsable only the previous day is sent.
 
+The marker only moves over days the server confirms it stored. A day outside
+the server's accepted window -- today, still accumulating, or one older than
+its retention -- is reported as dropped and leaves the marker untouched, so a
+manual send of the wrong day cannot make the reporter skip a real one.
+
 Preview the payload without sending it:
 
     runagent -m cluster send-sizing-report --print | jq

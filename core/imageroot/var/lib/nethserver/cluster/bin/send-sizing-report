@@ -693,6 +693,36 @@ def post_report(url, system_id, auth_token, gz_body, verify_tls, retries=3, time
         return r
 
 
+def parse_ack(text):
+    """(stored_days, dropped_day) from the server's 202 response body.
+
+       A body we cannot parse yields (None, 0): the server said it accepted the
+       report and an unreadable body is no evidence against that, so the send
+       counts. Only a body that explicitly says it stored nothing holds the
+       marker back."""
+    try:
+        body = json.loads(text)
+        stored = body.get("stored_days")
+        dropped = body.get("dropped", {}).get("dropped_day", 0)
+    except (ValueError, TypeError, AttributeError):
+        return None, 0
+    return (stored if isinstance(stored, int) else None,
+            dropped if isinstance(dropped, int) else 0)
+
+
+def acked_day(days):
+    """The newest day in `days` the server could have stored, or None.
+
+       The server's window ends at yesterday, so today -- passed explicitly on
+       the command line, never by the automatic path -- can never be stored.
+       Moving the marker onto it would skip that day for good once it does
+       become complete, because the next run only looks at days newer than the
+       marker."""
+    yesterday = recent_days(datetime.datetime.now(datetime.timezone.utc), 1)[0]
+    deliverable = [d for d in days if d <= yesterday]
+    return max(deliverable) if deliverable else None
+
+
 def send_report(rdb, payload, days):
     url, verify_tls = insights_endpoint()
     if not url:
@@ -719,11 +749,24 @@ def send_report(rdb, payload, days):
         return
 
     days_str = " ".join(d.isoformat() for d in days)
-    if r.status_code == 202:
-        rdb.hset('cluster/sizing_report', 'last_acked_day', days[-1].isoformat())
-        print(agent.SD_NOTICE + f"sizing report accepted for {days_str}: {r.text[:512]}")
-    else:
+    if r.status_code != 202:
         print(agent.SD_WARNING + f"sizing report POST returned {r.status_code}: {r.text[:512]}", file=sys.stderr)
+        return
+
+    stored_days, dropped_day = parse_ack(r.text)
+    if dropped_day:
+        print(agent.SD_WARNING + f"sizing report: the server dropped {dropped_day} of the "
+              f"{len(days)} day(s) sent ({days_str}), they fall outside its accepted window",
+              file=sys.stderr)
+    if stored_days == 0:
+        print(agent.SD_WARNING + f"sizing report stored nothing for {days_str}, "
+              "the acknowledged day marker is left untouched", file=sys.stderr)
+        return
+
+    acked = acked_day(days)
+    if acked:
+        rdb.hset('cluster/sizing_report', 'last_acked_day', acked.isoformat())
+    print(agent.SD_NOTICE + f"sizing report accepted for {days_str}: {r.text[:512]}")
 
 
 # --- Entry point -------------------------------------------------------
@@ -745,12 +788,14 @@ def main():
             # Defense in depth: check-subscription already gates this timer to
             # the leader only, but a stray manual start on a worker must still
             # no-op.
+            print(agent.SD_NOTICE + "sizing report: not the cluster leader, nothing to do")
             sys.exit(0)
 
         auth_token = rdb.hget('cluster/subscription', 'auth_token')
         system_id = rdb.hget('cluster/subscription', 'system_id')
         if not system_id or not auth_token:
-            # Subscription not configured: the feature just isn't active.
+            print(agent.SD_NOTICE + "sizing report: cluster/subscription is not "
+                  "configured, nothing to do")
             sys.exit(0)
 
         if args.days:
@@ -759,7 +804,8 @@ def main():
             last_acked = rdb.hget('cluster/sizing_report', 'last_acked_day')
             days = days_to_send(datetime.datetime.now(datetime.timezone.utc), last_acked)
             if not days:
-                # Every complete day is already stored server-side.
+                print(agent.SD_NOTICE + "sizing report: nothing to send, every "
+                      f"complete day up to {last_acked} is already acknowledged")
                 sys.exit(0)
     else:
         system_id = rdb.hget('cluster/subscription', 'system_id')
