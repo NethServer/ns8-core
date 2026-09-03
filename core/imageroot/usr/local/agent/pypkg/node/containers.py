@@ -264,3 +264,61 @@ def read_io(scope_path, sys_dev_block=DEFAULT_SYS_DEV_BLOCK):
         counters["device"] = resolve_block_device(fields[0], sys_dev_block)
         devices.append(counters)
     return devices
+
+
+def container_pids(scope_path):
+    """PIDs of the container payload, innermost cgroup first."""
+    pids = []
+    for name in ("container/cgroup.procs", "cgroup.procs"):
+        text = _read_text(os.path.join(scope_path, name))
+        if text:
+            pids.extend(text.split())
+    return pids
+
+
+def _read_link(path):
+    try:
+        return os.readlink(path)
+    except OSError:
+        return None
+
+
+def parse_net_dev(text):
+    """Parse /proc/<pid>/net/dev into per-interface counters."""
+    interfaces = []
+    for line in text.splitlines()[2:]:
+        name, separator, rest = line.partition(":")
+        if not separator:
+            continue
+        fields = rest.split()
+        if len(fields) < 16:
+            continue
+        try:
+            interfaces.append(
+                {
+                    "device": name.strip(),
+                    "receive_bytes": int(fields[0]),
+                    "receive_packets": int(fields[1]),
+                    "transmit_bytes": int(fields[8]),
+                    "transmit_packets": int(fields[9]),
+                }
+            )
+        except ValueError:
+            continue
+    return interfaces
+
+
+def read_network(scope_path, proc_root=DEFAULT_PROC_ROOT):
+    """Interface counters, or None for host-network containers."""
+    host_ns = _read_link(os.path.join(proc_root, "1", "ns", "net"))
+    for pid in container_pids(scope_path):
+        container_ns = _read_link(os.path.join(proc_root, pid, "ns", "net"))
+        if container_ns is None:
+            continue
+        if host_ns is not None and container_ns == host_ns:
+            return None
+        text = _read_text(os.path.join(proc_root, pid, "net", "dev"))
+        if text is None:
+            continue
+        return parse_net_dev(text)
+    return None

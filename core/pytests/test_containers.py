@@ -284,3 +284,53 @@ def test_read_io_falls_back_to_device_number(fake_root):
     )
 
     assert containers.read_io(scope, fake_root.dev_block)[0]["device"] == "8:16"
+
+
+NET_DEV = """Inter-|   Receive                                                |  Transmit
+ face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+    lo:     100       2    0    0    0     0          0         0      100       2    0    0    0     0       0          0
+  eth0: 3479743296 1654108    0    0    0     0          0         0 1023429731 1524055    0    0    0     0       0          0
+"""
+
+
+def test_read_network_skips_host_namespace_containers(fake_root):
+    scope = fake_root.add_rootfull_scope(CID_A)
+    fake_root.add_process("900", "/usr/bin/crowdsec", netns="net:[4026531840]", net_dev=NET_DEV)
+    with open(scope + "/container/cgroup.procs", "w") as fp:
+        fp.write("900\n")
+
+    assert containers.read_network(scope, fake_root.proc) is None
+
+
+def test_read_network_reports_private_namespace_interfaces(fake_root):
+    scope = fake_root.add_rootfull_scope(CID_A)
+    fake_root.add_process("901", "/usr/bin/app", netns="net:[4026532999]", net_dev=NET_DEV)
+    with open(scope + "/container/cgroup.procs", "w") as fp:
+        fp.write("901\n")
+
+    assert containers.read_network(scope, fake_root.proc) == [
+        {
+            "device": "lo",
+            "receive_bytes": 100,
+            "receive_packets": 2,
+            "transmit_bytes": 100,
+            "transmit_packets": 2,
+        },
+        {
+            "device": "eth0",
+            "receive_bytes": 3479743296,
+            "receive_packets": 1654108,
+            "transmit_bytes": 1023429731,
+            "transmit_packets": 1524055,
+        },
+    ]
+
+
+def test_container_pids_prefers_the_container_child_cgroup(fake_root):
+    scope = fake_root.add_rootfull_scope(CID_A)
+    with open(scope + "/cgroup.procs", "w") as fp:
+        fp.write("70936\n")
+    with open(scope + "/container/cgroup.procs", "w") as fp:
+        fp.write("70938\n70939\n")
+
+    assert containers.container_pids(scope) == ["70938", "70939", "70936"]
