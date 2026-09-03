@@ -1,6 +1,8 @@
 [Unit]
 Description=Prometheus node_exporter
 Wants=refresh-node-info.service
+Wants=refresh-container-metrics.service
+Wants=refresh-volume-metrics.service
 
 [Service]
 Type=forking
