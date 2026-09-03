@@ -192,3 +192,56 @@ def test_resolve_module_core_containers_belong_to_node():
 
     assert containers.resolve_module(scope, "redis.service", ["crowdsec1"]) == "node"
     assert containers.resolve_module(scope, "", ["crowdsec1"]) == "node"
+
+
+def test_read_stats_parses_every_cgroup_file(fake_root):
+    scope = fake_root.add_rootfull_scope(
+        CID_A,
+        files={
+            "cpu.stat": "usage_usec 387935381\nuser_usec 329902588\nsystem_usec 58032793\n",
+            "memory.current": "165306368\n",
+            "memory.peak": "268435456\n",
+            "memory.max": "536870912\n",
+            "memory.swap.current": "4096\n",
+            "memory.stat": "anon 246710272\nfile 32485376\nkernel 3911680\n",
+            "pids.current": "12\n",
+            "pids.max": "2048\n",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 3\noom_kill 2\n",
+        },
+    )
+
+    stats = containers.read_stats(scope)
+
+    assert stats["cpu_user_usec"] == 329902588
+    assert stats["cpu_system_usec"] == 58032793
+    assert stats["memory_current"] == 165306368
+    assert stats["memory_peak"] == 268435456
+    assert stats["memory_max"] == 536870912
+    assert stats["memory_swap"] == 4096
+    assert stats["memory_anon"] == 246710272
+    assert stats["memory_file"] == 32485376
+    assert stats["pids_current"] == 12
+    assert stats["pids_max"] == 2048
+    assert stats["oom_kills"] == 2
+    assert stats["start_time"] > 0
+
+
+def test_read_stats_maps_unlimited_to_none(fake_root):
+    scope = fake_root.add_rootfull_scope(
+        CID_A, files={"memory.max": "max\n", "pids.max": "max\n"}
+    )
+
+    stats = containers.read_stats(scope)
+
+    assert stats["memory_max"] is None
+    assert stats["pids_max"] is None
+
+
+def test_read_stats_returns_none_for_missing_files(fake_root):
+    scope = fake_root.add_rootfull_scope(CID_A)
+
+    stats = containers.read_stats(scope)
+
+    assert stats["cpu_user_usec"] is None
+    assert stats["memory_current"] is None
+    assert stats["oom_kills"] is None

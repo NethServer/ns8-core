@@ -171,3 +171,59 @@ def resolve_module(scope, unit, module_ids, passwd_lookup=pwd.getpwuid):
             if name == module_id or name.startswith(module_id + "-"):
                 return module_id
     return "node"
+
+
+def _read_int(path):
+    """Read a single-value cgroup file. "max" and missing files give None."""
+    text = _read_text(path)
+    if text is None:
+        return None
+    text = text.strip()
+    if text == "max":
+        return None
+    try:
+        return int(text)
+    except ValueError:
+        return None
+
+
+def _read_keyed(path):
+    """Read a "key value" cgroup file into a dict of ints."""
+    text = _read_text(path)
+    if text is None:
+        return {}
+    values = {}
+    for line in text.splitlines():
+        fields = line.split()
+        if len(fields) != 2:
+            continue
+        try:
+            values[fields[0]] = int(fields[1])
+        except ValueError:
+            continue
+    return values
+
+
+def read_stats(scope_path):
+    """Read the CPU, memory, PID and OOM counters of one container scope."""
+    cpu = _read_keyed(os.path.join(scope_path, "cpu.stat"))
+    memory = _read_keyed(os.path.join(scope_path, "memory.stat"))
+    events = _read_keyed(os.path.join(scope_path, "memory.events"))
+    try:
+        start_time = int(os.stat(scope_path).st_mtime)
+    except OSError:
+        start_time = None
+    return {
+        "cpu_user_usec": cpu.get("user_usec"),
+        "cpu_system_usec": cpu.get("system_usec"),
+        "memory_current": _read_int(os.path.join(scope_path, "memory.current")),
+        "memory_peak": _read_int(os.path.join(scope_path, "memory.peak")),
+        "memory_max": _read_int(os.path.join(scope_path, "memory.max")),
+        "memory_swap": _read_int(os.path.join(scope_path, "memory.swap.current")),
+        "memory_anon": memory.get("anon"),
+        "memory_file": memory.get("file"),
+        "pids_current": _read_int(os.path.join(scope_path, "pids.current")),
+        "pids_max": _read_int(os.path.join(scope_path, "pids.max")),
+        "oom_kills": events.get("oom_kill"),
+        "start_time": start_time,
+    }
