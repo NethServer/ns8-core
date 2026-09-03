@@ -463,3 +463,102 @@ def test_collect_falls_back_to_short_id_when_name_is_unknown(fake_root, tmp_path
     assert len(records) == 1
     assert records[0]["name"] == CID_A[:12]
     assert records[0]["module"] == "node"
+
+
+def _record(**overrides):
+    record = {
+        "cid": CID_A,
+        "name": "crowdsec1",
+        "image": "crowdsec:1",
+        "unit": "crowdsec1.service",
+        "rootless": False,
+        "module": "crowdsec1",
+        "stats": {
+            "cpu_user_usec": 2000000,
+            "cpu_system_usec": 1000000,
+            "memory_current": 165306368,
+            "memory_peak": 268435456,
+            "memory_max": None,
+            "memory_swap": 0,
+            "memory_anon": 246710272,
+            "memory_file": 32485376,
+            "pids_current": 12,
+            "pids_max": 2048,
+            "oom_kills": 2,
+            "start_time": 1788160250,
+        },
+        "io": [{"device": "vda", "rbytes": 10, "wbytes": 20, "rios": 1, "wios": 2}],
+        "network": None,
+    }
+    record.update(overrides)
+    return record
+
+
+def test_render_emits_expected_samples():
+    text = containers.render([_record()], 0.25, 1788160300)
+    lines = text.splitlines()
+
+    assert text.endswith("\n")
+    assert '# TYPE ns8_container_cpu_seconds_total counter' in lines
+    assert (
+        'ns8_container_cpu_seconds_total{module="crowdsec1",container="crowdsec1",mode="user"} 2.000000'
+        in lines
+    )
+    assert (
+        'ns8_container_cpu_seconds_total{module="crowdsec1",container="crowdsec1",mode="system"} 1.000000'
+        in lines
+    )
+    assert (
+        'ns8_container_memory_usage_bytes{module="crowdsec1",container="crowdsec1"} 165306368'
+        in lines
+    )
+    assert (
+        'ns8_container_blkio_bytes_total{module="crowdsec1",container="crowdsec1",device="vda",op="write"} 20'
+        in lines
+    )
+    assert (
+        'ns8_container_oom_kills_total{module="crowdsec1",container="crowdsec1"} 2' in lines
+    )
+    assert (
+        'ns8_container_info{module="crowdsec1",container="crowdsec1",id="aaaaaaaaaaaa",'
+        'image="crowdsec:1",unit="crowdsec1.service",rootless="false"} 1' in lines
+    )
+    assert "ns8_container_collector_duration_seconds 0.250000" in lines
+    assert "ns8_container_collector_last_success_timestamp_seconds 1788160300" in lines
+
+
+def test_render_omits_absent_measurements():
+    text = containers.render([_record()], 0.1, 1)
+
+    assert "ns8_container_memory_limit_bytes" not in text
+    assert "ns8_container_network_receive_bytes_total" not in text
+
+
+def test_render_groups_all_samples_of_a_family_together():
+    records = [_record(), _record(name="other", module="mail2")]
+
+    lines = containers.render(records, 0.1, 1).splitlines()
+    positions = [
+        index
+        for index, line in enumerate(lines)
+        if line.startswith("ns8_container_memory_usage_bytes{")
+    ]
+
+    assert positions == [positions[0], positions[0] + 1]
+
+
+def test_render_escapes_label_values():
+    text = containers.render([_record(image='we"ird\\path')], 0.1, 1)
+
+    assert 'image="we\\"ird\\\\path"' in text
+
+
+def test_write_atomic_replaces_the_file(tmp_path):
+    target = str(tmp_path / "containers.prom")
+
+    containers.write_atomic(target, "first\n")
+    containers.write_atomic(target, "second\n")
+
+    with open(target) as fp:
+        assert fp.read() == "second\n"
+    assert [name for name in __import__("os").listdir(str(tmp_path))] == ["containers.prom"]

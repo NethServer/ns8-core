@@ -366,3 +366,187 @@ def collect(
         )
     records.sort(key=lambda record: (record["module"], record["name"]))
     return records
+
+
+def escape_label(value):
+    """Escape a label value for the Prometheus text exposition format."""
+    return value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+
+
+class _Exposition(object):
+    """Accumulate samples, keeping every family's samples contiguous."""
+
+    def __init__(self):
+        self._families = {}
+        self._order = []
+
+    def add(self, name, kind, help_text, labels, value):
+        if name not in self._families:
+            self._families[name] = {"kind": kind, "help": help_text, "samples": []}
+            self._order.append(name)
+        if labels:
+            rendered = ",".join(
+                '%s="%s"' % (key, escape_label(val)) for key, val in labels
+            )
+            sample = "%s{%s} %s" % (name, rendered, value)
+        else:
+            sample = "%s %s" % (name, value)
+        self._families[name]["samples"].append(sample)
+
+    def render(self):
+        lines = []
+        for name in self._order:
+            family = self._families[name]
+            lines.append("# HELP %s %s" % (name, family["help"]))
+            lines.append("# TYPE %s %s" % (name, family["kind"]))
+            lines.extend(family["samples"])
+        return "\n".join(lines) + "\n"
+
+
+_GAUGES = (
+    ("memory_current", "ns8_container_memory_usage_bytes", "Container memory usage"),
+    ("memory_peak", "ns8_container_memory_peak_bytes", "Container peak memory usage"),
+    ("memory_max", "ns8_container_memory_limit_bytes", "Container memory limit"),
+    ("memory_swap", "ns8_container_memory_swap_bytes", "Container swap usage"),
+    ("memory_anon", "ns8_container_memory_anon_bytes", "Container anonymous memory"),
+    ("memory_file", "ns8_container_memory_file_bytes", "Container page cache memory"),
+    ("pids_current", "ns8_container_pids", "Processes running in the container"),
+    ("pids_max", "ns8_container_pids_limit", "Container process limit"),
+    ("start_time", "ns8_container_start_time_seconds", "Container start time"),
+)
+
+
+def render(records, duration_seconds, timestamp):
+    """Render collected records as a Prometheus text exposition document."""
+    exposition = _Exposition()
+
+    for record in records:
+        base = (("module", record["module"]), ("container", record["name"]))
+        stats = record["stats"]
+        for mode, key in (("user", "cpu_user_usec"), ("system", "cpu_system_usec")):
+            if stats[key] is None:
+                continue
+            exposition.add(
+                "ns8_container_cpu_seconds_total",
+                "counter",
+                "Container CPU time spent, in seconds",
+                base + (("mode", mode),),
+                "%.6f" % (stats[key] / 1000000.0),
+            )
+
+    for record in records:
+        base = (("module", record["module"]), ("container", record["name"]))
+        for device in record["io"] or []:
+            labels = base + (("device", device["device"]),)
+            for op, key in (("read", "rbytes"), ("write", "wbytes")):
+                exposition.add(
+                    "ns8_container_blkio_bytes_total",
+                    "counter",
+                    "Container block I/O transferred, in bytes",
+                    labels + (("op", op),),
+                    "%d" % device[key],
+                )
+        for device in record["io"] or []:
+            labels = base + (("device", device["device"]),)
+            for op, key in (("read", "rios"), ("write", "wios")):
+                exposition.add(
+                    "ns8_container_blkio_ops_total",
+                    "counter",
+                    "Container block I/O operations",
+                    labels + (("op", op),),
+                    "%d" % device[key],
+                )
+
+    for direction, help_text in (
+        ("receive", "Container bytes received"),
+        ("transmit", "Container bytes transmitted"),
+    ):
+        for record in records:
+            base = (("module", record["module"]), ("container", record["name"]))
+            for interface in record["network"] or []:
+                exposition.add(
+                    "ns8_container_network_%s_bytes_total" % direction,
+                    "counter",
+                    help_text,
+                    base + (("device", interface["device"]),),
+                    "%d" % interface["%s_bytes" % direction],
+                )
+
+    for direction, help_text in (
+        ("receive", "Container packets received"),
+        ("transmit", "Container packets transmitted"),
+    ):
+        for record in records:
+            base = (("module", record["module"]), ("container", record["name"]))
+            for interface in record["network"] or []:
+                exposition.add(
+                    "ns8_container_network_%s_packets_total" % direction,
+                    "counter",
+                    help_text,
+                    base + (("device", interface["device"]),),
+                    "%d" % interface["%s_packets" % direction],
+                )
+
+    for record in records:
+        if record["stats"]["oom_kills"] is None:
+            continue
+        exposition.add(
+            "ns8_container_oom_kills_total",
+            "counter",
+            "Processes killed by the container OOM killer",
+            (("module", record["module"]), ("container", record["name"])),
+            "%d" % record["stats"]["oom_kills"],
+        )
+
+    for key, name, help_text in _GAUGES:
+        for record in records:
+            value = record["stats"][key]
+            if value is None:
+                continue
+            exposition.add(
+                name,
+                "gauge",
+                help_text,
+                (("module", record["module"]), ("container", record["name"])),
+                "%d" % value,
+            )
+
+    for record in records:
+        exposition.add(
+            "ns8_container_info",
+            "gauge",
+            "Container metadata, always 1",
+            (
+                ("module", record["module"]),
+                ("container", record["name"]),
+                ("id", record["cid"][:12]),
+                ("image", record["image"]),
+                ("unit", record["unit"]),
+                ("rootless", "true" if record["rootless"] else "false"),
+            ),
+            "1",
+        )
+
+    exposition.add(
+        "ns8_container_collector_duration_seconds",
+        "gauge",
+        "Duration of the last container metrics collection",
+        (),
+        "%.6f" % duration_seconds,
+    )
+    exposition.add(
+        "ns8_container_collector_last_success_timestamp_seconds",
+        "gauge",
+        "Unix timestamp of the last successful collection",
+        (),
+        "%d" % timestamp,
+    )
+    return exposition.render()
+
+
+def write_atomic(path, text):
+    """Write text to path through a temporary file, then rename it in place."""
+    temporary = "%s.%d" % (path, os.getpid())
+    with open(temporary, "w") as fp:
+        fp.write(text)
+    os.rename(temporary, path)
