@@ -18,6 +18,7 @@ DEFAULT_OUTPUT = "./node_exporter/containers.prom"
 
 
 def refresh(output):
+    os.makedirs(os.path.dirname(output) or ".", exist_ok=True)
     started = time.time()
     records = containers.collect()
     elapsed = time.time() - started
@@ -41,9 +42,10 @@ def main():
     )
     arguments = parser.parse_args()
 
-    os.makedirs(os.path.dirname(arguments.output) or ".", exist_ok=True)
-
-    if not arguments.loop:
+    # A non-positive interval means single-pass, matching how
+    # refresh-node-info's "if [[ $interval -gt 0 ]]" treats zero and
+    # negative values uniformly.
+    if arguments.loop is None or arguments.loop <= 0:
         refresh(arguments.output)
         return 0
 
