@@ -19845,12 +19845,12 @@ __metadata:
   linkType: hard
 
 "vue-axios@npm:^3.2.4":
-  version: 3.5.2
-  resolution: "vue-axios@npm:3.5.2"
+  version: 3.6.0
+  resolution: "vue-axios@npm:3.6.0"
   peerDependencies:
     axios: "*"
     vue: ^3.0.0 || ^2.0.0
-  checksum: c0b0251ba313fb6ae51e943a430c2806b6418cf9420faff5afce1f824c916047d6b39afb74f38287bbb46e2f76ba3e42ce29e1af88b3bb6f018f549a0fe3dc02
+  checksum: 51ba01786b6aef267b83571844d81a6d7acca63c9151e1a292b72322ca341b26c6afe482799f5a310a1c984bd4df66db18adbb7568f974f4580639c1960244bb
   languageName: node
   linkType: hard
 
