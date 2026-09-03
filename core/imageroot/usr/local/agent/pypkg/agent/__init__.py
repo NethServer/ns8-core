@@ -50,13 +50,17 @@ SD_NOTICE  = "<5>"  # normal but significant condition
 SD_INFO    = "<6>"  # informational
 SD_DEBUG   = "<7>"  # debug-level messages
 
-def redis_connect(privileged=False, use_replica=False, **kwargs):
+def redis_connect(
+    privileged=False, use_replica=False, *, decode_responses=True, **kwargs
+):
     """Connect to the Redis DB. If no arguments are given
     the leader Redis instance with default read-only access rights
     credentials is selected.
     - Set `privileged=True` to modify Redis DB. Replica cannot be modified.
     - Set `use_replica=True` to discover service startup configuration from
       the local Redis replica.
+    - Set `decode_responses=False` to receive Redis bulk strings as raw bytes.
+      By default, responses are decoded as UTF-8 strings.
 
     Any other keyword argument is passed to redis.Redis() constructor.
     """
@@ -79,10 +83,10 @@ def redis_connect(privileged=False, use_replica=False, **kwargs):
     kwargs.setdefault('db', 0)
     kwargs.setdefault('username', redis_username)
     kwargs.setdefault('password', redis_password)
-    #  we assume Redis keys and value strings are encoded UTF-8. Enabling this
-    #  option implicitly converts to UTF-8 strings instead of binary strings
-    #  (e.g. {b'key': b'value'} != {'key':'value'})
-    kwargs.setdefault('decode_responses', True)
+    # We assume Redis keys and value strings are encoded as UTF-8 by default.
+    # The opt-out is configured when the connection pool is created so raw
+    # clients receive the original bytes unchanged.
+    kwargs['decode_responses'] = decode_responses
 
     return redis.Redis(**kwargs)
 

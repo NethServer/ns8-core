@@ -43,3 +43,19 @@ import agent
 rdb = agent.redis_connect(use_replica=True)
 cluster_network = rdb.get('cluster/network')
 ```
+
+Redis responses are decoded from UTF-8 to strings by default. Consumers that
+need to validate or process each Redis bulk string independently can opt in to
+the original bytes with `decode_responses=False`:
+
+```python
+import agent
+
+raw_rdb = agent.redis_connect(
+    use_replica=True,
+    decode_responses=False,
+)
+for key in raw_rdb.scan_iter('cluster/*'):
+    raw_hash = raw_rdb.hgetall(key)
+    # key, raw_hash field names, and raw_hash values are bytes
+```
