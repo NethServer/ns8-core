@@ -6,6 +6,7 @@ import {
   TaskService,
 } from "@nethserver/ns8-ui-lib";
 import { v4 as uuidv4 } from "uuid";
+import { toPlainCopy } from "@/store";
 
 // In-flight task-context requests, keyed by task ID. websocket.js dispatches
 // several progress messages per task without awaiting them, so the Vuex
@@ -321,15 +322,17 @@ export default {
         if (!subTask) {
           // add subtask to subTasks list
 
+          // parentTask lives inside the reactive notifications store: insert
+          // private copies of context and result (see toPlainCopy)
           const subTask = {
-            context: taskContext,
+            context: toPlainCopy(taskContext),
             status: taskStatus,
             progress: payload.progress,
             subTasks: [],
           };
 
           if (taskResult) {
-            subTask.result = taskResult;
+            subTask.result = toPlainCopy(taskResult);
           }
 
           parentTask.subTasks.push(subTask);
@@ -340,7 +343,7 @@ export default {
           subTask.progress = payload.progress;
 
           if (taskResult) {
-            subTask.result = taskResult;
+            subTask.result = toPlainCopy(taskResult);
           }
         }
       } else {

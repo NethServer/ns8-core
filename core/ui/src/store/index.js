@@ -4,6 +4,76 @@ import _merge from "lodash/merge";
 
 Vue.use(Vuex);
 
+const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+
+function isVueInternal(value) {
+  return (
+    value._isVue === true || // Vue 2 component instance
+    value.__v_isVNode === true || // Vue 3 VNode
+    // Vue 2 VNode, duck-typed: `instanceof VNode` fails for objects created
+    // by the Vue copy bundled in a module UI iframe
+    (hasOwn(value, "tag") &&
+      hasOwn(value, "isComment") &&
+      hasOwn(value, "componentOptions"))
+  );
+}
+
+// Objects reaching `state.notifications` (task contexts, task results,
+// module-provided notifications) are shared by reference with module UIs,
+// which run in iframes with their own Vue runtime. Vue 2 detects prior
+// observation with realm-local checks (`__ob__ instanceof Observer`,
+// `value instanceof VNode`), so when both the core and a module observe the
+// same object graph each side keeps re-observing and re-wrapping the other's
+// getters until the whole SPA freezes. Storing a private plain copy breaks
+// the identity sharing. Functions (e.g. notification action callbacks) and
+// non-plain leaves (e.g. Date) are kept by reference: Vue does not observe
+// them.
+export function toPlainCopy(value, seen = new WeakMap()) {
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+
+  if (isVueInternal(value)) {
+    return undefined;
+  }
+
+  if (seen.has(value)) {
+    return seen.get(value);
+  }
+
+  if (Array.isArray(value)) {
+    const copy = [];
+    seen.set(value, copy);
+
+    for (const item of value) {
+      const plainItem = toPlainCopy(item, seen);
+
+      // drop discarded Vue internals
+      if (plainItem !== undefined || item === undefined) {
+        copy.push(plainItem);
+      }
+    }
+    return copy;
+  }
+
+  if (Object.prototype.toString.call(value) !== "[object Object]") {
+    return value;
+  }
+
+  const copy = {};
+  seen.set(value, copy);
+
+  for (const key of Object.keys(value)) {
+    const plainValue = toPlainCopy(value[key], seen);
+
+    // drop discarded Vue internals
+    if (plainValue !== undefined || value[key] === undefined) {
+      copy[key] = plainValue;
+    }
+  }
+  return copy;
+}
+
 export default new Vuex.Store({
   state: {
     notifications: [],
@@ -97,7 +167,7 @@ export default new Vuex.Store({
       state.taskPollingTimers[obj.taskId] = obj.timeoutId;
     },
     createNotification(state, notification) {
-      state.notifications.unshift(notification);
+      state.notifications.unshift(toPlainCopy(notification));
     },
     setNotificationDrawerShown(state, value) {
       state.isNotificationDrawerShown = value;
@@ -147,7 +217,7 @@ export default new Vuex.Store({
       );
 
       if (notificationFound) {
-        notificationFound = _merge(notificationFound, notification);
+        _merge(notificationFound, toPlainCopy(notification));
       }
     },
     setLoggedUser(state, username) {
