@@ -311,11 +311,16 @@ def parse_net_dev(text):
 def read_network(scope_path, proc_root=DEFAULT_PROC_ROOT):
     """Interface counters, or None for host-network containers."""
     host_ns = _read_link(os.path.join(proc_root, "1", "ns", "net"))
+    if host_ns is None:
+        # Without a trustworthy comparison basis, a private-looking
+        # namespace can't be told apart from the host's: treat the sample
+        # as absent rather than risk reporting the host's own counters.
+        return None
     for pid in container_pids(scope_path):
         container_ns = _read_link(os.path.join(proc_root, pid, "ns", "net"))
         if container_ns is None:
             continue
-        if host_ns is not None and container_ns == host_ns:
+        if container_ns == host_ns:
             return None
         text = _read_text(os.path.join(proc_root, pid, "net", "dev"))
         if text is None:

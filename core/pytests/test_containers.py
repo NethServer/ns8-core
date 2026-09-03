@@ -334,3 +334,60 @@ def test_container_pids_prefers_the_container_child_cgroup(fake_root):
         fp.write("70938\n70939\n")
 
     assert containers.container_pids(scope) == ["70938", "70939", "70936"]
+
+
+def test_read_network_returns_none_when_host_netns_is_unreadable(fake_root):
+    import os
+
+    scope = fake_root.add_rootfull_scope(CID_A)
+    os.remove(os.path.join(fake_root.proc, "1", "ns", "net"))
+    fake_root.add_process("902", "/usr/bin/app", netns="net:[4026532999]", net_dev=NET_DEV)
+    with open(scope + "/container/cgroup.procs", "w") as fp:
+        fp.write("902\n")
+
+    assert containers.read_network(scope, fake_root.proc) is None
+
+
+def test_read_network_skips_pid_that_no_longer_exists(fake_root):
+    scope = fake_root.add_rootfull_scope(CID_A)
+    fake_root.add_process("904", "/usr/bin/app", netns="net:[4026533000]", net_dev=NET_DEV)
+    with open(scope + "/container/cgroup.procs", "w") as fp:
+        fp.write("999999\n904\n")
+
+    assert containers.read_network(scope, fake_root.proc) == [
+        {
+            "device": "lo",
+            "receive_bytes": 100,
+            "receive_packets": 2,
+            "transmit_bytes": 100,
+            "transmit_packets": 2,
+        },
+        {
+            "device": "eth0",
+            "receive_bytes": 3479743296,
+            "receive_packets": 1654108,
+            "transmit_bytes": 1023429731,
+            "transmit_packets": 1524055,
+        },
+    ]
+
+
+def test_parse_net_dev_skips_malformed_lines():
+    text = NET_DEV + "  eth1: 1 2 3\n  eth2: bad 1654108 0 0 0 0 0 0 1023429731 1524055 0 0 0 0 0 0\n"
+
+    assert containers.parse_net_dev(text) == [
+        {
+            "device": "lo",
+            "receive_bytes": 100,
+            "receive_packets": 2,
+            "transmit_bytes": 100,
+            "transmit_packets": 2,
+        },
+        {
+            "device": "eth0",
+            "receive_bytes": 3479743296,
+            "receive_packets": 1654108,
+            "transmit_bytes": 1023429731,
+            "transmit_packets": 1524055,
+        },
+    ]
