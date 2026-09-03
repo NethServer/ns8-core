@@ -95,6 +95,21 @@ Vue.config.productionTip = false;
 import VueI18n from "vue-i18n";
 import { loadLanguage } from "./i18n";
 
+// Module UIs run in same-origin iframes with their own copy of Vue and can
+// keep references to core component instances in their reactive state (e.g.
+// `window.parent.core` ends up in a module Vuex store). A foreign Vue >= 2.7
+// observer cannot recognize instances of another Vue copy (its checks are
+// realm-local) and would deep-observe the whole core component tree,
+// rewriting its internals into foreign reactive getters and freezing the
+// entire SPA on the next render. Vue 2.7 and Vue 3 observers skip any value
+// marked with __v_skip, so mark every core instance explicitly (Vue 2.6 sets
+// only _isVue, which foreign Vue 2.7 observers do not check).
+Vue.mixin({
+  beforeCreate() {
+    this.__v_skip = true;
+  },
+});
+
 loadI18n();
 
 async function loadI18n() {
