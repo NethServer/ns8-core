@@ -1,0 +1,61 @@
+#!/usr/local/agent/pyenv/bin/python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+"""Write per-container metrics for the node_exporter textfile collector."""
+
+import argparse
+import os
+import sys
+import time
+
+import node.containers as containers
+
+DEFAULT_OUTPUT = "./node_exporter/containers.prom"
+
+
+def refresh(output):
+    started = time.time()
+    records = containers.collect()
+    elapsed = time.time() - started
+    containers.write_atomic(output, containers.render(records, elapsed, int(time.time())))
+    return len(records)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Write per-container metrics for the node_exporter textfile collector"
+    )
+    parser.add_argument(
+        "-l",
+        "--loop",
+        type=int,
+        metavar="INTERVAL",
+        help="Run forever, refreshing every INTERVAL seconds",
+    )
+    parser.add_argument(
+        "-o", "--output", default=DEFAULT_OUTPUT, help="Output file path"
+    )
+    arguments = parser.parse_args()
+
+    os.makedirs(os.path.dirname(arguments.output) or ".", exist_ok=True)
+
+    if not arguments.loop:
+        refresh(arguments.output)
+        return 0
+
+    while True:
+        try:
+            refresh(arguments.output)
+        except Exception as ex:
+            # Keep the previous file in place and try again on the next tick:
+            # a transient failure must not blank out the metrics.
+            print("refresh-container-metrics:", ex, file=sys.stderr)
+        time.sleep(arguments.loop)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
