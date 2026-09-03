@@ -14,8 +14,10 @@ against a synthetic tree.
 """
 
 import glob
+import json
 import os
 import os.path
+import pwd
 import re
 
 DEFAULT_CGROUP_ROOT = "/sys/fs/cgroup"
@@ -52,3 +54,40 @@ def discover_scopes(cgroup_root=DEFAULT_CGROUP_ROOT):
             )
     scopes.sort(key=lambda scope: scope["path"])
     return scopes
+
+
+def read_containers_json(storage_root):
+    """Map container id to name and image, from podman's storage index."""
+    path = os.path.join(storage_root, "overlay-containers", "containers.json")
+    try:
+        with open(path) as fp:
+            entries = json.load(fp)
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(entries, list):
+        return {}
+    index = {}
+    for entry in entries:
+        cid = entry.get("id")
+        if not cid:
+            continue
+        names = entry.get("names") or []
+        image = ""
+        try:
+            image = json.loads(entry.get("metadata") or "{}").get("image-name", "")
+        except ValueError:
+            image = ""
+        index[cid] = {"name": names[0] if names else "", "image": image}
+    return index
+
+
+def storage_roots(uids, rootfull_storage_root=ROOTFULL_STORAGE_ROOT, passwd_lookup=pwd.getpwuid):
+    """Rootfull storage root first, then one per distinct module user."""
+    roots = [rootfull_storage_root]
+    for uid in sorted(set(uids)):
+        try:
+            home = passwd_lookup(uid).pw_dir
+        except KeyError:
+            continue
+        roots.append(os.path.join(home, ".local/share/containers/storage"))
+    return roots
