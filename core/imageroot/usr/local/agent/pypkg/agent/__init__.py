@@ -79,9 +79,9 @@ def redis_connect(privileged=False, use_replica=False, **kwargs):
     kwargs.setdefault('db', 0)
     kwargs.setdefault('username', redis_username)
     kwargs.setdefault('password', redis_password)
-    #  we assume Redis keys and value strings are encoded UTF-8. Enabling this
-    #  option implicitly converts to UTF-8 strings instead of binary strings
-    #  (e.g. {b'key': b'value'} != {'key':'value'})
+    # Redis keys and values are assumed to be UTF-8 by default. Callers can
+    # override this default with decode_responses=False in kwargs to receive
+    # raw bytes unchanged.
     kwargs.setdefault('decode_responses', True)
 
     return redis.Redis(**kwargs)
