@@ -327,3 +327,42 @@ def read_network(scope_path, proc_root=DEFAULT_PROC_ROOT):
             continue
         return parse_net_dev(text)
     return None
+
+
+def collect(
+    cgroup_root=DEFAULT_CGROUP_ROOT,
+    proc_root=DEFAULT_PROC_ROOT,
+    sys_dev_block=DEFAULT_SYS_DEV_BLOCK,
+    rootfull_storage_root=ROOTFULL_STORAGE_ROOT,
+    nethserver_root=NETHSERVER_ROOT,
+    passwd_lookup=pwd.getpwuid,
+):
+    """Build one record per live container on this node."""
+    scopes = discover_scopes(cgroup_root)
+    units = map_units(cgroup_root, proc_root)
+    module_ids = list_module_ids(nethserver_root)
+
+    uids = [scope["uid"] for scope in scopes if scope["uid"] is not None]
+    names = {}
+    for root in storage_roots(uids, rootfull_storage_root, passwd_lookup):
+        names.update(read_containers_json(root))
+
+    records = []
+    for scope in scopes:
+        unit = units.get(scope["cid"], "")
+        meta = names.get(scope["cid"], {})
+        records.append(
+            {
+                "cid": scope["cid"],
+                "name": meta.get("name") or scope["cid"][:12],
+                "image": meta.get("image", ""),
+                "unit": unit,
+                "rootless": scope["rootless"],
+                "module": resolve_module(scope, unit, module_ids, passwd_lookup),
+                "stats": read_stats(scope["path"]),
+                "io": read_io(scope["path"], sys_dev_block),
+                "network": read_network(scope["path"], proc_root),
+            }
+        )
+    records.sort(key=lambda record: (record["module"], record["name"]))
+    return records

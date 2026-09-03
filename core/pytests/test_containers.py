@@ -391,3 +391,75 @@ def test_parse_net_dev_skips_malformed_lines():
             "transmit_packets": 1524055,
         },
     ]
+
+
+def test_collect_builds_one_record_per_container(fake_root, tmp_path):
+    nethserver = tmp_path / "nethserver"
+    (nethserver / "crowdsec1").mkdir(parents=True)
+    (nethserver / "node").mkdir()
+
+    home = str(tmp_path / "home" / "metrics1")
+
+    rootfull = fake_root.add_rootfull_scope(
+        CID_A, files={"memory.current": "100\n", "cpu.stat": "user_usec 5\nsystem_usec 6\n"}
+    )
+    rootless = fake_root.add_rootless_scope(
+        CID_B, 1004, files={"memory.current": "200\n"}
+    )
+    assert rootfull and rootless
+
+    fake_root.add_conmon("4242", CID_A)
+    fake_root.add_unit("crowdsec1.service", ["4242"])
+    fake_root.add_conmon("5151", CID_B)
+    fake_root.add_unit("prometheus.service", ["5151"], uid=1004)
+
+    rootfull_storage = fake_root.write_containers_json(
+        [{"id": CID_A, "names": ["crowdsec1"], "metadata": '{"image-name":"crowdsec:1"}'}]
+    )
+    fake_root.write_containers_json(
+        [{"id": CID_B, "names": ["prometheus"], "metadata": '{"image-name":"prom:2"}'}],
+        uid=1004,
+        home=home,
+    )
+
+    class Passwd(object):
+        pw_name = "metrics1"
+        pw_dir = home
+
+    records = containers.collect(
+        cgroup_root=fake_root.cgroup,
+        proc_root=fake_root.proc,
+        sys_dev_block=fake_root.dev_block,
+        rootfull_storage_root=rootfull_storage,
+        nethserver_root=str(nethserver),
+        passwd_lookup=lambda uid: Passwd(),
+    )
+
+    assert [(r["module"], r["name"]) for r in records] == [
+        ("crowdsec1", "crowdsec1"),
+        ("metrics1", "prometheus"),
+    ]
+    assert records[0]["image"] == "crowdsec:1"
+    assert records[0]["unit"] == "crowdsec1.service"
+    assert records[0]["rootless"] is False
+    assert records[0]["stats"]["memory_current"] == 100
+    assert records[0]["io"] is None
+    assert records[0]["network"] is None
+    assert records[1]["rootless"] is True
+    assert records[1]["stats"]["memory_current"] == 200
+
+
+def test_collect_falls_back_to_short_id_when_name_is_unknown(fake_root, tmp_path):
+    fake_root.add_rootfull_scope(CID_A)
+
+    records = containers.collect(
+        cgroup_root=fake_root.cgroup,
+        proc_root=fake_root.proc,
+        sys_dev_block=fake_root.dev_block,
+        rootfull_storage_root=str(tmp_path / "missing"),
+        nethserver_root=str(tmp_path / "missing"),
+    )
+
+    assert len(records) == 1
+    assert records[0]["name"] == CID_A[:12]
+    assert records[0]["module"] == "node"
