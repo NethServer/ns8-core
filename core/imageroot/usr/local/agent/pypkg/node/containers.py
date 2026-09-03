@@ -227,3 +227,40 @@ def read_stats(scope_path):
         "oom_kills": events.get("oom_kill"),
         "start_time": start_time,
     }
+
+
+_IO_FIELDS = ("rbytes", "wbytes", "rios", "wios")
+
+
+def resolve_block_device(devno, sys_dev_block=DEFAULT_SYS_DEV_BLOCK):
+    """Turn a "major:minor" pair into a kernel device name, e.g. "vda"."""
+    try:
+        return os.path.basename(os.readlink(os.path.join(sys_dev_block, devno)))
+    except OSError:
+        return devno
+
+
+def read_io(scope_path, sys_dev_block=DEFAULT_SYS_DEV_BLOCK):
+    """Per-device block I/O counters, or None when io.stat is absent."""
+    text = _read_text(os.path.join(scope_path, "io.stat"))
+    if text is None:
+        return None
+    devices = []
+    for line in text.splitlines():
+        fields = line.split()
+        if not fields:
+            continue
+        counters = {}
+        for field in fields[1:]:
+            key, _, value = field.partition("=")
+            if key not in _IO_FIELDS:
+                continue
+            try:
+                counters[key] = int(value)
+            except ValueError:
+                continue
+        if len(counters) != len(_IO_FIELDS):
+            continue
+        counters["device"] = resolve_block_device(fields[0], sys_dev_block)
+        devices.append(counters)
+    return devices

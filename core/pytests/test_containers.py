@@ -245,3 +245,42 @@ def test_read_stats_returns_none_for_missing_files(fake_root):
     assert stats["cpu_user_usec"] is None
     assert stats["memory_current"] is None
     assert stats["oom_kills"] is None
+
+
+def test_read_io_parses_per_device_counters(fake_root):
+    import os
+
+    os.symlink(
+        "../../devices/pci0000:00/0000:00:06.0/virtio4/block/vda",
+        os.path.join(fake_root.dev_block, "252:0"),
+    )
+    scope = fake_root.add_rootfull_scope(
+        CID_A,
+        files={
+            "io.stat": "252:0 rbytes=21557248 wbytes=1190886400 rios=315 wios=91632 dbytes=0 dios=0\n"
+        },
+    )
+
+    assert containers.read_io(scope, fake_root.dev_block) == [
+        {
+            "device": "vda",
+            "rbytes": 21557248,
+            "wbytes": 1190886400,
+            "rios": 315,
+            "wios": 91632,
+        }
+    ]
+
+
+def test_read_io_returns_none_when_controller_not_delegated(fake_root):
+    scope = fake_root.add_rootfull_scope(CID_A)
+
+    assert containers.read_io(scope, fake_root.dev_block) is None
+
+
+def test_read_io_falls_back_to_device_number(fake_root):
+    scope = fake_root.add_rootfull_scope(
+        CID_A, files={"io.stat": "8:16 rbytes=1 wbytes=2 rios=3 wios=4\n"}
+    )
+
+    assert containers.read_io(scope, fake_root.dev_block)[0]["device"] == "8:16"
