@@ -34,6 +34,7 @@ managed by `check-subscription`:
   hardware/utilization/workload sizing report for the previous UTC day to
   the insights server, when insights reporting is configured. A day that
   could not be delivered is retried on the following runs, up to a week back.
+  See [sizing report](#sizing-report)
 - `apply-updates` (leader only) Run at night, apply core, modules and OS
   updates according to configuration in Redis key `cluster/apply_updates`.
   See also [core updates]({{site.baseurl}}/core/updates)
@@ -44,6 +45,53 @@ The subscription status and running services are checked when:
 - the cluster is restored from a cluster backup file
 - the cluster subscription is enabled or disabled
 - the cluster leader node changes
+
+## Sizing report
+
+The `send-sizing-report` unit is enabled with the other subscription timers,
+but it sends nothing until an insights endpoint is configured. The endpoint is
+read from the cluster agent environment:
+
+- `INSIGHTS_SERVER_URL` Base URL of the insights server. The report is sent to
+  `$INSIGHTS_SERVER_URL/v1/sizing-reports` with HTTP Basic authentication,
+  using `system_id` and `auth_token` from `cluster/subscription`. When empty
+  or unset, the timer runs and exits without sending anything
+- `INSIGHTS_VERIFY_TLS` Set to `0` to skip TLS certificate verification. Any
+  other value, including unset, keeps verification enabled
+
+Set them on the leader node by adding them to the cluster agent environment
+file:
+
+    echo INSIGHTS_SERVER_URL=https://insights.example.org >> /var/lib/nethserver/cluster/state/environment
+
+No restart is needed: `runagent` reads the file at every run. The Redis HASH
+key `cluster/environment` holds a copy of the file, refreshed by the cluster
+agent after each task.
+
+The report never contains identifying strings: no FQDN, IP address, host name
+or hardware serial is collected, only numeric workload values and coarse
+descriptors such as CPU model, OS identifier and kernel release.
+
+The last day accepted by the server is stored in the Redis HASH key
+`cluster/sizing_report`, field `last_acked_day`. Only complete UTC days newer
+than it are sent, at most 7 in one run. Rewind it to force a resend, for
+example to redeliver the last three days:
+
+    redis-cli HSET cluster/sizing_report last_acked_day $(date -u -d '4 days ago' +%F)
+
+Redelivering a day is safe: a day is an absolute fact and the server
+recomputes the stored row instead of accumulating into it. If the field is
+missing or unparsable only the previous day is sent.
+
+Preview the payload without sending it:
+
+    runagent -m cluster send-sizing-report --print | jq
+
+A specific day, or a list of days, can be passed as arguments in ISO format:
+
+    runagent -m cluster send-sizing-report --print 2026-09-01 2026-09-02
+
+The same arguments work without `--print` to send a given day on demand.
 
 ## APIs
 
