@@ -1,0 +1,20 @@
+name: test-pypkg
+on:
+  push:
+    paths:
+      - core/imageroot/usr/local/agent/pypkg/**
+      - core/pytests/**
+      - .github/workflows/test-pypkg.yml
+
+jobs:
+  test-pypkg:
+    name: Test Python packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      - run: pip install pytest
+      - run: python -m pytest pytests -v
+        working-directory: core
