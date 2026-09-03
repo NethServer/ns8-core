@@ -1,0 +1,12 @@
+[Unit]
+Description=Container metrics textfile collector runner
+After=node_exporter.service
+BindsTo=node_exporter.service
+
+[Service]
+Type=simple
+WorkingDirectory=/var/lib/nethserver/node/state
+ExecStartPre=/bin/rm -f ./node_exporter/containers.prom
+ExecStart=runagent -m node refresh-container-metrics -l 30
+ExecStopPost=/bin/rm -f ./node_exporter/containers.prom
+SyslogIdentifier=%N
