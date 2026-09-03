@@ -76,6 +76,40 @@ def test_read_containers_json_tolerates_missing_and_broken_data(fake_root):
     assert containers.read_containers_json(root) == {CID_A: {"name": "", "image": ""}}
 
 
+def test_read_containers_json_tolerates_non_object_metadata(fake_root):
+    root = fake_root.write_containers_json(
+        [{"id": CID_A, "names": ["crowdsec1"], "metadata": "[1,2,3]"}]
+    )
+
+    assert containers.read_containers_json(root) == {
+        CID_A: {"name": "crowdsec1", "image": ""}
+    }
+
+
+def test_read_containers_json_skips_non_dict_entries(fake_root):
+    root = fake_root.write_containers_json(
+        ["not-a-dict", {"id": CID_A, "names": ["crowdsec1"]}]
+    )
+
+    assert containers.read_containers_json(root) == {
+        CID_A: {"name": "crowdsec1", "image": ""}
+    }
+
+
+def test_read_containers_json_tolerates_non_list_names(fake_root):
+    root = fake_root.write_containers_json(
+        [{"id": CID_A, "names": "crowdsec1"}]
+    )
+
+    assert containers.read_containers_json(root) == {CID_A: {"name": "", "image": ""}}
+
+
+def test_read_containers_json_tolerates_non_list_top_level(fake_root):
+    root = fake_root.write_containers_json({"id": CID_A})
+
+    assert containers.read_containers_json(root) == {}
+
+
 def test_storage_roots_lists_rootfull_first_then_module_homes(fake_root):
     class Passwd(object):
         def __init__(self, pw_dir, pw_name):

@@ -68,15 +68,21 @@ def read_containers_json(storage_root):
         return {}
     index = {}
     for entry in entries:
+        if not isinstance(entry, dict):
+            continue
         cid = entry.get("id")
         if not cid:
             continue
-        names = entry.get("names") or []
-        image = ""
+        names = entry.get("names")
+        if not isinstance(names, list):
+            names = []
         try:
-            image = json.loads(entry.get("metadata") or "{}").get("image-name", "")
+            metadata = json.loads(entry.get("metadata") or "{}")
         except ValueError:
-            image = ""
+            metadata = {}
+        if not isinstance(metadata, dict):
+            metadata = {}
+        image = metadata.get("image-name", "")
         index[cid] = {"name": names[0] if names else "", "image": image}
     return index
 
