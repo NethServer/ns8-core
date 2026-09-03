@@ -47,13 +47,11 @@ REPORTER_VERSION = "1.1.0"
 # report a fabrication the way it reports a rejection.
 WORKLOAD_KEY_RE = re.compile(r'^[a-z][a-z0-9_]{0,39}$')
 
-# Shape caps. The server truncates and counts each of these, so the reporter
-# does not pre-truncate: a locally dropped metric is invisible in the server's
-# truncated_* counters, and those counters are how an operator sees that a
-# cluster is contributing less than it should. Only the node cap is applied
-# locally, because it bounds the work this script does.
-MAX_METRICS_PER_FAMILY = 32
-MAX_FAMILIES_PER_NODE = 64
+# The server truncates over-long metric and family lists and counts each
+# truncation, so the reporter does not pre-truncate: a locally dropped metric is
+# invisible in the server's truncated_* counters, and those counters are how an
+# operator sees that a cluster is contributing less than it should. The node cap
+# is the exception, applied locally because it bounds the work this script does.
 MAX_NODES_PER_REPORT = 16
 
 # Days a single run may backfill, newest last. The server accepts a day in
@@ -280,7 +278,7 @@ def reboots_expr(node_id):
     return f'changes(node_boot_time_seconds{{node="{node_id}"}}[1d])'
 
 
-def collect_measurements(query_url, node_id, cpu_cores, day_start_ts, day_end_ts):
+def collect_measurements(query_url, node_id, cpu_cores, day_end_ts):
     """Run every day-windowed query for one node and return a flat mapping of
        contract field name -> value (or None when Prometheus had no data)."""
     cores = max(1, cpu_cores)
@@ -506,7 +504,7 @@ def compute_fs_days_to_full(query_url, node_id, day_start_ts, day_end_ts):
 
 
 def node_resources_and_stress(query_url, node_id, cpu_cores, day_start_ts, day_end_ts):
-    values = collect_measurements(query_url, node_id, cpu_cores, day_start_ts, day_end_ts)
+    values = collect_measurements(query_url, node_id, cpu_cores, day_end_ts)
     values["fs_days_to_full"] = compute_fs_days_to_full(
         query_url, node_id, day_start_ts, day_end_ts)
     return split_measurements(values)
@@ -663,18 +661,13 @@ def build_payload(rdb, system_id, days):
 
 # --- Sending ---------------------------------------------------------------
 
-def insights_endpoint(rdb):
-    """(url, verify_tls) for the insights server, read from the environment
-       or, failing that, from the module holding the cluster's default
-       instance of the metrics stack."""
-    url = os.environ.get('INSIGHTS_SERVER_URL', '')
-    verify_tls = os.environ.get('INSIGHTS_VERIFY_TLS', '')
-    if not url:
-        module_id = rdb.get('cluster/default_instance/loki')
-        if module_id:
-            url = rdb.hget(f'module/{module_id}/environment', 'INSIGHTS_SERVER_URL') or ''
-            verify_tls = rdb.hget(f'module/{module_id}/environment', 'INSIGHTS_VERIFY_TLS') or ''
-    return url, verify_tls
+def insights_endpoint():
+    """(url, verify_tls) for the insights server, from the cluster environment.
+
+       An empty INSIGHTS_SERVER_URL is how the feature stays off: no endpoint
+       configured, nothing to send."""
+    return (os.environ.get('INSIGHTS_SERVER_URL', ''),
+            os.environ.get('INSIGHTS_VERIFY_TLS', ''))
 
 
 # HTTP codes treated as transient and worth a retry. A 400, 403 or 413 is a
@@ -685,13 +678,11 @@ RETRYABLE_STATUS_CODES = {408, 429, 500, 502, 503, 504}
 def post_report(url, system_id, auth_token, gz_body, verify_tls, retries=3, timeout=180):
     verify = verify_tls != "0"
     headers = {"Content-Type": "application/json", "Content-Encoding": "gzip"}
-    last_exc = None
     for attempt in range(retries + 1):
         try:
             r = requests.post(url, auth=(system_id, auth_token), headers=headers,
                               data=gz_body, timeout=timeout, verify=verify)
-        except requests.RequestException as ex:
-            last_exc = ex
+        except requests.RequestException:
             if attempt < retries:
                 time.sleep(2 ** attempt)
                 continue
@@ -700,11 +691,10 @@ def post_report(url, system_id, auth_token, gz_body, verify_tls, retries=3, time
             time.sleep(2 ** attempt)
             continue
         return r
-    raise last_exc
 
 
 def send_report(rdb, payload, days):
-    url, verify_tls = insights_endpoint(rdb)
+    url, verify_tls = insights_endpoint()
     if not url:
         return
 
