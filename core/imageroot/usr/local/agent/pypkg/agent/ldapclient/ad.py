@@ -117,11 +117,14 @@ class LdapclientAd(LdapclientBase):
                 "description": description,
             }
 
+        # userAccountControl may be an empty list if the bind account is not
+        # authorized to read it (e.g. remote Microsoft AD)
+        uac = entry['attributes']['userAccountControl'] or 0
         return {
             "user": entry['attributes']['sAMAccountName'],
             "display_name": entry['attributes'].get('displayName') or "",
             "groups": [lget_group(dn) for dn in entry['attributes']['memberOf']],
-            "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
+            "locked": bool(uac & 0x2), # ACCOUNTDISABLE
         }
 
     def get_user_entry(self, user, lextra_attributes=[]):
@@ -158,15 +161,31 @@ class LdapclientAd(LdapclientBase):
         for entry in user_entry_generator:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
+            # userAccountControl may be an empty list if the bind account is not
+            # authorized to read it (e.g. protected accounts like krbtgt_AzureAD)
+            uac = entry['attributes']['userAccountControl'] or 0
             user = {
                 "user": entry['attributes']['sAMAccountName'],
                 "display_name": entry['attributes'].get('displayName') or "",
-                "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
+                "locked": bool(uac & 0x2), # ACCOUNTDISABLE
             }
             if extra_info:
-                pwd_changed_time = entry['attributes'].get('pwdLastSet', entry['attributes'].get('whenCreated', None))
-                expire = (entry['attributes']['userAccountControl'] & 0x10000 == 0) # DONT_EXPIRE_PASSWORD
-                if expire and max_pwd_age:
+                # pwdLastSet/whenCreated may likewise come back as an empty
+                # list instead of being omitted, hence the "or" fallback
+                pwd_changed_time = entry['attributes'].get('pwdLastSet') or entry['attributes'].get('whenCreated') or None
+                expire = (uac & 0x10000 == 0) # DONT_EXPIRE_PASSWORD
+                # In AD, pwdLastSet = 0 means that the user must change the password at next logon
+                # The timestamp 0 in Windows epoch is -11644473600 in Unix epoch
+                # we do a try and catch because old windows servers might be different
+                try:
+                    user['must_change'] = (pwd_changed_time.timestamp() == -11644473600)
+                except Exception:
+                    user['must_change'] = False
+                if user['must_change']:
+                    # password was never set: there is no expiration date to compute
+                    user['password_expiration'] = 0
+                    user['expired'] = False
+                elif expire and max_pwd_age and pwd_changed_time:
                     expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age)
                     user['password_expiration'] = int(expiry_date.timestamp())
                     user['expired'] = today > expiry_date
@@ -175,13 +194,6 @@ class LdapclientAd(LdapclientBase):
                     user['expired'] = False
                 # mail can be a string or an empty array, just treat ans empty arrays as an empty string
                 user["mail"] = entry['attributes'].get('mail') if entry['attributes'].get('mail') else ""
-                # In AD, pwdLastSet = 0 means that the user must change the password at next logon
-                # The timestamp 0 in Windows epoch is -11644473600 in Unix epoch
-                # we do a try and catch because old windows servers might be different
-                try:
-                    user['must_change'] = (pwd_changed_time.timestamp() == -11644473600)
-                except Exception:
-                    user['must_change'] = False
             users.append(user)
 
         return users
