@@ -57,7 +57,7 @@ Gauges:
 | `ns8_container_start_time_seconds` | `module`, `container` | Container start time |
 | `ns8_container_info` | `module`, `container`, `id`, `image`, `unit`, `rootless` | Container metadata, always `1` |
 | `ns8_container_collector_duration_seconds` | none | Duration of the last container metrics collection |
-| `ns8_container_collector_last_success_timestamp_seconds` | none | Timestamp of the last successful collection |
+| `ns8_container_collector_last_success_timestamp_seconds` | none | Unix timestamp of the last successful collection |
 
 ## Labels
 
@@ -65,6 +65,12 @@ Gauges:
 that owns it. Core containers that are not part of an installed module,
 such as `redis`, `promtail`, `node_exporter` and `rclone-gateway`, are
 reported with `module="node"`.
+
+A container whose owning systemd unit cannot be determined is reported
+with `module="unknown"` instead. That happens while a container is
+exiting, or when one was started outside a service unit, for example by
+running `podman run` by hand. It is kept distinct from `module="node"`
+so that a failed attribution is never mistaken for a core container.
 
 The container id appears only on `ns8_container_info`, and is truncated
 to 12 characters. It is deliberately not a label on every series: a
@@ -93,6 +99,14 @@ happens on the module's own restart or on a node reboot. Until then,
 CPU, memory and PID metrics are complete. This is expected, not a fault:
 an update deliberately does not bounce every rootless container on a
 node just to enable a monitoring feature.
+
+The drop-in applies to every local user manager on the node, not only to
+NethServer module users: a `user@.service.d` drop-in cannot be scoped to
+particular user ids. To roll it back, remove
+`/etc/systemd/system/user@.service.d/50-ns8-delegate.conf`, run
+`systemctl daemon-reload`, then restart the affected user managers or
+reboot the node. Block I/O metrics disappear again for rootless modules
+when it is removed.
 
 ## Network
 
