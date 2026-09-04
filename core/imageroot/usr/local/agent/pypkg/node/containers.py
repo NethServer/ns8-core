@@ -19,6 +19,7 @@ import os
 import os.path
 import pwd
 import re
+import sys
 
 DEFAULT_CGROUP_ROOT = "/sys/fs/cgroup"
 DEFAULT_PROC_ROOT = "/proc"
@@ -87,12 +88,20 @@ def read_containers_json(storage_root):
             names = []
         try:
             metadata = json.loads(entry.get("metadata") or "{}")
-        except ValueError:
+        except (ValueError, TypeError):
             metadata = {}
         if not isinstance(metadata, dict):
             metadata = {}
+        # Both values become label values in the exposition, so anything that
+        # is not a string is treated as absent: a non-string reaching
+        # escape_label() would raise inside render(), long after collect()
+        # succeeded, and would then fail identically on every later cycle.
+        name = names[0] if names else ""
         image = metadata.get("image-name", "")
-        index[cid] = {"name": names[0] if names else "", "image": image}
+        index[cid] = {
+            "name": name if isinstance(name, str) else "",
+            "image": image if isinstance(image, str) else "",
+        }
     return index
 
 
@@ -159,17 +168,25 @@ def list_module_ids(nethserver_root=NETHSERVER_ROOT):
 
 
 def resolve_module(scope, unit, module_ids, passwd_lookup=pwd.getpwuid):
-    """Return the NS8 module id owning this container, or "node" for core."""
+    """Return the NS8 module id owning this container, or "node" for core.
+
+    An empty unit means attribution failed outright -- the conmon was not
+    found, because the container is exiting or was started outside a service
+    unit -- and yields "unknown". Reporting it as "node" instead would make it
+    indistinguishable from a genuine core container such as redis, and would
+    break rate() continuity every time a container flipped between the two.
+    """
     if scope["rootless"]:
         try:
             return passwd_lookup(scope["uid"]).pw_name
         except KeyError:
             return "unknown"
-    if unit:
-        name = unit[: -len(".service")] if unit.endswith(".service") else unit
-        for module_id in module_ids:
-            if name == module_id or name.startswith(module_id + "-"):
-                return module_id
+    if not unit:
+        return "unknown"
+    name = unit[: -len(".service")] if unit.endswith(".service") else unit
+    for module_id in module_ids:
+        if name == module_id or name.startswith(module_id + "-"):
+            return module_id
     return "node"
 
 
@@ -349,21 +366,29 @@ def collect(
 
     records = []
     for scope in scopes:
-        unit = units.get(scope["cid"], "")
-        meta = names.get(scope["cid"], {})
-        records.append(
-            {
-                "cid": scope["cid"],
-                "name": meta.get("name") or scope["cid"][:12],
-                "image": meta.get("image", ""),
-                "unit": unit,
-                "rootless": scope["rootless"],
-                "module": resolve_module(scope, unit, module_ids, passwd_lookup),
-                "stats": read_stats(scope["path"]),
-                "io": read_io(scope["path"], sys_dev_block),
-                "network": read_network(scope["path"], proc_root),
-            }
-        )
+        # One unreadable container must never cost us the whole node's
+        # metrics: log it, skip it, keep collecting the rest.
+        try:
+            unit = units.get(scope["cid"], "")
+            meta = names.get(scope["cid"], {})
+            records.append(
+                {
+                    "cid": scope["cid"],
+                    "name": meta.get("name") or scope["cid"][:12],
+                    "image": meta.get("image", ""),
+                    "unit": unit,
+                    "rootless": scope["rootless"],
+                    "module": resolve_module(scope, unit, module_ids, passwd_lookup),
+                    "stats": read_stats(scope["path"]),
+                    "io": read_io(scope["path"], sys_dev_block),
+                    "network": read_network(scope["path"], proc_root),
+                }
+            )
+        except Exception as ex:
+            print(
+                "collect(): skipping container %s: %r" % (scope["cid"][:12], ex),
+                file=sys.stderr,
+            )
     records.sort(key=lambda record: (record["module"], record["name"]))
     return records
 

@@ -11,6 +11,7 @@ import argparse
 import os
 import sys
 import time
+import traceback
 
 import node.containers as containers
 
@@ -52,10 +53,12 @@ def main():
     while True:
         try:
             refresh(arguments.output)
-        except Exception as ex:
+        except Exception:
             # Keep the previous file in place and try again on the next tick:
-            # a transient failure must not blank out the metrics.
-            print("refresh-container-metrics:", ex, file=sys.stderr)
+            # a transient failure must not blank out the metrics. Log the
+            # traceback, not just the message: str(ex) alone is close to
+            # undiagnosable for the failures this can see.
+            print(traceback.format_exc(), file=sys.stderr, end="")
         time.sleep(arguments.loop)
 
 
