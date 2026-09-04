@@ -29,9 +29,9 @@ ExecStart=/usr/bin/podman run \
     --collector.cpu.info \
     --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/) \
     --collector.textfile.directory=/srv/node_exporter \
-    --path.rootfs=/host \
     --log.level=error \
-    --path.udev.data=/host/run/udev/data
+    --path.udev.data=/host/run/udev/data \
+    --path.rootfs=/host
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
 PIDFile=%t/%N.pid
