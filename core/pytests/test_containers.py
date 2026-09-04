@@ -110,6 +110,24 @@ def test_read_containers_json_tolerates_non_list_top_level(fake_root):
     assert containers.read_containers_json(root) == {}
 
 
+def test_read_containers_json_tolerates_non_string_metadata(fake_root):
+    root = fake_root.write_containers_json(
+        [{"id": CID_A, "names": ["crowdsec1"], "metadata": 42}]
+    )
+
+    assert containers.read_containers_json(root) == {
+        CID_A: {"name": "crowdsec1", "image": ""}
+    }
+
+
+def test_read_containers_json_tolerates_non_string_leaf_values(fake_root):
+    root = fake_root.write_containers_json(
+        [{"id": CID_A, "names": [42], "metadata": '{"image-name": 7}'}]
+    )
+
+    assert containers.read_containers_json(root) == {CID_A: {"name": "", "image": ""}}
+
+
 def test_storage_roots_lists_rootfull_first_then_module_homes(fake_root):
     class Passwd(object):
         def __init__(self, pw_dir, pw_name):
@@ -168,12 +186,25 @@ def test_resolve_module_rootless_uses_owning_user():
         pw_name = "metrics1"
         pw_dir = "/home/metrics1"
 
+    def lookup(uid):
+        # Dispatch on the uid so a wrong one fails the test instead of
+        # silently returning the expected passwd entry anyway.
+        if uid != 1004:
+            raise KeyError(uid)
+        return Passwd()
+
     scope = {"cid": CID_B, "path": "/x", "rootless": True, "uid": 1004}
 
-    assert (
-        containers.resolve_module(scope, "prometheus.service", [], lambda uid: Passwd())
-        == "metrics1"
-    )
+    assert containers.resolve_module(scope, "prometheus.service", [], lookup) == "metrics1"
+
+
+def test_resolve_module_rootless_unknown_user_is_not_attributed():
+    def lookup(uid):
+        raise KeyError(uid)
+
+    scope = {"cid": CID_B, "path": "/x", "rootless": True, "uid": 4242}
+
+    assert containers.resolve_module(scope, "prometheus.service", [], lookup) == "unknown"
 
 
 def test_resolve_module_rootfull_matches_unit_prefix():
@@ -191,7 +222,15 @@ def test_resolve_module_core_containers_belong_to_node():
     scope = {"cid": CID_A, "path": "/x", "rootless": False, "uid": None}
 
     assert containers.resolve_module(scope, "redis.service", ["crowdsec1"]) == "node"
-    assert containers.resolve_module(scope, "", ["crowdsec1"]) == "node"
+
+
+def test_resolve_module_reports_unknown_when_no_unit_was_found():
+    """An empty unit means attribution failed, which is not the same as being
+    a core container: conflating them would break rate() continuity whenever a
+    container flipped between its real module and "node"."""
+    scope = {"cid": CID_A, "path": "/x", "rootless": False, "uid": None}
+
+    assert containers.resolve_module(scope, "", ["crowdsec1"]) == "unknown"
 
 
 def test_read_stats_parses_every_cgroup_file(fake_root):
@@ -426,13 +465,20 @@ def test_collect_builds_one_record_per_container(fake_root, tmp_path):
         pw_name = "metrics1"
         pw_dir = home
 
+    def lookup(uid):
+        # Dispatch on the uid so that both resolve_module's and
+        # storage_roots' uid forwarding are actually asserted here.
+        if uid != 1004:
+            raise KeyError(uid)
+        return Passwd()
+
     records = containers.collect(
         cgroup_root=fake_root.cgroup,
         proc_root=fake_root.proc,
         sys_dev_block=fake_root.dev_block,
         rootfull_storage_root=rootfull_storage,
         nethserver_root=str(nethserver),
-        passwd_lookup=lambda uid: Passwd(),
+        passwd_lookup=lookup,
     )
 
     assert [(r["module"], r["name"]) for r in records] == [
@@ -462,7 +508,9 @@ def test_collect_falls_back_to_short_id_when_name_is_unknown(fake_root, tmp_path
 
     assert len(records) == 1
     assert records[0]["name"] == CID_A[:12]
-    assert records[0]["module"] == "node"
+    # No conmon was found for this scope, so attribution failed outright --
+    # that is "unknown", not the "node" reserved for genuine core containers.
+    assert records[0]["module"] == "unknown"
 
 
 def _record(**overrides):
@@ -562,3 +610,114 @@ def test_write_atomic_replaces_the_file(tmp_path):
     with open(target) as fp:
         assert fp.read() == "second\n"
     assert [name for name in __import__("os").listdir(str(tmp_path))] == ["containers.prom"]
+
+
+def test_read_stats_ignores_unparsable_values(fake_root):
+    """Empty, whitespace-only and malformed sources degrade to None rather
+    than to a fabricated 0: absent and zero mean different things."""
+    scope = fake_root.add_rootfull_scope(
+        CID_A,
+        files={
+            "memory.current": "",
+            "memory.peak": "   \n",
+            "memory.swap.current": "not-a-number\n",
+            # A keyed file whose lines carry one and three fields: both are
+            # skipped, so the keys are simply absent.
+            "memory.stat": "anon\nfile 1 2\n",
+            "cpu.stat": "user_usec\nsystem_usec 7 8\n",
+        },
+    )
+
+    stats = containers.read_stats(scope)
+
+    assert stats["memory_current"] is None
+    assert stats["memory_peak"] is None
+    assert stats["memory_swap"] is None
+    assert stats["memory_anon"] is None
+    assert stats["memory_file"] is None
+    assert stats["cpu_user_usec"] is None
+    assert stats["cpu_system_usec"] is None
+
+
+def test_read_stats_of_a_vanished_scope_is_all_none(tmp_path):
+    stats = containers.read_stats(str(tmp_path / "gone"))
+
+    assert set(stats) == {
+        "cpu_user_usec",
+        "cpu_system_usec",
+        "memory_current",
+        "memory_peak",
+        "memory_max",
+        "memory_swap",
+        "memory_anon",
+        "memory_file",
+        "pids_current",
+        "pids_max",
+        "oom_kills",
+        "start_time",
+    }
+    assert all(value is None for value in stats.values())
+
+
+def test_read_io_skips_malformed_lines(fake_root):
+    scope = fake_root.add_rootfull_scope(
+        CID_A,
+        files={
+            "io.stat": (
+                "\n"
+                "252:0 rbytes=1 wbytes=2 rios=3\n"
+                "252:1 rbytes=x wbytes=2 rios=3 wios=4\n"
+                "252:2 rbytes=5 wbytes=6 rios=7 wios=8\n"
+            )
+        },
+    )
+
+    assert containers.read_io(scope, fake_root.dev_block) == [
+        {"device": "252:2", "rbytes": 5, "wbytes": 6, "rios": 7, "wios": 8}
+    ]
+
+
+def test_read_io_distinguishes_empty_from_absent(fake_root):
+    """An io.stat that exists but names no device means the controller is
+    delegated and the container has done no I/O yet -> []. No io.stat at all
+    means the controller was never delegated -> None. The renderer treats the
+    two identically, but they are not the same fact."""
+    empty = fake_root.add_rootfull_scope(CID_A, files={"io.stat": ""})
+    absent = fake_root.add_rootfull_scope(CID_B)
+
+    assert containers.read_io(empty, fake_root.dev_block) == []
+    assert containers.read_io(absent, fake_root.dev_block) is None
+
+
+def test_collect_skips_a_failing_container_and_keeps_the_rest(
+    fake_root, tmp_path, capsys, monkeypatch
+):
+    """Spec section 8: a failure affecting one container is logged and that
+    container skipped; the cycle continues for every other container."""
+    nethserver = tmp_path / "nethserver"
+    nethserver.mkdir()
+
+    good = fake_root.add_rootfull_scope(CID_A, files={"memory.current": "100\n"})
+    bad = fake_root.add_rootfull_scope(CID_B, files={"memory.current": "200\n"})
+    assert good and bad
+
+    real_read_stats = containers.read_stats
+
+    def exploding_read_stats(scope_path):
+        if CID_B in scope_path:
+            raise RuntimeError("cgroup backend exploded")
+        return real_read_stats(scope_path)
+
+    monkeypatch.setattr(containers, "read_stats", exploding_read_stats)
+
+    records = containers.collect(
+        cgroup_root=fake_root.cgroup,
+        proc_root=fake_root.proc,
+        sys_dev_block=fake_root.dev_block,
+        rootfull_storage_root=str(tmp_path / "missing"),
+        nethserver_root=str(nethserver),
+    )
+
+    assert [record["cid"] for record in records] == [CID_A]
+    assert records[0]["stats"]["memory_current"] == 100
+    assert CID_B[:12] in capsys.readouterr().err
