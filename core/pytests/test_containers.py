@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from conftest import CID_A, CID_B
+from conftest import CID_A, CID_B, CID_C
 
 import node.containers as containers
 
@@ -721,3 +721,49 @@ def test_collect_skips_a_failing_container_and_keeps_the_rest(
     assert [record["cid"] for record in records] == [CID_A]
     assert records[0]["stats"]["memory_current"] == 100
     assert CID_B[:12] in capsys.readouterr().err
+
+
+def test_discover_scopes_finds_pod_nested_containers(fake_root):
+    """Modules that run their containers in a podman pod get an extra
+    user-libpod_pod_<id>.slice level. A fixed-depth glob misses them, which
+    would make every pod-based module invisible."""
+    import os
+
+    pod = os.path.join(
+        fake_root.cgroup,
+        "user.slice/user-1003.slice/user@1003.service/user.slice",
+        "user-libpod_pod_07631a01dfea68c04ecdde39dccb44bd064493ac4929a06b813f377.slice",
+        "libpod-%s.scope" % CID_C,
+    )
+    os.makedirs(pod)
+
+    found = containers.discover_scopes(fake_root.cgroup)
+
+    by_cid = {scope["cid"]: scope for scope in found}
+    assert by_cid[CID_C] == {
+        "cid": CID_C,
+        "path": pod,
+        "rootless": True,
+        "uid": 1003,
+    }
+
+
+def test_discover_scopes_finds_split_cgroup_payloads(fake_root):
+    """A container started with --cgroups=split has no .scope: its payload
+    cgroup sits inside the unit's own cgroup as libpod-payload-<cid>."""
+    import os
+
+    payload = os.path.join(
+        fake_root.cgroup, "system.slice", "insights.service", "libpod-payload-%s" % CID_A
+    )
+    os.makedirs(payload)
+
+    found = containers.discover_scopes(fake_root.cgroup)
+
+    by_cid = {scope["cid"]: scope for scope in found}
+    assert by_cid[CID_A] == {
+        "cid": CID_A,
+        "path": payload,
+        "rootless": False,
+        "uid": None,
+    }

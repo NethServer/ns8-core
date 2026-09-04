@@ -26,13 +26,19 @@ DEFAULT_PROC_ROOT = "/proc"
 DEFAULT_SYS_DEV_BLOCK = "/sys/dev/block"
 ROOTFULL_STORAGE_ROOT = "/var/lib/containers/storage"
 
-_SCOPE_PATTERNS = (
-    "machine.slice/libpod-*.scope",
-    "system.slice/libpod-*.scope",
-    "user.slice/user-*.slice/user@*.service/user.slice/libpod-*.scope",
-)
+# Container cgroups turn up at several depths and under several shapes, so
+# discovery is recursive rather than a set of fixed paths:
+#
+#   machine.slice/libpod-<cid>.scope                       rootfull
+#   user@<uid>.service/user.slice/libpod-<cid>.scope       rootless
+#   .../user-libpod_pod_<pod>.slice/libpod-<cid>.scope     rootless, in a pod
+#   system.slice/<unit>.service/libpod-payload-<cid>       --cgroups=split
+#
+# A fixed-depth glob silently missed the last two, which made every
+# pod-based module invisible.
+_SCOPE_GLOB = os.path.join("**", "libpod-*")
 
-_SCOPE_RE = re.compile(r"/libpod-([0-9a-f]{64})\.scope$")
+_SCOPE_RE = re.compile(r"/libpod-(?:payload-)?([0-9a-f]{64})(?:\.scope)?$")
 _UID_RE = re.compile(r"/user-(\d+)\.slice/")
 
 
@@ -48,20 +54,19 @@ def _read_text(path):
 def discover_scopes(cgroup_root=DEFAULT_CGROUP_ROOT):
     """Return the live container scopes found under cgroup_root."""
     scopes = []
-    for pattern in _SCOPE_PATTERNS:
-        for path in glob.glob(os.path.join(cgroup_root, pattern)):
-            match = _SCOPE_RE.search(path)
-            if match is None:
-                continue
-            uid_match = _UID_RE.search(path)
-            scopes.append(
-                {
-                    "cid": match.group(1),
-                    "path": path,
-                    "rootless": uid_match is not None,
-                    "uid": int(uid_match.group(1)) if uid_match else None,
-                }
-            )
+    for path in glob.glob(os.path.join(cgroup_root, _SCOPE_GLOB), recursive=True):
+        match = _SCOPE_RE.search(path)
+        if match is None or not os.path.isdir(path):
+            continue
+        uid_match = _UID_RE.search(path)
+        scopes.append(
+            {
+                "cid": match.group(1),
+                "path": path,
+                "rootless": uid_match is not None,
+                "uid": int(uid_match.group(1)) if uid_match else None,
+            }
+        )
     scopes.sort(key=lambda scope: scope["path"])
     return scopes
 
