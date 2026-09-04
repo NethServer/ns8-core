@@ -20,6 +20,7 @@ import os.path
 import pwd
 import re
 import sys
+import traceback
 
 DEFAULT_CGROUP_ROOT = "/sys/fs/cgroup"
 DEFAULT_PROC_ROOT = "/proc"
@@ -54,14 +55,23 @@ def _read_text(path):
 def discover_scopes(cgroup_root=DEFAULT_CGROUP_ROOT):
     """Return the live container scopes found under cgroup_root."""
     scopes = []
+    seen = set()
     for path in glob.glob(os.path.join(cgroup_root, _SCOPE_GLOB), recursive=True):
         match = _SCOPE_RE.search(path)
         if match is None or not os.path.isdir(path):
             continue
+        cid = match.group(1)
+        # A container reached by two paths would render two samples carrying
+        # identical labels, which invalidates the whole textfile. glob's "**"
+        # follows directory symlinks, so keep this independent of what the
+        # cgroup mount happens to contain.
+        if cid in seen:
+            continue
+        seen.add(cid)
         uid_match = _UID_RE.search(path)
         scopes.append(
             {
-                "cid": match.group(1),
+                "cid": cid,
                 "path": path,
                 "rootless": uid_match is not None,
                 "uid": int(uid_match.group(1)) if uid_match else None,
@@ -69,6 +79,19 @@ def discover_scopes(cgroup_root=DEFAULT_CGROUP_ROOT):
         )
     scopes.sort(key=lambda scope: scope["path"])
     return scopes
+
+
+def unit_from_split_path(path):
+    """Return the owning unit of a --cgroups=split payload cgroup.
+
+    Such a container's payload sits inside its unit's own cgroup, as
+    <unit>.service/libpod-payload-<cid>. Once that child exists, cgroup v2's
+    no-internal-processes rule empties <unit>.service/cgroup.procs, so the
+    conmon walk in map_units() can never attribute it. The unit name is the
+    parent directory, so read it from there instead.
+    """
+    parent = os.path.basename(os.path.dirname(path))
+    return parent if parent.endswith(".service") else ""
 
 
 def read_containers_json(storage_root):
@@ -86,7 +109,7 @@ def read_containers_json(storage_root):
         if not isinstance(entry, dict):
             continue
         cid = entry.get("id")
-        if not cid:
+        if not isinstance(cid, str) or not cid:
             continue
         names = entry.get("names")
         if not isinstance(names, list):
@@ -173,7 +196,10 @@ def list_module_ids(nethserver_root=NETHSERVER_ROOT):
 
 
 def resolve_module(scope, unit, module_ids, passwd_lookup=pwd.getpwuid):
-    """Return the NS8 module id owning this container, or "node" for core.
+    """Return the NS8 module id owning this container.
+
+    Core containers that belong to no module are "node"; a container whose
+    owning unit could not be determined at all is "unknown".
 
     An empty unit means attribution failed outright -- the conmon was not
     found, because the container is exiting or was started outside a service
@@ -358,8 +384,13 @@ def collect(
     rootfull_storage_root=ROOTFULL_STORAGE_ROOT,
     nethserver_root=NETHSERVER_ROOT,
     passwd_lookup=pwd.getpwuid,
+    skipped=None,
 ):
-    """Build one record per live container on this node."""
+    """Build one record per live container on this node.
+
+    Pass a list as ``skipped`` to receive the id of every container that could
+    not be collected, so the caller can publish how many were lost.
+    """
     scopes = discover_scopes(cgroup_root)
     units = map_units(cgroup_root, proc_root)
     module_ids = list_module_ids(nethserver_root)
@@ -374,7 +405,7 @@ def collect(
         # One unreadable container must never cost us the whole node's
         # metrics: log it, skip it, keep collecting the rest.
         try:
-            unit = units.get(scope["cid"], "")
+            unit = units.get(scope["cid"], "") or unit_from_split_path(scope["path"])
             meta = names.get(scope["cid"], {})
             records.append(
                 {
@@ -389,10 +420,16 @@ def collect(
                     "network": read_network(scope["path"], proc_root),
                 }
             )
-        except Exception as ex:
+        except Exception:
+            if skipped is not None:
+                skipped.append(scope["cid"])
+            # Full traceback: the message alone would not say which of the
+            # readers failed.
             print(
-                "collect(): skipping container %s: %r" % (scope["cid"][:12], ex),
+                "collect(): skipping container %s:\n%s"
+                % (scope["cid"][:12], traceback.format_exc()),
                 file=sys.stderr,
+                end="",
             )
     records.sort(key=lambda record: (record["module"], record["name"]))
     return records
@@ -446,7 +483,7 @@ _GAUGES = (
 )
 
 
-def render(records, duration_seconds, timestamp):
+def render(records, duration_seconds, timestamp, skipped=0):
     """Render collected records as a Prometheus text exposition document."""
     exposition = _Exposition()
 
@@ -563,6 +600,16 @@ def render(records, duration_seconds, timestamp):
         "Duration of the last container metrics collection",
         (),
         "%.6f" % duration_seconds,
+    )
+    # Without this, a fault that skips every container looks identical to a
+    # node with no containers: collect() returns [], the file is still valid
+    # and the success timestamp keeps advancing, so nothing alerts.
+    exposition.add(
+        "ns8_container_collector_skipped_containers",
+        "gauge",
+        "Containers that could not be collected in the last collection",
+        (),
+        "%d" % skipped,
     )
     exposition.add(
         "ns8_container_collector_last_success_timestamp_seconds",

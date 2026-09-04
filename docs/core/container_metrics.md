@@ -72,6 +72,10 @@ exiting, or when one was started outside a service unit, for example by
 running `podman run` by hand. It is kept distinct from `module="node"`
 so that a failed attribution is never mistaken for a core container.
 
+Modules that run their containers in a pod also report the pod's infra
+container, named `<pod>-infra`. It is a real container with its own
+cgroup, and it is attributed to the module that owns the pod.
+
 The container id appears only on `ns8_container_info`, and is truncated
 to 12 characters. It is deliberately not a label on every series: a
 container is recreated on every module restart and gets a new id each

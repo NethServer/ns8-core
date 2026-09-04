@@ -20,10 +20,14 @@ DEFAULT_OUTPUT = "./node_exporter/containers.prom"
 
 def refresh(output):
     os.makedirs(os.path.dirname(output) or ".", exist_ok=True)
+    skipped = []
     started = time.time()
-    records = containers.collect()
+    records = containers.collect(skipped=skipped)
     elapsed = time.time() - started
-    containers.write_atomic(output, containers.render(records, elapsed, int(time.time())))
+    containers.write_atomic(
+        output,
+        containers.render(records, elapsed, int(time.time()), skipped=len(skipped)),
+    )
     return len(records)
 
 

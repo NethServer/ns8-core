@@ -697,9 +697,8 @@ def test_collect_skips_a_failing_container_and_keeps_the_rest(
     nethserver = tmp_path / "nethserver"
     nethserver.mkdir()
 
-    good = fake_root.add_rootfull_scope(CID_A, files={"memory.current": "100\n"})
-    bad = fake_root.add_rootfull_scope(CID_B, files={"memory.current": "200\n"})
-    assert good and bad
+    fake_root.add_rootfull_scope(CID_A, files={"memory.current": "100\n"})
+    fake_root.add_rootfull_scope(CID_B, files={"memory.current": "200\n"})
 
     real_read_stats = containers.read_stats
 
@@ -767,3 +766,121 @@ def test_discover_scopes_finds_split_cgroup_payloads(fake_root):
         "rootless": False,
         "uid": None,
     }
+
+
+def test_discover_scopes_ignores_files_and_foreign_names(fake_root):
+    """The regex is looser than it was, so pin what it must still reject."""
+    import os
+
+    base = os.path.join(fake_root.cgroup, "machine.slice")
+    os.makedirs(base, exist_ok=True)
+    # A regular file, not a cgroup directory.
+    with open(os.path.join(base, "libpod-%s.scope" % CID_B), "w") as fp:
+        fp.write("")
+    # conmon's own cgroup, and a pod slice: neither is a container.
+    os.makedirs(os.path.join(base, "libpod-conmon-%s.scope" % CID_C))
+    os.makedirs(os.path.join(base, "libpod_pod_%s.slice" % CID_C))
+    fake_root.add_rootfull_scope(CID_A)
+
+    assert [scope["cid"] for scope in containers.discover_scopes(fake_root.cgroup)] == [
+        CID_A
+    ]
+
+
+def test_discover_scopes_reports_each_container_once(fake_root, tmp_path):
+    """glob's ** follows directory symlinks, and a container reached twice
+    would render two samples with identical labels, which invalidates the
+    whole textfile for node_exporter."""
+    import os
+
+    scope = fake_root.add_rootfull_scope(CID_A)
+    os.symlink(
+        os.path.join(fake_root.cgroup, "machine.slice"),
+        os.path.join(fake_root.cgroup, "alias.slice"),
+    )
+    assert scope
+
+    found = containers.discover_scopes(fake_root.cgroup)
+
+    assert [s["cid"] for s in found] == [CID_A]
+
+
+def test_unit_from_split_path_reads_the_parent_unit():
+    payload = "/sys/fs/cgroup/system.slice/insights.service/libpod-payload-%s" % CID_A
+
+    assert containers.unit_from_split_path(payload) == "insights.service"
+    assert containers.unit_from_split_path("/sys/fs/cgroup/machine.slice/libpod-x.scope") == ""
+
+
+def test_collect_attributes_split_cgroup_containers_by_their_unit(fake_root, tmp_path):
+    """map_units cannot see these: once the payload child exists, cgroup v2's
+    no-internal-processes rule leaves <unit>.service/cgroup.procs empty. The
+    unit name is the parent directory, so attribution comes from there."""
+    import os
+
+    nethserver = tmp_path / "nethserver"
+    (nethserver / "mymodule1").mkdir(parents=True)
+
+    payload = os.path.join(
+        fake_root.cgroup, "system.slice", "mymodule1.service", "libpod-payload-%s" % CID_A
+    )
+    os.makedirs(payload)
+
+    records = containers.collect(
+        cgroup_root=fake_root.cgroup,
+        proc_root=fake_root.proc,
+        sys_dev_block=fake_root.dev_block,
+        rootfull_storage_root=str(tmp_path / "missing"),
+        nethserver_root=str(nethserver),
+    )
+
+    assert len(records) == 1
+    assert records[0]["unit"] == "mymodule1.service"
+    assert records[0]["module"] == "mymodule1"
+
+
+def test_collect_reports_skipped_containers_to_the_caller(fake_root, tmp_path, monkeypatch):
+    nethserver = tmp_path / "nethserver"
+    nethserver.mkdir()
+    fake_root.add_rootfull_scope(CID_A, files={"memory.current": "100\n"})
+    fake_root.add_rootfull_scope(CID_B, files={"memory.current": "200\n"})
+
+    real_read_stats = containers.read_stats
+
+    def exploding_read_stats(scope_path):
+        if CID_B in scope_path:
+            raise RuntimeError("boom")
+        return real_read_stats(scope_path)
+
+    monkeypatch.setattr(containers, "read_stats", exploding_read_stats)
+
+    skipped = []
+    records = containers.collect(
+        cgroup_root=fake_root.cgroup,
+        proc_root=fake_root.proc,
+        sys_dev_block=fake_root.dev_block,
+        rootfull_storage_root=str(tmp_path / "missing"),
+        nethserver_root=str(nethserver),
+        skipped=skipped,
+    )
+
+    assert [record["cid"] for record in records] == [CID_A]
+    assert skipped == [CID_B]
+
+
+def test_render_publishes_the_skipped_container_count():
+    """A fault that skips every container otherwise looks exactly like a node
+    with no containers: the file stays valid and the success timestamp keeps
+    advancing, so nothing alerts."""
+    text = containers.render([], 0.1, 1, skipped=3)
+
+    assert "ns8_container_collector_skipped_containers 3" in text
+    assert containers.render([], 0.1, 1).count("ns8_container_collector_skipped_containers 0") == 1
+
+
+def test_read_containers_json_skips_unhashable_ids(fake_root):
+    root = fake_root.write_containers_json(
+        [{"id": ["not", "a", "string"], "names": ["x"]}, {"id": CID_A, "names": ["ok"]}]
+    )
+
+    assert containers.read_containers_json(root) == {CID_A: {"name": "ok", "image": ""}}
