@@ -90,7 +90,13 @@ else:
 
     xdg_runtime_dir=f"/run/user/{module_uid}"
     if os.path.isdir(xdg_runtime_dir):
-        os.execvp("/usr/sbin/runuser", ["runuser", "-s", "/usr/bin/env", "-l", mid, "--", f"XDG_RUNTIME_DIR={xdg_runtime_dir}"] + sys.argv)
+        # "runuser -l" resets the environment, so runtime agent vars (see
+        # core/agent/README.md) must be forwarded explicitly to survive it.
+        env_overrides = [f"XDG_RUNTIME_DIR={xdg_runtime_dir}"]
+        for varname in ['AGENT_COMFD', 'AGENT_TASK_ID', 'AGENT_TASK_ACTION', 'AGENT_TASK_USER']:
+            if varname in os.environ:
+                env_overrides.append(f"{varname}={os.environ[varname]}")
+        os.execvp("/usr/sbin/runuser", ["runuser", "-s", "/usr/bin/env", "-l", mid, "--"] + env_overrides + sys.argv)
     else:
         print(f"runagent: [FATAL] Cannot find runtime directory for {mid}", file=sys.stderr)
         sys.exit(1)
