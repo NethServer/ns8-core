@@ -181,11 +181,10 @@ class LdapclientAd(LdapclientBase):
                     user['must_change'] = (pwd_changed_time.timestamp() == -11644473600)
                 except Exception:
                     user['must_change'] = False
-                if user['must_change']:
-                    # password was never set: there is no expiration date to compute
-                    user['password_expiration'] = 0
-                    user['expired'] = False
-                elif expire and max_pwd_age and pwd_changed_time:
+                # if the password was never set, there is no expiration date to
+                # compute: report -1 ("never expires") and let must_change be
+                # the discriminant for consumers
+                if not user['must_change'] and expire and max_pwd_age and pwd_changed_time:
                     expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age)
                     user['password_expiration'] = int(expiry_date.timestamp())
                     user['expired'] = today > expiry_date
