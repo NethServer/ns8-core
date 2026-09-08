@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"remove-user output","$id":"http://schema.nethserver.org/cluster/remove-user-output.json","description":"No interesting information is returned. Just a success response.","examples":[true],"type":"boolean"}

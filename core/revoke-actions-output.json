@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"revoke-actions output","$id":"http://schema.nethserver.org/cluster/revoke-actions-output.json","description":"Just an empty object, representing a successful response","examples":[{}],"type":"object","properties":{}}
