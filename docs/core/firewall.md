@@ -142,4 +142,14 @@ may differ from the ones passed to `add_rich_rules()`; do not rely on an exact
 string match to correlate them.
 
 If the node cannot be reached the function returns an empty list and logs a
-warning, so it never interrupts the calling action.
+warning, so it never interrupts the calling action. Callers that reconcile a
+desired rule set against the current one should pass `raise_on_error=True`
+instead, since an empty list is otherwise indistinguishable from "no rules
+configured":
+
+```python
+try:
+    rules = agent.list_rich_rules(raise_on_error=True)
+except Exception as e:
+    print(f"Failed to list rich rules: {e}")
+```

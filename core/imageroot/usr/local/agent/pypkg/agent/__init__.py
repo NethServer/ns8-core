@@ -544,7 +544,7 @@ def remove_rich_rules(rich_rules):
     )
     return response['exit_code'] == 0
 
-def list_rich_rules():
+def list_rich_rules(raise_on_error=False):
     """
     List the firewall rich rules currently configured on the node.
 
@@ -553,9 +553,13 @@ def list_rich_rules():
     firewalld normalizes the rule syntax, so the returned strings may differ
     from the ones originally passed to add_rich_rules().
 
-    If the node task fails, an empty list is returned: the caller action is
-    not interrupted.
+    If the node task fails, an empty list is returned and the caller action
+    is not interrupted, unless raise_on_error is set: this is relevant to
+    callers that reconcile a desired rule set against the current one, for
+    whom an empty list is indistinguishable from "no rules configured".
 
+    :param raise_on_error: if True, raise an Exception instead of returning
+        an empty list when the node task fails.
     :return: a list of rich-rule strings, empty if the node task failed.
     """
     node_id = os.environ['NODE_ID']
@@ -566,6 +570,8 @@ def list_rich_rules():
     )
 
     if response['exit_code'] != 0:
+        if raise_on_error:
+            raise Exception(response['error'])
         print(SD_WARNING + f"list_rich_rules failed on node/{node_id}: {response['error']}", file=sys.stderr)
         return []
 
