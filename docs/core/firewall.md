@@ -122,4 +122,34 @@ if not result:
     print("Failed to remove rich rules")
 ```
 
-The rule strings used for removal should match exactly the format used when adding them. Refer to the function docstrings and firewalld documentation for the complete rich rule syntax.
+The rule strings used for removal should match exactly the format stored by firewalld: use `list_rich_rules()` (below) to retrieve them. Refer to the function docstrings and firewalld documentation for the complete rich rule syntax.
+
+#### Listing Rich Rules
+
+Use the `list_rich_rules()` function to retrieve the rich rules currently
+configured on the node:
+
+```python
+import agent
+
+for rule in agent.list_rich_rules():
+    print(rule)
+```
+
+The rules are read from the firewalld permanent configuration. Note that
+firewalld normalizes the rule syntax when storing it, so the returned strings
+may differ from the ones passed to `add_rich_rules()`; do not rely on an exact
+string match to correlate them.
+
+If the node cannot be reached the function returns an empty list and logs a
+warning, so it never interrupts the calling action. Callers that reconcile a
+desired rule set against the current one should pass `raise_on_error=True`
+instead, since an empty list is otherwise indistinguishable from "no rules
+configured":
+
+```python
+try:
+    rules = agent.list_rich_rules(raise_on_error=True)
+except Exception as e:
+    print(f"Failed to list rich rules: {e}")
+```

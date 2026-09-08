@@ -544,6 +544,39 @@ def remove_rich_rules(rich_rules):
     )
     return response['exit_code'] == 0
 
+def list_rich_rules(raise_on_error=False):
+    """
+    List the firewall rich rules currently configured on the node.
+
+    The rules are read from the firewalld permanent configuration, the same
+    one written by add_rich_rules() and remove_rich_rules(). Note that
+    firewalld normalizes the rule syntax, so the returned strings may differ
+    from the ones originally passed to add_rich_rules().
+
+    If the node task fails, an empty list is returned and the caller action
+    is not interrupted, unless raise_on_error is set: this is relevant to
+    callers that reconcile a desired rule set against the current one, for
+    whom an empty list is indistinguishable from "no rules configured".
+
+    :param raise_on_error: if True, raise an Exception instead of returning
+        an empty list when the node task fails.
+    :return: a list of rich-rule strings, empty if the node task failed.
+    """
+    node_id = os.environ['NODE_ID']
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='list-rich-rules',
+        extra={'isNotificationHidden': True},
+    )
+
+    if response['exit_code'] != 0:
+        if raise_on_error:
+            raise Exception(response['error'])
+        print(SD_WARNING + f"list_rich_rules failed on node/{node_id}: {response['error']}", file=sys.stderr)
+        return []
+
+    return (response['output'] or {}).get('rich_rules', [])
+
 def get_module_seq(module_id : str) -> int:
     """Return the module sequential number from its full ID. e.g.
     traefik3 has index 3. Special value -1 is returned if module_id is
