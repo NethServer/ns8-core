@@ -127,6 +127,7 @@ cluster.grants.grant(rdb, action_clause="add-custom-zone",  to_clause="fwadm", o
 cluster.grants.grant(rdb, action_clause="remove-custom-zone",  to_clause="fwadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="add-rich-rules", to_clause="fwadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="remove-rich-rules", to_clause="fwadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="list-rich-rules", to_clause="fwadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="add-tun",  to_clause="tunadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="remove-tun",  to_clause="tunadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="add-public-service",  to_clause="tunadm", on_clause='node/1')
