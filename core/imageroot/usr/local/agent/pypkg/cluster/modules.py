@@ -34,6 +34,7 @@ import datetime
 import time
 import cluster.userdomains
 import copy
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 _repo_testing_cache = {}
 def _repo_has_testing_flag(rdb, repo_name):
@@ -331,12 +332,31 @@ def _get_available_modules(rdb):
         repositories.append(krepo.removeprefix("cluster/repository/"))
     # Alphabetical order, where last item has higher priority:
     repositories.sort(reverse=True)
+    enabled_repos = []
     for nrepo in repositories:
         repo = rdb.hgetall('cluster/repository/' + nrepo)
         # Skip non-enabled repositories
         if repo.get("status", "0") != "1":
             continue
-        for rmod in _list_repository_modules(rdb, nrepo, repo["url"]):
+        enabled_repos.append((nrepo, repo["url"]))
+
+    # Fetch every enabled repository concurrently: sequentially, one
+    # unreachable repository burns its own connect/read timeout on top of
+    # every other request, stalling the whole lookup for tens of seconds.
+    repo_modules = {}
+    with ThreadPoolExecutor() as pool:
+        futures = {
+            pool.submit(_list_repository_modules, rdb, nrepo, url): nrepo
+            for nrepo, url in enabled_repos
+        }
+        for future in as_completed(futures):
+            repo_modules[futures[future]] = future.result()
+
+    # Merge results in priority order, unchanged from the sequential
+    # version: a source already claimed by a higher-priority repository
+    # is not overwritten by a lower-priority one.
+    for nrepo, _url in enabled_repos:
+        for rmod in repo_modules[nrepo]:
             if rmod["source"] in modules:
                 continue # skip duplicated images from lower priority modules
             modules[rmod["source"]] = rmod
