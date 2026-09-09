@@ -136,6 +136,12 @@ def _get_http_session():
 def _list_repository_modules(rdb, repository_name, repository_url):
     cache_key = f'cluster/repository_cache/{repository_name}'
     hcache = rdb.hgetall(cache_key)
+    if hcache.get('error'):
+        # A request already failed for this repository a short time ago
+        # (see below): skip the remote query instead of paying its
+        # timeout again, e.g. on the next list-modules call right after
+        # this one.
+        return []
     repo_view = get_repo_view()
     if not hcache or hcache.get('repo_view') != repo_view:
         url = _urljoin(repository_url, "repodata.json")
@@ -150,12 +156,22 @@ def _list_repository_modules(rdb, repository_name, repository_url):
                 updated = resp.headers.get('Last-Modified', "")
         except Exception as ex:
             print(f"Fetching {url}:", ex, file=sys.stderr)
-            # If repository is not accessible or invalid, just return an empty array
+            # If repository is not accessible or invalid, just return an
+            # empty array, and replace the cache entry with a short-lived
+            # error marker in the same key, so a burst of near-simultaneous
+            # calls does not each pay the same timeout again.
+            rdb.delete(cache_key)
+            rdb.hset(cache_key, mapping={"error": "1"})
+            rdb.expire(cache_key, 60)
             return []
         hcache = {"data": repodata_raw, "updated": updated, "repo_view": repo_view}
     modules = _parse_repository_metadata(repository_name, repository_url, hcache['updated'], hcache['data'])
     # Save inside the cache if data is valid
     if modules:
+        # Clear any stale "error" marker left by a previous failed
+        # attempt before writing the successful result: hset() merges
+        # fields into the existing hash, it does not replace it.
+        rdb.delete(cache_key)
         # Save also repodata file date
         rdb.hset(cache_key, mapping=hcache)
         # Set cache expiration to 3600 seconds
