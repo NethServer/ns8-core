@@ -993,6 +993,7 @@ export default {
       const res = await to(
         this.createClusterTask({
           action: taskAction,
+          data: { offline: true },
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
