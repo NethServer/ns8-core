@@ -1,24 +1,12 @@
 [Unit]
-Description=Volume disk usage textfile collector runner
+Description=Volume disk usage textfile collector
 After=node_exporter.service
-BindsTo=node_exporter.service
 
 [Service]
-Type=simple
+Type=oneshot
 WorkingDirectory=/var/lib/nethserver/node/state
-# The walk reads every inode of every module tree. Give way to anything that
-# is doing real work: a monitoring pass must never be what makes a mail or
-# file server feel slow.
+# Keep the job with low prio to avoid hammering an already loaded machine
 Nice=10
 IOSchedulingClass=idle
-ExecStartPre=/bin/rm -f ./node_exporter/volumes.prom ./node_exporter/volumes.prom.tmp
-ExecStart=runagent -m node refresh-volume-metrics -l 900
-ExecStopPost=/bin/rm -f ./node_exporter/volumes.prom ./node_exporter/volumes.prom.tmp
-# The collector is a loop that is meant to outlive transient failures, so
-# a dead process must be replaced rather than left dead. ExecStopPost
-# removes the .prom file, which means process death takes every series with
-# it -- including the last_success timestamp that is supposed to be the
-# staleness signal -- so there would be nothing left to alert on.
-Restart=always
-RestartSec=10s
+ExecStart=runagent -m node refresh-volume-metrics
 SyslogIdentifier=%N

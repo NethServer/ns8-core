@@ -10,18 +10,18 @@ parent: Core
 NS8 exposes per-volume and per-module disk usage on each node's existing
 `node_exporter` endpoint. The metrics are produced by
 `refresh-volume-metrics.service`, a collector that runs on every node,
-writes a Prometheus text file into `node_exporter`'s textfile collector
-directory every 15 minutes, and is bound to the lifecycle of
-`node_exporter.service` itself. Like the [container
-metrics](container_metrics.md), the series appear on the node's
-`/metrics` endpoint and are collected into the `metrics` module's
-Prometheus on the leader node, with no new port and no new scrape job.
+writing a Prometheus text file into `node_exporter`'s textfile collector
+directory once a day, triggered by `refresh-volume-metrics.timer`. Like
+the [container metrics](container_metrics.md), the series appear on the
+node's `/metrics` endpoint and are collected into the `metrics`
+module's Prometheus on the leader node, with no new port and no new
+scrape job.
 
 The collector walks the directory trees, because there's nothing
 cheaper to read: podman volumes are plain directories, and the root
 filesystem is mounted `noquota`, so a size can only be obtained by
 visiting every inode. That walk is expensive on a node holding mail or
-file shares, which is why it runs as its own unit on a slow interval
+file shares, which is why it runs as its own unit on a slow schedule
 instead of another pass inside `refresh-container-metrics.service` — a
 slow walk never delays the container samples, and a failure in one
 collector doesn't take the other down. The unit also runs with
@@ -140,38 +140,9 @@ metrics go stale rather than disappearing; check
 `ns8_volume_collector_last_success_timestamp_seconds` to tell the two
 cases apart.
 
-## Alerting
-
-`ns8_volume_collector_skipped_modules` above zero means the last pass
-could not measure something, and the module it belongs to is named in
+Also pay attention to the following:
+- `ns8_volume_collector_skipped_modules` above zero means the last pass
+could not measure something
 the journal of `refresh-volume-metrics.service`.
-
-`ns8_volume_collector_duration_seconds` approaching the 900-second
-interval is the other signal worth watching. The walk has no deadline —
-abandoning it would leave the largest module (the one whose size
-matters most) either unmeasured or reported as a shrinking partial sum.
-Instead, the collector bounds how much of the wall clock it may
-occupy: it rests at least as long as the pass took, so a slow pass
-stretches the sampling period rather than crowding the node, and the
-walk never takes more than half the time. Figures stay complete, just
-sampled less often than every 15 minutes; this gauge shows when that's
-happening. The walk also yields to real work throughout, via
-`Nice=10` and `IOSchedulingClass=idle`.
-
-```
-ns8_volume_collector_duration_seconds > 900
-```
-
-## Example queries
-
-Top 5 modules by disk usage:
-
-```
-topk(5, ns8_module_total_bytes)
-```
-
-Volumes that grew more than 1 GB in the last day:
-
-```
-(ns8_volume_size_bytes - ns8_volume_size_bytes offset 1d) > 1e9
-```
+- `ns8_volume_collector_duration_seconds` approaching a day is the other
+signal worth watching

@@ -10,8 +10,8 @@
 Podman volumes are plain directory trees, and the root filesystem carries no
 per-directory accounting: NS8 nodes mount it "noquota", so a size can only be
 obtained by walking the tree. The walk is expensive on a node holding mail or
-file shares, which is why this runs as its own unit on a slow interval instead
-of inside refresh-container-metrics.
+file shares, which is why this runs as its own unit, triggered daily by a
+systemd timer, instead of inside refresh-container-metrics.
 
 Each module is walked once and the result is split into three non-overlapping
 buckets -- named volumes, the container image store, and everything else, the
@@ -517,41 +517,11 @@ def main():
         description="Write per-volume disk usage for the node_exporter textfile collector"
     )
     parser.add_argument(
-        "-l",
-        "--loop",
-        type=int,
-        metavar="INTERVAL",
-        help="Run forever, refreshing every INTERVAL seconds",
-    )
-    parser.add_argument(
         "-o", "--output", default=DEFAULT_OUTPUT, help="Output file path"
     )
     arguments = parser.parse_args()
-
-    # A non-positive interval means single-pass, matching how
-    # refresh-container-metrics and refresh-node-info treat zero and negative
-    # values uniformly.
-    if arguments.loop is None or arguments.loop <= 0:
-        refresh(arguments.output)
-        return 0
-
-    while True:
-        started = time.time()
-        try:
-            refresh(arguments.output)
-        except Exception:
-            # Keep the previous file in place and try again on the next tick:
-            # a transient failure must not blank out the metrics. Log the
-            # traceback, not just the message: str(ex) alone is close to
-            # undiagnosable for the failures this can see.
-            print(traceback.format_exc(), file=sys.stderr, end="")
-        # Rest at least as long as the pass took, so the walk never occupies
-        # more than half the wall clock however large the trees grow. The
-        # walk cannot be given a deadline instead: abandoning it would leave
-        # the biggest module -- the one whose size matters most -- either
-        # permanently unmeasured or reported as a partial sum that reads as
-        # a share shrinking. A slower sample rate loses no data at all.
-        time.sleep(max(arguments.loop, time.time() - started))
+    refresh(arguments.output)
+    return 0
 
 
 if __name__ == "__main__":
