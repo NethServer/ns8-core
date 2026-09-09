@@ -336,26 +336,26 @@ def _get_available_modules(rdb, offline=False):
     never contacted: every installed instance goes through that local
     synthesis path."""
     modules = {}
+    repositories = []
     if not offline:
-        repositories = []
         # List all modules from enabled repositories
         for krepo in rdb.scan_iter('cluster/repository/*'):
             repositories.append(krepo.removeprefix("cluster/repository/"))
         # Alphabetical order, where last item has higher priority:
         repositories.sort(reverse=True)
-        for nrepo in repositories:
-            repo = rdb.hgetall('cluster/repository/' + nrepo)
-            # Skip non-enabled repositories
-            if repo.get("status", "0") != "1":
-                continue
-            for rmod in _list_repository_modules(rdb, nrepo, repo["url"]):
-                if rmod["source"] in modules:
-                    continue # skip duplicated images from lower priority modules
-                modules[rmod["source"]] = rmod
-                rmod['versions'].sort(key=lambda v: _parse_version_object(v["tag"]), reverse=True)
-                # Set the general release note URL if the code URL is a GitHub repository
-                if rmod['docs']['code_url'].startswith("https://github.com/") and 'relnotes_url' not in rmod['docs']:
-                    rmod['docs']['relnotes_url'] = f"{rmod['docs']['code_url']}/releases"
+    for nrepo in repositories:
+        repo = rdb.hgetall('cluster/repository/' + nrepo)
+        # Skip non-enabled repositories
+        if repo.get("status", "0") != "1":
+            continue
+        for rmod in _list_repository_modules(rdb, nrepo, repo["url"]):
+            if rmod["source"] in modules:
+                continue # skip duplicated images from lower priority modules
+            modules[rmod["source"]] = rmod
+            rmod['versions'].sort(key=lambda v: _parse_version_object(v["tag"]), reverse=True)
+            # Set the general release note URL if the code URL is a GitHub repository
+            if rmod['docs']['code_url'].startswith("https://github.com/") and 'relnotes_url' not in rmod['docs']:
+                rmod['docs']['relnotes_url'] = f"{rmod['docs']['code_url']}/releases"
 
     # Integrate the available set with instances that do not belong to any
     # repository. They can be found in the "installed" dict:
