@@ -112,6 +112,10 @@ def _get_os_release():
 
     return os_release
 
+def _get_cluster_uuid():
+    rdb = agent.redis_connect(use_replica=True)
+    return rdb.get('cluster/uuid') or ''
+
 def _get_cluster_views():
     rdb = agent.redis_connect(use_replica=True)
     hmodule_domains = rdb.hgetall('cluster/module_domains') or {}
@@ -241,6 +245,7 @@ os_release = _get_os_release()
 data = {
     "public_ip": _get_public_ip(),
     "arp_macs": _run('grep -v IP /proc/net/arp | wc -l'),
+    "cluster_uuid": _get_cluster_uuid(),
     "dmi": { "product": { "name": dmi_product, "uuid": _run("cat /sys/class/dmi/id/product_uuid") }, "bios": { "version": _run("cat /sys/devices/virtual/dmi/id/bios_version"), "vendor": _run("cat /sys/devices/virtual/dmi/id/bios_vendor")}, "board": { "product": board, "manufacturer": _run("cat /sys/devices/virtual/dmi/id/sys_vendor") }},
     "virtual": _get_cpu_field("Hypervisor vendor", cpu_info) if _get_cpu_field("Hypervisor vendor", cpu_info) else 'physical',
     "kernel": _run('uname'),
