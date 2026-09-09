@@ -25,8 +25,11 @@ import json
 import agent
 import cluster.modules
 
+input_data = json.load(sys.stdin) or {}
+offline = bool(input_data.get("offline", False))
+
 rdb = agent.redis_connect(privileged=True)
-available = cluster.modules.list_available(rdb, skip_core_modules = True)
+available = cluster.modules.list_available(rdb, skip_core_modules = True, offline = offline)
 disabled_updates_reason = cluster.modules.get_disabled_updates_reason(rdb)
 
 # Decorate with disabled_updates_reason:
@@ -34,7 +37,7 @@ for a in available:
     a["disabled_updates_reason"] = disabled_updates_reason
 
 cluster.modules.decorate_with_installed(rdb, available)
-cluster.modules.decorate_with_updates(rdb, available)
+cluster.modules.decorate_with_updates(rdb, available, offline = offline)
 cluster.modules.decorate_with_install_destinations(rdb, available)
 cluster.modules.decorate_without_core_module_instances(rdb, available)
 cluster.modules.decorate_with_automatic_updates(rdb, available)

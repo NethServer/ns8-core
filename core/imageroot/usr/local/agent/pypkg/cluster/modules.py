@@ -258,12 +258,15 @@ def _min_core_ok(modver, leader_core_version):
         min_core = semver.Version(0)
     return leader_core_version >= min_core
 
-def list_available(rdb, skip_core_modules=False):
-    """Iterate over enabled repositories and return available modules respecting the repository priority."""
+def list_available(rdb, skip_core_modules=False, offline=False):
+    """Iterate over enabled repositories and return available modules
+    respecting the repository priority. If offline is True, repositories
+    are never contacted: only installed instances are returned, decorated
+    with locally-synthesized metadata (see _get_available_modules)."""
     hsubscription = rdb.hgetall("cluster/subscription") or None
     leader_core_version = _get_leader_core_version()
     modules = []
-    for omod in _get_available_modules(rdb).values():
+    for omod in _get_available_modules(rdb, offline=offline).values():
         if not _repo_has_testing_flag(rdb, omod["repository"]):
             # Ignore testing releases for new installations:
             omod["versions"] = list(filter(lambda v: _tag_is_stable(v["tag"]), omod["versions"]))
@@ -323,27 +326,36 @@ def list_available(rdb, skip_core_modules=False):
         modules.append(omod)
     return modules
 
-def _get_available_modules(rdb):
+def _get_available_modules(rdb, offline=False):
+    """Build the dict of available modules, keyed by source. Unless
+    offline is True, enabled repositories are queried over HTTP(S) and
+    take priority; any installed instance whose source is not found in a
+    repository is still returned, decorated with metadata synthesized
+    from local files (see _fetch_metadata_json and
+    _synthesize_module_version). When offline is True, repositories are
+    never contacted: every installed instance goes through that local
+    synthesis path."""
     modules = {}
-    repositories = []
-    # List all modules from enabled repositories
-    for krepo in rdb.scan_iter('cluster/repository/*'):
-        repositories.append(krepo.removeprefix("cluster/repository/"))
-    # Alphabetical order, where last item has higher priority:
-    repositories.sort(reverse=True)
-    for nrepo in repositories:
-        repo = rdb.hgetall('cluster/repository/' + nrepo)
-        # Skip non-enabled repositories
-        if repo.get("status", "0") != "1":
-            continue
-        for rmod in _list_repository_modules(rdb, nrepo, repo["url"]):
-            if rmod["source"] in modules:
-                continue # skip duplicated images from lower priority modules
-            modules[rmod["source"]] = rmod
-            rmod['versions'].sort(key=lambda v: _parse_version_object(v["tag"]), reverse=True)
-            # Set the general release note URL if the code URL is a GitHub repository
-            if rmod['docs']['code_url'].startswith("https://github.com/") and 'relnotes_url' not in rmod['docs']:
-                rmod['docs']['relnotes_url'] = f"{rmod['docs']['code_url']}/releases"
+    if not offline:
+        repositories = []
+        # List all modules from enabled repositories
+        for krepo in rdb.scan_iter('cluster/repository/*'):
+            repositories.append(krepo.removeprefix("cluster/repository/"))
+        # Alphabetical order, where last item has higher priority:
+        repositories.sort(reverse=True)
+        for nrepo in repositories:
+            repo = rdb.hgetall('cluster/repository/' + nrepo)
+            # Skip non-enabled repositories
+            if repo.get("status", "0") != "1":
+                continue
+            for rmod in _list_repository_modules(rdb, nrepo, repo["url"]):
+                if rmod["source"] in modules:
+                    continue # skip duplicated images from lower priority modules
+                modules[rmod["source"]] = rmod
+                rmod['versions'].sort(key=lambda v: _parse_version_object(v["tag"]), reverse=True)
+                # Set the general release note URL if the code URL is a GitHub repository
+                if rmod['docs']['code_url'].startswith("https://github.com/") and 'relnotes_url' not in rmod['docs']:
+                    rmod['docs']['relnotes_url'] = f"{rmod['docs']['code_url']}/releases"
 
     # Integrate the available set with instances that do not belong to any
     # repository. They can be found in the "installed" dict:
@@ -460,12 +472,12 @@ def get_disabled_updates_reason(rdb):
                 return "ns7_migration"
     return ""
 
-def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
+def list_updates(rdb, skip_core_modules=False, with_testing_update=False, offline=False):
     if get_disabled_updates_reason(rdb) != "":
         return [] # updates are disabled
     updates = []
     installed_modules = list_installed(rdb, skip_core_modules)
-    available_modules = _get_available_modules(rdb)
+    available_modules = _get_available_modules(rdb, offline=offline)
     leader_core_version = _get_leader_core_version()
 
     node_core_versions = _get_node_core_tags(rdb)
@@ -688,11 +700,13 @@ def decorate_with_installed(rdb, available_modules):
         for oinstance in oamodule["installed"]:
             oinstance["automatic_updates"] = module_automatic_update.get(oinstance["id"], "1") == "1"
 
-def decorate_with_updates(rdb, available_modules):
+def decorate_with_updates(rdb, available_modules, offline=False):
     """Decorate each item of available_modules list with an
     "updates" attribute. This procedure has no return value, it modifies
-    its argument directly."""
-    updates = cluster.modules.list_updates(rdb, skip_core_modules=True, with_testing_update=True)
+    its argument directly. If offline is True, no repository is
+    contacted and no update is ever reported: locally-synthesized
+    versions always match the installed one."""
+    updates = cluster.modules.list_updates(rdb, skip_core_modules=True, with_testing_update=True, offline=offline)
     for oamodule in available_modules:
         oamodule["updates"] = list(filter(lambda mup: mup["source"] == oamodule["source"], updates))
 
