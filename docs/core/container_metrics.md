@@ -106,25 +106,12 @@ Rootless modules run under `user@<uid>.service`, which by default
 delegates only `memory` and `pids`. The core update that ships this
 feature installs a drop-in,
 `/etc/systemd/system/user@.service.d/50-ns8-delegate.conf`, that adds
-`io` to the delegated controller set (`cpu` is left out on purpose —
-see the comment in that file for why). This drop-in only takes effect
-the next time a rootless module's user manager restarts, which happens
-on the module's own restart or on a node reboot. Until then,
-`ns8_container_blkio_*` is absent for that module's containers, while
-CPU, memory and PID metrics are complete. This is expected, not a
-fault: an update deliberately does not bounce every rootless container
-on a node just to enable a monitoring feature.
+`io` gives disk stats access to rootless modules.
 
 The drop-in applies to every local user manager on the node, not only
 NethServer module users — a `user@.service.d` drop-in can't be scoped
 to particular user ids. Root's own manager is the exception, masked by
 an empty `/etc/systemd/system/user@0.service.d/50-ns8-delegate.conf`.
-
-To roll it back: remove
-`/etc/systemd/system/user@.service.d/50-ns8-delegate.conf`, run
-`systemctl daemon-reload`, then restart the affected user managers or
-reboot the node. Block I/O metrics disappear again for rootless
-modules once it's removed.
 
 ## Network
 
