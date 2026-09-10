@@ -151,7 +151,8 @@ def _list_repository_modules(rdb, repository_name, repository_url):
                 if hsubscription and url.startswith("https://subscription.nethserver.com/"):
                     # Send system_id for HTTP Basic authentication
                     osession.auth = (hsubscription["system_id"], hashlib.sha256(hsubscription["auth_token"].encode()).hexdigest())
-                resp = osession.get(url, params={"view": repo_view}, timeout=(10, 15))
+                view_timeout = 4 if repo_view == 'latest' else 10
+                resp = osession.get(url, params={"view": repo_view}, timeout=view_timeout)
                 repodata_raw = resp.text
                 updated = resp.headers.get('Last-Modified', "")
         except Exception as ex:
