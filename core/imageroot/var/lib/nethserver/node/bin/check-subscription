@@ -38,10 +38,10 @@ function enable_nsent()
             systemctl start send-inventory
             systemctl start send-backup
         fi
-        systemctl enable --now send-heartbeat.service send-inventory.timer send-backup.timer
+        systemctl enable --now send-heartbeat.service send-inventory.timer send-backup.timer send-sizing-report.timer
     else
         # Some services must be disabled in worker nodes
-        systemctl disable --now send-heartbeat.service send-inventory.timer send-backup.timer
+        systemctl disable --now send-heartbeat.service send-inventory.timer send-backup.timer send-sizing-report.timer
     fi
     systemctl enable check-subscription.service
 }
@@ -54,10 +54,10 @@ function enable_nscom()
             # First time, send inventory and backup immediately
             systemctl start send-inventory
         fi
-        systemctl enable --now send-heartbeat.service send-inventory.timer
+        systemctl enable --now send-heartbeat.service send-inventory.timer send-sizing-report.timer
     else
         # Some services must be disabled in worker nodes
-        systemctl disable --now send-heartbeat.service send-inventory.timer
+        systemctl disable --now send-heartbeat.service send-inventory.timer send-sizing-report.timer
     fi
     systemctl enable check-subscription.service
 }
@@ -70,7 +70,8 @@ else
     systemctl disable --now \
         send-heartbeat.service \
         send-inventory.timer \
-        send-backup.timer
+        send-backup.timer \
+        send-sizing-report.timer
 fi
 
 # Enable in the leader node the timer unit that checks the updates,
