@@ -1,0 +1,12 @@
+[Unit]
+Description=Volume disk usage textfile collector
+After=node_exporter.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/var/lib/nethserver/node/state
+# Keep the job with low prio to avoid hammering an already loaded machine
+Nice=10
+IOSchedulingClass=idle
+ExecStart=runagent -m node refresh-volume-metrics
+SyslogIdentifier=%N

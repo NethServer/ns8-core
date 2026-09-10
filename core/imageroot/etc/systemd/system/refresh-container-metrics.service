@@ -1,0 +1,19 @@
+[Unit]
+Description=Container metrics textfile collector runner
+After=node_exporter.service
+BindsTo=node_exporter.service
+
+[Service]
+Type=simple
+WorkingDirectory=/var/lib/nethserver/node/state
+ExecStartPre=/bin/rm -f ./node_exporter/containers.prom ./node_exporter/containers.prom.tmp
+ExecStart=runagent -m node refresh-container-metrics -l 60
+ExecStopPost=/bin/rm -f ./node_exporter/containers.prom ./node_exporter/containers.prom.tmp
+# The collector is a loop that is meant to outlive transient failures, so
+# a dead process must be replaced rather than left dead. ExecStopPost
+# removes the .prom file, which means process death takes every series with
+# it -- including the last_success timestamp that is supposed to be the
+# staleness signal -- so there would be nothing left to alert on.
+Restart=always
+RestartSec=10s
+SyslogIdentifier=%N

@@ -1,0 +1,528 @@
+#!/usr/local/agent/pyenv/bin/python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+"""Write per-volume disk usage for the node_exporter textfile collector.
+
+Podman volumes are plain directory trees, and the root filesystem carries no
+per-directory accounting: NS8 nodes mount it "noquota", so a size can only be
+obtained by walking the tree. The walk is expensive on a node holding mail or
+file shares, which is why this runs as its own unit, triggered daily by a
+systemd timer, instead of inside refresh-container-metrics.
+
+Each module is walked once and the result is split into three non-overlapping
+buckets -- named volumes, the container image store, and everything else, the
+module state -- so the three metric families cost a single traversal.
+"""
+
+import argparse
+import os
+import os.path
+import pwd
+import re
+import sys
+import time
+import traceback
+
+DEFAULT_OUTPUT = "./node_exporter/volumes.prom"
+
+ROOTFULL_STORAGE_ROOT = "/var/lib/containers/storage"
+NETHSERVER_ROOT = "/var/lib/nethserver"
+# The core's own state trees. They are not modules, so the module discovery
+# below skips them, but their contents are real disk usage and belong in
+# the "core" state bucket -- without them module="core" was the only entry
+# with no ns8_module_state_bytes series at all.
+CORE_STATE_DIRS = ("cluster", "node", "api-server")
+ROOTLESS_STORAGE_SUFFIX = ".local/share/containers/storage"
+# What makes a local user an NS8 module, as runagent decides it too. The
+# presence of a container storage directory is not enough: any account that
+# has ever run podman by hand has one, and would then get module series of
+# its own and have its whole home walked on every pass.
+MODULE_MARKER = ".config/state/agent.env"
+
+# A rootfull module directory is <name><number>, as created by
+# add-module. The core's own directories -- cluster, node, api-server --
+# carry no trailing digits, so the shape alone tells them apart and no list
+# of reserved names has to be kept in sync.
+_MODULE_DIR_RE = re.compile(r"^[a-z][a-z0-9-]*[0-9]+$")
+
+
+def walk_tree(root, seen, exclude=(), same_device=False):
+    """Return (bytes, objects) under root, following du's accounting.
+
+    Sizes are st_blocks * 512, the space actually occupied, not the apparent
+    size: a sparse or compressed file must not be reported as bigger than the
+    room it takes. Directories count too, again like du.
+
+    ``seen`` collects the (device, inode) pairs of multiply linked files, so a
+    hardlinked file is charged once per module however many names it has.
+    Pass the same set across a module's buckets to keep them disjoint.
+
+    Paths in ``exclude`` are not descended into. Unreadable directories are
+    skipped: root can normally read everything here, and losing a subtree is
+    still worth more than losing the module.
+
+    ``same_device`` confines the walk to the filesystem of ``root``, like
+    "du -x". The image store needs it: a running rootfull container has its
+    union view mounted at overlay/<layer>/merged, inside the store, and
+    counting that re-counts the whole container rootfs on top of the layers
+    it is built from. The lower-layer files carry st_nlink == 1, so the
+    hardlink dedupe below does not catch them.
+    """
+    excluded = set(os.path.normpath(path) for path in exclude)
+    try:
+        stat = os.lstat(root)
+    except OSError:
+        return None
+    # os.stat(), not the lstat above: scandir() resolves the path, so a
+    # storage root that is a symlink onto another filesystem -- one way to
+    # relocate container storage -- would otherwise leave root_device set to
+    # the device holding the link, and every entry would be skipped as
+    # off-device. The bucket would then publish a zero that the docs promise
+    # is a real measurement.
+    try:
+        root_device = os.stat(root).st_dev
+    except OSError:
+        return None
+    total = stat.st_blocks * 512
+    objects = 1
+    stack = [root]
+    while stack:
+        current = stack.pop()
+        try:
+            entries = list(os.scandir(current))
+        except OSError:
+            continue
+        for entry in entries:
+            if os.path.normpath(entry.path) in excluded:
+                continue
+            try:
+                stat = entry.stat(follow_symlinks=False)
+            except OSError:
+                continue
+            if same_device and stat.st_dev != root_device:
+                continue
+            is_dir = entry.is_dir(follow_symlinks=False)
+            if not is_dir and stat.st_nlink > 1:
+                key = (stat.st_dev, stat.st_ino)
+                if key in seen:
+                    continue
+                seen.add(key)
+            total += stat.st_blocks * 512
+            objects += 1
+            if is_dir:
+                stack.append(entry.path)
+    return (total, objects)
+
+
+def mark_skipped(skipped, module_id):
+    """Record a module whose usage could not be measured, at most once.
+
+    walk_tree() reports a failure by returning None rather than by raising,
+    so a bare "continue" on None would leave the skipped counter at zero
+    while the module's series silently disappeared -- a fault that looks
+    exactly like a module having nothing to measure.
+    """
+    if skipped is not None and module_id not in skipped:
+        skipped.append(module_id)
+
+
+def list_rootfull_modules(nethserver_root=NETHSERVER_ROOT):
+    """Return the rootfull module ids installed on this node."""
+    try:
+        names = os.listdir(nethserver_root)
+    except OSError:
+        return []
+    ids = [
+        name
+        for name in names
+        if _MODULE_DIR_RE.match(name)
+        and os.path.isdir(os.path.join(nethserver_root, name))
+    ]
+    ids.sort()
+    return ids
+
+
+def list_rootless_modules(passwd_entries=pwd.getpwall):
+    """Return (module id, home) for every rootless module user.
+
+    Membership is decided by the agent state file that every module user
+    has, not by the user id range and not by owning a container storage
+    directory. The storage directory is the wrong test: an administrator who
+    once ran podman by hand has one too, and would be reported as a module.
+    This test keeps a module in even while all of its containers are
+    stopped, which a discovery based on running cgroups would not.
+    """
+    modules = []
+    try:
+        entries = passwd_entries()
+    except Exception:
+        return []
+    for entry in entries:
+        home = entry.pw_dir
+        if not home:
+            continue
+        if not os.path.isfile(os.path.join(home, MODULE_MARKER)):
+            continue
+        modules.append((entry.pw_name, home))
+    modules.sort()
+    return modules
+
+
+def list_volumes(storage_root):
+    """Return (name, path) for every named volume under a storage root."""
+    volumes_dir = os.path.join(storage_root, "volumes")
+    try:
+        names = sorted(os.listdir(volumes_dir))
+    except OSError:
+        return []
+    return [
+        (name, os.path.join(volumes_dir, name))
+        for name in names
+        if os.path.isdir(os.path.join(volumes_dir, name))
+    ]
+
+
+def resolve_volume_module(name, module_ids):
+    """Return the rootfull module owning a volume, by name.
+
+    Rootfull modules share one storage root, and podman records the
+    volume-to-container link only inside its own database, which is not
+    readable without libpod. The volume name is the one durable clue left:
+    add-module names a module's volumes after it, so "crowdsec1-data" belongs
+    to "crowdsec1". A volume matching no module -- redis-data, rclone-cache --
+    belongs to a core container, and is reported as "core", the same way
+    resolve_module() reports core containers in refresh-container-metrics.
+    """
+    for module_id in sorted(module_ids, key=lambda value: (-len(value), value)):
+        if name == module_id or name.startswith(module_id + "-"):
+            return module_id
+    return "core"
+
+
+def collect_rootfull(
+    rootfull_storage_root=ROOTFULL_STORAGE_ROOT,
+    nethserver_root=NETHSERVER_ROOT,
+    skipped=None,
+):
+    """Collect the shared rootfull storage root and the module state trees."""
+    module_ids = list_rootfull_modules(nethserver_root)
+    # One set of visited inodes per attributed module, so a hardlinked file
+    # is charged once per module rather than once per node. A single shared
+    # set would give the file to whichever module was walked first and hide
+    # it from the other, and the split would flip if a volume were renamed.
+    # collect_rootless() gets this for free: it walks one module at a time.
+    seens = {}
+    volumes = []
+    modules = {}
+
+    for name, path in list_volumes(rootfull_storage_root):
+        module = resolve_volume_module(name, module_ids)
+        measured = walk_tree(path, seens.setdefault(module, set()))
+        if measured is None:
+            mark_skipped(skipped, module)
+            continue
+        volumes.append(
+            {
+                "module": module,
+                "volume": name,
+                "bytes": measured[0],
+                "objects": measured[1],
+            }
+        )
+        entry = modules.setdefault(module, {})
+        entry["volumes"] = entry.get("volumes", 0) + measured[0]
+        entry["total"] = entry.get("total", 0) + measured[0]
+
+    # The image store is one overlay tree shared by every rootfull module, so
+    # no module can be charged for its own share of it. It is reported once,
+    # under "core", instead of being split by a guess.
+    images = walk_tree(
+        rootfull_storage_root,
+        set(),
+        exclude=[os.path.join(rootfull_storage_root, "volumes")],
+        same_device=True,
+    )
+    if images is None:
+        mark_skipped(skipped, "core")
+    else:
+        entry = modules.setdefault("core", {})
+        entry["images"] = images[0]
+        entry["total"] = entry.get("total", 0) + images[0]
+
+    for module_id in module_ids:
+        try:
+            state = walk_tree(
+                os.path.join(nethserver_root, module_id),
+                seens.setdefault(module_id, set()),
+            )
+        except Exception:
+            mark_skipped(skipped, module_id)
+            print(
+                "collect_rootfull(): skipping module %s:\n%s"
+                % (module_id, traceback.format_exc()),
+                file=sys.stderr,
+                end="",
+            )
+            continue
+        if state is None:
+            mark_skipped(skipped, module_id)
+            continue
+        entry = modules.setdefault(module_id, {})
+        entry["state"] = state[0]
+        entry["total"] = entry.get("total", 0) + state[0]
+
+    core_seen = seens.setdefault("core", set())
+    core_state = None
+    for name in CORE_STATE_DIRS:
+        measured = walk_tree(os.path.join(nethserver_root, name), core_seen)
+        if measured is None:
+            mark_skipped(skipped, "core")
+            continue
+        core_state = (core_state or 0) + measured[0]
+    if core_state is not None:
+        entry = modules.setdefault("core", {})
+        entry["state"] = core_state
+        entry["total"] = entry.get("total", 0) + core_state
+
+    return volumes, modules
+
+
+def collect_rootless(passwd_entries=pwd.getpwall, skipped=None):
+    """Collect volumes, image store and state for every rootless module."""
+    volumes = []
+    modules = {}
+
+    for module_id, home in list_rootless_modules(passwd_entries):
+        # One unreadable module must never cost us the whole node's metrics:
+        # log it, skip it, keep collecting the rest.
+        try:
+            storage_root = os.path.join(home, ROOTLESS_STORAGE_SUFFIX)
+            seen = set()
+            entry = modules.setdefault(module_id, {})
+            for name, path in list_volumes(storage_root):
+                measured = walk_tree(path, seen)
+                if measured is None:
+                    mark_skipped(skipped, module_id)
+                    continue
+                volumes.append(
+                    {
+                        "module": module_id,
+                        "volume": name,
+                        "bytes": measured[0],
+                        "objects": measured[1],
+                    }
+                )
+                entry["volumes"] = entry.get("volumes", 0) + measured[0]
+                entry["total"] = entry.get("total", 0) + measured[0]
+
+            images = None
+            if os.path.isdir(storage_root):
+                images = walk_tree(
+                    storage_root,
+                    seen,
+                    exclude=[os.path.join(storage_root, "volumes")],
+                    same_device=True,
+                )
+                if images is None:
+                    mark_skipped(skipped, module_id)
+            if images is not None:
+                entry["images"] = images[0]
+                entry["total"] = entry.get("total", 0) + images[0]
+
+            state = walk_tree(home, seen, exclude=[storage_root])
+            if state is None:
+                mark_skipped(skipped, module_id)
+            else:
+                entry["state"] = state[0]
+                entry["total"] = entry.get("total", 0) + state[0]
+        except Exception:
+            mark_skipped(skipped, module_id)
+            modules.pop(module_id, None)
+            volumes = [item for item in volumes if item["module"] != module_id]
+            print(
+                "collect_rootless(): skipping module %s:\n%s"
+                % (module_id, traceback.format_exc()),
+                file=sys.stderr,
+                end="",
+            )
+
+    return volumes, modules
+
+
+def collect(
+    rootfull_storage_root=ROOTFULL_STORAGE_ROOT,
+    nethserver_root=NETHSERVER_ROOT,
+    passwd_entries=pwd.getpwall,
+    skipped=None,
+):
+    """Build the volume records and the per-module buckets for this node."""
+    volumes, modules = collect_rootfull(
+        rootfull_storage_root, nethserver_root, skipped=skipped
+    )
+    rootless_volumes, rootless_modules = collect_rootless(
+        passwd_entries, skipped=skipped
+    )
+    volumes.extend(rootless_volumes)
+    # Merge rather than update(): a module id present in both maps would
+    # otherwise lose its rootfull buckets outright. No module is both today
+    # -- rootfull state lives in /var/lib/nethserver/<id> and rootless state
+    # in the user's home -- but silently dropping a bucket is not the way to
+    # find out that changed.
+    for module_id, buckets in rootless_modules.items():
+        entry = modules.setdefault(module_id, {})
+        for key, value in buckets.items():
+            entry[key] = entry.get(key, 0) + value
+    volumes.sort(key=lambda record: (record["module"], record["volume"]))
+    return volumes, modules
+
+
+def escape_label(value):
+    """Escape a label value for the Prometheus text exposition format."""
+    return value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+
+
+class _Exposition(object):
+    """Accumulate samples, keeping every family's samples contiguous."""
+
+    def __init__(self):
+        self._families = {}
+        self._order = []
+
+    def add(self, name, kind, help_text, labels, value):
+        if name not in self._families:
+            self._families[name] = {"kind": kind, "help": help_text, "samples": []}
+            self._order.append(name)
+        if labels:
+            rendered = ",".join(
+                '%s="%s"' % (key, escape_label(val)) for key, val in labels
+            )
+            sample = "%s{%s} %s" % (name, rendered, value)
+        else:
+            sample = "%s %s" % (name, value)
+        self._families[name]["samples"].append(sample)
+
+    def render(self):
+        lines = []
+        for name in self._order:
+            family = self._families[name]
+            lines.append("# HELP %s %s" % (name, family["help"]))
+            lines.append("# TYPE %s %s" % (name, family["kind"]))
+            lines.extend(family["samples"])
+        return "\n".join(lines) + "\n"
+
+
+_MODULE_GAUGES = (
+    ("volumes", "ns8_module_volumes_bytes", "Named volume disk usage of the module"),
+    ("images", "ns8_module_images_bytes", "Container image store disk usage"),
+    ("state", "ns8_module_state_bytes", "Module state and configuration disk usage"),
+    ("total", "ns8_module_total_bytes", "Module disk usage, volumes and images included"),
+)
+
+
+def render(volumes, modules, duration_seconds, timestamp, skipped=0):
+    """Render the collected usage as a Prometheus text exposition document."""
+    exposition = _Exposition()
+
+    for record in volumes:
+        exposition.add(
+            "ns8_volume_size_bytes",
+            "gauge",
+            "Volume disk usage",
+            (("module", record["module"]), ("volume", record["volume"])),
+            "%d" % record["bytes"],
+        )
+
+    for record in volumes:
+        exposition.add(
+            "ns8_volume_files",
+            "gauge",
+            "Filesystem objects in the volume, directories included",
+            (("module", record["module"]), ("volume", record["volume"])),
+            "%d" % record["objects"],
+        )
+
+    for key, name, help_text in _MODULE_GAUGES:
+        for module_id in sorted(modules):
+            value = modules[module_id].get(key)
+            # A tree that could not be measured is left out rather than
+            # published as zero: an absent series and a zero series mean
+            # different things, and zero would assert a measurement that was
+            # never taken.
+            if value is None:
+                continue
+            exposition.add(
+                name, "gauge", help_text, (("module", module_id),), "%d" % value
+            )
+
+    exposition.add(
+        "ns8_volume_collector_duration_seconds",
+        "gauge",
+        "Duration of the last volume metrics collection",
+        (),
+        "%.6f" % duration_seconds,
+    )
+    # Without this, a fault that skips every module looks identical to a node
+    # with no modules: collect() returns empty, the file is still valid and
+    # the success timestamp keeps advancing, so nothing alerts.
+    exposition.add(
+        "ns8_volume_collector_skipped_modules",
+        "gauge",
+        "Modules that could not be collected in the last collection",
+        (),
+        "%d" % skipped,
+    )
+    exposition.add(
+        "ns8_volume_collector_last_success_timestamp_seconds",
+        "gauge",
+        "Unix timestamp of the last successful collection",
+        (),
+        "%d" % timestamp,
+    )
+    return exposition.render()
+
+
+def write_atomic(path, text):
+    """Write text to path through a temporary file, then rename it in place.
+
+    The temporary name is fixed rather than carrying the pid: a process
+    killed between the write and the rename leaves it behind, and the unit
+    can only clean up a name it knows. It stays outside node_exporter's
+    *.prom glob either way, so it is never scraped.
+    """
+    temporary = "%s.tmp" % path
+    with open(temporary, "w") as fp:
+        fp.write(text)
+    os.rename(temporary, path)
+
+
+def refresh(output):
+    os.makedirs(os.path.dirname(output) or ".", exist_ok=True)
+    skipped = []
+    started = time.time()
+    volumes, modules = collect(skipped=skipped)
+    elapsed = time.time() - started
+    write_atomic(
+        output,
+        render(volumes, modules, elapsed, int(time.time()), skipped=len(skipped)),
+    )
+    return len(volumes)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Write per-volume disk usage for the node_exporter textfile collector"
+    )
+    parser.add_argument(
+        "-o", "--output", default=DEFAULT_OUTPUT, help="Output file path"
+    )
+    arguments = parser.parse_args()
+    refresh(arguments.output)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
