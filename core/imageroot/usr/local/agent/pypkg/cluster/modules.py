@@ -34,6 +34,7 @@ import datetime
 import time
 import cluster.userdomains
 import copy
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 _repo_testing_cache = {}
 def _repo_has_testing_flag(rdb, repo_name):
@@ -135,6 +136,12 @@ def _get_http_session():
 def _list_repository_modules(rdb, repository_name, repository_url):
     cache_key = f'cluster/repository_cache/{repository_name}'
     hcache = rdb.hgetall(cache_key)
+    if hcache.get('error'):
+        # A request already failed for this repository a short time ago
+        # (see below): skip the remote query instead of paying its
+        # timeout again, e.g. on the next list-modules call right after
+        # this one.
+        return []
     repo_view = get_repo_view()
     if not hcache or hcache.get('repo_view') != repo_view:
         url = _urljoin(repository_url, "repodata.json")
@@ -144,17 +151,28 @@ def _list_repository_modules(rdb, repository_name, repository_url):
                 if hsubscription and url.startswith("https://subscription.nethserver.com/"):
                     # Send system_id for HTTP Basic authentication
                     osession.auth = (hsubscription["system_id"], hashlib.sha256(hsubscription["auth_token"].encode()).hexdigest())
-                resp = osession.get(url, params={"view": repo_view}, timeout=(10, 15))
+                view_timeout = 4 if repo_view == 'latest' else 10
+                resp = osession.get(url, params={"view": repo_view}, timeout=view_timeout)
                 repodata_raw = resp.text
                 updated = resp.headers.get('Last-Modified', "")
         except Exception as ex:
             print(f"Fetching {url}:", ex, file=sys.stderr)
-            # If repository is not accessible or invalid, just return an empty array
+            # If repository is not accessible or invalid, just return an
+            # empty array, and replace the cache entry with a short-lived
+            # error marker in the same key, so a burst of near-simultaneous
+            # calls does not each pay the same timeout again.
+            rdb.delete(cache_key)
+            rdb.hset(cache_key, mapping={"error": "1"})
+            rdb.expire(cache_key, 60)
             return []
         hcache = {"data": repodata_raw, "updated": updated, "repo_view": repo_view}
     modules = _parse_repository_metadata(repository_name, repository_url, hcache['updated'], hcache['data'])
     # Save inside the cache if data is valid
     if modules:
+        # Clear any stale "error" marker left by a previous failed
+        # attempt before writing the successful result: hset() merges
+        # fields into the existing hash, it does not replace it.
+        rdb.delete(cache_key)
         # Save also repodata file date
         rdb.hset(cache_key, mapping=hcache)
         # Set cache expiration to 3600 seconds
@@ -331,12 +349,31 @@ def _get_available_modules(rdb):
         repositories.append(krepo.removeprefix("cluster/repository/"))
     # Alphabetical order, where last item has higher priority:
     repositories.sort(reverse=True)
+    enabled_repos = []
     for nrepo in repositories:
         repo = rdb.hgetall('cluster/repository/' + nrepo)
         # Skip non-enabled repositories
         if repo.get("status", "0") != "1":
             continue
-        for rmod in _list_repository_modules(rdb, nrepo, repo["url"]):
+        enabled_repos.append((nrepo, repo["url"]))
+
+    # Fetch every enabled repository concurrently: sequentially, one
+    # unreachable repository burns its own connect/read timeout on top of
+    # every other request, stalling the whole lookup for tens of seconds.
+    repo_modules = {}
+    with ThreadPoolExecutor() as pool:
+        futures = {
+            pool.submit(_list_repository_modules, rdb, nrepo, url): nrepo
+            for nrepo, url in enabled_repos
+        }
+        for future in as_completed(futures):
+            repo_modules[futures[future]] = future.result()
+
+    # Merge results in priority order, unchanged from the sequential
+    # version: a source already claimed by a higher-priority repository
+    # is not overwritten by a lower-priority one.
+    for nrepo, _url in enabled_repos:
+        for rmod in repo_modules[nrepo]:
             if rmod["source"] in modules:
                 continue # skip duplicated images from lower priority modules
             modules[rmod["source"]] = rmod
