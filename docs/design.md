@@ -67,6 +67,8 @@ List of things considered almost stable, with or without an existing prototype i
   - Samba AD and OpenLDAP account providers (both are LDAP)
   - Remote LDAP account provider
   - No Unix accounts for domain users
+  - [OIDC domains](sso.md) for federated authentication (SSO), alongside
+    the LDAP-based domains above
 - Cluster agent, Node agent, Module agents
 - Events and Actions
 - Container Registry as software repository for everything
