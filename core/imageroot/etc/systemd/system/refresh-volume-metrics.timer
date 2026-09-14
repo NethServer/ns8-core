@@ -1,0 +1,10 @@
+[Unit]
+Description=Volume disk usage collection trigger
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=3600
+
+[Install]
+WantedBy=timers.target
