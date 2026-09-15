@@ -250,16 +250,28 @@ Configuration is saved inside Redis so it is available to all nodes:
 
 See [database schema](database.md) for details.
 
-## User destination mail
+### User destination mail address
 
-The mail of the user can be obtained in 2 different ways:
+The `notify-password-warning` script obtains the destination address
+from the LDAP `mail` attribute of each user entry in OpenLDAP or Samba
+LDAP DB. The attribute is editable from cluster-admin UI and backend actions.
 
-1. from an OpenLDAP or Samba field: the address is saved inside the `mail` field of the user object; this field has the highest priority
-2. using an internal mail server instance: if there is an internal mail server, the address is automatically set to `<user>@<user_domain>`, the local Postfix
-   instance will deliver the mail to the user mailbox
+For user entries without `mail` LDAP attribute, the script checks the
+existence of a Mail application with a configured mail domain named after
+the user domain. If such mail domain exists in the cluster, the destination
+address is set to `<user>@<user_domain>`. In this case the cluster must be
+configured to use the same Mail application as [SMTP server for
+notifications](smarthost.md) which correctly resolves the `user_domain` MX address.
 
-Please note that if the cluster is configured to send mail notifications using an external SMTP server,
-the mail field must be set in the user object because the `user_domain` is not known to the external server.
+For example user `john` of user domain `ad.example.org` has no address in
+the `mail` LDAP attribute. A Mail application with matching domain
+`ad.example.org` is searched. If one is found the notification is sent to
+`john@ad.example.org`. Delivery is possible if Mail is also set as the
+cluster SMTP server for notifications.
+
+In other cases where notifications are sent using an external SMTP server,
+set the `mail` attribute in the user object if `user_domain` MX address
+cannot be resolved by external SMTP server.
 
 To check for expiring passwords and immediately send notifications, run the following command on the leader node:
 
@@ -267,7 +279,7 @@ To check for expiring passwords and immediately send notifications, run the foll
 systemctl start password-warning.service
 ```
 
-## Default templates
+### Default templates
 
 Default templates are stored inside `/etc/nethserver/password_warning` directory.
 Available templates:
@@ -292,7 +304,7 @@ The API takes the following parameters:
 - `mail_template_content`: the content of the template, must be base64 encoded
 - `mail_subject`: the subject of the email in plain text. 
 
-#### Using a Custom Template
+### Using a Custom Template
 
 Field `mail_template_content` and `mail_subject` use [Python string template](https://docs.python.org/3/library/string.html#template-strings).
 The string representation can contain the following placeholders: `$user`, `$name`, `$domain`, `$days`, `$portal_url`.
