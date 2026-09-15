@@ -1564,7 +1564,7 @@
         "mail": "Mail address",
         "mail_format": "Invalid mail format",
         "phone_extension_field": "Phone extension (optional)",
-        "phone_extension_tooltip": "Internal phone extension assigned to the user",
+        "phone_extension_tooltip": "This value is saved in the LDAP 'ipPhone' or 'telephoneNumber' attribute and is used by applications such as NethVoice",
         "phone_extension_pattern": "Allowed characters: letters, digits, space and '()+,-.=/:?",
         "username_helper_text": "Must start with a letter. Only letters, numbers, hyphens and underscores are allowed",
         "display_name_helper_text": "Name displayed to other users",
