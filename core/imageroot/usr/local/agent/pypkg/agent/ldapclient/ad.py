@@ -145,7 +145,7 @@ class LdapclientAd(LdapclientBase):
     def list_users(self, extra_info=False):
         attributes = ['displayName', 'sAMAccountName', 'userAccountControl']
         if extra_info:
-            attributes += ['whenCreated', 'pwdLastSet', 'mail']
+            attributes += ['whenCreated', 'pwdLastSet', 'mail', 'ipPhone']
         user_entry_generator = self.ldapconn.extend.standard.paged_search(
             search_base = self.base_dn,
             search_filter = f'(&(objectClass=user)(objectCategory=person){self._get_users_search_filter_clause()})',
@@ -193,6 +193,8 @@ class LdapclientAd(LdapclientBase):
                     user['expired'] = False
                 # mail can be a string or an empty array, just treat ans empty arrays as an empty string
                 user["mail"] = entry['attributes'].get('mail') if entry['attributes'].get('mail') else ""
+                # ipPhone (used to store the phone extension) behaves like mail: string or empty array
+                user["phone_extension"] = entry['attributes'].get('ipPhone') if entry['attributes'].get('ipPhone') else ""
             users.append(user)
 
         return users
