@@ -130,7 +130,14 @@ json.dump(
             },
             'product': {
                 'name': facts['ansible_product_name'],
-                'manufacturer': facts['ansible_system_vendor']
+                'version': facts.get('ansible_product_version', ''),
+                'uuid': agent.facts.pseudo_string(facts.get('ansible_product_uuid', ''), 16),
+                'manufacturer': facts['ansible_system_vendor'],
+                'board': facts.get('ansible_board_name', ''),
+                'bios': {
+                    'version': facts.get('ansible_bios_version', ''),
+                    'vendor': facts.get('ansible_bios_vendor', '')
+                }
             },
             'virtual': virtualization,
             'memory': {
