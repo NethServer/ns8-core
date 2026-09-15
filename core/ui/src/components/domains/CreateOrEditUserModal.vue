@@ -47,16 +47,24 @@
         />
         <NsTextInput
           v-model.trim="mail"
-          :label="$t('domain_users.mail_field')"
+          :label="
+            $t('domain_users.mail') + ' (' + $t('common.optional') + ')'
+          "
           :invalid-message="error.mail"
           :disabled="loading.addUser || loading.alterUser"
           autocomplete="off"
           :placeholder="
             $t('common.eg_value', { value: 'jane.doe@example.com' })
           "
+          tooltipAlignment="start"
+          tooltipDirection="bottom"
           ref="mail"
           type="email"
-        />
+        >
+          <template slot="tooltip">{{
+            $t("domain_users.mail_tooltip")
+          }}</template>
+        </NsTextInput>
         <NsMultiSelect
           v-model="selectedGroups"
           :options="allGroupsForSelect"
