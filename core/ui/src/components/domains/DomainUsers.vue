@@ -93,6 +93,9 @@
                     {{ row.mail ? row.mail : "" }}
                   </cv-data-table-cell>
                   <cv-data-table-cell>
+                    {{ row.phone_extension ? row.phone_extension : "" }}
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
                     <cv-tag
                       v-if="row.locked"
                       kind="high-contrast"
@@ -247,7 +250,13 @@ export default {
       isEditingUser: false,
       currentUser: null,
       userToDelete: null,
-      tableColumns: ["user", "display_name", "mail", "attributes"],
+      tableColumns: [
+        "user",
+        "display_name",
+        "mail",
+        "phone_extension",
+        "attributes",
+      ],
       tablePage: [],
       loading: {
         listDomainUsers: false,
