@@ -90,10 +90,10 @@
                     {{ row.display_name }}
                   </cv-data-table-cell>
                   <cv-data-table-cell>
-                    {{ row.mail ? row.mail : "" }}
+                    {{ row.mail ? row.mail : "-" }}
                   </cv-data-table-cell>
                   <cv-data-table-cell>
-                    {{ row.phone_extension ? row.phone_extension : "" }}
+                    {{ row.phone_extension ? row.phone_extension : "-" }}
                   </cv-data-table-cell>
                   <cv-data-table-cell>
                     <cv-tag

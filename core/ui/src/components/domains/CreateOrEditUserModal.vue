@@ -59,7 +59,9 @@
         />
         <NsTextInput
           v-model.trim="phoneExtension"
-          :label="$t('domain_users.phone_extension_field')"
+          :label="
+            $t('domain_users.phone_extension') + ' (' + $t('common.optional') + ')'
+          "
           :invalid-message="error.phone_extension"
           :disabled="loading.addUser || loading.alterUser"
           autocomplete="off"
