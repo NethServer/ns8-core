@@ -277,6 +277,7 @@ export default {
         "display_name",
         "password",
         "mail",
+        "phone_extension",
         "groups",
         "locked",
         "must_change_password",

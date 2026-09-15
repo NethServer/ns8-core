@@ -153,6 +153,9 @@
                       {{ row.mail }}
                     </cv-data-table-cell>
                     <cv-data-table-cell>
+                      {{ row.phone_extension }}
+                    </cv-data-table-cell>
+                    <cv-data-table-cell>
                       {{ row.groups.join(", ") }}
                     </cv-data-table-cell>
                     <cv-data-table-cell>
@@ -238,6 +241,7 @@ export default {
         "display_name",
         "password",
         "mail",
+        "phone_extension",
         "groups",
         "locked",
         "must_change_password",
@@ -320,7 +324,7 @@ export default {
 
             // Check if first row is the header and remove it
             const headerString =
-              "user,display_name,password,mail,groups,locked,must_change_password,no_password_expiration";
+              "user,display_name,password,mail,phone_extension,groups,locked,must_change_password,no_password_expiration";
             if (
               results.data.length > 0 &&
               results.data[0].join(",") === headerString
@@ -345,10 +349,11 @@ export default {
               1: "display_name",
               2: "password",
               3: "mail",
-              4: "groups",
-              5: "locked",
-              6: "must_change_password",
-              7: "no_password_expiration",
+              4: "phone_extension",
+              5: "groups",
+              6: "locked",
+              7: "must_change_password",
+              8: "no_password_expiration",
             };
 
             // Define which fields should be booleans

@@ -1562,6 +1562,7 @@
         "display_name_string_lte": "Must be less than or equal to 256 characters",
         "mail_field": "Email (optional)",
         "mail": "Mail address",
+        "phone_extension": "Phone extension",
         "mail_format": "Invalid mail format",
         "username_helper_text": "Must start with a letter. Only letters, numbers, hyphens and underscores are allowed",
         "display_name_helper_text": "Name displayed to other users",
