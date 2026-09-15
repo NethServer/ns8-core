@@ -43,3 +43,33 @@ import agent
 rdb = agent.redis_connect(use_replica=True)
 cluster_network = rdb.get('cluster/network')
 ```
+
+Any additional keyword argument supported by the installed Redis Python
+library's `redis.Redis()` constructor can be passed to
+`agent.redis_connect()`. These arguments are forwarded to the Redis client and
+can configure options such as socket timeouts, retries, TLS, database selection,
+and response decoding.
+
+```python
+rdb = agent.redis_connect(
+    use_replica=True,
+    socket_timeout=10,
+    socket_connect_timeout=5,
+)
+```
+
+`decode_responses` is one of these additional arguments. Redis responses are
+decoded from UTF-8 to strings by default. Consumers that need to validate or
+process each Redis bulk string independently can request the original bytes:
+
+```python
+import agent
+
+raw_rdb = agent.redis_connect(
+    use_replica=True,
+    decode_responses=False,
+)
+for key in raw_rdb.scan_iter('cluster/*'):
+    raw_hash = raw_rdb.hgetall(key)
+    # key, raw_hash field names, and raw_hash values are bytes
+```
