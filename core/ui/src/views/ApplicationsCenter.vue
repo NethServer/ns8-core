@@ -1044,11 +1044,7 @@ export default {
           const installedData = updateEntry || item;
           extractedModules.push({
             id: installedData.id || "",
-            // Use module logo URL if available, else fallback to instance logo later in the template
-            logo:
-              moduleData.logo && moduleData.logo.startsWith("http")
-                ? moduleData.logo
-                : "",
+            logo: moduleData.logo || "",
             module: moduleData.name || "", // we want a humanized module name
             node: installedData.node || "",
             node_ui_name: installedData.node_ui_name || "",
