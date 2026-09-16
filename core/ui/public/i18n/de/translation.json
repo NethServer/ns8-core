@@ -84,7 +84,7 @@
         "restoring_applications": "Anwendungen wiederherstellen",
         "other_applications_can_be_restored_later": "Einige Anwendungen können derzeit nicht wiederhergestellt werden, da für diesen Cluster zusätzliche Volumes konfiguriert sind. Diese Anwendungen können später über die Seite „@:backup.title“ wiedergestellt werden.",
         "only_core_applications_can_be_restored": "Zum jetzigen Zeitpunkt können nur Kernmodule wiederhergestellt werden",
-        "network_check_failed": "Network connectivity check failed. Ensure the node can access Internet and DNS resolution is working"
+        "network_check_failed": "Netzwerk-Prüfung fehlgeschlagen. Bitte prüfen Sie, dass der Knoten eine Internetverbindung hat und die DNS-Auflösung funktioniert."
     },
     "password": {
         "uppercase_letter": "Großbuchstaben",
@@ -135,11 +135,11 @@
         "search_placeholder": "Anwendungen durchsuchen",
         "no_apps": "keine Anwendungen",
         "favorites": "Favoriten",
-        "set_favorite_apps": "bevorzugte Anwendungen festlegen",
+        "set_favorite_apps": "Bevorzugte Anwendungen festlegen",
         "favorite": "Favorit",
         "search_results": "Suchergebnis",
         "no_apps_description": "Um eine Anwendung zu installieren, öffnen Sie das Software-Center",
-        "edit_favorite_apps": "bevorzugte Anwendungen bearbeiten",
+        "edit_favorite_apps": "Bevorzugte Anwendungen bearbeiten",
         "all_apps": "Alle Anwendungen",
         "grid": "Rasteransicht"
     },
@@ -165,11 +165,11 @@
         "add-external-domain": "externe Domäne hinzufügen",
         "list-backups": "Datensicherungen auflisten",
         "update-core": "Core aktualisieren",
-        "add-backup-repository": "Sicherungs-Ziel hinzufügen",
+        "add-backup-repository": "Ziel hinzufügen",
         "add-backup": "Sicherung hinzufügen",
         "clone-module": "Modul klonen",
         "configure-module": "Anwendung konfigurieren",
-        "alter-backup-repository": "Sicherungs-Ziel ändern",
+        "alter-backup-repository": "Ziel bearbeiten",
         "add-favorite": "Favorit hinzufügen",
         "add-internal-provider": "internen Anbieter hinzufügen",
         "get-defaults": "Standardwerte abrufen",
@@ -181,7 +181,7 @@
         "change-user-password": "Benutzerkennwort ändern",
         "add-repository": "Ziel hinzufügen",
         "remove-user": "Benutzer löschen",
-        "restore-modules": "Apps wiederherstellen",
+        "restore-modules": "Anwendungen wiederherstellen",
         "restore-cluster": "Cluster wiederherstellen",
         "remove-favorite": "Favorit entfernen",
         "read-backup-repositories": "Sicherungs-Repository einlesen",
@@ -191,7 +191,7 @@
         "set-external-provider-name": "Name des externen Anbieter festlegen",
         "remove-node": "Knoten entfernen",
         "remove-internal-domain": "Interne Domäne löschen",
-        "restore-module": "App wiederherstellen",
+        "restore-module": "Anwendung wiederherstellen",
         "retrieve-cluster-backup": "Cluster-Datensicherung einlesen",
         "list-favorites": "Favoriten anzeigen",
         "read-backup-repository": "Sicherungs-Ziel einlesen",
@@ -222,7 +222,7 @@
         "update-module": "Modul aktualisieren",
         "set-route": "Route erstellen",
         "update-modules": "Module aktualisieren",
-        "remove-module": "App entfernen",
+        "remove-module": "Anwendung entfernen",
         "get-smarthost": "Smarthost-Einstellungen abrufen",
         "get-domain-user": "Domänen-Benutzer abrufen",
         "get-user-info": "Benutzerinformationen abrufen",
@@ -263,7 +263,10 @@
         "get-password-warning": "Kennwort-Warnung anzeigen",
         "list-mountpoints": "Einhängepunkte auflisten",
         "list-cluster-backup-endpoints": "Sicherungsziele des Clusters auflisten",
-        "import-backup-destinations": "Sicherungsziele importieren"
+        "import-backup-destinations": "Sicherungsziele importieren",
+        "set-trusted-proxies": "Configure frontend proxies",
+        "get-trusted-proxies": "Retrieve frontend proxies",
+        "set-automatic-updates": "Set automatic updates"
     },
     "common": {
         "hide": "verstecken",
@@ -365,7 +368,7 @@
         "not_configured": "nicht konfiguriert",
         "go_to_page": "zu {page} wechseln",
         "core_app": "Kernmodul",
-        "unchanged_password": "Unchanged"
+        "unchanged_password": "Unverändert"
     },
     "error": {
         "403": "Vorgang nicht zulässig",
@@ -494,7 +497,6 @@
         "clone_app": "Anwendung klonen",
         "core_update_will_start_in_a_moment": "Aktualisierung des Core startet gleich...",
         "cloning_app_to_node": "Klone {instance} nach {node}",
-        "app_updates": "Aktualisierungen der Anwendung",
         "apps_update_will_start_in_a_moment": "Aktualisierung der Anwendungen startet gleich...",
         "authors": "Autor | Autoren",
         "app_categories": {
@@ -636,8 +638,6 @@
         "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
         "restart_instance": "Restart instance",
-        "title_tooltip": "Discover, install and update applications in your cluster. To manage installed applications, go to {applications} page",
-        "go_to_applications_center": "Go to applications center",
         "no_volumes_to_restore": "No volumes to restore",
         "volume_usage": "{used} used of {total} ({percentage}% used)",
         "default_storage": "Default volume",
@@ -648,7 +648,29 @@
         "restart_application": "Restart application",
         "other_files_remain_on_default_volume": "Other application files remain on the default volume",
         "node_volume_usage_percentage_used": "({percentage}% used)",
-        "node_volume_usage_free_vs_total": "{available} free of {total}"
+        "node_volume_usage_free_vs_total": "{available} free of {total}",
+        "go_to_updates": "Go to Updates",
+        "automatic_updates_disabled_description": "Regular updates help protect applications, core components, and operating system packages from security and stability issues.",
+        "disable_automatic_updates_description2": "Disabling automatic updates may expose the cluster to security issues and reduced stability. Ensure updates are reviewed and installed manually on a regular basis.",
+        "disable_instance_automatic_updates_description1": "{instance} will be excluded from automatic application updates.",
+        "no_updates_available": "No updates are currently available.",
+        "disable_automatic_updates_description1": "Automatic updates will be disabled for all applications, core components, and operating system packages in this cluster.",
+        "enable_instance_automatic_updates_description2": "Updates will be installed automatically as soon as they are available.",
+        "disable_instance_automatic_updates_description2": "You can still update it manually.",
+        "automatic_updates_disabled_title": "Automatic updates disabled",
+        "enable_automatic_updates_description1": "Automatic updates will be enabled for applications, core components, and operating system packages in this cluster.",
+        "go_to_software_repositories": "Go to Software repositories",
+        "enable_automatic_updates": "Enable automatic updates",
+        "applications_update_description": "Application updates are installed automatically. Individual applications can be excluded from automatic updates.",
+        "core_updates_available_description": "Core updates are available.",
+        "disable_automatic_updates": "Disable automatic updates",
+        "enable_automatic_updates_description2": "Applications previously excluded from automatic updates will remain so.",
+        "enable_instance_automatic_updates_description1": "{instance} will be included in automatic application updates.",
+        "core_update_description": "Core updates help keep the cluster secure, stable, and up to date.",
+        "go_to_core_applications": "Go to Core applications",
+        "core_and_app_updates_available": "Core updates and {numUpdates} application update are available. | Core updates and {numUpdates} application updates are available.",
+        "applications_update": "Applications update",
+        "updates_disabled": "Updates disabled"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Admin {admin} löschen",
@@ -672,15 +694,15 @@
     },
     "notification": {
         "no_notifications_description": "Es liegen aktuell keine Meldungen vor",
-        "confirm_abort": "Abbrechen bestätigen",
+        "confirm_abort": "Ja, abbrechen",
         "ongoing": "in Arbeit",
         "no_notifications": "keine Meldungen",
         "notifications": "Meldungen",
         "recent": "vor kurzem",
         "unread": "ungelesen|ungelesene",
         "abort": "Abbrechen",
-        "confirm_cancel_text": "Abort this task? This action can't be undone",
-        "keep_running": "Keep running"
+        "confirm_cancel_text": "Diese Aufgabe abbrechen? Diese Aktion kann nicht rückgängig gemacht werden",
+        "keep_running": "Weiterlaufen lassen"
     },
     "domain_users": {
         "change_password": "Kennwort ändern",
@@ -732,7 +754,6 @@
         "group_with_same_name": "A group with this name already exists",
         "user_with_same_name": "A user with this name already exists",
         "mail": "Mail address",
-        "mail_field": "Mail address (optional)",
         "mail_format": "Invalid mail format",
         "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._",
         "must_change_password_information_description": "Assign a temporary password; user must change it on first access",
@@ -749,7 +770,11 @@
         "confirm_password": "Confirm password",
         "username_helper_text": "Must start with a letter. Only letters, numbers, hyphens and underscores are allowed",
         "must_change_password": "Must change password",
-        "export_data": "Export data"
+        "export_data": "Export data",
+        "mail_tooltip": "This value is saved in the LDAP 'mail' attribute and is used by applications, for example to send password expiration warnings, and configure the user's alias address in the Mail application",
+        "phone_extension": "Phone extension",
+        "phone_extension_pattern": "Allowed characters: letters, digits, space and '()+,-.=/:?",
+        "phone_extension_tooltip": "This value is saved in the LDAP 'telephoneNumber' attribute and is used by applications such as NethVoice"
     },
     "audit_trail": {
         "title": "Audit-Protokoll",
@@ -939,7 +964,7 @@
         "configure": "konfigurieren",
         "backup_details": "Sicherungsdetails",
         "backblaze": "Backblase B2",
-        "app_instances_not_backed_up": "nicht gesicherte Anwendungen",
+        "app_instances_not_backed_up": "Anwendungen nicht gesichert",
         "backup_enabled": "Sicherung aktiviert",
         "delete_repo_explanation_1": "Jede geplante Datensicherung mit diesem Ziel wird ebenfalls gelöscht. Die gespeicherten Daten bleiben aber am Ziel erhalten. Dieser Vorgang kann NICHT rückgängig gemacht werden.",
         "default_backup_name": "Sicherung nach {repository}",
@@ -957,7 +982,7 @@
         "custom_schedule_tooltip_description": "Syntax: Systemd Kalendereintrag.",
         "restore_app": "Eine App wiederherstellen",
         "schedule": "Zeitplan",
-        "app_instances_not_backed_up_description": "Für {numInstances} App-Instanz ist keine Datensicherung konfiguriert| Für {numInstances} App-Instanzen ist keine Datensicherung konfiguriert.",
+        "app_instances_not_backed_up_description": "{numInstances} Anwendung hat keine Datensicherung konfiguriert. Bearbeiten Sie eine bestehende Sicherung oder erstellen Sie eine neue.|{numInstances} Anwendungen haben keine Datensicherung konfiguriert. Bearbeiten Sie eine bestehende Sicherung oder erstellen Sie eine neue.",
         "samba": "Windows Dateifreigabe",
         "status": "Status",
         "run_backup_now": "Datensicherungen jetzt starten",
@@ -1119,7 +1144,7 @@
         "rclone_configuration_source_upload_configuration": "Upload configuration file",
         "delete_destination": "Delete destination",
         "no_read_permission": "Cannot connect, authenticate, or read from the backup destination.",
-        "edit_destination": "Edit destination",
+        "edit_destination": "Ziel bearbeiten",
         "rclone_configuration_source": "Configuration source",
         "delete_repo_notice_description": "Removing this destination also deletes all scheduled backups that use it. Existing backup data will remain on the storage. Keep a previously downloaded cluster backup or the destination data encryption key to preserve access to the stored data.",
         "rclone_configuration_file_helper": "Supported file types: .conf, .txt"
@@ -1140,13 +1165,10 @@
         "path_tooltip": "Pfad muss mit '/' starten. Die Auswertung findet mit und ohne Schrägstrich statt, z.B. : '/foo' matcht auf '/foo' sowie '/foo/*'",
         "type": "Typ",
         "strip_prefix": "entfernen von Pfad-Präfix in URL",
-        "show_all": "alle anzeigen",
         "no_http_route": "Keine HTTP-Route",
         "url": "URL",
         "host_is_not_valid_not_localhost": "'localhost' oder '127.0.0.1' kann nur in Verbindung mit einem Pfad genutzt werden",
         "name": "Name",
-        "routes_filtered": "Routen (gefiltert)",
-        "routes_filtered_description": "Zeige nur Routen für {node}",
         "no_http_route_description": "Es ist keine Route konfiguriert",
         "url_format": "ungültiger URL",
         "traefik_instance": "Traefik Instanz",
@@ -1188,7 +1210,29 @@
         "delete_route_with_certificate_message": "Durch das Löschen dieser Route werden die mit {node} verbundenen HTTP-Clients vorübergehend getrennt.",
         "traefik_will_be_restarted": "Traefik wird neustarten",
         "revoke_certificate_message": "Durch das Widerrufen des Routen-Zertifikats werden die Verbindungen der mit {node} verbundenen HTTP-Clients vorübergehend unterbrochen.",
-        "invalid_ipv6": "Ungültige IPv6-Adresse: {ip}"
+        "invalid_ipv6": "Ungültige IPv6-Adresse: {ip}",
+        "edit_frontend_proxy_node": "Edit frontend proxies of {node}",
+        "bad_ip_address": "Invalid IP address. Enter one IPv4 or IPv6 address per line, without CIDR prefix",
+        "add_frontend_proxy_disabled_message": "All cluster nodes already have a frontend proxy",
+        "no_frontend_proxy": "No frontend proxy configured",
+        "routes": "Routes",
+        "frontend_proxy_restart_message": "HTTP clients on {node} will be briefly disconnected. The connection should resume automatically — otherwise, reload the page manually.",
+        "delete_frontend_proxy_node": "Delete frontend proxies of {node}",
+        "add_frontend_proxy": "Add frontend proxy",
+        "delete_frontend_proxy_description": "Delete the frontend proxies of {node}? Traefik will no longer see the real client IP address.",
+        "trust_depth_tooltip": "With a trust depth of 1, the client IP address is read from the last entry of the X-Forwarded-For header.",
+        "frontend_proxies_helper": "Enter one IPv4 or IPv6 address per line",
+        "frontend_proxies_description": "A cluster node can stand behind a reverse proxy or a load balancer. Traefik trusts the X-Forwarded-For header of the addresses listed here to recover the original client IP.",
+        "filter_frontend_proxies": "Filter",
+        "choose_node": "Choose node",
+        "trust_depth": "Trust depth",
+        "trust_depth_invalid": "Enter a number of 1 or higher",
+        "trust_depth_helper": "Number of frontend proxy levels",
+        "depth": "Trust depth",
+        "no_frontend_proxy_description": "Add the addresses of the proxies in front of a cluster node.",
+        "frontend_proxies": "Frontend proxies",
+        "add_frontend_proxy_no_node_message": "No cluster node with a Traefik instance is available",
+        "proxies": "Frontend proxies"
     },
     "domain_configuration": {
         "cannot_delete_provider": "Anbieter kann nicht gelöscht werden",
@@ -1282,7 +1326,16 @@
         "current_instance": "Aktive Instanz",
         "loki_instance_title": "Mehrfache Loki Instanzen",
         "loki_instance_description": "Protokolle sind in mehr als einer Loki Instanz gespeichert. Im folgenden Feld eine auswählen",
-        "loki_instance": "Loki Instanz"
+        "loki_instance": "Loki Instanz",
+        "regexp_helper": "RE2 syntax is accepted. Hint: '(?i)' ignores case, '|' matches any of the words",
+        "substring_helper": "Exact and case-sensitive substring match",
+        "websocket_disconnected": "The connection to the server was lost while the query was running. Run the search again.",
+        "time_format_helper": "24-hour",
+        "showing_lines_of_no_interval": "Showing {n} of {max} lines",
+        "showing_lines_no_interval": "Showing {n} lines",
+        "showing_lines": "Showing {n} lines from {from} to {to}",
+        "showing_lines_of": "Showing {n} of {max} lines from {from} to {to}",
+        "regexp": "Regular expression"
     },
     "settings_cluster": {
         "title": "Cluster"
@@ -1514,7 +1567,9 @@
         "delete_certificate_message": "Durch das Löschen des Zertifikats werden die Verbindungen der mit {node} verbundenen HTTP-Clients vorübergehend unterbrochen.",
         "names_format": "Invalid FQDN format",
         "certificates_not_displayed": "Certificates configured on {instanceId} are not displayed",
-        "node_is_offline": "{node} is offline"
+        "node_is_offline": "{node} is offline",
+        "obsolete_tooltip": "No longer referenced by any application, HTTP route, or user request. It may still be reachable by clients until renewed or deleted.",
+        "certificates": "Certificates"
     },
     "node_detail": {
         "num_core": "{num} Kern",
@@ -1602,16 +1657,20 @@
         "title": "Kontoanbieter"
     },
     "settings_acme_servers": {
-        "title": "ACME-Server",
-        "no_acme_server_description": "Kein ACME Server konfiguriert",
-        "search_acme_server": "ACME server suchen",
         "node": "Knoten",
-        "no_acme_server": "Kein ACME server",
-        "reload_page": "Seite muss neu geladen werden",
-        "edit_acme_server_leader_node_warning": "Der ACME-Server des Hauptknoten wird bearbeitet. Nach klick auf 'ACME-Server bearbeiten' muss die Seite neu geladen werden",
-        "url": "URL",
-        "edit_acme_server": "ACME-Server ändern",
-        "edit_acme_server_for_node": "ACME-Server für Knoten {node} ändern"
+        "no_acme_settings": "No ACME settings",
+        "challenge": "Challenge type",
+        "save_result_unknown": "Traefik restarted before the result was known. Check the ACME settings of the node and try again if needed.",
+        "challenge_http_01": "HTTP-01",
+        "acme_directory_url_helper": "URL of the ACME provider used to issue certificates.",
+        "acme_restart_message": "HTTP clients on {node} will be briefly disconnected. The connection should resume automatically — otherwise, reload the page manually.",
+        "challenge_tls_alpn_01": "TLS-ALPN-01",
+        "edit_acme_settings": "Edit ACME settings",
+        "acme_settings_for_node": "ACME settings for {node}",
+        "acme_settings": "ACME settings",
+        "acme_directory_url": "ACME directory URL",
+        "no_acme_settings_description": "No cluster node has ACME settings configured",
+        "search_acme_settings": "Search"
     },
     "settings": {
         "title": "Einstellungen"
