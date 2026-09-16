@@ -65,6 +65,23 @@
             $t("domain_users.mail_tooltip")
           }}</template>
         </NsTextInput>
+        <NsTextInput
+          v-model.trim="phoneExtension"
+          :label="
+            $t('domain_users.phone_extension') + ' (' + $t('common.optional') + ')'
+          "
+          :invalid-message="error.phone_extension"
+          :disabled="loading.addUser || loading.alterUser"
+          autocomplete="off"
+          :placeholder="$t('common.eg_value', { value: '123' })"
+          tooltipAlignment="start"
+          tooltipDirection="bottom"
+          ref="phone_extension"
+        >
+          <template slot="tooltip">{{
+            $t("domain_users.phone_extension_tooltip")
+          }}</template>
+        </NsTextInput>
         <NsMultiSelect
           v-model="selectedGroups"
           :options="allGroupsForSelect"
@@ -209,6 +226,7 @@ export default {
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
       mail: "",
+      phoneExtension: "",
       mustChangePassword: false,
       noPasswordExpirationPolicy: false,
       policy: {
@@ -238,6 +256,7 @@ export default {
         groups: "",
         listPasswordPolicy: "",
         mail: "",
+        phone_extension: "",
         mustChangePassword: "",
         noPasswordExpirationPolicy: "",
       },
@@ -297,6 +316,7 @@ export default {
           this.newPassword = "";
           this.clearConfirmPasswordCommand++;
           this.mail = "";
+          this.phoneExtension = "";
           this.mustChangePassword = false;
           this.noPasswordExpirationPolicy = false;
         } else {
@@ -306,6 +326,7 @@ export default {
           this.selectedGroups = [];
           this.getDomainUser();
           this.mail = this.user.mail || "";
+          this.phoneExtension = this.user.phone_extension || "";
           this.noPasswordExpirationPolicy =
             this.passwordExpirationPolicyEnabled;
         }
@@ -483,6 +504,7 @@ export default {
             locked: false,
             groups: this.selectedGroups,
             mail: this.mail ? this.mail : "",
+            phone_extension: this.phoneExtension ? this.phoneExtension : "",
             must_change_password: this.mustChangePassword,
             no_password_expiration: this.noPasswordExpirationPolicy,
           },
@@ -576,6 +598,7 @@ export default {
             display_name: this.displayName,
             groups: this.selectedGroups,
             mail: this.mail ? this.mail : "",
+            phone_extension: this.phoneExtension ? this.phoneExtension : "",
             no_password_expiration: this.noPasswordExpirationPolicy,
           },
           extra: {

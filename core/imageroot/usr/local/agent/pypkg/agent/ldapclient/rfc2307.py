@@ -129,7 +129,7 @@ class LdapclientRfc2307(LdapclientBase):
     def list_users(self, extra_info=False):
         attributes = ['displayName', 'uid', 'pwdAccountLockedTime']
         if extra_info:
-            attributes += ['mail', 'pwdChangedTime', 'createTimestamp', 'pwdPolicySubentry']
+            attributes += ['mail', 'telephoneNumber', 'pwdChangedTime', 'createTimestamp', 'pwdPolicySubentry']
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson){self._get_users_search_filter_clause()})',
             attributes=self.filter_schema_attributes(attributes),
         )[2]
@@ -159,6 +159,8 @@ class LdapclientRfc2307(LdapclientBase):
                     user["expired"] = False
                     user["password_expiration"] = -1
                 user["mail"] = entry['attributes'].get('mail')[0] if len(entry['attributes'].get('mail', [])) > 0 else ""
+                # telephoneNumber is used to store the phone extension
+                user["phone_extension"] = entry['attributes'].get('telephoneNumber')[0] if len(entry['attributes'].get('telephoneNumber', [])) > 0 else ""
             users.append(user)
 
         return users
