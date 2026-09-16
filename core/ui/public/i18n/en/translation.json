@@ -968,7 +968,8 @@
         "edit_acme_settings": "Edit ACME settings",
         "acme_settings_for_node": "ACME settings for {node}",
         "acme_restart_message": "HTTP clients on {node} will be briefly disconnected. The connection should resume automatically — otherwise, reload the page manually.",
-        "save_result_unknown": "Traefik restarted before the result was known. Check the ACME settings of the node and try again if needed."
+        "save_result_unknown": "Traefik restarted before the result was known. Check the ACME settings of the node and try again if needed.",
+        "acme_settings_not_displayed": "ACME settings configured on {instanceId} are not displayed"
     },
     "apps_lets_encrypt": {
         "lets_encrypt_tips": "Requests a Let's Encrypt TLS certificate automatically. Disabling this option deletes the existing certificate (if any). You can also view or delete it in Cluster settings > TLS certificates.",

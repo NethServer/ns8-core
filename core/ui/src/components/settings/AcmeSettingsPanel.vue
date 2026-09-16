@@ -7,6 +7,22 @@
     <cv-tile light>
       <!-- no nested cv-grid: bx--grid caps at 99rem and centers, leaving empty
            gutters above 1584px -->
+      <NsInlineNotification
+        v-for="instance in offlineTraefikInstances"
+        :key="instance.id"
+        kind="error"
+        :title="
+          $t('settings_tls_certificates.node_is_offline', {
+            node: getOfflineNodeLabel(instance),
+          })
+        "
+        :description="
+          $t('settings_acme_servers.acme_settings_not_displayed', {
+            instanceId: instance.id,
+          })
+        "
+        :showCloseButton="false"
+      />
       <!-- NsDataTable would replace the rows: report partial failures here -->
       <NsInlineNotification
         v-if="tableError && servers.length"
@@ -129,6 +145,7 @@ export default {
         "settings_acme_servers.challenge",
       ],
       servers: [],
+      offlineTraefikInstances: [],
       isShownEditServerModal: false,
       currentErrorAction: "",
       currentErrorDescription: "",
@@ -207,6 +224,12 @@ export default {
     hideEditServerModal() {
       this.isShownEditServerModal = false;
     },
+    getOfflineNodeLabel(instance) {
+      return this.getNodeLabel({
+        id: instance.node,
+        ui_name: instance.node_ui_name,
+      });
+    },
     clearTableError() {
       this.error.getAcmeServer = "";
       this.currentErrorAction = "";
@@ -216,6 +239,7 @@ export default {
       // a handler of a previous round would decrement the counter of this one
       this.clearTaskListeners();
       this.servers = [];
+      this.offlineTraefikInstances = [];
       // otherwise a transient error sticks after the nodes answer again
       this.clearTableError();
       // count upfront: the counter must not hit zero between two iterations
@@ -255,10 +279,25 @@ export default {
 
         if (err) {
           console.error(`error creating task ${taskAction}`, err);
-          const errMessage = this.getErrorMessage(err);
-          this.error.getAcmeServer = errMessage;
-          this.currentErrorAction = this.$t("action." + taskAction);
-          this.currentErrorDescription = errMessage;
+          // Clean up orphaned event listeners since the task was never created
+          this.$root.$off(`${taskAction}-aborted-${eventId}`);
+          this.$root.$off(`${taskAction}-completed-${eventId}`);
+
+          if (err.response && err.response.status === 404) {
+            // 404 means the module API is unreachable: node is offline
+            if (
+              !this.offlineTraefikInstances.find(
+                (instance) => instance.id === traefikInstance.id
+              )
+            ) {
+              this.offlineTraefikInstances.push(traefikInstance);
+            }
+          } else {
+            const errMessage = this.getErrorMessage(err);
+            this.error.getAcmeServer = errMessage;
+            this.currentErrorAction = this.$t("action." + taskAction);
+            this.currentErrorDescription = errMessage;
+          }
           this.loading.getAcmeServerNum--;
         }
       }
