@@ -279,6 +279,9 @@ export default {
 
         if (err) {
           console.error(`error creating task ${taskAction}`, err);
+          // Clean up orphaned event listeners since the task was never created
+          this.$root.$off(`${taskAction}-aborted-${eventId}`);
+          this.$root.$off(`${taskAction}-completed-${eventId}`);
 
           if (err.response && err.response.status === 404) {
             // 404 means the module API is unreachable: node is offline
