@@ -1157,7 +1157,8 @@
         "acme_settings": "ACME settings",
         "acme_directory_url": "ACME directory URL",
         "no_acme_settings_description": "No cluster node has ACME settings configured",
-        "search_acme_settings": "Search"
+        "search_acme_settings": "Search",
+        "acme_settings_not_displayed": "ACME settings configured on {instanceId} are not displayed"
     },
     "login": {
         "2fa_description": "Open your authenticator app and enter the code",

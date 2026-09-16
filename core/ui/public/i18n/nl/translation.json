@@ -450,7 +450,8 @@
         "acme_settings": "ACME-instellingen",
         "acme_directory_url": "ACME directory-URL",
         "no_acme_settings_description": "Geen enkele cluster node heeft ACME-instellingen geconfigureerd",
-        "search_acme_settings": "Zoek"
+        "search_acme_settings": "Zoek",
+        "acme_settings_not_displayed": "ACME settings configured on {instanceId} are not displayed"
     },
     "settings_account": {
         "2fa_is_enabled": "Twee-factorauthenticatie is ingeschakeld",
