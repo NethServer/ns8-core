@@ -10,8 +10,10 @@ Fetch all info about the node, send back what gathered to cluster.
 '''
 
 import csv
+import dns.resolver
 import json
 import os
+import re
 import sys
 import subprocess
 import agent.volumes
@@ -59,6 +61,103 @@ def _get_facts():
             facts = e['event_data']['res'].get('ansible_facts', {})
             break
     return facts
+
+# Interfaces created by the container runtime are not part of the node network setup
+SKIPPED_INTERFACES = ('lo', 'veth', 'cni-', 'podman', 'docker')
+
+def _count_routes(family):
+    routes = _run(f"ip -{family} route show")
+    return len([route for route in routes.split("\n") if route])
+
+def _get_nameservers():
+    """Read the name servers of the node, as ns8-samba print-nameservers does"""
+    try:
+        resolver = dns.resolver.Resolver()
+        return [agent.facts.pseudo_ip(nameserver) for nameserver in resolver.nameservers]
+    except Exception as ex:
+        # A missing or malformed resolv.conf is not a reason to fail the action
+        print(agent.SD_WARNING + f"Cannot read the name servers: {ex}", file=sys.stderr)
+        return []
+
+def _interface_type(iface, iface_facts):
+    """Map the ansible interface type to the inventory interface type"""
+    ansible_type = iface_facts.get('type', '')
+    if ansible_type == 'bridge':
+        return 'bridge'
+    elif ansible_type == 'bonding':
+        return 'bond'
+    elif ansible_type == 'tunnel':
+        return 'tunnel'
+    elif '.' in iface:
+        return 'vlan'
+    return 'ethernet'
+
+def _interface_addresses(iface_facts):
+    """List the global addresses of the interface, pseudonymized"""
+    addresses = []
+    ipv4 = iface_facts.get('ipv4', {})
+    for ipv4_address in [ipv4] + iface_facts.get('ipv4_secondaries', []):
+        if ipv4_address.get('address'):
+            addresses.append({
+                'family': 'inet',
+                'address': agent.facts.pseudo_ip(ipv4_address['address']),
+                'prefix': ipv4_address.get('prefix', '')
+            })
+    for ipv6_address in iface_facts.get('ipv6', []):
+        if ipv6_address.get('scope') == 'global':
+            addresses.append({
+                'family': 'inet6',
+                'address': agent.facts.pseudo_ip(ipv6_address['address']),
+                'prefix': ipv6_address.get('prefix', '')
+            })
+    return addresses
+
+def _get_network(facts):
+    """Describe the network setup of the node: active interfaces with their
+    addresses, and how many interfaces of each type are configured
+    """
+    default_ipv4 = facts.get('ansible_default_ipv4', {})
+    configuration = {}
+    interface_counts = {'ethernet': 0, 'bonds': 0, 'bridges': 0, 'vlans': 0, 'tunnels': 0}
+    counted_types = {'ethernet': 'ethernet', 'bond': 'bonds', 'bridge': 'bridges',
+                     'vlan': 'vlans', 'tunnel': 'tunnels'}
+
+    for iface in facts.get('ansible_interfaces', []):
+        if iface.startswith(SKIPPED_INTERFACES):
+            continue
+        # Ansible stores the interface facts in a key with a sanitized name
+        iface_facts = facts.get('ansible_' + re.sub(r'[^A-Za-z0-9_]', '_', iface), {})
+        if not iface_facts.get('active'):
+            continue
+
+        iface_type = _interface_type(iface, iface_facts)
+        interface_counts[counted_types[iface_type]] += 1
+
+        addresses = _interface_addresses(iface_facts)
+        if not addresses:
+            continue # the interface is not configured
+
+        ipv4 = iface_facts.get('ipv4', {})
+        is_default_interface = default_ipv4.get('interface') == iface
+        configuration[iface] = {
+            'name': iface,
+            'type': iface_type,
+            'props': {
+                'ipaddr': addresses[0]['address'],
+                'netmask': ipv4.get('netmask', ''),
+                'gateway': agent.facts.pseudo_ip(default_ipv4.get('gateway', '')) if is_default_interface else ''
+            },
+            'addresses': addresses
+        }
+
+    return {
+        'configuration': configuration,
+        'interface_counts': interface_counts,
+        'route_info': {
+            'count_ipv4_route': _count_routes(4),
+            'count_ipv6_route': _count_routes(6)
+        }
+    }
 
 facts = _get_facts()
 
@@ -113,6 +212,8 @@ json.dump(
             'fqdn': agent.facts.pseudo_domain(facts['ansible_fqdn']),
             'default_ipv4': agent.facts.pseudo_ip(facts.get('ansible_default_ipv4', {}).get('address', '')),
             'default_ipv6': agent.facts.pseudo_ip(facts.get('ansible_default_ipv6', {}).get('address', '')),
+            'dns_servers': _get_nameservers(),
+            'network': _get_network(facts),
             'kernel_version': facts['ansible_kernel'],
             'uptime_seconds': facts['ansible_uptime_seconds'],
             'timezone': facts['ansible_date_time']['tz'],
