@@ -347,7 +347,7 @@ export default {
       });
     },
     getStatusCompleted(taskContext, taskResult, traefikInstance) {
-      const traefikService = taskResult.services.find(
+      const traefikService = taskResult.output.services.find(
         (service) => service.name === "traefik"
       );
 
