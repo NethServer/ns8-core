@@ -41,6 +41,10 @@ def _node_creation_date():
         creation_time = 0
     return datetime.fromtimestamp(creation_time, tz=timezone.utc).isoformat()
 
+def _mb_to_bytes(value):
+    """Convert the megabytes of the ansible memory facts to bytes"""
+    return int(value) * 1024 * 1024
+
 def _get_core_version():
     with open('/etc/nethserver/core.env', encoding='utf-8') as file:
         for line in file:
@@ -111,6 +115,35 @@ def _interface_addresses(iface_facts):
                 'prefix': ipv6_address.get('prefix', '')
             })
     return addresses
+
+# Podman internal storage and container volumes are not part of the node storage layout
+SKIPPED_MOUNTPOINTS = re.compile(r'^/var/lib/containers/storage/overlay|/_data$')
+
+def _get_mountpoints():
+    """Collect the storage usage of the real filesystems of the node"""
+    try:
+        findmnt_proc = subprocess.run(
+            ['findmnt', '--real', '--list', '--json', '--bytes', '--output=TARGET,SIZE,USED,AVAIL'],
+            stdout=subprocess.PIPE, check=True, text=True)
+        filesystems = json.loads(findmnt_proc.stdout).get('filesystems', [])
+    except Exception as ex:
+        # A findmnt failure is not a reason to fail the action
+        print(agent.SD_WARNING + f"Cannot read the mount points: {ex}", file=sys.stderr)
+        return {}
+
+    mountpoints = {}
+    for ofs in filesystems:
+        target = ofs['target']
+        if target in mountpoints or SKIPPED_MOUNTPOINTS.search(target):
+            continue # skip duplicated and container-related mount points
+        if ofs.get('size') is None:
+            continue # the filesystem does not report its size
+        mountpoints[target] = {
+            'total_bytes': ofs['size'],
+            'used_bytes': ofs['used'],
+            'available_bytes': ofs['avail']
+        }
+    return mountpoints
 
 def _get_network(facts):
     """Describe the network setup of the node: active interfaces with their
@@ -219,6 +252,7 @@ json.dump(
             'timezone': facts['ansible_date_time']['tz'],
             'volumesconf_mountpoint_count': len(agent.volumes.get_base_paths()),
             'volumesconf_application_types': agent.volumes.get_application_types(),
+            'mountpoints': _get_mountpoints(),
             'version': _get_core_version(),
             'distro': {
                 'name': facts['ansible_distribution'],
@@ -243,12 +277,14 @@ json.dump(
             'virtual': virtualization,
             'memory': {
                 'swap': {
-                    'used_bytes': facts['ansible_memory_mb']['swap']['used'],
-                    'available_bytes': facts['ansible_memory_mb']['swap']['free']
+                    'total_bytes': _mb_to_bytes(facts['ansible_memory_mb']['swap']['total']),
+                    'used_bytes': _mb_to_bytes(facts['ansible_memory_mb']['swap']['used']),
+                    'available_bytes': _mb_to_bytes(facts['ansible_memory_mb']['swap']['free'])
                 },
                 'system': {
-                    'used_bytes': facts['ansible_memory_mb']['real']['used'],
-                    'available_bytes': facts['ansible_memory_mb']['real']['free']
+                    'total_bytes': _mb_to_bytes(facts['ansible_memory_mb']['real']['total']),
+                    'used_bytes': _mb_to_bytes(facts['ansible_memory_mb']['real']['used']),
+                    'available_bytes': _mb_to_bytes(facts['ansible_memory_mb']['real']['free'])
                 }
             },
             'pci': list(pci.values())
