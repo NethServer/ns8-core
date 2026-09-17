@@ -71,7 +71,7 @@
               <NsInlineNotification
                 v-for="instance in stoppedTraefikInstances"
                 :key="instance.id"
-                kind="warning"
+                kind="error"
                 :title="
                   $t('settings_http_routes.traefik_is_stopped', {
                     node: getInstanceNodeLabel(instance),
