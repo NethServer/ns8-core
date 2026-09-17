@@ -405,6 +405,7 @@
         "list-routes": "List routes",
         "get-trusted-proxies": "Retrieve frontend proxies",
         "set-trusted-proxies": "Configure frontend proxies",
+        "get-status": "Get module status",
         "set-certificate": "Set certificate",
         "set-default-certificate": "Request certificate",
         "delete-certificate": "Delete certificate",
@@ -869,7 +870,10 @@
         "frontend_proxy_restart_message": "HTTP clients on {node} will be briefly disconnected. The connection should resume automatically — otherwise, reload the page manually.",
         "node_is_offline": "{node} is offline",
         "routes_not_displayed": "Routes configured on {instanceId} are not displayed",
-        "frontend_proxies_not_displayed": "Frontend proxies configured on {instanceId} are not displayed"
+        "frontend_proxies_not_displayed": "Frontend proxies configured on {instanceId} are not displayed",
+        "traefik_is_stopped": "Traefik is stopped on {node}",
+        "routes_not_displayed_traefik_stopped": "Routes configured on {instanceId} cannot be displayed until Traefik is started",
+        "frontend_proxies_not_enforced": "Frontend proxies configured on {instanceId} are saved but not enforced until Traefik is started"
     },
     "settings_tls_certificates": {
         "title": "TLS certificates",

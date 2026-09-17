@@ -54,6 +54,7 @@
                 :traefikInstances="traefikInstances"
                 :isLoadingInstances="loading.listInstalledModules"
                 :instancesError="error.listInstalledModules"
+                :stoppedTraefikInstances="stoppedTraefikInstances"
                 :selectedNodeId.sync="q.selectedNodeId"
               />
             </cv-tab>
@@ -67,6 +68,7 @@
                 :traefikInstances="traefikInstances"
                 :isLoadingInstances="loading.listInstalledModules"
                 :instancesError="error.listInstalledModules"
+                :stoppedTraefikInstances="stoppedTraefikInstances"
                 :selectedNodeId.sync="q.proxyNodeId"
               />
             </cv-tab>
@@ -111,8 +113,11 @@ export default {
         proxyNodeId: "",
       },
       traefikInstances: [],
+      stoppedTraefikInstances: [],
       // [eventName, handler] pairs registered on $root for the read chain
       readListeners: [],
+      // bumped by every status batch: an older one bails out when it resumes
+      statusGeneration: 0,
       loading: {
         listInstalledModules: false,
       },
@@ -252,6 +257,73 @@ export default {
       // traefikInstances watcher
       this.traefikInstances = traefikInstances;
       this.loading.listInstalledModules = false;
+      this.getTraefikStatuses();
+    },
+    async getTraefikStatuses() {
+      const generation = ++this.statusGeneration;
+      this.stoppedTraefikInstances = [];
+
+      for (const traefikInstance of this.traefikInstances) {
+        const taskAction = "get-status";
+        const eventId = this.getUuid();
+
+        this.registerListener(
+          this.readListeners,
+          `${taskAction}-aborted-${eventId}`,
+          this.getStatusAborted
+        );
+
+        this.registerListener(
+          this.readListeners,
+          `${taskAction}-completed-${eventId}`,
+          (taskContext, taskResult) => {
+            this.getStatusCompleted(taskContext, taskResult, traefikInstance);
+          }
+        );
+
+        const res = await to(
+          this.createModuleTaskForApp(traefikInstance.id, {
+            action: taskAction,
+            extra: {
+              title: this.$t("action." + taskAction),
+              isNotificationHidden: true,
+              traefikInstance: traefikInstance,
+              eventId,
+            },
+          })
+        );
+        // a newer batch (traefikInstances changed) must not resume this one
+        if (generation !== this.statusGeneration) {
+          return;
+        }
+        const err = res[0];
+
+        if (err) {
+          // a 404 here just means the node is offline: each panel already
+          // raises its own offline banner from its own get-* 404, so this
+          // stays silent to avoid stacking two banners for one cause
+          this.$root.$off(`${taskAction}-aborted-${eventId}`);
+          this.$root.$off(`${taskAction}-completed-${eventId}`);
+        }
+      }
+    },
+    getStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+    },
+    getStatusCompleted(taskContext, taskResult, traefikInstance) {
+      const traefikService = taskResult.services.find(
+        (service) => service.name === "traefik"
+      );
+
+      if (traefikService && !traefikService.active) {
+        if (
+          !this.stoppedTraefikInstances.find(
+            (instance) => instance.id === traefikInstance.id
+          )
+        ) {
+          this.stoppedTraefikInstances.push(traefikInstance);
+        }
+      }
     },
   },
 };

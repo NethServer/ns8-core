@@ -67,9 +67,28 @@
                 :showCloseButton="false"
               />
             </div>
-            <div v-if="listRoutesErrors.length">
+            <div v-if="stoppedTraefikInstances.length">
               <NsInlineNotification
-                v-for="(error, index) in listRoutesErrors"
+                v-for="instance in stoppedTraefikInstances"
+                :key="instance.id"
+                kind="warning"
+                :title="
+                  $t('settings_http_routes.traefik_is_stopped', {
+                    node: getInstanceNodeLabel(instance),
+                  })
+                "
+                :description="
+                  $t(
+                    'settings_http_routes.routes_not_displayed_traefik_stopped',
+                    { instanceId: getTraefikInstanceLabel(instance) }
+                  )
+                "
+                :showCloseButton="false"
+              />
+            </div>
+            <div v-if="visibleListRoutesErrors.length">
+              <NsInlineNotification
+                v-for="(error, index) in visibleListRoutesErrors"
                 :key="index"
                 kind="error"
                 :title="error.title"
@@ -353,6 +372,12 @@ export default {
       type: String,
       default: "",
     },
+    // fetched once by the parent and shared with the frontend proxies tab:
+    // an instance whose node answers but whose traefik service is down
+    stoppedTraefikInstances: {
+      type: Array,
+      default: () => [],
+    },
     // the node filter is a query param: the view owns it, this panel mirrors it
     selectedNodeId: {
       type: String,
@@ -401,6 +426,16 @@ export default {
     },
     loadingRoutes() {
       return this.isLoadingInstances || this.loading.listRoutesNum > 0;
+    },
+    // a stopped traefik makes list-routes fail too: the scoped warning
+    // above already explains it, drop the generic error for that instance
+    visibleListRoutesErrors() {
+      const stoppedIds = this.stoppedTraefikInstances.map(
+        (instance) => instance.id
+      );
+      return this.listRoutesErrors.filter(
+        (error) => !stoppedIds.includes(error.instanceId)
+      );
     },
     filteredRoutes() {
       let routes = this.routes;
@@ -647,6 +682,7 @@ export default {
             }
           } else {
             this.listRoutesErrors.push({
+              instanceId: traefikInstance.id,
               title: this.$t("action." + taskAction),
               description: `${this.$t(
                 "error.generic_error"
@@ -665,6 +701,7 @@ export default {
         taskResult
       );
       this.listRoutesErrors.push({
+        instanceId: traefikInstance.id,
         title: this.$t("action." + taskContext.action),
         description: `${this.$t(
           "error.generic_error"

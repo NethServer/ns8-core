@@ -95,6 +95,24 @@
                 :showCloseButton="false"
               />
             </div>
+            <div v-if="stoppedTraefikInstances.length">
+              <NsInlineNotification
+                v-for="instance in stoppedTraefikInstances"
+                :key="instance.id"
+                kind="warning"
+                :title="
+                  $t('settings_http_routes.traefik_is_stopped', {
+                    node: getInstanceNodeLabel(instance),
+                  })
+                "
+                :description="
+                  $t('settings_http_routes.frontend_proxies_not_enforced', {
+                    instanceId: getTraefikInstanceLabel(instance),
+                  })
+                "
+                :showCloseButton="false"
+              />
+            </div>
             <div v-if="getTrustedProxiesErrors.length">
               <NsInlineNotification
                 v-for="(error, index) in getTrustedProxiesErrors"
@@ -339,6 +357,12 @@ export default {
     instancesError: {
       type: String,
       default: "",
+    },
+    // fetched once by the parent and shared with the routes tab: an
+    // instance whose node answers but whose traefik service is down
+    stoppedTraefikInstances: {
+      type: Array,
+      default: () => [],
     },
     selectedNodeId: {
       type: String,
