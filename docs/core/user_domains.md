@@ -259,19 +259,21 @@ LDAP DB. The attribute is editable from cluster-admin UI and backend actions.
 For user entries without `mail` LDAP attribute, the script checks the
 existence of a Mail application with a configured mail domain named after
 the user domain. If such mail domain exists in the cluster, the destination
-address is set to `<user>@<user_domain>`. In this case the cluster must be
-configured to use the same Mail application as [SMTP server for
-notifications](smarthost.md) which correctly resolves the `user_domain` MX address.
+address is set to `<user>@<user_domain>`.
+
+- If that Mail application is also the one configured as [SMTP server for
+  notifications](smarthost.md), the submission is internal and
+  `user_domain` does not need to be resolvable via a public DNS MX record.
+- Otherwise, delivery to `user_domain` follows conventional SMTP rules and
+  does require a public DNS MX record.
 
 For example user `john` of user domain `ad.example.org` has no address in
 the `mail` LDAP attribute. A Mail application with matching domain
 `ad.example.org` is searched. If one is found the notification is sent to
-`john@ad.example.org`. Delivery is possible if Mail is also set as the
-cluster SMTP server for notifications.
+`john@ad.example.org`.
 
-In other cases where notifications are sent using an external SMTP server,
-set the `mail` attribute in the user object if `user_domain` MX address
-cannot be resolved by external SMTP server.
+If neither the `mail` LDAP attribute is set nor a Mail application is bound
+to the user domain, no notification is sent.
 
 To check for expiring passwords and immediately send notifications, run the following command on the leader node:
 
