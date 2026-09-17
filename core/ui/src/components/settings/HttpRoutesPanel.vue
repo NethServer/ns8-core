@@ -51,16 +51,32 @@
         </cv-row>
         <cv-row>
           <cv-column>
-            <!-- NsDataTable replaces the rows with its error: report a
-                 partial failure here, so the nodes that did answer
-                 stay readable -->
-            <NsInlineNotification
-              v-if="tableError && routes.length"
-              kind="error"
-              :title="tableErrorTitle"
-              :description="tableErrorDescription"
-              :showCloseButton="false"
-            />
+            <!-- one instance failing must not hide routes from the others:
+                 report per-instance failures here, table keeps its rows -->
+            <div v-if="offlineTraefikInstances.length">
+              <NsInlineNotification
+                v-for="instance in offlineTraefikInstances"
+                :key="instance.id"
+                kind="error"
+                :title="
+                  $t('settings_http_routes.node_is_offline', {
+                    node: getInstanceNodeLabel(instance),
+                  })
+                "
+                :description="getOfflineInstanceDescription(instance)"
+                :showCloseButton="false"
+              />
+            </div>
+            <div v-if="listRoutesErrors.length">
+              <NsInlineNotification
+                v-for="(error, index) in listRoutesErrors"
+                :key="index"
+                kind="error"
+                :title="error.title"
+                :description="error.description"
+                :showCloseButton="false"
+              />
+            </div>
             <NsDataTable
               :allRows="filteredRoutes"
               :columns="i18nTableColumns"
@@ -75,9 +91,9 @@
               "
               :isLoading="loadingRoutes"
               :skeletonRows="5"
-              :isErrorShown="!!tableError && !routes.length"
-              :errorTitle="tableErrorTitle"
-              :errorDescription="tableErrorDescription"
+              :isErrorShown="!!instancesError"
+              :errorTitle="$t('action.list-installed-modules')"
+              :errorDescription="instancesError"
               :itemsPerPageLabel="$t('pagination.items_per_page')"
               :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
               :ofTotalPagesLabel="$t('pagination.of_total_pages')"
@@ -357,8 +373,6 @@ export default {
       isShownCreateOrEditRouteModal: false,
       isShownRouteDetailModal: false,
       isShownDeleteRouteModal: false,
-      currentErrorAction: "",
-      currentErrorDescription: "",
       currentRoute: null,
       routeToDelete: null,
       isEditingRoute: false,
@@ -373,9 +387,10 @@ export default {
         deleteRoute: false,
       },
       error: {
-        listRoutes: "",
         deleteRoute: "",
       },
+      listRoutesErrors: [],
+      offlineTraefikInstances: [],
     };
   },
   computed: {
@@ -386,17 +401,6 @@ export default {
     },
     loadingRoutes() {
       return this.isLoadingInstances || this.loading.listRoutesNum > 0;
-    },
-    tableError() {
-      return this.instancesError || this.error.listRoutes;
-    },
-    tableErrorTitle() {
-      return this.instancesError
-        ? this.$t("action.list-installed-modules")
-        : this.currentErrorAction;
-    },
-    tableErrorDescription() {
-      return this.instancesError || this.currentErrorDescription;
     },
     filteredRoutes() {
       let routes = this.routes;
@@ -576,9 +580,8 @@ export default {
 
       this.routes = [];
       // otherwise a transient error sticks after the nodes answer again
-      this.error.listRoutes = "";
-      this.currentErrorAction = "";
-      this.currentErrorDescription = "";
+      this.listRoutesErrors = [];
+      this.offlineTraefikInstances = [];
       // count the whole batch upfront: the counter must not reach zero between
       // two iterations
       this.loading.listRoutesNum = this.traefikInstances.length;
@@ -592,7 +595,9 @@ export default {
         this.registerListener(
           this.readListeners,
           `${taskAction}-aborted-${eventId}`,
-          this.listRoutesAborted
+          (taskResult, taskContext) => {
+            this.listRoutesAborted(taskResult, taskContext, traefikInstance);
+          }
         );
 
         this.registerListener(
@@ -623,20 +628,50 @@ export default {
         const err = res[0];
 
         if (err) {
-          console.error(`error creating task ${taskAction}`, err);
-          const errMessage = this.getErrorMessage(err);
-          this.error.listRoutes = errMessage;
-          this.currentErrorAction = this.$t("action." + taskAction);
-          this.currentErrorDescription = errMessage;
+          console.error(
+            `error creating task ${taskAction} for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
+            err
+          );
+          // the task was never created: these listeners will never fire
+          this.$root.$off(`${taskAction}-aborted-${eventId}`);
+          this.$root.$off(`${taskAction}-completed-${eventId}`);
+
+          if (err.response && err.response.status === 404) {
+            // 404 means the module API is unreachable: node is offline
+            if (
+              !this.offlineTraefikInstances.find(
+                (instance) => instance.id === traefikInstance.id
+              )
+            ) {
+              this.offlineTraefikInstances.push(traefikInstance);
+            }
+          } else {
+            this.listRoutesErrors.push({
+              title: this.$t("action." + taskAction),
+              description: `${this.$t(
+                "error.generic_error"
+              )} (${this.getTraefikInstanceLabel(
+                traefikInstance
+              )} - ${this.getInstanceNodeLabel(traefikInstance)})`,
+            });
+          }
           this.loading.listRoutesNum--;
         }
       }
     },
-    listRoutesAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.listRoutes = this.$t("error.generic_error");
-      this.currentErrorAction = this.$t("action." + taskContext.action);
-      this.currentErrorDescription = this.$t("error.generic_error");
+    listRoutesAborted(taskResult, taskContext, traefikInstance) {
+      console.error(
+        `${taskContext.action} aborted for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
+        taskResult
+      );
+      this.listRoutesErrors.push({
+        title: this.$t("action." + taskContext.action),
+        description: `${this.$t(
+          "error.generic_error"
+        )} (${this.getTraefikInstanceLabel(
+          traefikInstance
+        )} - ${this.getInstanceNodeLabel(traefikInstance)})`,
+      });
       this.loading.listRoutesNum--;
     },
     listRoutesCompleted(taskContext, taskResult) {
@@ -699,6 +734,27 @@ export default {
       this.filter.text = "";
       // "all", not "": NsComboBox only repaints its text on a matching option
       this.internalSelectedNodeId = "all";
+    },
+    getTraefikInstanceLabel(instance) {
+      let label = instance.id;
+
+      if (instance.ui_name && instance.ui_name.trim()) {
+        label = `${instance.ui_name} (${instance.id})`;
+      }
+      return label;
+    },
+    // the mixin's getNodeLabel() takes a {id, ui_name} node, but a
+    // traefikInstance names its node via node/node_ui_name instead
+    getInstanceNodeLabel(traefikInstance) {
+      return this.getNodeLabel({
+        id: traefikInstance.node,
+        ui_name: traefikInstance.node_ui_name,
+      });
+    },
+    getOfflineInstanceDescription(instance) {
+      return this.$t("settings_http_routes.routes_not_displayed", {
+        instanceId: this.getTraefikInstanceLabel(instance),
+      });
     },
     onReloadRoutes() {
       this.listRoutes();
