@@ -113,6 +113,16 @@
                 :showCloseButton="false"
               />
             </div>
+            <div v-if="statusCheckErrors.length">
+              <NsInlineNotification
+                v-for="(error, index) in statusCheckErrors"
+                :key="index"
+                kind="error"
+                :title="error.title"
+                :description="error.description"
+                :showCloseButton="false"
+              />
+            </div>
             <div v-if="getTrustedProxiesErrors.length">
               <NsInlineNotification
                 v-for="(error, index) in getTrustedProxiesErrors"
@@ -361,6 +371,12 @@ export default {
     // fetched once by the parent and shared with the routes tab: an
     // instance whose node answers but whose traefik service is down
     stoppedTraefikInstances: {
+      type: Array,
+      default: () => [],
+    },
+    // populated only when the get-status check itself failed for a reason
+    // other than the node being offline: rare, but otherwise invisible
+    statusCheckErrors: {
       type: Array,
       default: () => [],
     },

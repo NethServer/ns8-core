@@ -55,6 +55,7 @@
                 :isLoadingInstances="loading.listInstalledModules"
                 :instancesError="error.listInstalledModules"
                 :stoppedTraefikInstances="stoppedTraefikInstances"
+                :statusCheckErrors="statusCheckErrors"
                 :selectedNodeId.sync="q.selectedNodeId"
               />
             </cv-tab>
@@ -70,6 +71,7 @@
                 :instancesError="error.listInstalledModules"
                 :stoppedTraefikInstances="stoppedTraefikInstances"
                 :selectedNodeId.sync="q.proxyNodeId"
+                :statusCheckErrors="statusCheckErrors"
               />
             </cv-tab>
           </NsTabs>
@@ -114,6 +116,7 @@ export default {
       },
       traefikInstances: [],
       stoppedTraefikInstances: [],
+      statusCheckErrors: [],
       // [eventName, handler] pairs registered on $root for the read chain
       readListeners: [],
       // bumped by every status batch: an older one bails out when it resumes
@@ -262,6 +265,7 @@ export default {
     async getTraefikStatuses() {
       const generation = ++this.statusGeneration;
       this.stoppedTraefikInstances = [];
+      this.statusCheckErrors = [];
 
       for (const traefikInstance of this.traefikInstances) {
         const taskAction = "get-status";
@@ -270,7 +274,9 @@ export default {
         this.registerListener(
           this.readListeners,
           `${taskAction}-aborted-${eventId}`,
-          this.getStatusAborted
+          (taskResult, taskContext) => {
+            this.getStatusAborted(taskResult, taskContext, traefikInstance);
+          }
         );
 
         this.registerListener(
@@ -307,8 +313,38 @@ export default {
         }
       }
     },
-    getStatusAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
+    getStatusAborted(taskResult, taskContext, traefikInstance) {
+      console.error(
+        `${taskContext.action} aborted for instance ${traefikInstance.id} on node ${traefikInstance.node}`,
+        taskResult
+      );
+      // the panels' own get-* errors already cover a stopped/offline node:
+      // this is only reachable when the status check itself broke for some
+      // other reason, and nothing else on the page would ever surface that
+      this.statusCheckErrors.push({
+        title: this.$t("action." + taskContext.action),
+        description: `${this.$t(
+          "error.generic_error"
+        )} (${this.getTraefikInstanceLabel(
+          traefikInstance
+        )} - ${this.getInstanceNodeLabel(traefikInstance)})`,
+      });
+    },
+    getTraefikInstanceLabel(instance) {
+      let label = instance.id;
+
+      if (instance.ui_name && instance.ui_name.trim()) {
+        label = `${instance.ui_name} (${instance.id})`;
+      }
+      return label;
+    },
+    // the mixin's getNodeLabel() takes a {id, ui_name} node, but a
+    // traefikInstance names its node via node/node_ui_name instead
+    getInstanceNodeLabel(traefikInstance) {
+      return this.getNodeLabel({
+        id: traefikInstance.node,
+        ui_name: traefikInstance.node_ui_name,
+      });
     },
     getStatusCompleted(taskContext, taskResult, traefikInstance) {
       const traefikService = taskResult.services.find(
