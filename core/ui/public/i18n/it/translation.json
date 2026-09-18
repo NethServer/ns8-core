@@ -289,7 +289,7 @@
         "title": "Log di sistema",
         "start": "Avvia",
         "search_query": "Query di ricerca",
-        "max_lines": "Numero massimo di linee",
+        "max_lines": "Righe massime",
         "wrap_text": "Testo a capo",
         "timezone": "Fuso orario",
         "select_timezone": "Seleziona il fuso orario",
