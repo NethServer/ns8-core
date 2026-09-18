@@ -1,0 +1,8 @@
+[Unit]
+Description=Send cluster sizing report to the insights server
+After=apply-updates.service
+
+[Service]
+Type=oneshot
+ExecStart=runagent send-sizing-report
+SyslogIdentifier=%N
