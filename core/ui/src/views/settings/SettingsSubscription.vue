@@ -139,16 +139,25 @@
                   </div>
                 </div>
               </template>
-              <template
+              <div
                 v-if="
                   !loading.getSubscription && subscription.status == 'active'
                 "
+                class="subscription-details"
               >
                 <div class="key-value-setting">
                   <span class="label">{{
                     $t("settings_subscription.system_id")
                   }}</span>
-                  <span class="value">{{ subscription.system_id }}</span>
+                  <span class="value">
+                    <cv-link
+                      v-if="subscription.system_url"
+                      :href="subscription.system_url"
+                      target="_blank"
+                      >{{ subscription.system_id }}</cv-link
+                    >
+                    <template v-else>{{ subscription.system_id }}</template>
+                  </span>
                 </div>
                 <div class="key-value-setting">
                   <span class="label">{{
@@ -156,11 +165,19 @@
                   }}</span>
                   <span class="value">{{ subscription.plan_name }}</span>
                 </div>
+                <div v-if="subscription.company" class="key-value-setting">
+                  <span class="label">{{
+                    $t("settings_subscription.company")
+                  }}</span>
+                  <span class="value">{{ subscription.company }}</span>
+                </div>
                 <div class="key-value-setting">
                   <span class="label">{{
                     $t("settings_subscription.expire_date")
                   }}</span>
                   <span class="value">{{
+                    !subscription.expires ||
+                    !subscription.expire_date ||
                     subscription.expire_date === "-1"
                       ? $t("settings_subscription.no_expiration")
                       : formatDate(
@@ -190,7 +207,7 @@
                     ></cv-tag>
                   </span>
                 </div>
-              </template>
+              </div>
               <NsInlineNotification
                 v-if="error.setSubscription"
                 kind="error"
@@ -329,7 +346,17 @@
         $t("settings_subscription.remove_cluster_subscription_title")
       }}</template>
       <template slot="content">
-        <div>
+        <NsInlineNotification
+          kind="warning"
+          :title="
+            $t('settings_subscription.remove_cluster_subscription_irreversible_title')
+          "
+          :description="
+            $t('settings_subscription.remove_cluster_subscription_irreversible')
+          "
+          :showCloseButton="false"
+        />
+        <div class="mg-top-md">
           {{
             $t("settings_subscription.remove_cluster_subscription_description")
           }}
@@ -858,6 +885,20 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+// Two-column layout so all values line up regardless of label length:
+// the label column auto-sizes to the widest label, values share one edge.
+.subscription-details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 2rem;
+  row-gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.subscription-details .key-value-setting {
+  display: contents;
+}
 
 .icon-and-text {
   justify-content: flex-start;

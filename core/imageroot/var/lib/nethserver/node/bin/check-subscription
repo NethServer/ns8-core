@@ -33,12 +33,17 @@ function is_leader()
 function enable_nsent()
 {
     if is_leader ; then
+        # Heartbeat first: it is instantaneous and flips the system to "active"
+        # on my right away. Otherwise the oneshot inventory (~30s) and backup
+        # (builds + uploads the full cluster backup, can take minutes) below gate
+        # the first heartbeat, leaving the system "unknown/pending" in the meantime.
+        systemctl enable --now send-heartbeat.service
         if ! systemctl -q is-active send-inventory.timer; then
             # First time, send inventory and backup immediately
             systemctl start send-inventory
             systemctl start send-backup
         fi
-        systemctl enable --now send-heartbeat.service send-inventory.timer send-backup.timer
+        systemctl enable --now send-inventory.timer send-backup.timer
     else
         # Some services must be disabled in worker nodes
         systemctl disable --now send-heartbeat.service send-inventory.timer send-backup.timer
@@ -50,11 +55,14 @@ function enable_nscom()
 {
     # similar to nsent, without send-backup.timer
     if is_leader ; then
+        # Heartbeat first (see enable_nsent): flip to "active" immediately,
+        # before the slow oneshot inventory below.
+        systemctl enable --now send-heartbeat.service
         if ! systemctl -q is-active send-inventory.timer; then
-            # First time, send inventory and backup immediately
+            # First time, send inventory immediately
             systemctl start send-inventory
         fi
-        systemctl enable --now send-heartbeat.service send-inventory.timer
+        systemctl enable --now send-inventory.timer
     else
         # Some services must be disabled in worker nodes
         systemctl disable --now send-heartbeat.service send-inventory.timer
