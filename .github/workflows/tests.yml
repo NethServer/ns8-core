@@ -3,6 +3,9 @@ on:
   pull_request:
     types:
       - "labeled"
+  workflow_run:
+    workflows: ["core"]
+    types: [completed]
   workflow_dispatch:
 env:
   NS8_CORE_MODULES: "core traefik loki ldapproxy metrics"
@@ -11,7 +14,10 @@ jobs:
   ns8:
     if: |
       github.event_name == 'workflow_dispatch' ||
-      github.event.label.name == 'testing'
+      github.event.label.name == 'testing' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       startsWith(github.event.workflow_run.head_branch, 'renovate-'))
     name: Find NS8 cluster information
     runs-on: ubuntu-latest
     outputs:
@@ -19,10 +25,10 @@ jobs:
     steps:
       - id: tag
         env:
-          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REF: ${{ github.event.workflow_run.head_branch || github.head_ref }}
           REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "workflow_run" ]
           then
             tag="$HEAD_REF"
           else
@@ -49,13 +55,16 @@ jobs:
   check_ui_tests_needed:
     if: |
       github.event_name == 'workflow_dispatch' ||
-      github.event.label.name == 'testing'
+      github.event.label.name == 'testing' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       startsWith(github.event.workflow_run.head_branch, 'renovate-'))
     name: Check UI tests needed
     uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@v1
     with:
       ui_tests_strategy: on_renovate_ui_change
-      head_sha: ${{ github.sha }}
-      head_branch: ${{ github.head_ref || github.ref_name }}
+      head_sha: ${{ github.event.workflow_run.head_sha || github.sha }}
+      head_branch: ${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
       ui_dir: core/ui
       build_script: core/build-image.sh
 
@@ -66,6 +75,7 @@ jobs:
     with:
       setup_cluster: false
       path: core/
+      repo_ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       coremodules: ${{ join(fromJSON(needs.ns8.outputs.modules), ' ' ) }}
       run_ui_tests: ${{ needs.check_ui_tests_needed.outputs.ui_tests_needed == 'true' }}
     secrets:
@@ -75,9 +85,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: run_tests
     if: |
+      always() &&
       github.event.label.name == 'testing' &&
-      needs.infra_destroy.result == 'success' &&
-      always()
+      needs.run_tests.result == 'success'
     steps:
       - uses: actions/checkout@v4
       - uses: actions-ecosystem/action-remove-labels@v1
