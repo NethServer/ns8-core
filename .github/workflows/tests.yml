@@ -85,9 +85,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: run_tests
     if: |
+      always() &&
       github.event.label.name == 'testing' &&
-      needs.infra_destroy.result == 'success' &&
-      always()
+      needs.run_tests.result == 'success'
     steps:
       - uses: actions/checkout@v4
       - uses: actions-ecosystem/action-remove-labels@v1
