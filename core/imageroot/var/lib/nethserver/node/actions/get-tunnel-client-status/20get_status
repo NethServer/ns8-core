@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import subprocess
+import sys
+import os
+import agent
+
+rdb = agent.redis_connect(use_replica=True)
+
+# Read NODE_ID from environment
+node_id = os.environ.get("NODE_ID", "1")
+
+# Check if the systemd service is active
+result = subprocess.run(
+    ["systemctl", "is-active", "support-tunnel.service"],
+    capture_output=True, text=True
+)
+active = result.stdout.strip() == "active"
+
+# Get PID from systemd
+pid = 0
+if active:
+    pid_result = subprocess.run(
+        ["systemctl", "show", "-p", "MainPID", "--value", "support-tunnel.service"],
+        capture_output=True, text=True
+    )
+    try:
+        pid = int(pid_result.stdout.strip())
+    except ValueError:
+        pass
+
+# Read state from Redis
+session = rdb.hgetall(f"node/{node_id}/tunnel")
+
+json.dump({
+    "active": active,
+    "node_id": node_id,
+    "support_url": session.get("support_url", ""),
+    "system_key": session.get("system_key", ""),
+    "connected": session.get("connected", "") == "true",
+    "services": int(session.get("services_count", "0") or "0"),
+    "pid": pid,
+}, fp=sys.stdout)
