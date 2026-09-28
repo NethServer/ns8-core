@@ -36,6 +36,10 @@ namespace with host machine:
 
     /usr/bin/podman run ... --network=host ...
 
+NS8 modules do not use Podman `bridge` networks. Rootless modules cannot
+attach containers to a bridge of the host network. Rootful modules must
+not create one, because it changes the host network configuration.
+
 Modules using a well-known port, can bind any IP address for that port.
 For instance:
 
@@ -44,3 +48,24 @@ For instance:
 Such modules must be properly authorized to open the well-known port in
 the system firewall. See [system
 firewall]({{site.baseurl}}/core/firewall#configuration) for details.
+
+## Reach the node from a container
+
+A container with a `private` network, like the rootless default (Pasta),
+cannot connect to services bound to the node loopback address,
+`127.0.0.1`. To reach a node service from such a container, use the
+`host.containers.internal` name. It resolves to an address of the node,
+and the service must listen on it.
+
+For instance, connect to the [LDAP proxy]({{site.baseurl}}/core/user_domains#ldap-service-discovery)
+at `host.containers.internal:<port>`.
+
+To reach an application behind the Traefik HTTP proxy of the same node,
+map its host name to the node address:
+
+    /usr/bin/podman run ... --add-host app.example.org:host-gateway ...
+
+Podman resolves `host.containers.internal` to a special address, that is
+translated to the node IP address as it was when the container started.
+If the node IP address changes, restart the container to reach the node
+again.
