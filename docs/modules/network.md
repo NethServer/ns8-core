@@ -103,14 +103,13 @@ give the container a private address:
 The node main IP address is then reachable, like any other address.
 However, `host.containers.internal` and `host-gateway` no longer reach the
 node. Connect to node services through the node cluster VPN IP address,
-stored in the `node/{id}/vpn` key of [Redis]({{site.baseurl}}/core/database)
-(`ip_address` field). For instance:
+with the `cluster-localnode` name: the core adds it to the node
+`/etc/hosts` file, and Podman copies it into the container. For instance,
+connect to the LDAP proxy at `cluster-localnode:<port>`. The VPN IP
+address does not change when the node main IP address changes.
 
-    /usr/bin/podman run ... --add-host accountprovider:${NODE_VPN_IP} ...
-
-Here `NODE_VPN_IP` is an example environment variable that the module
-must set itself. The VPN IP address does not change when the node main
-IP address changes.
+Do not use the `cluster-leader` name: on the leader node it resolves to
+`127.0.0.1`, that is the container itself.
 
 In every case, published ports keep the client source IP address, and the
 node loopback interface is not exposed to the container. Do not use

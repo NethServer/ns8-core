@@ -34,8 +34,11 @@ Those ports are held by the [Ldapproxy
 module](https://github.com/NethServer/ns8-ldapproxy).
 It is a L4 proxy that relays the TCP connection to an LDAP backend server,
 enabling TLS and handling backend failures as needed. It listens on all
-IPv4 addresses of the node, and the node firewall keeps its ports closed
-on public interfaces.
+IPv4 addresses of the node. The node firewall keeps its ports closed on
+public interfaces, but other cluster nodes can connect to them through
+the VPN. This does not widen access to the LDAP databases: the backend
+servers relayed by Ldapproxy, like OpenLDAP and Samba DC, already listen
+on the node VPN or LAN IP addresses.
 
 If the LDAP client module runs in a Podman container with a `private`
 network (like the rootless default, Pasta), replace `127.0.0.1` with
