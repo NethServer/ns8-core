@@ -91,6 +91,8 @@ jobs:
       repo_ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       version_tag: ${{ needs.ns8.outputs.tag }}
       coremodules: ${{ join(fromJSON(needs.ns8.outputs.modules), ' ' ) }}
+      # Let's Encrypt needs a public name to issue the node certificate.
+      public_hostname: true
       # One leg only, or both legs post the same screenshots.
       run_ui_tests: ${{ matrix.distro == 'rocky9' && needs.check_ui_tests_needed.outputs.ui_tests_needed == 'true' }}
   remove_label:
