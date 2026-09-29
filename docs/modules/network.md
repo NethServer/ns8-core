@@ -53,19 +53,70 @@ firewall]({{site.baseurl}}/core/firewall#configuration) for details.
 
 A container with a `private` network, like the rootless default (Pasta),
 cannot connect to services bound to the node loopback address,
-`127.0.0.1`. To reach a node service from such a container, use the
-`host.containers.internal` name. It resolves to an address of the node,
-and the service must listen on it.
+`127.0.0.1`. By default Pasta also copies the node main IP address into
+the container: a connection to that address, or to a name that resolves
+to it, stays inside the container and does not reach the node. Other node
+addresses, like the cluster VPN IP, and other hosts are reachable as
+usual.
+
+Pick the first case that fits the module. In a Podman pod, pass the
+`--network` and `--add-host` options to `podman pod create`.
+
+### Case 1: node services
+
+To reach a node service, use the `host.containers.internal` name. It
+resolves to a special address that Pasta translates to the node main IP
+address. The service must listen on that address, not only on
+`127.0.0.1`, and it sees connections coming from the node main IP
+address.
 
 For instance, connect to the [LDAP proxy]({{site.baseurl}}/core/user_domains#ldap-service-discovery)
-at `host.containers.internal:<port>`.
+at `host.containers.internal:<port>`. To keep an existing host name in
+the application configuration, map it to the same address:
+
+    /usr/bin/podman run ... --add-host accountprovider:host-gateway ...
+
+The translation uses the node IP address as it was when the container
+started. If the node IP address changes, restart the container to reach
+the node again.
+
+### Case 2: applications of the same node, with known host names
 
 To reach an application behind the Traefik HTTP proxy of the same node,
-map its host name to the node address:
+like the module's own public host name, map each host name to the node
+address:
 
     /usr/bin/podman run ... --add-host app.example.org:host-gateway ...
 
-Podman resolves `host.containers.internal` to a special address, that is
-translated to the node IP address as it was when the container started.
-If the node IP address changes, restart the container to reach the node
-again.
+This also applies to the node FQDN: inside a container it resolves to a
+loopback address copied from the node `/etc/hosts` file, unless it is
+mapped as above.
+
+### Case 3: host names not known in advance
+
+If the module must reach any host name served by the same node, for
+example a document server that calls back arbitrary web applications,
+give the container a private address:
+
+    /usr/bin/podman run ... --network=pasta:-a,10.0.2.100,-n,24,-g,10.0.2.2 ...
+
+The node main IP address is then reachable, like any other address.
+However, `host.containers.internal` and `host-gateway` no longer reach the
+node. Connect to node services through the node cluster VPN IP address,
+stored in the `node/{id}/vpn` key of [Redis]({{site.baseurl}}/core/database)
+(`ip_address` field). For instance:
+
+    /usr/bin/podman run ... --add-host accountprovider:${NODE_VPN_IP} ...
+
+Here `NODE_VPN_IP` is an example environment variable that the module
+must set itself. The VPN IP address does not change when the node main
+IP address changes.
+
+In every case, published ports keep the client source IP address, and the
+node loopback interface is not exposed to the container. Do not use
+`slirp4netns:allow_host_loopback=true` or the Pasta `--map-gw` option: they
+expose every service bound to the node loopback address.
+
+Some software expects a network interface named `eth0`, while Pasta
+copies the node interface name. Rename it with the `-I` option, for
+instance `--network=pasta:-I,eth0`.
