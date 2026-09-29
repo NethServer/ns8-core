@@ -114,8 +114,13 @@ container cannot reach hosts of the `10.0.2.0/24` network, and
 
 ### Other notes
 
-- In a Podman pod, pass the `--network` and `--add-host` options to
-  `podman pod create`.
+- Without `--network`, `podman run` and `podman pod create` use the
+  rootless default network, Pasta: add the option only when a case above
+  requires it. Containers of a pod share the pod network: pass
+  `--network` and `--add-host` to `podman pod create`, never to the
+  `podman run` command of a pod container. Podman rejects `--add-host`
+  there, and a container started with any `--network` value gets its own
+  network, separated from the pod.
 - Published ports keep the client source IP address, and the node
   loopback interface is not exposed to the container. Do not use
   `slirp4netns:allow_host_loopback=true` or the Pasta `--map-gw` option:
