@@ -7,3 +7,4 @@ You can find more information about NethServer 8 UI in the [Developer manual](ht
 ## Development
 
 To develop NethServer 8 Core UI please refer to [this section of the Developer manual](https://nethserver.github.io/ns8-core/ui/core/#core-ui-development).
+
