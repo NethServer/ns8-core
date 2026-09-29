@@ -42,7 +42,7 @@ on the node VPN or LAN IP addresses.
 
 If the LDAP client module runs in a Podman container with a `private`
 network (like the rootless default, Pasta), replace `127.0.0.1` with
-`host.containers.internal`. This name resolves to an address of the node
+`cluster-localnode`. This name resolves to the node cluster VPN IP address
 and it does not require additional `podman run` arguments. See also
 [Network]({{site.baseurl}}/modules/network#reach-the-node-from-a-container).
 

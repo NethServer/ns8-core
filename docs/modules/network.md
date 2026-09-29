@@ -59,70 +59,67 @@ to it, stays inside the container and does not reach the node. Other node
 addresses, like the cluster VPN IP, and other hosts are reachable as
 usual.
 
-Pick the first case that fits the module. In a Podman pod, pass the
-`--network` and `--add-host` options to `podman pod create`.
+### Node services
 
-### Case 1: node services
-
-To reach a node service, use the `host.containers.internal` name. It
-resolves to a special address that Pasta translates to the node main IP
-address. The service must listen on that address, not only on
-`127.0.0.1`, and it sees connections coming from the node main IP
-address.
+To reach a node service, use the `cluster-localnode` name. The core adds
+it to the node `/etc/hosts` file, resolving to the node cluster VPN IP
+address, and Podman copies that file into the container. The name works
+with any container network, and needs no `podman run` options. The
+service must listen on the VPN IP address, or on all addresses, and it
+sees connections coming from the VPN IP address.
 
 For instance, connect to the [LDAP proxy]({{site.baseurl}}/core/user_domains#ldap-service-discovery)
-at `host.containers.internal:<port>`. To keep an existing host name in
-the application configuration, map it to the same address:
+at `cluster-localnode:<port>`.
 
-    /usr/bin/podman run ... --add-host accountprovider:host-gateway ...
+The VPN IP address does not change when the node main IP address changes.
+It is assigned when the cluster is created or the node joins it. Until
+then `cluster-localnode` resolves to `127.0.0.1`, that is the container
+itself. Application modules are installed later, but core modules may
+run before: they must restart their containers after the node gets its
+VPN IP address, because Podman copies `/etc/hosts` when a container is
+created.
 
-The translation uses the node IP address as it was when the container
-started. If the node IP address changes, restart the container to reach
-the node again.
+Do not use the `cluster-leader` name: on the leader node it resolves to
+`127.0.0.1`. Prefer `cluster-localnode` also to the Podman
+`host.containers.internal` name: it does not work with the private
+address of the second case below, and it follows the node main IP
+address only as it was when the container started.
 
-### Case 2: applications of the same node, with known host names
+### Applications of the same node
 
-To reach an application behind the Traefik HTTP proxy of the same node,
-like the module's own public host name, map each host name to the node
-address:
+Applications behind the Traefik HTTP proxy of the same node, like the
+module's own public host name, resolve to the node main IP address. Pick
+one of the following cases.
+
+**Case 1: known host names.** Keep the default network and map each host
+name to the node address:
 
     /usr/bin/podman run ... --add-host app.example.org:host-gateway ...
 
 This also applies to the node FQDN: inside a container it resolves to a
 loopback address copied from the node `/etc/hosts` file, unless it is
-mapped as above.
+mapped as above. The mapping uses the node main IP address as it was when
+the container started: if it changes, restart the container.
 
-### Case 3: host names not known in advance
-
-If the module must reach any host name served by the same node, for
-example a document server that calls back arbitrary web applications,
-give the container a private address:
+**Case 2: host names not known in advance.** If the module must reach any
+host name served by the same node, for example a document server that
+calls back arbitrary web applications, give the container a private
+address:
 
     /usr/bin/podman run ... --network=pasta:-a,10.0.2.100,-n,24,-g,10.0.2.2 ...
 
-The node main IP address is then reachable, like any other address.
-However, `host.containers.internal` and `host-gateway` no longer reach the
-node. Connect to node services through the node cluster VPN IP address,
-with the `cluster-localnode` name: the core adds it to the node
-`/etc/hosts` file, and Podman copies it into the container. For instance,
-connect to the LDAP proxy at `cluster-localnode:<port>`. The VPN IP
-address does not change when the node main IP address changes.
+The node main IP address is then reachable, like any other address. The
+container cannot reach hosts of the `10.0.2.0/24` network, and
+`host-gateway` no longer reaches the node.
 
-The VPN IP address is assigned when the cluster is created or the node
-joins it. Until then `cluster-localnode` resolves to `127.0.0.1`, that is
-the container itself. Application modules are installed later, but core
-modules may run before: they must restart their containers after the
-node gets its VPN IP address, because Podman copies `/etc/hosts` when a
-container is created.
+### Other notes
 
-Do not use the `cluster-leader` name: on the leader node it resolves to
-`127.0.0.1`, that is the container itself.
-
-In every case, published ports keep the client source IP address, and the
-node loopback interface is not exposed to the container. Do not use
-`slirp4netns:allow_host_loopback=true` or the Pasta `--map-gw` option: they
-expose every service bound to the node loopback address.
-
-Some software expects a network interface named `eth0`, while Pasta
-copies the node interface name. Rename it with the `-I` option, for
-instance `--network=pasta:-I,eth0`.
+- In a Podman pod, pass the `--network` and `--add-host` options to
+  `podman pod create`.
+- Published ports keep the client source IP address, and the node
+  loopback interface is not exposed to the container. Do not use
+  `slirp4netns:allow_host_loopback=true` or the Pasta `--map-gw` option:
+  they expose every service bound to the node loopback address.
+- Some software expects a network interface named `eth0`, while Pasta
+  copies the node interface name. Rename it with the `-I` option, for
+  instance `--network=pasta:-I,eth0`.
