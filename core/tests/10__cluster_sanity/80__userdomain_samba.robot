@@ -12,6 +12,9 @@ ${domsuffix}    dc\=samba,dc\=nethserver,dc\=test
 *** Test Cases ***
 
 Add domain
+    # Workaround for NethServer/dev#8189: samba1 may reuse the UID that the
+    # openldap suite just freed, and on Debian 13 its agent then never starts.
+    Sleep    30s
     Add the first samba module instance
     Prepare the suite configuration for the first samba module instance
     Run task    module/${mid1}/configure-module    {"hostname":"${hostname}","nbdomain":"${nbdomain}","ipaddress":"${ipaddress}","realm":"${domain}","adminuser":"administrator","adminpass":"Nethesis,1234","provision":"new-domain"}
