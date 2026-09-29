@@ -108,6 +108,13 @@ with the `cluster-localnode` name: the core adds it to the node
 connect to the LDAP proxy at `cluster-localnode:<port>`. The VPN IP
 address does not change when the node main IP address changes.
 
+The VPN IP address is assigned when the cluster is created or the node
+joins it. Until then `cluster-localnode` resolves to `127.0.0.1`, that is
+the container itself. Application modules are installed later, but core
+modules may run before: they must restart their containers after the
+node gets its VPN IP address, because Podman copies `/etc/hosts` when a
+container is created.
+
 Do not use the `cluster-leader` name: on the leader node it resolves to
 `127.0.0.1`, that is the container itself.
 
