@@ -2,12 +2,10 @@
 Library    RequestsLibrary
 Library    SSHLibrary
 Resource   api.resource
+# Needs a public name for the node. Excluded where the node has none, like the QEMU CI.
+Force Tags    letsencrypt
 
 *** Test Cases ***
-Use the HTTP-01 challenge
-    # The CI reaches the node through a tunnel that terminates TLS, so TLS-ALPN-01 cannot reach traefik.
-    Run task    module/traefik1/set-acme-server    {"url":"https://acme-v02.api.letsencrypt.org/directory","challenge":"HTTP-01"}
-
 Set node FQDN certificate
     Run task    module/traefik1/set-certificate    {"fqdn":"${NODE_ADDR}"}
 
