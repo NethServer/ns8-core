@@ -30,7 +30,28 @@ parser = argparse.ArgumentParser()
 parser.add_argument('image')
 parser.add_argument('node', default=1, type=int, nargs='?')
 parser.add_argument('--verbose', help='show add-module action stderr on success', action='store_true')
+parser.add_argument('--force', help='skip the Software Center install destination checks', action='store_true')
 args = parser.parse_args()
+
+if not args.force:
+    # Refuse a node that the Software Center considers not eligible
+    result = agent.tasks.run('cluster', 'list-modules', data=None,
+        extra={'isNotificationHidden': True}, endpoint="redis://cluster-leader")
+    if result['exit_code'] != 0:
+        print(result['error'], file=sys.stderr, end='')
+        sys.exit(1)
+    source = args.image.split('@')[0].rsplit(':', 1)[0]
+    for omod in result['output']:
+        if args.image != omod['id'] and source != omod['source']:
+            continue
+        for mdest in omod['install_destinations']:
+            if mdest['node_id'] == args.node and not mdest['eligible']:
+                instances = sorted(m['id'] for m in omod['installed'] if m['node'] == str(args.node))
+                print(f"Node {args.node} is not eligible for {omod['source']}:",
+                      f"{mdest['reject_reason']['message']} {mdest['reject_reason']['parameter']}.",
+                      f"Existing instances: {', '.join(instances) or 'none'}.",
+                      "Use --force to skip this check.", file=sys.stderr)
+                sys.exit(3)
 
 result = agent.tasks.run(
     agent_id='cluster',

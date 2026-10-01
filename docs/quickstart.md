@@ -59,6 +59,12 @@ execute the following command in every cluster node, before `add-module`:
 
     podman rmi ghcr.io/nethserver/dokuwiki:mydev
 
+Like the Software Center, `add-module` refuses a node that is not eligible,
+using the image labels from the repository, not from the custom image. Use
+`--force` to skip this check:
+
+    add-module --force ghcr.io/nethserver/crowdsec:mydev 1
+
 Many applications need a configuration step after install, for more info, 
 please refer to [Administrator manual]({{site.admin_manual}}).
 
