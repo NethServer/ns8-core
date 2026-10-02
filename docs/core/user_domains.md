@@ -177,6 +177,77 @@ if not os.environ["LDAP_USER_DOMAIN"] in event["domains"]:
 # - reload some service running in a container
 ```
 
+## Single sign-on
+
+A module can delegate user authentication to an OpenID Connect (OIDC)
+provider module. The core does not implement one: it relies on the
+minimal interface described here, and the
+[ns8-idp](https://github.com/NethServer/ns8-idp) module (Keycloak) is its
+reference implementation.
+
+An OIDC provider serves a realm for each user domain, named after the
+domain, with the users and groups of its LDAP database. A module gets an
+OIDC client in the realm of a user domain it is bound to. The
+`preferred_username` claim of its tokens is the user name in the user
+domain, so the module can match OIDC logins with existing accounts.
+
+### OIDC provider discovery
+
+A provider publishes the `module/{MODULE_ID}/srv/http/oidc`
+[service key]({{site.baseurl}}/modules/service_providers) and raises the
+`service-oidc-changed` event when it changes. The key fields are:
+
+- `host`: the public host name of the provider
+- `issuer_url_prefix`: the OIDC issuer of a user domain is this prefix
+  followed by the domain name, for example
+  `https://sso.example.org/realms/dp.example.org`
+
+Endpoints and keys of the issuer are found with the standard OIDC
+discovery document, `{issuer}/.well-known/openid-configuration`. To list
+the providers:
+
+```python
+import agent
+rdb = agent.redis_connect(use_replica=True)
+providers = agent.list_service_providers(rdb, 'oidc', 'http')
+```
+
+### OIDC client registration
+
+A provider implements the `register-client` action, granted by its
+`clientadm` role. The client module declares it in its authorizations
+label, for example
+
+    org.nethserver.authorizations=idp@any:clientadm
+
+The client module binds the user domain first, then calls the action of
+the chosen provider:
+
+```python
+import agent
+response = agent.tasks.run(agent_id="module/idp1", action="register-client", data={
+    "domain": "dp.example.org",
+    "redirect_uris": ["https://cloud.example.org/apps/user_oidc/code"],
+})
+agent.assert_exp(response["exit_code"] == 0)
+# {"client_id": "nextcloud1", "client_secret": "...", "realm": "dp.example.org",
+#  "issuer": "https://sso.example.org/realms/dp.example.org"}
+```
+
+The provider must:
+
+- name the client after the calling module ID
+- reject a domain not bound to the calling module
+- create the realm if missing, and bind itself to the user domain
+- update an existing client and return its current secret; the
+  `rotate_secret` flag generates a new one
+- delete the client when its module is removed or unbound from the
+  domain
+
+Other input attributes are `post_logout_redirect_uris`, `web_origins` and
+`audience`: see the [register-client input
+schema](https://github.com/NethServer/ns8-idp/blob/main/imageroot/actions/register-client/validate-input.json).
+
 ## Import/Export users APIs
 
 Samba and OpenLDAP core modules implement a uniform API to massively
