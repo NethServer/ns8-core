@@ -7,7 +7,7 @@ require (
 	github.com/appleboy/gin-jwt/v3 v3.5.3
 	github.com/gin-contrib/cors v1.6.0
 	github.com/gin-contrib/gzip v1.2.8
-	github.com/gin-contrib/static v1.1.6
+	github.com/gin-contrib/static v1.1.8
 	github.com/gin-gonic/gin v1.12.0
 	github.com/spf13/viper v1.21.0
 	github.com/xeipuuv/gojsonschema v1.2.0
