@@ -34,7 +34,9 @@ function enable_nsent()
 {
     if is_leader ; then
         # Heartbeat first, so my shows the system as active right away.
-        systemctl enable --now send-heartbeat.service
+        # Restart it, to load new credentials (e.g. after migrate-to-my).
+        systemctl enable send-heartbeat.service
+        systemctl restart send-heartbeat.service
         if ! systemctl -q is-active send-inventory.timer; then
             # First time, send inventory and backup immediately
             systemctl start send-inventory
@@ -52,8 +54,10 @@ function enable_nscom()
 {
     # similar to nsent, without send-backup.timer
     if is_leader ; then
-        # Heartbeat first, so my shows the system as active right away.
-        systemctl enable --now send-heartbeat.service
+        # Heartbeat first, so the provider shows the system as active
+        # right away. Restart it, to load new credentials.
+        systemctl enable send-heartbeat.service
+        systemctl restart send-heartbeat.service
         if ! systemctl -q is-active send-inventory.timer; then
             # First time, send inventory immediately
             systemctl start send-inventory
