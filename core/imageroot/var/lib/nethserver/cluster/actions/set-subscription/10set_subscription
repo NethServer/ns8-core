@@ -78,18 +78,20 @@ def terminate_subscription(rdb):
     return output
 
 def terminate_nsent(rdb, attributes):
-    psession = _get_http_session()
-
-    freekeyresp = psession.post("https://my.nethesis.it/api/Utils/freekey", data={
-        "lk": attributes["system_id"],
-        "secret":attributes["auth_token"],
-    })
-    try:
-        ofreekey = freekeyresp.json()
-    except:
-        ofreekey = {} # Ignore remote request failures and disable client services, always.
-
-    return ofreekey
+    # The new my has no unregister call. Free the legacy key on the
+    # old my, if the cluster was migrated.
+    legacy_id = attributes.get("legacy_system_id")
+    legacy_secret = attributes.get("legacy_auth_token")
+    if legacy_id and legacy_secret:
+        psession = _get_http_session()
+        try:
+            psession.post(
+                "https://my-proxy-prod.onrender.com/api/Utils/freekey",
+                data={"lk": legacy_id, "secret": legacy_secret},
+            )
+        except Exception:
+            pass  # best-effort; local cleanup still happens below
+    return {}
 
 def terminate_nscom(rdb, attributes):
     return {}
@@ -97,18 +99,29 @@ def terminate_nscom(rdb, attributes):
 def subscribe_nsent(rdb, osubscription):
     auth_token = osubscription['auth_token']
 
+    # Register the my token and store the returned system_key as system_id.
     psession = _get_http_session()
-    myresp = psession.post("https://my.nethesis.it/api/systems/info", data={"secret": auth_token})
+    myresp = psession.post(
+        "https://my-proxy-prod.onrender.com/backend/api/systems/register",
+        json={"system_secret": auth_token},
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+    )
+    # 409: the key is already registered and cannot be used again.
+    if myresp.status_code == 409:
+        _exit_validation_error("auth_token", "***", "system_already_registered", 3)
     myresp.raise_for_status()
     dinfo = myresp.json()
 
-    system_id = dinfo['uuid']
+    system_id = dinfo.get("data", {}).get("system_key")
+    if not system_id:
+        raise KeyError("system_key")
 
     trx = rdb.pipeline()
     trx.hset("cluster/subscription", mapping={
         "provider": "nsent",
         'system_id': system_id,
         'auth_token': auth_token,
+        'collect_url': "https://my-proxy-prod.onrender.com/collect/api/systems",
         'vpn_cert_cn': "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
         'support_user': 'nethsupport',
     })

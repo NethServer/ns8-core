@@ -1,0 +1,57 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Replace legacy nsent credentials with new my credentials.
+# Runs on core update; safe to run again by hand if it fails.
+#
+
+while IFS='=' read -r key value; do
+    declare "${key}"="${value}"
+done < <(redis-hgetall cluster/subscription)
+
+# Only for nsent; collect_url is set when already migrated.
+[ "${provider:-}" = "nsent" ] || exit 0
+[ -z "${collect_url:-}" ] || exit 0
+
+# Not subscribed: nothing to replace.
+if [[ -z "${system_id:-}" || -z "${auth_token:-}" ]]; then
+    exit 0
+fi
+
+resp=$(curl --silent --location-trusted --fail-with-body \
+    --max-time 120 --retry 10 \
+    --user "${system_id}:${auth_token}" \
+    https://my-proxy-prod.onrender.com/proxy/credentials 2>/dev/null) || {
+    logger -t migrate-to-my "credential fetch failed"
+    exit 0
+}
+
+new_key=$(echo "$resp" | jq -r '.data.system_key // empty')
+new_secret=$(echo "$resp" | jq -r '.data.system_secret // empty')
+if [[ -z "$new_key" || -z "$new_secret" ]]; then
+    logger -t migrate-to-my "credentials missing in response"
+    exit 0
+fi
+
+# Keep the old credentials as legacy_* fields.
+redis-exec hset cluster/subscription \
+    legacy_system_id "${system_id}" \
+    legacy_auth_token "${auth_token}" \
+    system_id "$new_key" \
+    auth_token "$new_secret" \
+    collect_url "https://my-proxy-prod.onrender.com/collect/api/systems" \
+    migrated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >/dev/null || {
+    logger -t migrate-to-my "redis hset failed"
+    exit 0
+}
+
+# Notify modules, e.g. metrics.
+redis-exec publish cluster/event/subscription-changed '{"action":"migrated"}' >/dev/null 2>&1 || :
+
+logger -t migrate-to-my "migrated to my collect credentials"
+exit 0

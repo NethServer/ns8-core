@@ -12,8 +12,16 @@ The core provides builtin features to subscribe both free and paid support servi
 The Redis HASH key `cluster/subscription` holds the attributes of the subscription.
 
 - `provider` The subscription provider identifier. Possible values: `nsent`, `nscom`
-- `system_id` System subscription identifier
-- `auth_token` Authentication token for subscription APIs
+- `system_id` System subscription identifier (see [Credential formats](#credential-formats))
+- `auth_token` Authentication token for subscription APIs (see [Credential formats](#credential-formats))
+- `collect_url` (`nsent` only) Base URL of the *my* collect API the cluster sends heartbeat, inventory
+  and backup to, e.g. `https://my.nethesis.it/collect/api/systems`. It is set only when the cluster
+  holds **native** *my* credentials; while it is set, `migrate-to-my` does nothing
+- `migrated_at` (`nsent` only) RFC3339 UTC timestamp of the credential rotation. Set only when a legacy
+  cluster is migrated, not on a fresh native registration
+- `legacy_system_id`, `legacy_auth_token` (`nsent` only) The pre-migration credential pair, preserved for
+  audit / rollback when `migrate-to-my` rotates a legacy cluster to native *my* credentials
+- `dartagnan_url` (`nscom` only) Community subscription API base URL (default `https://my.nethserver.com/api`)
 - `vpn_cert_cn` X509 Common Name for server certificate validation
 - `vpn_peer_host` (default "sos.nethesis.it")
 - `vpn_peer_port` (default "1194")
@@ -40,6 +48,43 @@ The subscription status and running services are checked when:
 - the cluster is restored from a cluster backup file
 - the cluster subscription is enabled or disabled
 - the cluster leader node changes
+
+## Credential formats
+
+The format of `system_id` and `auth_token` depends on the provider:
+
+- **`nsent` (Nethesis Enterprise, new `my`)** — the customer pastes the full *my* token, of the form
+  `my_<public>.<secret>`, which is stored as `auth_token`. `set-subscription` posts it to the *my*
+  `POST /systems/register` API, which validates it and returns the `system_key`, stored as `system_id`,
+  of the form `NETH-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX` (`NETH-` followed by eight 4-hex-digit
+  groups). A `system_id` is **one-shot**: once registered on *my* it cannot be re-registered, and a new
+  registration attempt is rejected with HTTP `409` (`system_already_subscribed`).
+- **`nscom` (Community)** — `auth_token` is the community token; `system_id` is the machine UUID returned
+  by dartagnan (`my.nethserver.com/api/machine/info`).
+- **Legacy `nsent` (before migration)** — clusters registered on the old `my.nethesis.it` used a UUID
+  `system_id` and a hex `auth_token`. During the transition to the new *my*, `migrate-to-my` rotates the
+  pair to native `NETH-…` / `my_…` credentials, stores `collect_url` and `migrated_at`, and preserves
+  the old pair under `legacy_system_id` / `legacy_auth_token`.
+
+## Migration to the new my
+
+`migrate-to-my` runs once, at the end of the core update. Until it succeeds, a legacy `nsent` cluster
+does not send heartbeat, inventory and backup to *my*.
+
+If it fails, run it again as `root` on the leader node:
+
+    runagent -m cluster migrate-to-my
+
+Check the result in the journal:
+
+    journalctl -t migrate-to-my
+
+On success, `collect_url` and `migrated_at` are set:
+
+    redis-cli hgetall cluster/subscription
+
+The command is safe to run more than once: it does nothing if the cluster is already migrated, is not
+`nsent`, or is not subscribed.
 
 ## APIs
 
