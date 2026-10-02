@@ -123,4 +123,7 @@ elif hsubscription["provider"] == "nsent":
 elif hsubscription["provider"] == "nscom":
     hsubscription.update(fetch_subscription_info_nscom(rdb, hsubscription))
 
+if hsubscription and "legacy_auth_token" in hsubscription:
+    hsubscription["legacy_auth_token"] = "********"
+
 json.dump({"subscription": hsubscription, "terms_url": terms_url}, fp=sys.stdout)
