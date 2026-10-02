@@ -8,22 +8,10 @@
 #
 # Upload the encrypted cluster backup to the subscription provider.
 #
-# Enterprise clusters (provider=nsent) post to the my collect
-# endpoint with native my credentials. migrate-to-my runs up front
-# so a cluster upgraded from the legacy path transparently flips
-# over on the first successful rotation.
-#
-# Community clusters (provider=nscom) keep posting to
-# backupd.nethesis.it exactly as before — that infrastructure has
-# no counterpart on the new my and is out of scope for the
-# migration.
+# nsent posts to the my collect endpoint, nscom to backupd.nethesis.it.
 #
 
 set -e
-
-# Opportunistically rotate enterprise credentials before we use them.
-# A no-op for nscom or already-migrated nsent clusters.
-migrate-to-my
 
 while IFS='=' read -r key value; do
     declare "${key}"="${value}"
@@ -55,7 +43,7 @@ elif [[ -f "${encrypted_file}" ]]; then
     case "${provider}" in
         nsent)
             if [[ -z "${collect_url:-}" ]]; then
-                exit_error "Pre-migration cluster: collect_url not set; migrate-to-my will retry on next schedule"
+                exit_error "Pre-migration cluster: collect_url not set; run migrate-to-my"
             fi
             curl \
                 --silent \

@@ -8,18 +8,12 @@
 #
 # Send the cluster heartbeat to the subscription provider.
 #
-# Enterprise clusters (provider=nsent) post to the my collect
-# endpoint with native my credentials; see send-cluster-backup for
-# the migrate-to-my flow. Community clusters (provider=nscom) keep
-# hitting my.nethserver.com's dartagnan_url as before.
+# nsent posts to the my collect endpoint, nscom to dartagnan_url.
 #
 
 set -e
 
 period="${1:-0}"
-
-# Opportunistically rotate enterprise credentials.
-migrate-to-my
 
 while IFS='=' read -r key value; do
     declare "${key}"="${value}"
@@ -34,12 +28,11 @@ function exit_error ()
 function send_heartbeat_nsent ()
 {
     if [[ -z "${collect_url:-}" ]]; then
-        # Pre-migration — migrate-to-my will retry on the next tick.
+        # Not migrated yet.
         return 0
     fi
 
-    # Surface failures (DNS, TLS, timeouts, HTTP errors) in the journal
-    # instead of swallowing them; the || keeps set -e and the loop alive.
+    # Log failures without stopping the script.
     local err
     err=$(curl -m 30 --retry 3 -L -sSf -X POST \
         --user "${system_id:?}:${auth_token:?}" \

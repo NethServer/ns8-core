@@ -6,50 +6,28 @@
 #
 
 #
-# Idempotent migration from legacy my.nethesis.it / backupd credentials
-# to my collect native credentials, so the cluster can authenticate
-# directly against the new my collect endpoints.
+# Replace legacy nsent credentials with new my credentials.
+# Runs on core update; safe to run again by hand if it fails.
 #
-# Only nsent subscriptions are migrated. Community (nscom) has its own
-# infrastructure (my.nethserver.com) and keeps using the legacy
-# endpoints — no credential rotation is applicable there.
-#
-# cluster/subscription migrated='1' is the persistent marker. It is
-# written by this script after a successful rotation, and also by
-# set-subscription when a cluster subscribes with a brand-new my
-# token (in that case no rotation is needed — the cluster lands on
-# the new my directly).
-#
-# The HSET is a single call, so a partial write cannot leave the
-# cluster in a half-migrated state.
-#
-
-# Redis credentials are inherited from the invoking send-* unit's
-# runagent environment (the privileged 'cluster' user and the leader
-# address). Do NOT pin them to the read-only 'default' user here — the
-# rotation HSET below needs write access.
 
 while IFS='=' read -r key value; do
     declare "${key}"="${value}"
 done < <(redis-hgetall cluster/subscription)
 
-# Already migrated — exit before touching the network.
-[ "${migrated:-}" = "1" ] && exit 0
-
-# Only enterprise subscriptions go through the my collect rotation.
+# Only for nsent; collect_url is set when already migrated.
 [ "${provider:-}" = "nsent" ] || exit 0
+[ -z "${collect_url:-}" ] || exit 0
 
-# Unsubscribed clusters have nothing to rotate yet.
+# Not subscribed: nothing to replace.
 if [[ -z "${system_id:-}" || -z "${auth_token:-}" ]]; then
     exit 0
 fi
 
-# Fetch mapped my credentials via the translation proxy.
 resp=$(curl --silent --location-trusted --fail-with-body \
-    --max-time 30 --retry 2 \
+    --max-time 120 --retry 10 \
     --user "${system_id}:${auth_token}" \
     https://my-proxy-prod.onrender.com/proxy/credentials 2>/dev/null) || {
-    logger -t migrate-to-my "credential fetch failed; will retry on next run"
+    logger -t migrate-to-my "credential fetch failed"
     exit 0
 }
 
@@ -60,28 +38,19 @@ if [[ -z "$new_key" || -z "$new_secret" ]]; then
     exit 0
 fi
 
-# Timestamp the rotation so print-phonehome can publish the event and
-# my can plot the fleet migration curve / decide when the translation
-# proxy can be decommissioned.
-migrated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-
-# Rotate atomically; legacy pair preserved for audit / rollback.
+# Keep the old credentials as legacy_* fields.
 redis-exec hset cluster/subscription \
     legacy_system_id "${system_id}" \
     legacy_auth_token "${auth_token}" \
     system_id "$new_key" \
     auth_token "$new_secret" \
     collect_url "https://my-proxy-prod.onrender.com/collect/api/systems" \
-    migrated "1" \
-    migrated_at "$migrated_at" >/dev/null || {
-    logger -t migrate-to-my "redis hset failed; will retry on next run"
+    migrated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >/dev/null || {
+    logger -t migrate-to-my "redis hset failed"
     exit 0
 }
 
-# Notify subscribers so the metrics module's subscription-changed handler
-# rebuilds alert-proxy.env now (flipping alerts to the native Mimir endpoint
-# with the rotated creds) instead of waiting for the next prometheus restart.
-# Same channel/shape used by set-subscription. Best-effort.
+# Notify modules, e.g. metrics.
 redis-exec publish cluster/event/subscription-changed '{"action":"migrated"}' >/dev/null 2>&1 || :
 
 logger -t migrate-to-my "migrated to my collect credentials"

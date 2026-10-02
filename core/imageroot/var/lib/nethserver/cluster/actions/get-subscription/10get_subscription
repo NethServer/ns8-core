@@ -31,9 +31,7 @@ def fetch_subscription_info_nsent(rdb, attributes):
     collect_url = attributes.get('collect_url')
 
     if not collect_url:
-        # Pre-migration cluster — migrate-to-my hasn't rotated yet.
-        # Return a minimal "unknown" snapshot rather than raising, so
-        # the UI still shows the system_id row instead of a 500.
+        # Not migrated yet: show the system_id only.
         return {
             "auth_token": "********",
             "system_url": f"https://my-proxy-prod.onrender.com/systems/{system_id}",
@@ -45,11 +43,7 @@ def fetch_subscription_info_nsent(rdb, attributes):
             "with_remote_support": True,
         }
 
-    # The new my data model no longer exposes a subscription_plan or
-    # a valid_until per system: plan / expiration are an organization-
-    # level concern and are not surfaced by collect's /info yet. We
-    # fall back to "-" / "" / no expiration so the UI keeps rendering
-    # the usual row layout without hitting a KeyError.
+    # The new my has no plan or expiration per system: use defaults.
     psession = _get_http_session()
     myresp = psession.get(
         f"{collect_url}/info",
@@ -66,9 +60,7 @@ def fetch_subscription_info_nsent(rdb, attributes):
     info = {
         "auth_token": "********",
         "system_url": f"https://my-proxy-prod.onrender.com/systems/{sinfo.get('system_id', '')}",
-        # The new my has no per-system plan; enterprise units are all
-        # "Nethesis Enterprise". The organization name is surfaced as the
-        # company, mirroring the nsec subscription view.
+        # Same plan name for all systems; company is the organization name.
         "plan_name": "Nethesis Enterprise",
         "company": org_name,
         "expires": False,

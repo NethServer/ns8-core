@@ -886,8 +886,7 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
-// Two-column layout so all values line up regardless of label length:
-// the label column auto-sizes to the widest label, values share one edge.
+// Two columns, so all values line up.
 .subscription-details {
   display: grid;
   grid-template-columns: max-content 1fr;

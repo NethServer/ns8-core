@@ -8,16 +8,10 @@
 #
 # Send the cluster inventory to the subscription provider.
 #
-# Enterprise clusters (provider=nsent) post a phonehome payload to
-# the my collect endpoint with native my credentials. Community
-# (provider=nscom) keeps hitting my.nethserver.com — out of scope
-# for the my migration.
+# nsent posts to the my collect endpoint, nscom to my.nethserver.com.
 #
 
 set -e
-
-# Opportunistically rotate enterprise credentials.
-migrate-to-my
 
 while IFS='=' read -r key value; do
     declare "${key}"="${value}"
@@ -32,12 +26,11 @@ function exit_error ()
 function send_inventory_nsent ()
 {
     if [[ -z "${collect_url:-}" ]]; then
-        # Pre-migration — migrate-to-my will retry on the next tick.
+        # Not migrated yet.
         return 0
     fi
 
-    # Surface failures (DNS, TLS, timeouts, HTTP errors) in the journal
-    # instead of swallowing them; the || keeps set -e satisfied.
+    # Log failures without stopping the script.
     local err
     err=$(print-phonehome | \
     curl -m 180 --retry 3 -L -sSf -X POST \
