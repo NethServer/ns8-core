@@ -3,7 +3,7 @@ module github.com/NethServer/ns8-core/core/api-moduled
 go 1.26.0
 
 require (
-	github.com/appleboy/gin-jwt/v2 v2.10.3
+	github.com/appleboy/gin-jwt/v3 v3.5.3
 	github.com/appleboy/gin-jwt/v3 v3.5.3
 	github.com/gin-contrib/cors v1.6.0
 	github.com/gin-contrib/gzip v1.2.8
