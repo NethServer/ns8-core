@@ -241,6 +241,7 @@ import agent
 response = agent.tasks.run(agent_id="module/idp1", action="register-client", data={
     "domain": "dp.example.org",
     "redirect_uris": ["https://cloud.example.org/apps/user_oidc/code"],
+    "post_logout_redirect_uris": ["https://cloud.example.org/"],
 })
 agent.assert_exp(response["exit_code"] == 0)
 # {"client_id": "nextcloud1", "client_secret": "...", "realm": "dp.example.org",
@@ -249,17 +250,45 @@ agent.assert_exp(response["exit_code"] == 0)
 
 The provider must:
 
-- name the client after the calling module ID
+- name the client after the calling module ID; an explicit `module_id`
+  input attribute is accepted only from tasks without a calling user,
+  like those of the cluster agent or `api-cli`
 - reject a domain not bound to the calling module
 - create the realm if missing, and bind itself to the user domain
 - update an existing client and return its current secret; the
   `rotate_secret` flag generates a new one
+- keep the enabled state of an existing client: a client disabled by an
+  administrator stays disabled when its module registers it again
 - delete the client when its module is removed or unbound from the
   domain
 
-Other input attributes are `post_logout_redirect_uris`, `web_origins` and
-`audience`: see the [register-client input
+Other input attributes:
+
+- `redirect_uris`: without redirect URIs, the client can only
+  authenticate its own requests, for example the token introspection of
+  a mail server
+- `post_logout_redirect_uris`: the module should pass the exact URI its
+  application uses at logout. If the attribute is missing, the provider
+  allows any URI of the origins of the redirect URIs, like
+  `https://cloud.example.org/*`
+- `web_origins`: the allowed CORS origins
+- `audience`: client IDs added to the token audience. For example a
+  webmail client adds the mail module client, because the mail server
+  accepts only tokens that list it
+
+Validation errors have the `field` and `error` attributes of the
+standard action validation output. The `error` values are
+`module_id_required`, `module_id_not_allowed`, `caller_not_a_module` and
+`domain_not_bound_to_module`. See also the [register-client input
 schema](https://github.com/NethServer/ns8-idp/blob/main/imageroot/actions/register-client/validate-input.json).
+
+A provider can restrict a realm to logins through a federated identity
+provider, like Microsoft Entra ID. Such a realm refuses LDAP passwords,
+but a module that shows its own login form still accepts them: in that
+case the module should offer exclusive SSO, sending its users straight
+to the provider, and document an emergency login path for when the
+provider is down. Protocols outside the browser, like IMAP and WebDAV,
+keep using LDAP passwords.
 
 ## Import/Export users APIs
 
