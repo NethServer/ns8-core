@@ -71,7 +71,12 @@ The format of `system_id` and `auth_token` depends on the provider:
 `migrate-to-my` runs once, at the end of the core update. Until it succeeds, a legacy `nsent` cluster
 does not send heartbeat, inventory and backup to *my*.
 
-If it fails, run it again as `root` on the leader node:
+If it fails, the Subscription page shows a *Complete migration* button. It runs the
+`migrate-subscription` cluster action, which fails if the cluster is still not migrated:
+
+    api-cli run migrate-subscription
+
+Or run the script again as `root` on the leader node:
 
     runagent -m cluster migrate-to-my
 
