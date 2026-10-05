@@ -124,7 +124,7 @@ else: # rootless
     # enable-linger may not start the user manager when the UID was just
     # freed by remove-module (NethServer/dev#8189). Starting it again does
     # nothing if it already runs.
-    agent.run_helper('systemctl', 'start', f"user@{pwd.getpwnam(module_id).pw_uid}.service").check_returncode()
+    agent.run_helper('systemctl', 'start', f"user@{pwd.getpwnam(module_id).pw_uid}.service")
 
 # Create base paths for the module volumes
 volumes = agent.volumes.get_configuration(module_id)
