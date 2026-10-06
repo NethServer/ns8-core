@@ -199,7 +199,8 @@
         "import-backup-destinations": "Import backup destinations",
         "set-trusted-proxies": "Configure frontend proxies",
         "get-trusted-proxies": "Retrieve frontend proxies",
-        "set-automatic-updates": "Set automatic updates"
+        "set-automatic-updates": "Set automatic updates",
+        "migrate-subscription": "Complete migration to the new my"
     },
     "backup": {
         "smb_url_label": "Share name",
@@ -1647,7 +1648,15 @@
         "start_session_support": "Start session",
         "agree_terms_before_register": "I have read and agree to subscription {terms}.",
         "subscription_pattern": "Invalid token format",
-        "remote_support_in_progress_with_expiration": "The remote support session will end automatically in {time}. You can end it manually at any time."
+        "remote_support_in_progress_with_expiration": "The remote support session will end automatically in {time}. You can end it manually at any time.",
+        "system_already_registered": "This system is already registered and its token cannot be reused. To subscribe again, create a new system on my.nethesis.it and register with its new token.",
+        "remove_cluster_subscription_irreversible": "Once removed, this system's token cannot be reused to register again. To subscribe this cluster again you will need to create a new system on my.nethesis.it and use its new token.",
+        "migration_failed": "Migration failed. Try again later. Logs: journalctl -t migrate-to-my",
+        "complete_migration": "Complete migration",
+        "remove_cluster_subscription_irreversible_title": "This action cannot be undone",
+        "migration_pending_description": "Heartbeat, inventory and backup are not sent to my.nethesis.it. Click Complete migration to retry.",
+        "company": "Company",
+        "migration_pending_title": "Migration to the new my not completed"
     },
     "settings_cluster": {
         "title": "Cluster"
