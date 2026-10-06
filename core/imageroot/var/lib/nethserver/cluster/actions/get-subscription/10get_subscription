@@ -34,7 +34,7 @@ def fetch_subscription_info_nsent(rdb, attributes):
         # Not migrated yet: show the system_id only.
         return {
             "auth_token": "********",
-            "system_url": f"https://my-proxy-prod.onrender.com/systems/{system_id}",
+            "system_url": f"https://proxy.my.nethesis.it/systems/{system_id}",
             "plan_name": "Nethesis Enterprise",
             "company": "-",
             "expires": False,
@@ -59,7 +59,7 @@ def fetch_subscription_info_nsent(rdb, attributes):
 
     info = {
         "auth_token": "********",
-        "system_url": f"https://my-proxy-prod.onrender.com/systems/{sinfo.get('system_id', '')}",
+        "system_url": f"https://proxy.my.nethesis.it/systems/{sinfo.get('system_id', '')}",
         # Same plan name for all systems; company is the organization name.
         "plan_name": "Nethesis Enterprise",
         "company": org_name,

@@ -26,7 +26,7 @@ fi
 resp=$(curl --silent --location-trusted --fail-with-body \
     --max-time 120 --retry 10 \
     --user "${system_id}:${auth_token}" \
-    https://my-proxy-prod.onrender.com/proxy/credentials 2>/dev/null) || {
+    https://proxy.my.nethesis.it/proxy/credentials 2>/dev/null) || {
     logger -t migrate-to-my "credential fetch failed"
     exit 0
 }
@@ -44,7 +44,7 @@ redis-exec hset cluster/subscription \
     legacy_auth_token "${auth_token}" \
     system_id "$new_key" \
     auth_token "$new_secret" \
-    collect_url "https://my-proxy-prod.onrender.com/collect/api/systems" \
+    collect_url "https://proxy.my.nethesis.it/collect/api/systems" \
     migrated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >/dev/null || {
     logger -t migrate-to-my "redis hset failed"
     exit 0
