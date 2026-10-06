@@ -199,7 +199,8 @@
         "import-backup-destinations": "Back-up bestemmingen importeren",
         "set-trusted-proxies": "Frontend proxies configureren",
         "get-trusted-proxies": "Frontend proxies ophalen",
-        "set-automatic-updates": "Automatische updates instellen"
+        "set-automatic-updates": "Automatische updates instellen",
+        "migrate-subscription": "Complete migration to the new my"
     },
     "backup": {
         "aws_url_label": "AWS bucket naam",
@@ -1689,7 +1690,15 @@
         "session_id": "Sessie-ID",
         "start_session_support": "Start sessie",
         "subscription_pattern": "Ongeldig tokenformaat",
-        "remote_support_in_progress_with_expiration": "De sessie voor ondersteuning op afstand eindigt automatisch over {time}. U kunt deze op elk moment handmatig beëindigen."
+        "remote_support_in_progress_with_expiration": "De sessie voor ondersteuning op afstand eindigt automatisch over {time}. U kunt deze op elk moment handmatig beëindigen.",
+        "system_already_registered": "This system is already registered and its token cannot be reused. To subscribe again, create a new system on my.nethesis.it and register with its new token.",
+        "remove_cluster_subscription_irreversible": "Once removed, this system's token cannot be reused to register again. To subscribe this cluster again you will need to create a new system on my.nethesis.it and use its new token.",
+        "migration_failed": "Migration failed. Try again later. Logs: journalctl -t migrate-to-my",
+        "complete_migration": "Complete migration",
+        "remove_cluster_subscription_irreversible_title": "This action cannot be undone",
+        "migration_pending_description": "Heartbeat, inventory and backup are not sent to my.nethesis.it. Click Complete migration to retry.",
+        "company": "Company",
+        "migration_pending_title": "Migration to the new my not completed"
     },
     "settings_cluster": {
         "title": "Cluster"

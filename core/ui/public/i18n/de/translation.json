@@ -266,7 +266,8 @@
         "import-backup-destinations": "Sicherungsziele importieren",
         "set-trusted-proxies": "Configure frontend proxies",
         "get-trusted-proxies": "Retrieve frontend proxies",
-        "set-automatic-updates": "Set automatic updates"
+        "set-automatic-updates": "Set automatic updates",
+        "migrate-subscription": "Complete migration to the new my"
     },
     "common": {
         "hide": "verstecken",
@@ -1734,7 +1735,15 @@
         "start_session_support": "Sitzung starten",
         "agree_terms_before_register": "Ich habe die {terms} gelesen und stimme ihnen zu.",
         "subscription_pattern": "Ungültiges Token-Format",
-        "remote_support_in_progress_with_expiration": "Die Support-Sitzung endet automatisch in {time} oder kann jederzeit manuell beendet werden."
+        "remote_support_in_progress_with_expiration": "Die Support-Sitzung endet automatisch in {time} oder kann jederzeit manuell beendet werden.",
+        "system_already_registered": "This system is already registered and its token cannot be reused. To subscribe again, create a new system on my.nethesis.it and register with its new token.",
+        "remove_cluster_subscription_irreversible": "Once removed, this system's token cannot be reused to register again. To subscribe this cluster again you will need to create a new system on my.nethesis.it and use its new token.",
+        "migration_failed": "Migration failed. Try again later. Logs: journalctl -t migrate-to-my",
+        "complete_migration": "Complete migration",
+        "remove_cluster_subscription_irreversible_title": "This action cannot be undone",
+        "migration_pending_description": "Heartbeat, inventory and backup are not sent to my.nethesis.it. Click Complete migration to retry.",
+        "company": "Company",
+        "migration_pending_title": "Migration to the new my not completed"
     },
     "cloud_log_manager_forwarder": {
         "tenant_tooltip": "Dieser Schlüssel, auch bekannt als \"Tenant\", identifiziert und assoziiert die Clusterprotokolle innerhalb eines Unternehmens in Cloud Log Manager. Sie finden ihn in der Webapp Cloud Log Manager unter Benutzer und Unternehmen > Unternehmen.",
