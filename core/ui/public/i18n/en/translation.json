@@ -737,7 +737,7 @@
         "request_subscription": "Register",
         "remove_subscription": "Remove subscription",
         "authentication_token_placeholder": "Paste the token here",
-        "system_id": "System ID",
+        "system_id": "System key",
         "plan_name": "Plan",
         "company": "Company",
         "expire_date": "Expiration",
