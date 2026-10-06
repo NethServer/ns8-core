@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Run migrate-to-my and fail if the cluster is still not migrated.
+#
+
+import agent
+import json
+import sys
+
+def _exit_validation_error(field, value, error, exit_code=2):
+    agent.set_status('validation-failed')
+    json.dump([{
+            'field': field,
+            'parameter': field,
+            'value': value,
+            'error': error
+        }],
+        fp=sys.stdout)
+    sys.exit(exit_code)
+
+rdb = agent.redis_connect(privileged=True)
+hsubscription = rdb.hgetall("cluster/subscription")
+if hsubscription.get("provider") != "nsent":
+    _exit_validation_error("", "", "system_not_subscribed")
+
+agent.run_helper("migrate-to-my").check_returncode()
+
+if not rdb.hget("cluster/subscription", "collect_url"):
+    print(agent.SD_ERR + "Migration to the new my failed. See: journalctl -t migrate-to-my", file=sys.stderr)
+    sys.exit(1)
+
+json.dump({}, fp=sys.stdout)

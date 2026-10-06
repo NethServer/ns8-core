@@ -139,16 +139,25 @@
                   </div>
                 </div>
               </template>
-              <template
+              <div
                 v-if="
                   !loading.getSubscription && subscription.status == 'active'
                 "
+                class="subscription-details"
               >
                 <div class="key-value-setting">
                   <span class="label">{{
                     $t("settings_subscription.system_id")
                   }}</span>
-                  <span class="value">{{ subscription.system_id }}</span>
+                  <span class="value">
+                    <cv-link
+                      v-if="subscription.system_url"
+                      :href="subscription.system_url"
+                      target="_blank"
+                      >{{ subscription.system_id }}</cv-link
+                    >
+                    <template v-else>{{ subscription.system_id }}</template>
+                  </span>
                 </div>
                 <div class="key-value-setting">
                   <span class="label">{{
@@ -156,11 +165,19 @@
                   }}</span>
                   <span class="value">{{ subscription.plan_name }}</span>
                 </div>
+                <div v-if="subscription.company" class="key-value-setting">
+                  <span class="label">{{
+                    $t("settings_subscription.company")
+                  }}</span>
+                  <span class="value">{{ subscription.company }}</span>
+                </div>
                 <div class="key-value-setting">
                   <span class="label">{{
                     $t("settings_subscription.expire_date")
                   }}</span>
                   <span class="value">{{
+                    !subscription.expires ||
+                    !subscription.expire_date ||
                     subscription.expire_date === "-1"
                       ? $t("settings_subscription.no_expiration")
                       : formatDate(
@@ -190,6 +207,35 @@
                     ></cv-tag>
                   </span>
                 </div>
+              </div>
+              <template
+                v-if="
+                  !loading.getSubscription && subscription.status == 'pending'
+                "
+              >
+                <NsInlineNotification
+                  kind="warning"
+                  :title="$t('settings_subscription.migration_pending_title')"
+                  :description="
+                    $t('settings_subscription.migration_pending_description')
+                  "
+                  :showCloseButton="false"
+                />
+                <NsInlineNotification
+                  v-if="error.migrateSubscription"
+                  kind="error"
+                  :title="$t('action.migrate-subscription')"
+                  :description="error.migrateSubscription"
+                  :showCloseButton="false"
+                />
+                <NsButton
+                  kind="primary"
+                  :loading="loading.migrateSubscription"
+                  :disabled="loading.migrateSubscription"
+                  :icon="Restart20"
+                  @click="migrateSubscription"
+                  >{{ $t("settings_subscription.complete_migration") }}
+                </NsButton>
               </template>
               <NsInlineNotification
                 v-if="error.setSubscription"
@@ -329,7 +375,19 @@
         $t("settings_subscription.remove_cluster_subscription_title")
       }}</template>
       <template slot="content">
-        <div>
+        <NsInlineNotification
+          kind="warning"
+          :title="
+            $t(
+              'settings_subscription.remove_cluster_subscription_irreversible_title'
+            )
+          "
+          :description="
+            $t('settings_subscription.remove_cluster_subscription_irreversible')
+          "
+          :showCloseButton="false"
+        />
+        <div class="mg-top-md">
           {{
             $t("settings_subscription.remove_cluster_subscription_description")
           }}
@@ -400,6 +458,7 @@ export default {
         setSubscription: false,
         startSessionSupport: false,
         stopSessionSupport: false,
+        migrateSubscription: false,
       },
       error: {
         status: "",
@@ -411,6 +470,7 @@ export default {
         removeSubscription: "",
         unknown_token: "",
         agreeTerms: "",
+        migrateSubscription: "",
       },
     };
   },
@@ -619,6 +679,67 @@ export default {
       this.loading.setSubscription = false;
       this.agreeTerms = false;
       this.getSubscription();
+    },
+    async migrateSubscription() {
+      this.error.migrateSubscription = "";
+      this.loading.migrateSubscription = true;
+      const taskAction = "migrate-subscription";
+      const eventId = this.getUuid();
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.migrateSubscriptionCompleted
+      );
+
+      // register to task aborted
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.migrateSubscriptionAborted
+      );
+
+      // register to task validation
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.migrateSubscriptionValidationFailed
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.migrateSubscription = this.getErrorMessage(err);
+        this.loading.migrateSubscription = false;
+        return;
+      }
+    },
+    migrateSubscriptionCompleted() {
+      this.loading.migrateSubscription = false;
+      this.getSubscription();
+    },
+    migrateSubscriptionAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.migrateSubscription = this.$t(
+        "settings_subscription.migration_failed"
+      );
+      this.loading.migrateSubscription = false;
+    },
+    migrateSubscriptionValidationFailed(validationErrors) {
+      this.loading.migrateSubscription = false;
+      this.error.migrateSubscription = this.getI18nStringWithFallback(
+        "settings_subscription." + validationErrors[0].error,
+        "error." + validationErrors[0].error
+      );
     },
     async removeSubscription() {
       this.error.removeSubscription = "";
@@ -858,6 +979,19 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+// Two columns, so all values line up.
+.subscription-details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 2rem;
+  row-gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.subscription-details .key-value-setting {
+  display: contents;
+}
 
 .icon-and-text {
   justify-content: flex-start;
