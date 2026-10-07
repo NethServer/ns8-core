@@ -7,8 +7,6 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "watch": "vue-cli-service build --watch",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
     "format": "prettier --write src/"
   },
   "dependencies": {
@@ -46,11 +44,6 @@
   "devDependencies": {
     "@babel/core": "^7.14.3",
     "@babel/eslint-parser": "^7.11.0",
-    "@storybook/addon-actions": "^6.2.9",
-    "@storybook/addon-essentials": "^6.2.9",
-    "@storybook/addon-links": "^6.2.9",
-    "@storybook/preset-scss": "^1.0.3",
-    "@storybook/vue": "^6.2.9",
     "@vue/cli-plugin-babel": "~4.5.18",
     "@vue/cli-plugin-eslint": "~4.5.18",
     "@vue/cli-plugin-router": "~4.5.18",
