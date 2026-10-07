@@ -284,6 +284,9 @@ p {
 }
 
 // reduce width of wizard buttons on small screens
+// DEPRECATED: also provided by @nethserver/ns8-ui-lib >= 2.2.0 (component styles).
+// Kept for apps built with older ns8-ui-lib versions: remove in the future,
+// when all supported apps require ns8-ui-lib >= 2.2.0. Do not edit.
 @media (max-width: $breakpoint-medium) {
   .bx--btn-set .bx--btn.wizard-button {
     width: 33%;
@@ -682,6 +685,9 @@ ul.unordered-list {
 // data table end
 
 // loader start
+// DEPRECATED: also provided by @nethserver/ns8-ui-lib >= 2.2.0 (component styles).
+// Kept for apps built with older ns8-ui-lib versions: remove in the future,
+// when all supported apps require ns8-ui-lib >= 2.2.0. Do not edit.
 .loader {
   width: 1rem;
   height: 1rem;
@@ -739,6 +745,9 @@ ul.unordered-list {
 }
 
 // branding colors for NsProgressBar start
+// DEPRECATED: also provided by @nethserver/ns8-ui-lib >= 2.2.0 (component styles).
+// Kept for apps built with older ns8-ui-lib versions: remove in the future,
+// when all supported apps require ns8-ui-lib >= 2.2.0. Do not edit.
 .progress-bar-container .line,
 .progress-bar-container .progress-line,
 .progress-bar-container .indeterminate-line,
@@ -821,6 +830,9 @@ ul.unordered-list {
 // status colors end
 
 // colors for NsStatusCard and NsSystemdServiceCard start
+// DEPRECATED: also provided by @nethserver/ns8-ui-lib >= 2.2.0 (component styles).
+// Kept for apps built with older ns8-ui-lib versions: remove in the future,
+// when all supported apps require ns8-ui-lib >= 2.2.0. Do not edit.
 .status-card .success-icon,
 .service-card .success-icon {
   color: $support-02;
@@ -939,6 +951,9 @@ ul.unordered-list {
 }
 
 // NsTimePicker start
+// DEPRECATED: also provided by @nethserver/ns8-ui-lib >= 2.2.0 (component styles).
+// Kept for apps built with older ns8-ui-lib versions: remove in the future,
+// when all supported apps require ns8-ui-lib >= 2.2.0. Do not edit.
 
 // brand color outline on focus
 .ns-time-picker .time-picker-field input:active,
