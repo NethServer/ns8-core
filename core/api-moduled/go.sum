@@ -44,6 +44,8 @@ github.com/gin-contrib/sse v1.1.1 h1:uGYpNwTacv5R68bSGMapo62iLTRa9l5zxGCps4hK6ko
 github.com/gin-contrib/sse v1.1.1/go.mod h1:QXzuVkA0YO7o/gun03UI1Q+FTI8ZV/n5t03kIQAI89s=
 github.com/gin-contrib/static v1.1.6 h1:4/OIJI9PxO2jsUezNulpVbzI8ORMmdPlJ4P9QGwWgME=
 github.com/gin-contrib/static v1.1.6/go.mod h1:e9qkj8wAlsxE6mSFGVL/flqGfVibw5amjNEUa4idmHc=
+github.com/gin-contrib/static v1.1.8 h1:5heoI9Bya1A4GrX/qWXAYfrQj5ejJe1dbyOWc2UBx00=
+github.com/gin-contrib/static v1.1.8/go.mod h1:iLFZejDjIpTtkLnWshlLsuR8L+K3xFoc7vpZmOrNRWI=
 github.com/gin-gonic/gin v1.8.1/go.mod h1:ji8BvRH1azfM+SYow9zQ6SZMvR8qOMZHmsCuWR9tTTk=
 github.com/gin-gonic/gin v1.12.0 h1:b3YAbrZtnf8N//yjKeU2+MQsh2mY5htkZidOM7O0wG8=
 github.com/gin-gonic/gin v1.12.0/go.mod h1:VxccKfsSllpKshkBWgVgRniFFAzFb9csfngsqANjnLc=
