@@ -40,3 +40,6 @@ public/config/config.development.js
 
 # Output of 'npm pack'
 *.tgz
+
+# Storybook build outputs, left over from before Storybook moved to ns8-ui-lib
+storybook-static
