@@ -88,7 +88,7 @@ Container configuration is contained inside `.devcontainer/devcontainer.json`.
 
 Developing NS8 modules UI inside a container is the recommended way, but if you want to do it on your workstation:
 
-- Install Node.js and npm (LTS version, currently v22)
+- Install Node.js and npm
 - Change directory to `ui`
 - `NODE_OPTIONS=--openssl-legacy-provider yarn install`: project setup, needed only the first time
 - `NODE_OPTIONS=--openssl-legacy-provider yarn watch`: compile sources and watch for changes

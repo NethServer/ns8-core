@@ -13,6 +13,8 @@ The library also includes a set of VueJs mixins used by core and modules to acce
 
 Source code of UI library is provided [here](https://github.com/NethServer/ns8-ui-lib).
 
+The library components can be explored and tested in the [UI library Storybook](https://nethserver.github.io/ns8-ui-lib/), published for each library release.
+
 ## UI library development
 
 You can develop NS8 UI library inside a container (recommended) or on your workstation.
@@ -26,28 +28,38 @@ You have two options:
 
 #### Build and start a Podman container
 
-Build the container defined by `Containerfile`:
-
-```
-podman build -t ns8-ui-lib-dev .
-```
+Run the following commands from the `ns8-ui-lib` directory (the repository root), using the official Node.js container image.
 
 Project setup:
 
 ```
-podman run -ti -v $(pwd):/app:Z --name ns8-ui-lib --replace ns8-ui-lib-dev npm install
+podman run -ti -v $(pwd):/app:Z -w /app -e NODE_OPTIONS=--openssl-legacy-provider --name ns8-ui-lib --replace docker.io/library/node:lts npm install
 ```
 
 Compile and minify for production:
 
 ```
-podman run -ti -v $(pwd):/app:Z --name ns8-ui-lib --replace ns8-ui-lib-dev npm run build
+podman run -ti -v $(pwd):/app:Z -w /app -e NODE_OPTIONS=--openssl-legacy-provider --name ns8-ui-lib --replace docker.io/library/node:lts npm run build
 ```
 
 Create a tarball:
 ```
-podman run -ti -v $(pwd):/app:Z --name ns8-ui-lib --replace ns8-ui-lib-dev npm run build-pack
+podman run -ti -v $(pwd):/app:Z -w /app -e NODE_OPTIONS=--openssl-legacy-provider --name ns8-ui-lib --replace docker.io/library/node:lts npm run build-pack
 ```
+
+Start Storybook (`--network=host` is required for hot-reload), then open http://localhost:6006:
+
+```
+podman run -ti -v $(pwd):/app:Z -w /app -e NODE_OPTIONS=--openssl-legacy-provider --network=host --name ns8-ui-lib --replace docker.io/library/node:lts npm run storybook
+```
+
+Start the playground, a local app to quickly test components (`--network=host` is required for hot-reload), then open http://localhost:8080:
+
+```
+podman run -ti -v $(pwd):/app:Z -w /app -e NODE_OPTIONS=--openssl-legacy-provider --network=host --name ns8-ui-lib --replace docker.io/library/node:lts npm run playground
+```
+
+Edit `playground/App.vue` for your tests, but do not commit your changes.
 Tarball generation is useful for testing a development or testing version of NS8 UI library. To import the generated tarball into another Node project (e.g. `ns8-core` or a NS8 module), see [Import development or testing version](#import-development-or-testing-version).
 
 #### Use VS Code Dev Containers
@@ -61,6 +73,8 @@ Tarball generation is useful for testing a development or testing version of NS8
   - `npm install`: project setup, needed only the first time
   - `npm run build`: compile and minify for production
   - `npm run build-pack`: create a tarball
+  - `NODE_OPTIONS=--openssl-legacy-provider npm run storybook`: start Storybook with hot-reload
+  - `NODE_OPTIONS=--openssl-legacy-provider npm run playground`: start the playground with hot-reload (edit `playground/App.vue` for your tests, but do not commit your changes)
 
 Tarball generation is useful for testing a development or pre-release version of ns8-ui-lib. To import the generated tarball into another Node project (e.g. `ns8-core` or a NS8 module), see [Import development or testing version](#import-development-or-testing-version).
 
@@ -70,10 +84,12 @@ Dev container configuration is contained inside `.devcontainer/devcontainer.json
 
 Developing NS8 UI library inside a container is the recommended way, but if you want to do it on your workstation:
 
-- Install Node.js 22 and npm
+- Install Node.js and npm
 - `npm install`: project setup, needed only the first time
 - `npm run build`: compile and minify for production
 - `npm run build-pack`: create a tarball
+- `NODE_OPTIONS=--openssl-legacy-provider npm run storybook`: start Storybook with hot-reload
+- `NODE_OPTIONS=--openssl-legacy-provider npm run playground`: start the playground with hot-reload (edit `playground/App.vue` for your tests, but do not commit your changes)
 
 Tarball generation is useful for testing a development or pre-release version of ns8-ui-lib. To import the generated tarball into another Node project (e.g. `ns8-core` or a NS8 module), see [Import development or testing version](#import-development-or-testing-version).
 
