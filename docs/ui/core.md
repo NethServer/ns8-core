@@ -28,13 +28,7 @@ Core UI includes the following components:
 
 Source code of core UI is provided [here](https://github.com/NethServer/ns8-core/tree/main/core/ui).
 
-Core UI also includes a [Storybook](https://storybook.js.org/) to explore and test the reusable components included in the UI library.
-To launch Storybook web app:
-
-```bash
-cd core/ui
-yarn storybook
-```
+The reusable components of the [UI library](../library) can be explored and tested in its [Storybook](https://nethserver.github.io/ns8-ui-lib/).
 
 Application routing is implemented with [Vue Router](https://router.vuejs.org/). See `core/ui/src/router/index.js`
 
@@ -137,25 +131,6 @@ Compiles and minifies for production:
 podman run -ti -v $(pwd):/app:Z --name ns8-core --replace ns8-core-dev build
 ```
 
-Start Storybook webapp (`--network=host` is required for hot-reload):
-
-```
-podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev storybook
-```
-
-Note: if you want to run development server AND run Storybook webapp at the same time you can't use above commands; you would get a `yarn` error.
-To run development server and run Storybook simultaneously:
-
-```
-podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev serve
-```
-
-and then
-
-```
-podman exec -ti ns8-core yarn storybook
-```
-
 Remember to [prepare your development environment](#core-ui-development) before start coding.
 
 #### Use VS Code Dev Containers
@@ -169,7 +144,6 @@ Remember to [prepare your development environment](#core-ui-development) before 
 - Enter one of the following commands:
   - `yarn install`: project setup, needed only the first time
   - `yarn serve`: start development server with hot-reload
-  - `yarn storybook`: start Storybook webapp with hot-reload
   - `yarn build`: compiles and minifies for production
 
 Container configuration is contained inside `.devcontainer/devcontainer.json`.
@@ -181,13 +155,12 @@ Remember to [prepare your development environment](#core-ui-development) before 
 Developing NS8 UI inside a container is the recommended way, but if you want to do it on your workstation:
 
 - Install development tools:
-  - Node.js and npm (LTS version, currently v22)
+  - Node.js and npm
   - Yarn
 - Run a web server on your workstation (hot reloading enabled):
   - `cd core/ui`
   - `yarn install`: project setup, needed only the first time
   - `yarn serve`: start development server with hot-reload
-  - `yarn storybook`: start Storybook webapp with hot-reload
   - `yarn build`: compiles and minifies for production
 
 Remember to [prepare your development environment](#core-ui-development) before start coding.
