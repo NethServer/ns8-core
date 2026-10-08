@@ -80,7 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         distro: [rocky9, debian13]
-    uses: NethServer/ns8-github-actions/.github/workflows/test-on-qemu.yml@feat-core-qemu
+    uses: NethServer/ns8-github-actions/.github/workflows/test-on-qemu.yml@v1
     with:
       distro: ${{ matrix.distro }}
       ci_actions_ref: feat-core-qemu
