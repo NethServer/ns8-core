@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       modules: ${{ steps.modules.outputs.list }}
+      tag: ${{ steps.tag.outputs.name }}
     steps:
       - id: tag
         env:
@@ -71,15 +72,29 @@ jobs:
   run_tests:
     name: "Run tests"
     needs: [ns8, check_ui_tests_needed]
-    uses: NethServer/ns8-github-actions/.github/workflows/test-on-digitalocean-infra.yml@v1
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [rocky9, debian13]
+    uses: NethServer/ns8-github-actions/.github/workflows/test-on-qemu.yml@feat-core-qemu
     with:
+      distro: ${{ matrix.distro }}
+      ci_actions_ref: feat-core-qemu
+      # The suite installs the core and creates the cluster itself.
       setup_cluster: false
       path: core/
+      script: ""
       repo_ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      version_tag: ${{ needs.ns8.outputs.tag }}
       coremodules: ${{ join(fromJSON(needs.ns8.outputs.modules), ' ' ) }}
-      run_ui_tests: ${{ needs.check_ui_tests_needed.outputs.ui_tests_needed == 'true' }}
-    secrets:
-      do_token: ${{ secrets.do_token }}
+      # A private guest cannot get a Let's Encrypt certificate.
+      args: "--exclude letsencrypt"
+      # One leg only, or both legs post the same screenshots.
+      run_ui_tests: ${{ matrix.distro == 'rocky9' && needs.check_ui_tests_needed.outputs.ui_tests_needed == 'true' }}
   remove_label:
     name: "Cleanup PR label"
     runs-on: ubuntu-latest

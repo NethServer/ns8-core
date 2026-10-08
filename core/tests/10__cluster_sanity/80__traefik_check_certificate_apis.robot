@@ -2,6 +2,8 @@
 Library    RequestsLibrary
 Library    SSHLibrary
 Resource   api.resource
+# Needs a public name for the node. Excluded where the node has none, like the QEMU CI.
+Force Tags    letsencrypt
 
 *** Test Cases ***
 Set node FQDN certificate
