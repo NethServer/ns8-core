@@ -83,7 +83,6 @@ jobs:
     uses: NethServer/ns8-github-actions/.github/workflows/test-on-qemu.yml@v1
     with:
       distro: ${{ matrix.distro }}
-      ci_actions_ref: feat-core-qemu
       # The suite installs the core and creates the cluster itself.
       setup_cluster: false
       path: core/
