@@ -1,0 +1,10 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "start-tunnel-all-nodes output",
+    "type": "object",
+    "properties": {
+        "nodes_started": { "type": "integer" },
+        "nodes_failed": { "type": "integer" },
+        "total_nodes": { "type": "integer" }
+    }
+}

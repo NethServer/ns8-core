@@ -1,0 +1,20 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "get-tunnel-all-nodes output",
+    "type": "object",
+    "properties": {
+        "active": { "type": "boolean" },
+        "nodes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "active": { "type": "boolean" },
+                    "session_id": { "type": "string" },
+                    "started_at": { "type": "string" },
+                    "node_id": { "type": "string" }
+                }
+            }
+        }
+    }
+}
