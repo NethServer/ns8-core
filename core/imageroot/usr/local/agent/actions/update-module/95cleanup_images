@@ -25,8 +25,8 @@ for image_old in os.environ:
         agent.run_helper('podman', 'image', 'rm', os.environ.get(image_old))
 
 # Handle removal of the old image URL
-image_old = 'PREV_IMAGE_URL'
-image_new = 'IMAGE_URL'
-if os.environ.get(image_new) != os.environ.get(image_old):
-    print(f"Removing {os.environ.get(image_old)} (differs from {os.environ.get(image_new)})", file=sys.stderr)
-    agent.run_helper('podman', 'image', 'rm', os.environ[image_old])
+image_old = os.environ.get('PREV_IMAGE_URL')
+image_new = os.environ.get('IMAGE_URL')
+if image_old and image_old != image_new:
+    print(f"Removing {image_old} (differs from {image_new})", file=sys.stderr)
+    agent.run_helper('podman', 'image', 'rm', image_old)
