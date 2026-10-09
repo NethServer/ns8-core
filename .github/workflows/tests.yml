@@ -1,5 +1,5 @@
 name: Test Core Modules
-run-name: "Test Core Modules on ${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}"
+run-name: "Test ${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }} on QEMU"
 on:
   pull_request:
     types:
