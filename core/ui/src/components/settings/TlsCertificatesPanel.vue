@@ -417,7 +417,10 @@
           {{ $t("settings_tls_certificates.automatic_cert_warning") }}
         </p>
         <NsInlineNotification
-          v-if="currentCertificate && currentCertificate.type === 'internal'"
+          v-if="
+            currentCertificate &&
+            ['internal', 'custom'].includes(currentCertificate.type)
+          "
           kind="warning"
           :title="$t('settings_tls_certificates.traefik_will_be_restarted')"
           :description="
