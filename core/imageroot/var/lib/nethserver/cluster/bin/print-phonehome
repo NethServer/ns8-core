@@ -158,8 +158,6 @@ def node_facts(rdb):
         )
 
         for idx, item in enumerate(results):
-            # A failed node task carries an empty string as output: iterating
-            # it silently yields no node. Report it instead.
             if isinstance(item, Exception) or item['exit_code'] != 0:
                 reason = item if isinstance(item, Exception) else item.get('error', '')
                 print(agent.SD_WARNING + f"{tasks[idx]['agent_id']}/get-facts failed: {reason}".rstrip(), file=sys.stderr)
