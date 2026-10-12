@@ -206,9 +206,6 @@ for line in _run("find /sys | grep '.*/drivers/.*/0000:.*$' | cut -d'/' -f6,7").
 # lspci -n: 00:1b.0 0403: 8086:293e (rev 03)
 # fields:   bus class vendor:device revision
 pci = {}
-# Some hypervisors (e.g. Hyper-V generation 2) expose /proc/bus/pci but no
-# PCI device: lspci prints nothing and the facts must not fail for it.
-# splitlines() yields no item on empty output, split("\n") yields [''].
 if os.path.isdir('/proc/bus/pci'):
     for line in _run("lspci -n").splitlines():
         revision = ''
