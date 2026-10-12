@@ -207,7 +207,7 @@ for line in _run("find /sys | grep '.*/drivers/.*/0000:.*$' | cut -d'/' -f6,7").
 # fields:   bus class vendor:device revision
 pci = {}
 if os.path.isdir('/proc/bus/pci'):
-    for line in _run("lspci -n").split("\n"):
+    for line in _run("lspci -n").splitlines():
         revision = ''
         fields = line.split(" ", maxsplit=4)
         (vendor, device) = fields[2].split(":")
@@ -221,7 +221,7 @@ if os.path.isdir('/proc/bus/pci'):
         }
 
     # lspci -mm: 00:00.0 "Host bridge" "Intel Corporation" "82G33/G31/P35/P31 Express DRAM Controller" -p00 "Red Hat, Inc." "QEMU Virtual Machine"
-    for fields in csv.reader(_run("lspci -mm").split("\n"), delimiter=' ', quotechar='"'):
+    for fields in csv.reader(_run("lspci -mm").splitlines(), delimiter=' ', quotechar='"'):
         pci[fields[0]]['class_name'] = fields[1].strip('"')
         pci[fields[0]]['vendor_name'] = fields[2]
         pci[fields[0]]['device_name'] = fields[3]
