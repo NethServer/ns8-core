@@ -33,7 +33,7 @@
             "minItems": 1
         },
         "force": {
-            "description": "Force the module update even if the given `module_url` is already present in the local Podman storage,",
+            "description": "Force the module update even if the `module_url` tag is not a semver greater than the installed one, and pull the image even if it is already present in the local Podman storage",
             "type": "boolean",
              "default": false
         }
