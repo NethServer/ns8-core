@@ -17,6 +17,7 @@ import agent
 import cluster.backup
 
 EXIT_ALREADY_RUNNING = 3
+RESTIC_EXIT_NO_REPOSITORY = 10
 RETRY_INTERVAL = 60   # seconds between retries
 RETRY_TIMEOUT = 3600  # total retry window in seconds
 
@@ -62,6 +63,20 @@ def run_module_backup(module_id, backup_id):
         ["runagent", "-m", module_id, "module-backup", backup_id],
     )
     return result.returncode
+
+def remove_stale_locks(rdb, repository, repopath):
+    """Remove stale Restic locks from a module's repository. A lock upload
+    that timed out at the rclone gateway can still be stored remotely, and
+    Restic never removes it: an exclusive one blocks any later backup."""
+    try:
+        proc = agent.run_restic(rdb, repository, repopath, [], ["unlock"], text=True, stderr=subprocess.PIPE)
+    except Exception as ex:
+        print(agent.SD_WARNING + f"restic unlock failed for {repository}/{repopath}: {ex}", file=sys.stderr)
+        return
+    if proc.returncode == RESTIC_EXIT_NO_REPOSITORY:
+        return # Not an error: module-backup initializes the repository
+    if proc.returncode != 0:
+        print(agent.SD_WARNING + f"restic unlock failed for {repository}/{repopath}: {proc.stderr.strip()}", file=sys.stderr)
 
 def collect_backup_stats(rdb, repository, repopath, start_time):
     """Collect restic stats for a module's backup. Returns status dict."""
@@ -146,11 +161,12 @@ def upload_cluster_backup(rdb, repository, backup_id, cluster_uuid):
 def process_module(rdb, module_id, backup_id, node_id, repository, retention):
     """Run backup for one module, handle post-backup tasks. Returns exit code."""
     start_time = int(time.time())
+    repopath = get_module_repopath(rdb, module_id)
+    remove_stale_locks(rdb, repository, repopath)
     rc = run_module_backup(module_id, backup_id)
     if rc == EXIT_ALREADY_RUNNING:
         return rc
 
-    repopath = get_module_repopath(rdb, module_id)
     success = (rc == 0)
 
     # Collect stats
