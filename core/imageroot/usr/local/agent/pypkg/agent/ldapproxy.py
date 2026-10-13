@@ -47,7 +47,8 @@ class Ldapproxy:
             print(agent.SD_WARNING + \
                 f'agent.ldapproxy: domain {domain} should not be used by ' + \
                 f'{os.getenv("MODULE_ID")}. Invoke agent.bind_user_domains(' + \
-                f'["{domain}"]) to fix this warning.', file=sys.stderr)
+                repr(self.bound_domain_list + [domain]) + \
+                ') to fix this warning.', file=sys.stderr)
         conf = {
             'host': '127.0.0.1',
         }
