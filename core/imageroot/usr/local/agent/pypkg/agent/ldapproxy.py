@@ -28,6 +28,7 @@ class Ldapproxy:
 
     def __init__(self, node_id=None):
         self.domains = None
+        self.bound_domain_list = []
         if node_id is None:
             node_id = os.environ['NODE_ID']
         self.node_id = int(node_id)
@@ -40,6 +41,14 @@ class Ldapproxy:
     def get_domain(self, domain):
         if self.domains is None:
             self.domains = self._load_domains()
+        if "MODULE_ID" in os.environ and domain in self.domains \
+                and domain not in self.bound_domain_list:
+            # Warn only if the module is running under a module environment
+            print(agent.SD_WARNING + \
+                f'agent.ldapproxy: domain {domain} should not be used by ' + \
+                f'{os.getenv("MODULE_ID")}. Invoke agent.bind_user_domains(' + \
+                repr(self.bound_domain_list + [domain]) + \
+                ') to fix this warning.', file=sys.stderr)
         conf = {
             'host': '127.0.0.1',
         }
@@ -98,17 +107,11 @@ class Ldapproxy:
 
         # Retrieve the list of bound user domains, to check warning
         # conditions:
-        bound_domain_list = agent.get_bound_domain_list(rdb)
+        self.bound_domain_list = agent.get_bound_domain_list(rdb)
 
         domains = {}
         configured_domains = cluster.userdomains.list_domains(rdb)
         for domain in configured_domains:
-            if "MODULE_ID" in os.environ and domain not in bound_domain_list:
-                # Warn only if the module is running under a module environment
-                print(agent.SD_WARNING + \
-                    f'agent.ldapproxy: domain {domain} should not be used by ' + \
-                    f'{os.getenv("MODULE_ID")}. Invoke agent.bind_user_domains(' + \
-                    f'["{domain}"]) to fix this warning.', file=sys.stderr)
             dhx = configured_domains[domain]
             domains.setdefault(domain, dhx)
 
