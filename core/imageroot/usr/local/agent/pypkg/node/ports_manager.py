@@ -73,6 +73,8 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
         with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
             cursor = database.cursor()
             create_tables(cursor) # Ensure the tables exist
+            # Lock the database before reading, so concurrent allocations are serialized
+            cursor.execute("BEGIN EXCLUSIVE;")
 
             # Fetch used ports based on protocol
             if protocol == 'tcp':
@@ -84,7 +86,10 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
             # If the module already has an assigned range, deallocate it first
             if any(module_name == range[2] for range in ports_used):
                 if not keep_existing:
-                    deallocate_ports(module_name, protocol)
+                    if protocol == 'tcp':
+                        cursor.execute("DELETE FROM TCP_PORTS WHERE module=?;", (module_name,))
+                    elif protocol == 'udp':
+                        cursor.execute("DELETE FROM UDP_PORTS WHERE module=?;", (module_name,))
                 # Reload the used ports after deallocation
                 if protocol == 'tcp':
                     cursor.execute("SELECT start,end,module FROM TCP_PORTS ORDER BY start;")
