@@ -17,6 +17,7 @@ import agent
 import cluster.backup
 
 EXIT_ALREADY_RUNNING = 3
+RESTIC_EXIT_NO_REPOSITORY = 10
 RETRY_INTERVAL = 60   # seconds between retries
 RETRY_TIMEOUT = 3600  # total retry window in seconds
 
@@ -68,10 +69,14 @@ def remove_stale_locks(rdb, repository, repopath):
     that timed out at the rclone gateway can still be stored remotely, and
     Restic never removes it: an exclusive one blocks any later backup."""
     try:
-        agent.run_restic(rdb, repository, repopath, [], ["unlock"], check=True)
+        proc = agent.run_restic(rdb, repository, repopath, [], ["unlock"], text=True, stderr=subprocess.PIPE)
     except Exception as ex:
-        # The repository might not exist yet: module-backup initializes it
         print(agent.SD_WARNING + f"restic unlock failed for {repository}/{repopath}: {ex}", file=sys.stderr)
+        return
+    if proc.returncode == RESTIC_EXIT_NO_REPOSITORY:
+        return # Not an error: module-backup initializes the repository
+    if proc.returncode != 0:
+        print(agent.SD_WARNING + f"restic unlock failed for {repository}/{repopath}: {proc.stderr.strip()}", file=sys.stderr)
 
 def collect_backup_stats(rdb, repository, repopath, start_time):
     """Collect restic stats for a module's backup. Returns status dict."""
