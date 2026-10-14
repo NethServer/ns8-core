@@ -93,3 +93,44 @@ Examples:
 - `docker.io/library/mysql:10.3-alpine` becomes `MYSQL_IMAGE=docker.io/library/mysql:10.3-alpine`
 - `quay.io/prometheus/node-exporter:v1.5.0` becomes `NODE_EXPORTER_IMAGE=quay.io/prometheus/node-exporter:v1.5.0`
 - `docker.io/2fauth/2fauth:5.2.0` becomes `I2FAUTH_IMAGE=docker.io/2fauth/2fauth:5.2.0`
+
+## Registry mirrors
+
+NethServer keeps a copy of some public images on its own registry,
+`ghcr.io/nethserver`. Nodes are configured to pull images hosted on
+`docker.io` and `quay.io` from this mirror first: if the image is
+missing there, or the mirror cannot be reached, it is pulled from the
+original registry. Image references in `org.nethserver.images` and in
+the agent environment do not change: always use the original registry
+URL.
+
+The mirror was introduced to work around Docker Hub pull rate limits.
+Docker Hub counts anonymous pulls by IPv6 /64 prefix, so many servers
+sharing the same prefix, like VPSs of a cloud provider, reach the
+limit quickly and image downloads fail during module installation and
+updates (see [NethServer/dev#7160](https://github.com/NethServer/dev/issues/7160)).
+The same mechanism was later extended to `quay.io` images (see
+[NethServer/dev#8231](https://github.com/NethServer/dev/issues/8231)).
+
+The mirror is made of two parts:
+
+- **Node configuration**: the core installs
+  `/etc/containers/registries.conf.d/800-nethserver.conf`, which
+  declares `ghcr.io/nethserver/docker.io` and
+  `ghcr.io/nethserver/quay.io` as mirrors of the respective registries.
+  The configuration applies to Podman, Buildah and Skopeo.
+
+- **Image copy**: the
+  [ns8-repomd](https://github.com/NethServer/ns8-repomd) workflow runs
+  `syncmirrors.sh` every time it publishes the default repository
+  metadata. The script reads the `org.nethserver.images` label of every
+  module version and copies each missing `docker.io` and `quay.io`
+  image to the mirror, for example
+  `quay.io/prometheus/prometheus:v3.13.2` becomes
+  `ghcr.io/nethserver/quay.io/prometheus/prometheus:v3.13.2`. Short
+  Docker Hub names are expanded, so `docker.io/redis:7` is copied as
+  `ghcr.io/nethserver/docker.io/library/redis:7`.
+
+Only images of modules published in the default repository are
+mirrored. Images of other repositories, like NethForge, and images
+from other registries are always pulled from their original location.
