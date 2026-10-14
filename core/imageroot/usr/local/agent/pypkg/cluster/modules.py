@@ -329,7 +329,7 @@ def list_available(rdb, skip_core_modules=False):
         omod['rootfull'] = package_is_rootfull
         # Block untrusted rootfull application, if a subscription is active
         if hsubscription and package_is_rootfull and omod["certification_level"] < 3:
-            print(agent.SD_WARNING + f"Rootfull application {omod['source']} has no valid version: certification_level {omod['certification_level']} is too low", file=sys.stderr)
+            print(agent.SD_DEBUG + f"Rootfull application {omod['source']} has no valid version: certification_level {omod['certification_level']} is too low", file=sys.stderr)
             omod["versions"] = []
             omod["no_version_reason"] = {
                 "message": "rootfull_certification_level_too_low",
@@ -537,14 +537,14 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
                 # Arbitrary low version to satisfy any tag:
                 minimum_version = (0,0,0)
             if current_version < minimum_version:
-                print(agent.SD_NOTICE + f"Ignoring update of {instance['id']} with {instance['source']}:{aver['tag']}: org.nethserver.min-from", minimum_version, file=sys.stderr)
+                print(agent.SD_DEBUG + f"Ignoring update of {instance['id']} with {instance['source']}:{aver['tag']}: org.nethserver.min-from", minimum_version, file=sys.stderr)
                 continue # Skip versions incompatible with instance version.
             try:
                 minimum_core = semver.parse_version_info(aver['labels']['org.nethserver.min-core'])
             except:
                 minimum_core = (0,0,0)
             if current_core < minimum_core:
-                print(agent.SD_NOTICE + f"Ignoring update of {instance['id']} with {instance['source']}:{aver['tag']}: org.nethserver.min-core:", minimum_core, file=sys.stderr)
+                print(agent.SD_DEBUG + f"Ignoring update of {instance['id']} with {instance['source']}:{aver['tag']}: org.nethserver.min-core:", minimum_core, file=sys.stderr)
                 continue # Skip versions incompatible with core.
             if update_candidate is None and (
                 _repo_has_testing_flag(rdb, repository_name)
