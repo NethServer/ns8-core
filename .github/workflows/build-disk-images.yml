@@ -6,10 +6,23 @@ on:
     types:
       - completed
   workflow_dispatch:
+    inputs:
+      images_ref:
+        description: "Branch, tag or commit of NethServer/ns8-images to build"
+        type: string
+        default: main
+      core_version:
+        description: "Core tag to install. If empty, use the latest stable tag in the repository metadata"
+        type: string
+        default: ""
+      dry_run:
+        description: "Build the images without uploading them"
+        type: boolean
+        default: true
 
 jobs:
   core-version:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       is_stable: ${{ steps.check.outputs.is_stable }}
@@ -32,9 +45,10 @@ jobs:
           )
           echo is_stable=$(python3 -c "$check_core_version") >> $GITHUB_OUTPUT
   build-images-qemu:
-    runs-on: [self-hosted]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     permissions:
-      contents: write
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -42,26 +56,60 @@ jobs:
           - qemu.rl
     needs:
       - core-version
-    if: needs.core-version.outputs.is_stable == 'true'
+    if: github.event_name == 'workflow_dispatch' || needs.core-version.outputs.is_stable == 'true'
     steps:
+      - name: Check runner capacity and KVM
+        run: |
+          set -euo pipefail
+          nproc; free -h; df -h /
+          # Without /dev/kvm the build would need TCG emulation, which is too
+          # slow to complete within the job timeout.
+          test -e /dev/kvm || { echo "::error::/dev/kvm is missing"; exit 1; }
+          sudo chmod 0666 /dev/kvm
+      - name: Install QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq qemu-system-x86 qemu-utils
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14'
       - name: Setup s3cmd
+        if: ${{ !inputs.dry_run }}
         run: |
           pip install s3cmd
           s3cmd --version
       - name: Setup `packer`
-        uses: hashicorp/setup-packer@main
+        uses: hashicorp/setup-packer@v3.4.0
+        with:
+          version: "1.16.1"
       - uses: actions/checkout@v6
         with:
           repository: NethServer/ns8-images
+          ref: ${{ inputs.images_ref || 'main' }}
+      - name: Get the base image checksum
+        id: base_image
+        run: |
+          checksum=$(sed -n 's/^ *iso_checksum *= *"sha256:\([0-9a-f]*\)".*/\1/p' sources-qemu.pkr.hcl)
+          test -n "${checksum}"
+          echo "checksum=${checksum}" >> "$GITHUB_OUTPUT"
+      - name: Cache the base image
+        # The Rocky Linux mirror is downloaded once per base image. Packer
+        # checks the cached file against the checksum before using it.
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/packer_cache
+          key: packer-base-image-${{ steps.base_image.outputs.checksum }}
       - name: Run `packer init`
         id: init
         run: packer init .
       - name: Run `packer build`
         id: validate
-        run: packer build --only=${{ matrix.source }} .
+        env:
+          # A release build installs its own tag: the repository metadata
+          # may not list it yet.
+          CORE_VERSION: ${{ inputs.core_version || github.event.workflow_run.head_branch }}
+          PACKER_CACHE_DIR: ${{ runner.temp }}/packer_cache
+        run: packer build --only=${{ matrix.source }} -var "core_version=${CORE_VERSION}" .
       - id: qcow2
         run: |
           IMAGE_PATH=$(cat packer-manifest.json | jq -r .builds[0].files[0].name)
@@ -78,7 +126,9 @@ jobs:
           cd $(dirname ${{ steps.qcow2.outputs.path }})
           sha256sum $(basename ${{ steps.qcow2.outputs.path }}) > ../CHECKSUM
           sha256sum $(basename ${{ steps.vmdk.outputs.path }}) >> ../CHECKSUM
+          cat ../CHECKSUM
       - name: Upload images
+        if: ${{ !inputs.dry_run }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DO_SPACE_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DO_SPACE_SECRET_KEY }}
