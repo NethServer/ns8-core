@@ -86,6 +86,19 @@ jobs:
         with:
           repository: NethServer/ns8-images
           ref: ${{ inputs.images_ref || 'main' }}
+      - name: Get the base image checksum
+        id: base_image
+        run: |
+          checksum=$(sed -n 's/^ *iso_checksum *= *"sha256:\([0-9a-f]*\)".*/\1/p' sources-qemu.pkr.hcl)
+          test -n "${checksum}"
+          echo "checksum=${checksum}" >> "$GITHUB_OUTPUT"
+      - name: Cache the base image
+        # The Rocky Linux mirror is downloaded once per base image. Packer
+        # checks the cached file against the checksum before using it.
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/packer_cache
+          key: packer-base-image-${{ steps.base_image.outputs.checksum }}
       - name: Run `packer init`
         id: init
         run: packer init .
@@ -95,6 +108,7 @@ jobs:
           # A release build installs its own tag: the repository metadata
           # may not list it yet.
           CORE_VERSION: ${{ inputs.core_version || github.event.workflow_run.head_branch }}
+          PACKER_CACHE_DIR: ${{ runner.temp }}/packer_cache
         run: packer build --only=${{ matrix.source }} -var "core_version=${CORE_VERSION}" .
       - id: qcow2
         run: |
