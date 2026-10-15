@@ -8,7 +8,6 @@ on:
     paths-ignore:
       - 'docs/**'
       - 'infra/**'
-      - 'core/tests/**'
   workflow_dispatch:
 
 # Same as module builds: a newer push of the same ref cancels the running build.
