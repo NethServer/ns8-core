@@ -12,9 +12,10 @@ on:
   workflow_dispatch:
 
 # Same as module builds: a newer push of the same ref cancels the running build.
+# Never cancel a tag build, it could stop between the ns8-stable tag and its image.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
 
 jobs:
   module:
