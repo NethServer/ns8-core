@@ -6,8 +6,13 @@ on:
       - "labeled"
   workflow_run:
     workflows: ["core"]
-    types: [completed]
+    types: [requested, completed]
   workflow_dispatch:
+# A new build of the same ref cancels the running test, then its jobs skip
+# until that build completes.
+concurrency:
+  group: tests-${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 env:
   NS8_CORE_MODULES: "core traefik loki ldapproxy metrics"
 
@@ -17,8 +22,8 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.event.label.name == 'testing' ||
       (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       startsWith(github.event.workflow_run.head_branch, 'renovate-'))
+       github.event.action == 'completed' &&
+       github.event.workflow_run.conclusion == 'success')
     name: Find NS8 cluster information
     runs-on: ubuntu-latest
     outputs:
@@ -59,8 +64,8 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.event.label.name == 'testing' ||
       (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       startsWith(github.event.workflow_run.head_branch, 'renovate-'))
+       github.event.action == 'completed' &&
+       github.event.workflow_run.conclusion == 'success')
     name: Check UI tests needed
     uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@v1
     with:
