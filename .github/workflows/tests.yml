@@ -6,13 +6,8 @@ on:
       - "labeled"
   workflow_run:
     workflows: ["core"]
-    types: [requested, completed]
+    types: [completed]
   workflow_dispatch:
-# A new build of the same ref cancels the running test, then its jobs skip
-# until that build completes.
-concurrency:
-  group: tests-${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
-  cancel-in-progress: true
 env:
   NS8_CORE_MODULES: "core traefik loki ldapproxy metrics"
 
@@ -22,7 +17,6 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.event.label.name == 'testing' ||
       (github.event_name == 'workflow_run' &&
-       github.event.action == 'completed' &&
        github.event.workflow_run.conclusion == 'success')
     name: Find NS8 cluster information
     runs-on: ubuntu-latest
@@ -64,7 +58,6 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.event.label.name == 'testing' ||
       (github.event_name == 'workflow_run' &&
-       github.event.action == 'completed' &&
        github.event.workflow_run.conclusion == 'success')
     name: Check UI tests needed
     uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@v1
@@ -82,6 +75,10 @@ jobs:
       contents: read
       pull-requests: write
       statuses: write
+    # Job level, like module tests: a failed build must not cancel the running test.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}-${{ matrix.distro }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
