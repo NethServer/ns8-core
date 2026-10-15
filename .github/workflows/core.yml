@@ -11,6 +11,11 @@ on:
       - 'core/tests/**'
   workflow_dispatch:
 
+# Same as module builds: a newer push of the same ref cancels the running build.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   module:
     uses: NethServer/ns8-github-actions/.github/workflows/module-info.yml@v1
