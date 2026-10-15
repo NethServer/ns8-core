@@ -79,6 +79,7 @@
           :nodes="internalNodes"
           :apps="apps"
           :lokiInstances="lokiInstances"
+          :nodesInfo="nodesInfo"
           :loadingApps="loading.listInstalledModules"
           :loadingLoki="loading.lokiInstances"
           :verticalLayout="verticalLayout"
@@ -170,6 +171,9 @@ export default {
       internalNodes: [],
       apps: [],
       lokiInstances: [],
+      coreVersions: {},
+      nodeFqdns: {},
+      fqdnRequested: [],
       searches: [],
       verticalLayout: false,
       filtersShown: true,
@@ -186,6 +190,20 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    nodesInfo() {
+      return [...this.clusterNodes]
+        .sort((a, b) => a.id - b.id)
+        .map((node) => {
+          const nodeId = node.id.toString();
+
+          return {
+            id: nodeId,
+            uiName: node.ui_name || "",
+            fqdn: this.nodeFqdns[nodeId] || "",
+            coreVersion: this.coreVersions[nodeId] || "",
+          };
+        });
+    },
   },
   watch: {
     clusterNodes: function () {
@@ -213,6 +231,7 @@ export default {
     this.initNodes();
     this.listInstalledModules();
     this.getClusterLokiInstances();
+    this.listCoreModules();
     this.addSearch();
   },
   beforeRouteEnter(to, from, next) {
@@ -248,6 +267,12 @@ export default {
       let nodes = [];
 
       for (let node of this.clusterNodes) {
+        const nodeId = node.id.toString();
+
+        if (!this.fqdnRequested.includes(nodeId)) {
+          this.fqdnRequested.push(nodeId);
+          this.getNodeFqdn(nodeId);
+        }
         nodes.push({
           name: node.id.toString(),
           label: node.ui_name
@@ -311,12 +336,91 @@ export default {
                 ? instance.node_ui_name
                 : this.$t("common.node") + " " + instance.node),
             value: instance.id,
+            uiName: instance.ui_name || "",
+            version: instance.version,
+            node: String(instance.node),
           });
         }
       }
       apps.sort(this.sortByProperty("label"));
       this.apps = apps;
       this.loading.listInstalledModules = false;
+    },
+    // the core version only decorates copied logs: a failure must stay silent
+    async listCoreModules() {
+      const taskAction = "list-core-modules";
+      const eventId = this.getUuid();
+
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listCoreModulesAborted
+      );
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listCoreModulesCompleted
+      );
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+      }
+    },
+    listCoreModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+    },
+    listCoreModulesCompleted(taskContext, taskResult) {
+      const core = taskResult.output.find((module) => module.name == "core");
+
+      if (!core || !core.instances.length) {
+        return;
+      }
+      const coreVersions = {};
+
+      for (const instance of core.instances) {
+        coreVersions[String(instance.node_id)] = instance.version;
+      }
+      this.coreVersions = coreVersions;
+    },
+    // like the core version, the FQDN only decorates copied logs
+    async getNodeFqdn(nodeId) {
+      const taskAction = "get-fqdn";
+      const eventId = this.getUuid();
+
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, (taskResult) => {
+        console.error(`${taskAction} aborted on node ${nodeId}`, taskResult);
+      });
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        (taskContext, taskResult) => {
+          const fqdn = [taskResult.output.hostname, taskResult.output.domain]
+            .filter(Boolean)
+            .join(".");
+          this.$set(this.nodeFqdns, nodeId, fqdn);
+        }
+      );
+      const res = await to(
+        this.createNodeTask(nodeId, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+      }
     },
     async getClusterLokiInstances() {
       this.loading.lokiInstances = true;
@@ -375,6 +479,7 @@ export default {
               currentInstance
             : instance.instance_id + currentInstance,
           value: instance.instance_id,
+          active: instance.active,
         });
       }
       this.lokiInstances = lokiInstances;
