@@ -362,27 +362,24 @@ export default {
       if (!core || !core.instances.length) {
         return;
       }
-      const versions = new Set(core.instances.map((i) => i.version));
+      const instances = [...core.instances].sort(
+        (a, b) => Number(a.node_id) - Number(b.node_id)
+      );
       const coreVersions = {};
 
-      for (const instance of core.instances) {
+      for (const instance of instances) {
         coreVersions[String(instance.node_id)] = instance.version;
       }
       this.coreVersions = coreVersions;
-
-      // nodes run different cores while an update is in progress
-      if (versions.size == 1) {
-        this.coreVersion = core.instances[0].version;
-      } else {
-        this.coreVersion = core.instances
-          .map(
-            (i) =>
-              `${i.version} (${
-                i.node_ui_name || this.$t("common.node") + " " + i.node_id
-              })`
-          )
-          .join(", ");
-      }
+      // English on purpose: the copied header is not translated
+      this.coreVersion = instances
+        .map(
+          (i) =>
+            `node ${i.node_id}${
+              i.node_ui_name ? ` (${i.node_ui_name})` : ""
+            }: ${i.version}`
+        )
+        .join("; ");
     },
     async getClusterLokiInstances() {
       this.loading.lokiInstances = true;
