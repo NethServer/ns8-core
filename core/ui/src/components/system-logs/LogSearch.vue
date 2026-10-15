@@ -505,13 +505,9 @@ export default {
     verticalLayout: Boolean,
     loadingApps: Boolean,
     loadingLoki: Boolean,
-    coreVersion: {
-      type: String,
-      default: "",
-    },
-    coreVersions: {
-      type: Object,
-      default: () => ({}),
+    nodesInfo: {
+      type: Array,
+      default: () => [],
     },
     closeAriaLabel: { type: String, default: "Close modal" },
     light: Boolean,
@@ -988,25 +984,24 @@ export default {
         timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       }
 
-      let contextLabel = "";
       let nodeId = "";
-      let appVersion = "";
+      let app = null;
 
       if (this.internalContext == "node" && this.selectedNode) {
-        contextLabel = this.selectedNode.label;
         nodeId = this.selectedNode.value;
       } else if (this.internalContext == "module" && this.selectedApp) {
-        contextLabel = this.selectedApp.label;
-        appVersion = this.selectedApp.version || "";
-        // the core of the hosting node, apps often depend on it
+        app = {
+          id: this.selectedApp.value,
+          uiName: this.selectedApp.uiName,
+          version: this.selectedApp.version,
+        };
         nodeId = this.selectedApp.node;
       }
 
       this.searchedCriteria = {
         context: this.internalContext,
-        contextLabel,
         nodeId,
-        appVersion,
+        app,
         query: this.internalSearchQuery,
         regexp: this.internalRegexp,
         followLogs: this.internalFollowLogs,
@@ -1132,36 +1127,52 @@ export default {
       const c = this.searchedCriteria;
       const numLines = this.outputLines.length;
       const interval = this.logsInterval;
-      const lines = [`${this.$root.config.PRODUCT_NAME} - System logs`];
-
-      // resolved now: list-core-modules may answer after the search started
-      const coreVersion = c.nodeId
-        ? this.coreVersions[c.nodeId]
-        : this.coreVersion;
-
-      if (c.context == "module") {
-        lines.push(`Application version: ${c.appVersion || "unknown"}`);
-      }
-      lines.push(
-        `Core version: ${coreVersion || "unknown"}`,
+      const lines = [
+        `${this.$root.config.PRODUCT_NAME} - System logs`,
         `Copied at: ${this.formatInTimeZone(
           new Date(),
           "yyyy-MM-dd HH:mm:ss",
           c.timezone
-        )} (${c.timezone})`
-      );
+        )} (${c.timezone})`,
+        "",
+      ];
+      // node details are read now: their tasks may answer after the search
+      const nodeLines = (node) => [
+        `  Name: ${node.uiName || "(none)"}`,
+        `  FQDN: ${node.fqdn || "unknown"}`,
+        `  Core version: ${node.coreVersion || "unknown"}`,
+      ];
+      const searchedNode = this.nodesInfo.find(
+        (node) => node.id == c.nodeId
+      ) || { id: c.nodeId };
 
       switch (c.context) {
-        case "node":
-          lines.push(`Context: Node (${c.contextLabel})`);
-          break;
         case "module":
-          lines.push(`Context: Application (${c.contextLabel})`);
+          lines.push(
+            "Context: Application",
+            `  Instance: ${c.app.id}`,
+            `  Name: ${c.app.uiName || "(none)"}`,
+            `  Version: ${c.app.version || "unknown"}`,
+            `Node ${searchedNode.id}:`,
+            ...nodeLines(searchedNode)
+          );
+          break;
+        case "node":
+          lines.push(
+            "Context: Node",
+            `Node ${searchedNode.id}:`,
+            ...nodeLines(searchedNode)
+          );
           break;
         default:
           lines.push("Context: Cluster");
+
+          for (const node of this.nodesInfo) {
+            lines.push(`Node ${node.id}:`, ...nodeLines(node));
+          }
       }
       lines.push(
+        "",
         `Search query: ${c.query ? `"${c.query}"` : "(none)"} ` +
           `(regular expression: ${c.regexp ? "yes" : "no"})`
       );

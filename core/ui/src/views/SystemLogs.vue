@@ -79,8 +79,7 @@
           :nodes="internalNodes"
           :apps="apps"
           :lokiInstances="lokiInstances"
-          :coreVersion="coreVersion"
-          :coreVersions="coreVersions"
+          :nodesInfo="nodesInfo"
           :loadingApps="loading.listInstalledModules"
           :loadingLoki="loading.lokiInstances"
           :verticalLayout="verticalLayout"
@@ -172,8 +171,9 @@ export default {
       internalNodes: [],
       apps: [],
       lokiInstances: [],
-      coreVersion: "",
       coreVersions: {},
+      nodeFqdns: {},
+      fqdnRequested: [],
       searches: [],
       verticalLayout: false,
       filtersShown: true,
@@ -190,6 +190,20 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    nodesInfo() {
+      return [...this.clusterNodes]
+        .sort((a, b) => a.id - b.id)
+        .map((node) => {
+          const nodeId = node.id.toString();
+
+          return {
+            id: nodeId,
+            uiName: node.ui_name || "",
+            fqdn: this.nodeFqdns[nodeId] || "",
+            coreVersion: this.coreVersions[nodeId] || "",
+          };
+        });
+    },
   },
   watch: {
     clusterNodes: function () {
@@ -253,6 +267,12 @@ export default {
       let nodes = [];
 
       for (let node of this.clusterNodes) {
+        const nodeId = node.id.toString();
+
+        if (!this.fqdnRequested.includes(nodeId)) {
+          this.fqdnRequested.push(nodeId);
+          this.getNodeFqdn(nodeId);
+        }
         nodes.push({
           name: node.id.toString(),
           label: node.ui_name
@@ -316,6 +336,7 @@ export default {
                 ? instance.node_ui_name
                 : this.$t("common.node") + " " + instance.node),
             value: instance.id,
+            uiName: instance.ui_name || "",
             version: instance.version,
             node: String(instance.node),
           });
@@ -362,24 +383,44 @@ export default {
       if (!core || !core.instances.length) {
         return;
       }
-      const instances = [...core.instances].sort(
-        (a, b) => Number(a.node_id) - Number(b.node_id)
-      );
       const coreVersions = {};
 
-      for (const instance of instances) {
+      for (const instance of core.instances) {
         coreVersions[String(instance.node_id)] = instance.version;
       }
       this.coreVersions = coreVersions;
-      // English on purpose: the copied header is not translated
-      this.coreVersion = instances
-        .map(
-          (i) =>
-            `node ${i.node_id}${
-              i.node_ui_name ? ` (${i.node_ui_name})` : ""
-            }: ${i.version}`
-        )
-        .join("; ");
+    },
+    // like the core version, the FQDN only decorates copied logs
+    async getNodeFqdn(nodeId) {
+      const taskAction = "get-fqdn";
+      const eventId = this.getUuid();
+
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, (taskResult) => {
+        console.error(`${taskAction} aborted on node ${nodeId}`, taskResult);
+      });
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        (taskContext, taskResult) => {
+          const fqdn = [taskResult.output.hostname, taskResult.output.domain]
+            .filter(Boolean)
+            .join(".");
+          this.$set(this.nodeFqdns, nodeId, fqdn);
+        }
+      );
+      const res = await to(
+        this.createNodeTask(nodeId, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+      }
     },
     async getClusterLokiInstances() {
       this.loading.lokiInstances = true;
