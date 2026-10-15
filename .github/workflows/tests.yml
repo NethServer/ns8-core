@@ -17,8 +17,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.event.label.name == 'testing' ||
       (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       startsWith(github.event.workflow_run.head_branch, 'renovate-'))
+       github.event.workflow_run.conclusion == 'success')
     name: Find NS8 cluster information
     runs-on: ubuntu-latest
     outputs:
@@ -43,13 +42,15 @@ jobs:
           # Sanitize tag, slash is forbidden
           echo "name=${tag//\//-}" >> $GITHUB_OUTPUT
       - id: modules
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
         run: |
           modules_list='[]'
           for module in ${NS8_CORE_MODULES}
           do
-            if skopeo inspect "docker://ghcr.io/nethserver/${module}:${{ steps.tag.outputs.name }}"
+            if skopeo inspect "docker://ghcr.io/nethserver/${module}:${TAG}"
             then
-              modules_list=$(echo "${modules_list}"  | jq -c --arg m ghcr.io/nethserver/${module}:${{ steps.tag.outputs.name }} ' . + [$m]')
+              modules_list=$(echo "${modules_list}"  | jq -c --arg m "ghcr.io/nethserver/${module}:${TAG}" ' . + [$m]')
             fi
           done
           echo "list=${modules_list}" >> $GITHUB_OUTPUT
@@ -59,8 +60,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.event.label.name == 'testing' ||
       (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       startsWith(github.event.workflow_run.head_branch, 'renovate-'))
+       github.event.workflow_run.conclusion == 'success')
     name: Check UI tests needed
     uses: NethServer/ns8-github-actions/.github/workflows/check-ui-tests-needed.yml@v1
     with:
@@ -77,6 +77,10 @@ jobs:
       contents: read
       pull-requests: write
       statuses: write
+    # Job level, like module tests: a failed build must not cancel the running test.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}-${{ matrix.distro }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
