@@ -112,6 +112,7 @@ env_patch = {
     'PREV_IMAGE_REOPODIGEST': os.getenv('IMAGE_REOPODIGEST'),
 }
 
+env_unset = []
 for image_url in extra_images:
     image_name = agent.get_image_name_from_url(image_url)
 
@@ -121,9 +122,14 @@ for image_url in extra_images:
         # Shell var names cannot begin with a digit. Prepend "I", if necessary.
         var_name = 'I' + var_name
 
-    env_patch['PREV_' + var_name] = os.getenv(var_name)
+    if os.getenv(var_name):
+        env_patch['PREV_' + var_name] = os.getenv(var_name)
+    else:
+        # The image is new: there is no previous one to remove
+        env_unset.append('PREV_' + var_name)
     env_patch[var_name] = image_url
 
 for envk, envv in env_patch.items():
     print(f'Update {agent_id} environment {envk}={envv}', file=sys.stderr)
 agent.mset_env(env_patch)
+agent.munset_env(env_unset)
