@@ -11,6 +11,10 @@ on:
         description: "Branch, tag or commit of NethServer/ns8-images to build"
         type: string
         default: main
+      core_version:
+        description: "Core tag to install. If empty, use the latest stable tag in the repository metadata"
+        type: string
+        default: ""
       dry_run:
         description: "Build the images without uploading them"
         type: boolean
@@ -87,7 +91,11 @@ jobs:
         run: packer init .
       - name: Run `packer build`
         id: validate
-        run: packer build --only=${{ matrix.source }} .
+        env:
+          # A release build installs its own tag: the repository metadata
+          # may not list it yet.
+          CORE_VERSION: ${{ inputs.core_version || github.event.workflow_run.head_branch }}
+        run: packer build --only=${{ matrix.source }} -var "core_version=${CORE_VERSION}" .
       - id: qcow2
         run: |
           IMAGE_PATH=$(cat packer-manifest.json | jq -r .builds[0].files[0].name)
