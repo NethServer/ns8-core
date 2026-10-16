@@ -155,7 +155,6 @@ buildah config \
     --env=RCLONE_CACHE_DIR=/var/cache/rclone \
     --env=RCLONE_CONFIG=/etc/rclone/rclone.conf \
     --env=RCLONE_UNIX_SOCKET=/var/lib/rclone/rclone.sock \
-    --env=RCLONE_LOG_SYSTEMD=1 \
     ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"

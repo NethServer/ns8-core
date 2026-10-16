@@ -32,6 +32,8 @@ def main():
 
 def run_validation(request):
     rclone_args = [
+        '--log-systemd=false', # print errors on stderr
+        '--log-level=ERROR',
         '--timeout=5s',
         '--contimeout=5s',
         '--retries=1',
@@ -39,6 +41,7 @@ def run_validation(request):
         '--retries-sleep=100ms',
     ]
     if os.getenv("DEBUG") == '1':
+        rclone_args.remove('--log-level=ERROR')
         rclone_args.append("-vvvv")
     rpath = request['id'] + ':' + request['basepath']
     # Test if connection and read-access is successfull
