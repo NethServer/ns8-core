@@ -19,6 +19,7 @@
 #
 
 import sys
+import re
 import subprocess
 import urllib.parse
 import json
@@ -183,10 +184,17 @@ def generate_rclone_conf(dest_uuid, url, provider, params, fallback_conf=None):
         s3_endpoint = ""
         if '/' in upath:
             s3_endpoint, _ = upath.split('/', 1)
+            aws_region = params.get('aws_default_region', '')
+            if provider == 'aws' and s3_endpoint == 's3.amazonaws.com' \
+                and re.fullmatch(r'[a-z0-9-]+', aws_region):
+                # Buckets in the account regional namespace are not
+                # reachable through the global endpoint
+                s3_endpoint = f"s3.{aws_region}.amazonaws.com"
             rclone_conf += f"endpoint = {s3_endpoint}\n"
         if provider == 'aws':
             rclone_conf += f"provider = AWS\n"
             rclone_conf += f"region = {params.get('aws_default_region', '')}\n"
+            rclone_conf += f"no_check_bucket = true\n"
         elif provider == 'generic-s3' and 'digitalocean' in s3_endpoint:
             rclone_conf += f"provider = DigitalOcean\n"
         elif provider == 'generic-s3' and 'ovh.net' in s3_endpoint:
