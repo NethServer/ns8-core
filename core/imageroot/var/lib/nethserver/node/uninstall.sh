@@ -82,7 +82,8 @@ systemctl disable --now \
   send-inventory.timer \
   send-backup.timer \
   password-warning.timer \
-  refresh-volume-metrics.timer
+  refresh-volume-metrics.timer \
+  refresh-module-metrics.timer
   # end of unit list
 rm -vf /etc/wireguard/wg0.conf
 userdel -r api-server

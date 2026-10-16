@@ -1,0 +1,13 @@
+[Unit]
+Description=Module metrics textfile collector
+After=node_exporter.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/var/lib/nethserver/node/state
+# Keep the job with low prio to avoid hammering an already loaded machine
+Nice=10
+ExecStart=runagent -m node refresh-module-metrics
+# Safety net, below the 5 minutes interval
+TimeoutStartSec=4min
+SyslogIdentifier=%N
