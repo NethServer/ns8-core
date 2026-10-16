@@ -1,0 +1,16 @@
+name: pytests
+on:
+  push:
+    paths:
+      - core/pytests/**
+      - core/imageroot/var/lib/nethserver/node/bin/refresh-module-metrics
+      - core/imageroot/usr/local/agent/pypkg/agent/__init__.py
+      - .github/workflows/pytests.yml
+
+jobs:
+  pytests:
+    name: Python unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -v -s core/pytests

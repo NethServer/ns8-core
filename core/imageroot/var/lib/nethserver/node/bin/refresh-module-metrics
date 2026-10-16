@@ -1,0 +1,195 @@
+#!/usr/local/agent/pyenv/bin/python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+"""Publish module metrics through node_exporter.
+
+Run "export-metrics" of every module that has one, add module="<id>" to its
+output and write it to node_exporter's textfile directory as module-<id>.prom.
+"""
+
+import agent
+import argparse
+import concurrent.futures
+import fcntl
+import os
+import pwd
+import re
+import signal
+import subprocess
+import sys
+
+DEFAULT_OUTPUT_DIR = "./node_exporter"
+OUTPUT_PREFIX = "module-"
+COMMAND = "export-metrics"
+TIMEOUT = 30
+KILL_WAIT = 5
+WORKERS = 4
+
+NETHSERVER_ROOT = "/var/lib/nethserver"
+# Marker of a rootless module, as runagent uses it
+MODULE_MARKER = ".config/state/agent.env"
+# <name><number>: excludes core directories like cluster and node
+_MODULE_ID_RE = re.compile(r"^[a-z][a-z0-9-]*[0-9]+$")
+
+# A sample line: name, optional label set, then value
+_SAMPLE_RE = re.compile(r"([a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{(.*)\})?([ \t].*)")
+# Only the node sets the module identity, which scopes module alert rules
+_IDENTITY_LABEL_RE = re.compile(r"(?:^|[,{ \t])(?:module|module_id)[ \t]*=")
+
+
+class MetricsError(Exception):
+    """Module metrics that cannot be published."""
+
+
+def log(module_id, message, level=agent.SD_WARNING):
+    print("%smodule %s: %s" % (level, module_id, message), file=sys.stderr)
+
+
+def relabel(text, module_id):
+    """Add module="<module_id>" to every sample; other lines are copied."""
+    lines = []
+    for lineno, line in enumerate(text.split("\n"), 1):
+        match = _SAMPLE_RE.fullmatch(line)
+        if not match:
+            if line:
+                lines.append(line)
+            continue
+        name, labels, tail = match.groups()
+        if labels and _IDENTITY_LABEL_RE.search(labels):
+            raise MetricsError(
+                "line %d: module and module_id labels are reserved" % lineno
+            )
+        if labels and labels.strip(" \t"):
+            labels = 'module="%s",%s' % (module_id, labels)
+        else:
+            labels = 'module="%s"' % module_id
+        lines.append("%s{%s}%s" % (name, labels, tail))
+    return "\n".join(lines) + "\n"
+
+
+def list_modules(nethserver_root=NETHSERVER_ROOT, passwd_entries=pwd.getpwall):
+    """Return (module id, install dir) for every module of the node."""
+    modules = {}
+    try:
+        names = sorted(os.listdir(nethserver_root))
+    except OSError:
+        names = []
+    for name in names:
+        path = os.path.join(nethserver_root, name)
+        if _MODULE_ID_RE.match(name) and os.path.isdir(path):
+            modules[name] = path
+    try:
+        entries = passwd_entries()
+    except Exception:
+        entries = []
+    for entry in entries:
+        home = entry.pw_dir
+        if not home or not os.path.isfile(os.path.join(home, MODULE_MARKER)):
+            continue
+        if _MODULE_ID_RE.match(entry.pw_name) and entry.pw_name not in modules:
+            modules[entry.pw_name] = os.path.join(home, ".config")
+    return sorted(modules.items())
+
+
+def run_export(module_id, command=("runagent", "-m")):
+    """Return the export-metrics output of a module, or raise MetricsError."""
+    # A new session, so a timeout kills every process of the run
+    proc = subprocess.Popen(
+        list(command) + [module_id, COMMAND],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+    try:
+        out, err = proc.communicate(timeout=TIMEOUT)
+    except subprocess.TimeoutExpired:
+        os.killpg(proc.pid, signal.SIGKILL)
+        try:
+            proc.communicate(timeout=KILL_WAIT)
+        except subprocess.TimeoutExpired:
+            # A process that left the session still holds the pipes
+            proc.stdout.close()
+            proc.stderr.close()
+            proc.wait()
+        raise MetricsError("%s timed out after %d seconds" % (COMMAND, TIMEOUT))
+    for line in err.decode("utf-8", errors="replace").splitlines():
+        log(module_id, line, level="")
+    if proc.returncode != 0:
+        raise MetricsError("%s failed with exit code %d" % (COMMAND, proc.returncode))
+    return relabel(out.decode("utf-8", errors="replace"), module_id)
+
+
+def collect(modules, export=run_export):
+    """Return ({output file: content}, {output files to keep as they are})."""
+    outputs = {}
+    keep = set()
+    jobs = {}
+    # Parallel execution: a slow module does not delay the others
+    with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        for module_id, install_dir in modules:
+            path = os.path.join(install_dir, "bin", COMMAND)
+            if not os.path.isfile(path):
+                continue
+            if not os.access(path, os.X_OK):
+                log(module_id, "%s is not executable: ignored" % path)
+                continue
+            jobs[module_id] = pool.submit(export, module_id)
+    for module_id, job in jobs.items():
+        name = "%s%s.prom" % (OUTPUT_PREFIX, module_id)
+        try:
+            outputs[name] = job.result()
+        except Exception as ex:
+            # Keep the last output of a module that failed this time
+            log(module_id, "%s: last output kept" % ex)
+            keep.add(name)
+    return outputs, keep
+
+
+def publish(output_dir, outputs, keep=()):
+    """Write the output files and remove the others of this collector."""
+    for name in sorted(outputs):
+        path = os.path.join(output_dir, name)
+        # Unchanged files keep their mtime and are not rewritten
+        try:
+            with open(path, encoding="utf-8") as fp:
+                if fp.read() == outputs[name]:
+                    continue
+        except (OSError, UnicodeDecodeError):
+            pass
+        # The temporary file is hidden: node_exporter ignores it
+        with agent.safe_open(path, "w", encoding="utf-8") as fp:
+            fp.write(outputs[name])
+    for name in os.listdir(output_dir):
+        if name.startswith(OUTPUT_PREFIX) and name not in outputs and name not in keep:
+            os.unlink(os.path.join(output_dir, name))
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Publish module metrics through node_exporter"
+    )
+    parser.add_argument(
+        "-o", "--output-dir", default=DEFAULT_OUTPUT_DIR, help="Output directory"
+    )
+    arguments = parser.parse_args()
+    os.makedirs(arguments.output_dir, exist_ok=True)
+    # Serialize runs started by hand and by the timer
+    lock_fd = os.open(
+        arguments.output_dir, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC
+    )
+    try:
+        fcntl.flock(lock_fd, fcntl.LOCK_EX)
+        outputs, keep = collect(list_modules())
+        publish(arguments.output_dir, outputs, keep)
+    finally:
+        os.close(lock_fd)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

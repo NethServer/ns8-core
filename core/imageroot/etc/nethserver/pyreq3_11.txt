@@ -25,6 +25,7 @@ MarkupSafe==3.0.2
 multidict==6.6.4
 packaging==25.0
 pexpect==4.9.0
+prometheus-client==0.26.0
 psutil==7.0.0
 ptyprocess==0.7.0
 pyasn1==0.6.1
