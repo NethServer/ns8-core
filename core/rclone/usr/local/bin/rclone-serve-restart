@@ -10,7 +10,12 @@ import json
 import re
 import subprocess
 
-RCLONE_LOW_LEVEL_RETRIES = 1
+# Retry temporary errors of the remotes: rclone serve restic replies 404
+# when a file lookup for DELETE fails, and Restic does not retry a 404.
+# Both servers share the same upstream remotes, so the value applies to
+# both. Each retry of an unreachable remote adds up to the connect
+# timeout to the server startup.
+RCLONE_LOW_LEVEL_RETRIES = 3
 RCLONE_CONNECT_TIMEOUT = 5 * 1_000_000_000 # = 5 seconds
 
 def serve_combined_remote():
