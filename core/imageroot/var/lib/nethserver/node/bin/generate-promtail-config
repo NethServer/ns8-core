@@ -42,7 +42,7 @@ with open("/etc/subuid", "r") as fdb:
         try:
             module_uid_ranges[module_id] = (int(subuid_range_start), int(subuid_range_start) + int(subuid_range_length))
         except ValueError:
-            print(agent.SD_ERROR + "Cannot convert subuid record:", record, file=sys.stderr)
+            print(agent.SD_ERR + "Cannot convert subuid record:", record, file=sys.stderr)
             continue
 
 # Iterate over rootless modules.
@@ -61,7 +61,7 @@ for pwrecord in pwd.getpwall():
     try:
         rxpat = rxgen.numerical_range(*module_uid_ranges[module_id])
     except KeyError:
-        print(agent.SD_ERROR + "Cannot find subuid record for " + module_id, file=sys.stderr)
+        print(agent.SD_ERR + "Cannot find subuid record for " + module_id, file=sys.stderr)
         continue
 
     # 2. Remove regexp anchors, because the Golang packages assumes they are already anchored
