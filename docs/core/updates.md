@@ -147,6 +147,15 @@ only in the leader node.
 If the system has a subscription, scheduled updates are enabled by
 default.
 
+Scheduled updates run the `update-core` and `update-modules` actions
+with the `managed` repository view, a conservative update policy decided
+by the repository server. If the cluster has a subscription, the
+available core and module versions come only from the `subscription`
+repository (`https://subscription.nethserver.com/distfeed/`), regardless
+of the `cluster/repository/*` keys: modules from other repositories,
+like `nethforge` or custom ones, are never updated by schedule. Manual
+updates, for example from the UI, still use the enabled repositories.
+
 The timer status is controlled by the
 [subscription]({{site.baseurl}}/modules/subscription) logic, and reflects
 the Redis HASH key `cluster/apply_updates`. This is the list of the HASH

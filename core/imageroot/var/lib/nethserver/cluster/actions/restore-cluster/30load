@@ -107,6 +107,14 @@ if max_backup > 0:
 if 'override' in dump['cluster'] and dump['cluster']['override']['modules']:
     rdb.hset(f'cluster/override/modules', mapping=dump['cluster']['override']['modules'])
 
+# Restore software repositories, if present: they replace the
+# repositories created by the node installation
+if 'repository' in dump['cluster'] and dump['cluster']['repository']:
+    for krepo in list(rdb.scan_iter('cluster/repository/*')):
+        rdb.delete(krepo)
+    for r, hrepo in dump['cluster']['repository'].items():
+        rdb.hset(f'cluster/repository/{r}', mapping=hrepo)
+
 # Restore subscription info, if present
 if 'subscription' in dump['cluster'] and dump['cluster']['subscription']:
     rdb.hset('cluster/subscription', mapping=dump['cluster']['subscription'])
