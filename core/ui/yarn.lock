@@ -1669,8 +1669,8 @@ __metadata:
   linkType: hard
 
 "@nethserver/ns8-ui-lib@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "@nethserver/ns8-ui-lib@npm:2.2.0"
+  version: 2.2.1
+  resolution: "@nethserver/ns8-ui-lib@npm:2.2.1"
   dependencies:
     "@rollup/plugin-json": ^4.1.0
     core-js: ^3.15.2
@@ -1679,7 +1679,7 @@ __metadata:
     vue-date-fns: ^2.0.1
   peerDependencies:
     vue: ^2.6.12
-  checksum: 44f0732798ec20635dc66baa91dcebcbb755bca07c41629cc05ea210ddb62de576a0e03da9489c483c73b440d3bac67870ebf70a3ff50989396ea3919780391b
+  checksum: b9a8afcf60afc7e3803dd91c7d945537170fc4216749c572ee63de600944a76caf40176c8e73462fa993cb9bd7fffdfb9b94fa8c1ac4221d4ac6729a4b11c4dc
   languageName: node
   linkType: hard
 
