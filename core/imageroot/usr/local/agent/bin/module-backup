@@ -28,6 +28,7 @@ import os.path
 import subprocess
 
 EXIT_ALREADY_RUNNING = 3
+RESTIC_EXIT_NO_REPOSITORY = 10
 
 backup_id = int(sys.argv[1])
 
@@ -116,9 +117,12 @@ try:
     proc_snapshots = agent.run_restic(rdb, repository, repopath, [], ["snapshots"], stdout=subprocess.DEVNULL)
     if proc_snapshots.returncode == 0:
         print(f"Repository is present at path {repository}/{repopath}", file=sys.stderr)
-    else:
+    elif proc_snapshots.returncode == RESTIC_EXIT_NO_REPOSITORY:
         print(f"Initializing repository at path {repository}/{repopath}", file=sys.stderr)
         agent.run_restic(rdb, repository, repopath, [], ["init"], check=True)
+    else:
+        print(f"[ERROR] restic snapshots failed with exit code {proc_snapshots.returncode}: cannot access the repository at path {repository}/{repopath}", file=sys.stderr)
+        sys.exit(1)
 except Exception as ex:
     print(f"[ERROR] restic init failed: {ex}", file=sys.stderr)
     sys.exit(1)
