@@ -10,7 +10,7 @@ import json
 import re
 import subprocess
 
-RCLONE_LOW_LEVEL_RETRIES = 1
+RCLONE_LOW_LEVEL_RETRIES = 3
 RCLONE_CONNECT_TIMEOUT = 5 * 1_000_000_000 # = 5 seconds
 
 def serve_combined_remote():
