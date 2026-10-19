@@ -26,7 +26,7 @@ jobs:
         run: |
           resp=$(curl -s -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/orgs/${{ steps.outputs.gh_user.name }}" \
+            "https://api.github.com/orgs/${{ steps.gh_user.outputs.name }}" \
             | jq '.message == "Not Found"' )
           if [ "${resp}" == "true" ]; then
             echo "value=users" >> $GITHUB_OUTPUT
@@ -68,6 +68,8 @@ jobs:
         module: ${{ fromJSON(needs.ns8.outputs.modules) }}
     name: Remove tag from ghcr.io
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - run: |
           #Check if there is more than one page
@@ -83,14 +85,15 @@ jobs:
             id=$(curl -f -s -H "Accept: application/vnd.github.v3+json" \
                             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                             "${base_url}?per_page=100&page=${i}" \
-                            | jq '.[] | select(.metadata.container.tags[] | index("${{ needs.ns8.outputs.tag }}")) | .id')
+                            | jq --arg tag "${TAG}" '.[] | select(any(.metadata.container.tags[]; . == $tag)) | .id')
             if [ "${id}" != "" ]; then
               #Remove the package version associate to the tag
               curl -f -v  -H "Accept: application/vnd.github.v3+json" \
-                         -H "Authorization: token ${{ secrets.IMAGES_CLEANUP_TOKEN }}" \
+                         -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                          -X DELETE "${base_url}/${id}"
                          exit 0
             fi
           done
         env:
+          TAG: ${{ needs.ns8.outputs.tag }}
           base_url: "https://api.github.com/${{ needs.ns8.outputs.gh_user_or_org }}/${{ needs.ns8.outputs.gh_user }}/packages/container/${{ matrix.module }}/versions"
