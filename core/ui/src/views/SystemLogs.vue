@@ -68,6 +68,26 @@
         />
       </cv-column>
     </cv-row>
+    <cv-row v-if="error.listCoreModules">
+      <cv-column>
+        <NsInlineNotification
+          kind="error"
+          :title="$t('action.list-core-modules')"
+          :description="error.listCoreModules"
+          :showCloseButton="false"
+        />
+      </cv-column>
+    </cv-row>
+    <cv-row v-if="error.listNodes">
+      <cv-column>
+        <NsInlineNotification
+          kind="error"
+          :title="$t('action.list-nodes')"
+          :description="error.listNodes"
+          :showCloseButton="false"
+        />
+      </cv-column>
+    </cv-row>
     <cv-row>
       <cv-column
         v-for="(searchId, index) in searches"
@@ -79,6 +99,7 @@
           :nodes="internalNodes"
           :apps="apps"
           :lokiInstances="lokiInstances"
+          :nodesInfo="nodesInfo"
           :loadingApps="loading.listInstalledModules"
           :loadingLoki="loading.lokiInstances"
           :verticalLayout="verticalLayout"
@@ -100,6 +121,7 @@
           :startSearchCommand="startSearchCommand"
           :closeAriaLabel="$t('common.close')"
           @close="closeSearch"
+          @searchStarted="onSearchStarted"
           @updateSearchQuery="onUpdateSearchQuery"
           @updateContext="onUpdateContext"
           @updateSelectedNodeId="onUpdateSelectedNodeId"
@@ -170,6 +192,9 @@ export default {
       internalNodes: [],
       apps: [],
       lokiInstances: [],
+      coreVersions: {},
+      nodeFqdns: {},
+      copyDetailsRequested: false,
       searches: [],
       verticalLayout: false,
       filtersShown: true,
@@ -181,11 +206,27 @@ export default {
       error: {
         listInstalledModules: "",
         lokiInstances: "",
+        listCoreModules: "",
+        listNodes: "",
       },
     };
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    nodesInfo() {
+      return [...this.clusterNodes]
+        .sort((a, b) => a.id - b.id)
+        .map((node) => {
+          const nodeId = node.id.toString();
+
+          return {
+            id: nodeId,
+            uiName: node.ui_name || "",
+            fqdn: this.nodeFqdns[nodeId] || "",
+            coreVersion: this.coreVersions[nodeId] || "",
+          };
+        });
+    },
   },
   watch: {
     clusterNodes: function () {
@@ -311,12 +352,113 @@ export default {
                 ? instance.node_ui_name
                 : this.$t("common.node") + " " + instance.node),
             value: instance.id,
+            uiName: instance.ui_name || "",
+            version: instance.version,
+            node: String(instance.node),
           });
         }
       }
       apps.sort(this.sortByProperty("label"));
       this.apps = apps;
       this.loading.listInstalledModules = false;
+    },
+    // core versions and FQDNs only decorate copied logs: they are not worth
+    // their tasks until a search shows something to copy
+    onSearchStarted() {
+      if (this.copyDetailsRequested) {
+        return;
+      }
+      this.copyDetailsRequested = true;
+      this.listCoreModules();
+      this.listNodes();
+    },
+    async listCoreModules() {
+      this.error.listCoreModules = "";
+      const taskAction = "list-core-modules";
+      const eventId = this.getUuid();
+
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listCoreModulesAborted
+      );
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listCoreModulesCompleted
+      );
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listCoreModules = this.getErrorMessage(err);
+      }
+    },
+    listCoreModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listCoreModules = this.$t("error.generic_error");
+    },
+    listCoreModulesCompleted(taskContext, taskResult) {
+      const core = taskResult.output.find((module) => module.name == "core");
+
+      if (!core || !core.instances.length) {
+        return;
+      }
+      const coreVersions = {};
+
+      for (const instance of core.instances) {
+        coreVersions[String(instance.node_id)] = instance.version;
+      }
+      this.coreVersions = coreVersions;
+    },
+    async listNodes() {
+      this.error.listNodes = "";
+      const taskAction = "list-nodes";
+      const eventId = this.getUuid();
+
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listNodesAborted
+      );
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listNodesCompleted
+      );
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listNodes = this.getErrorMessage(err);
+      }
+    },
+    listNodesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listNodes = this.$t("error.generic_error");
+    },
+    listNodesCompleted(taskContext, taskResult) {
+      const nodeFqdns = {};
+
+      // an NS7 migration node has no FQDN yet
+      for (const node of taskResult.output.nodes) {
+        nodeFqdns[String(node.node_id)] = node.fqdn || "";
+      }
+      this.nodeFqdns = nodeFqdns;
     },
     async getClusterLokiInstances() {
       this.loading.lokiInstances = true;
@@ -375,6 +517,7 @@ export default {
               currentInstance
             : instance.instance_id + currentInstance,
           value: instance.instance_id,
+          active: instance.active,
         });
       }
       this.lokiInstances = lokiInstances;
