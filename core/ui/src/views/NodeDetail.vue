@@ -395,7 +395,7 @@
                 }}</span>
               </div>
               <div class="mg-bottom-lg">
-                <span class="label">{{ $t("node_detail.free") }}</span>
+                <span class="label">{{ $t("node_detail.available") }}</span>
                 <span>{{
                   loading.listNodes ? "-" : nodeStatus.memory.free | byteFormat
                 }}</span>
