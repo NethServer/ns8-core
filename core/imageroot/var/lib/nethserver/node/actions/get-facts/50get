@@ -41,9 +41,15 @@ def _node_creation_date():
         creation_time = 0
     return datetime.fromtimestamp(creation_time, tz=timezone.utc).isoformat()
 
-def _mb_to_bytes(value):
-    """Convert the megabytes of the ansible memory facts to bytes"""
-    return int(value) * 1024 * 1024
+def _get_meminfo():
+    """Read /proc/meminfo values, converted to bytes"""
+    meminfo = {}
+    with open('/proc/meminfo') as fp:
+        for line in fp:
+            key, value = line.split(':', 1)
+            fields = value.split()
+            meminfo[key] = int(fields[0]) * 1024 if fields[1:] == ['kB'] else int(fields[0])
+    return meminfo
 
 def _get_core_version():
     with open('/etc/nethserver/core.env', encoding='utf-8') as file:
@@ -193,6 +199,7 @@ def _get_network(facts):
     }
 
 facts = _get_facts()
+meminfo = _get_meminfo()
 
 # map kernel driver to device id
 drivers = {}
@@ -277,14 +284,14 @@ json.dump(
             'virtual': virtualization,
             'memory': {
                 'swap': {
-                    'total_bytes': _mb_to_bytes(facts['ansible_memory_mb']['swap']['total']),
-                    'used_bytes': _mb_to_bytes(facts['ansible_memory_mb']['swap']['used']),
-                    'available_bytes': _mb_to_bytes(facts['ansible_memory_mb']['swap']['free'])
+                    'total_bytes': meminfo['SwapTotal'],
+                    'used_bytes': meminfo['SwapTotal'] - meminfo['SwapFree'],
+                    'available_bytes': meminfo['SwapFree']
                 },
                 'system': {
-                    'total_bytes': _mb_to_bytes(facts['ansible_memory_mb']['real']['total']),
-                    'used_bytes': _mb_to_bytes(facts['ansible_memory_mb']['real']['used']),
-                    'available_bytes': _mb_to_bytes(facts['ansible_memory_mb']['real']['free'])
+                    'total_bytes': meminfo['MemTotal'],
+                    'used_bytes': meminfo['MemTotal'] - meminfo['MemAvailable'],
+                    'available_bytes': meminfo['MemAvailable']
                 }
             },
             'pci': list(pci.values())
