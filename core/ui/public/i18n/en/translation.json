@@ -1692,6 +1692,7 @@
         "swap": "Swap",
         "total": "Total",
         "free": "Free",
+        "available": "Available",
         "used": "Used",
         "usage": "Usage",
         "average_cpu_usage": "Average CPU usage",

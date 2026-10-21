@@ -19,6 +19,7 @@ import subprocess
 import agent.volumes
 import agent.facts
 import ansible_runner
+import psutil
 from datetime import datetime, timezone
 
 def _run(cmd):
@@ -40,10 +41,6 @@ def _node_creation_date():
     except subprocess.CalledProcessError:
         creation_time = 0
     return datetime.fromtimestamp(creation_time, tz=timezone.utc).isoformat()
-
-def _mb_to_bytes(value):
-    """Convert the megabytes of the ansible memory facts to bytes"""
-    return int(value) * 1024 * 1024
 
 def _get_core_version():
     with open('/etc/nethserver/core.env', encoding='utf-8') as file:
@@ -193,6 +190,8 @@ def _get_network(facts):
     }
 
 facts = _get_facts()
+vmem = psutil.virtual_memory()
+swap = psutil.swap_memory()
 
 # map kernel driver to device id
 drivers = {}
@@ -277,14 +276,14 @@ json.dump(
             'virtual': virtualization,
             'memory': {
                 'swap': {
-                    'total_bytes': _mb_to_bytes(facts['ansible_memory_mb']['swap']['total']),
-                    'used_bytes': _mb_to_bytes(facts['ansible_memory_mb']['swap']['used']),
-                    'available_bytes': _mb_to_bytes(facts['ansible_memory_mb']['swap']['free'])
+                    'total_bytes': swap.total,
+                    'used_bytes': swap.total - swap.free,
+                    'available_bytes': swap.free
                 },
                 'system': {
-                    'total_bytes': _mb_to_bytes(facts['ansible_memory_mb']['real']['total']),
-                    'used_bytes': _mb_to_bytes(facts['ansible_memory_mb']['real']['used']),
-                    'available_bytes': _mb_to_bytes(facts['ansible_memory_mb']['real']['free'])
+                    'total_bytes': vmem.total,
+                    'used_bytes': vmem.total - vmem.available,
+                    'available_bytes': vmem.available
                 }
             },
             'pci': list(pci.values())
