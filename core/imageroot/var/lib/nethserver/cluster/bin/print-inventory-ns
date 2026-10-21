@@ -33,16 +33,6 @@ def _get_cpu_field(field, cpu_info):
         if f['field'].startswith(field):
             return f['data']
 
-def _get_meminfo():
-    """Read /proc/meminfo values, converted to bytes"""
-    meminfo = {}
-    with open('/proc/meminfo') as fp:
-        for line in fp:
-            key, value = line.split(':', 1)
-            fields = value.split()
-            meminfo[key] = int(fields[0]) * 1024 if fields[1:] == ['kB'] else int(fields[0])
-    return meminfo
-
 def _get_networks():
     networks = []
     ifgateway = {}
@@ -247,7 +237,6 @@ def _get_public_ip():
     return public_ip_response
 
 podman_info = _run_json('podman system info -f json')
-meminfo = _get_meminfo()
 cpu_info = _run_json('lscpu -J')['lscpu']
 board = _run("cat /sys/devices/virtual/dmi/id/board_name") or "board.unknown"
 dmi_product = _run("cat /sys/devices/virtual/dmi/id/product_name") or "product.unknown"
@@ -277,14 +266,14 @@ data = {
     },
     "memory": {
         "system": {
-            "available_bytes": meminfo["MemAvailable"],
-            "used_bytes": meminfo["MemTotal"] - meminfo["MemAvailable"],
-            "total_bytes": meminfo["MemTotal"],
+            "available_bytes": podman_info["host"]["memFree"],
+            "used_bytes": podman_info["host"]["memTotal"] - podman_info["host"]["memFree"],
+            "total_bytes": podman_info["host"]["memTotal"],
         },
         "swap": {
-            "available_bytes": meminfo["SwapFree"],
-            "used_bytes": meminfo["SwapTotal"] - meminfo["SwapFree"],
-            "total_bytes": meminfo["SwapTotal"],
+            "available_bytes": podman_info["host"]["swapFree"],
+            "used_bytes": podman_info["host"]["swapTotal"] - podman_info["host"]["swapFree"],
+            "total_bytes": podman_info["host"]["swapTotal"],
         },
     },
     "mountpoints": _get_mountpoints(),
