@@ -114,6 +114,68 @@ Example: more active users than the license allows.
 myapp_active_users > 100
 ```
 
+## Container down alert
+
+A module can be alerted when one of its containers stops. This needs core
+3.22.0 or later and ns8-metrics with `ModuleContainerDown` support.
+
+List the containers to watch in the Redis hash
+`module/<module_id>/metrics_containers`:
+
+- field: the container name, as in the `container` label of
+  [`ns8_container_info`]({{site.baseurl}}/core/container_metrics), for
+  example `kamailio`;
+- value: the alert severity, `critical` or `warning`. An empty value means
+  `critical`.
+
+Then emit the `metrics-alert-rules-changed` event. For example:
+
+```text
+redis-cli hset module/nethvoice-proxy1/metrics_containers kamailio critical rtpengine warning
+redis-cli publish module/nethvoice-proxy1/event/metrics-alert-rules-changed '{}'
+```
+
+The same from a module action, with the agent library. Replacing the whole
+hash also drops containers that are no longer listed:
+
+```python
+#!/usr/bin/env python3
+
+import os
+import json
+import agent
+
+agent_id = os.environ["AGENT_ID"] # module/<module_id>
+rdb = agent.redis_connect(privileged=True)
+trx = rdb.pipeline()
+trx.delete(f"{agent_id}/metrics_containers")
+trx.hset(f"{agent_id}/metrics_containers", mapping={
+    "kamailio": "critical",
+    "rtpengine": "warning",
+})
+trx.publish(f"{agent_id}/event/metrics-alert-rules-changed", json.dumps({}))
+trx.execute()
+```
+
+How the alert works:
+
+- `ModuleContainerDown` fires when a listed container has not been running
+  for 10 minutes. Its labels are `module_id`, `node`, `container` and
+  `severity`.
+- It stays quiet while the node is offline (`NodeOffline` fires instead)
+  or the container metrics collector of the node is not updating.
+- When a container is stopped on purpose, for example because a feature
+  is disabled, remove its field and emit the event again.
+- A critical alert hides a warning only when `alertname`, `module_id` and
+  `container` match.
+- It does not detect a container that keeps restarting. For that, add a
+  rule of your own in the `module/<module_id>/metrics_alert_rules` hash,
+  for example:
+
+  ```promql
+  changes(ns8_container_start_time_seconds{container="kamailio"}[15m]) > 2
+  ```
+
 ## Collector
 
 - Command: `refresh-module-metrics`, run by the node agent.
