@@ -352,7 +352,7 @@
                       </cv-overflow-menu-item>
                       <!-- enable/disable automatic updates -->
                       <cv-overflow-menu-item
-                        v-if="isAutomaticUpdatesOptOutAvailable"
+                        v-if="isAutomaticUpdatesToggleShown(row)"
                         @click="toggleInstanceAutomaticUpdates(row)"
                       >
                         <NsMenuItem
@@ -691,7 +691,7 @@ export default {
 
       return filteredModules;
     },
-    // gates both the menu entry and the tag, which must not diverge
+    // gates both the menu entry and the tag
     isAutomaticUpdatesOptOutAvailable() {
       return this.subscriptionIsActive && this.applyUpdatesIsActive;
     },
@@ -726,6 +726,16 @@ export default {
       return (
         this.isAutomaticUpdatesOptOutAvailable &&
         row.automatic_updates === false
+      );
+    },
+    isAutomaticUpdatesToggleShown(row) {
+      // only level 5 apps come from the subscription repository, the
+      // source of automatic updates; still allow to re-enable a previous
+      // opt-out, shown by its tag
+      return (
+        this.isAutomaticUpdatesOptOutAvailable &&
+        (row.appInfoData.certification_level >= 5 ||
+          row.automatic_updates === false)
       );
     },
     toggleInstanceAutomaticUpdates(row) {
