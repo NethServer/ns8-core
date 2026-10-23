@@ -89,22 +89,18 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
                 raise ValueError(f"Unknown protocol: {protocol}")
             ports_used = cursor.fetchall()
 
-            if len(ports_used) == 0:
-                write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
-                return (range_start, range_start + required_ports - 1)
+            # Find the first gap that fits the required ports. Used ranges
+            # are sorted by start; they may overlap or lie below range_start.
+            for port_range in ports_used:
+                if range_start + required_ports - 1 < port_range[0]:
+                    break # The gap before this range is large enough
+                range_start = max(range_start, port_range[1] + 1)
 
-            while range_start <= range_end:
-                # Check if the current port is within an already used range
-                for port_range in ports_used:
-                    for index in range(required_ports):
-                        if is_port_used(ports_used, range_start+index):
-                            range_start = port_range[1] + 1  # Move to the next available port range
-                            break
-                        if index == required_ports-1:
-                            write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
-                            return (range_start, range_start + required_ports - 1)
-            else:
+            if range_start + required_ports - 1 > range_end:
                 raise PortRangeExceededError()
+
+            write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
+            return (range_start, range_start + required_ports - 1)
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error
 
