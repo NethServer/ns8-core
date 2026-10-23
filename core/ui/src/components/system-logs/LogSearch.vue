@@ -1160,7 +1160,9 @@ export default {
       ];
       // node details are read now: their tasks may answer after the search
       const nodeLines = (node) => [
-        `${this.getNodeLabel({ id: node.id, ui_name: node.uiName })}:`,
+        `${
+          node.uiName ? `${node.uiName} (Node ${node.id})` : `Node ${node.id}`
+        }:`,
         `  FQDN: ${node.fqdn || "unknown"}`,
         `  Core version: ${node.coreVersion || "unknown"}`,
       ];
