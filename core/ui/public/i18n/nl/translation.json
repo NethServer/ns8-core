@@ -1605,7 +1605,8 @@
         "overview": "Overzicht",
         "col_total": "Totale ruimte",
         "no_disks_info": "Geen schijf",
-        "fqdn": "FQDN"
+        "fqdn": "FQDN",
+        "available": "Available"
     },
     "audit_trail": {
         "title": "Audit spoor",
