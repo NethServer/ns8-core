@@ -1616,7 +1616,8 @@
         "overview": "Overview",
         "col_total": "Total space",
         "no_disks_info": "No disk",
-        "fqdn": "FQDN"
+        "fqdn": "FQDN",
+        "available": "Available"
     },
     "domain_configuration": {
         "provider_label_tooltip": "You can assign the provider an easy to remember name",

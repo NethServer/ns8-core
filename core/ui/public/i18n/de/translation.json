@@ -1615,7 +1615,8 @@
         "overview": "Overview",
         "col_total": "Total space",
         "no_disks_info": "No disk",
-        "fqdn": "FQDN"
+        "fqdn": "FQDN",
+        "available": "Available"
     },
     "cluster_status": {
         "title": "Cluster-Status",
