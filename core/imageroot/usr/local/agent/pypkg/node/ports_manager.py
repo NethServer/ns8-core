@@ -46,12 +46,6 @@ def create_tables(cursor: sqlite3.Cursor):
         );
     """)
 
-def is_port_used(ports_used, port_to_check):
-    for port in ports_used:
-        if port_to_check in range(port[0], port[1] + 1):
-            return True
-    return False
-
 def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_existing: bool=False):
     """
     Allocate a range of ports for a given module,
