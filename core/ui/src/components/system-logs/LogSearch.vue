@@ -1160,7 +1160,7 @@ export default {
       ];
       // node details are read now: their tasks may answer after the search
       const nodeLines = (node) => [
-        `  Name: ${node.uiName || "(none)"}`,
+        `${this.getNodeLabel({ id: node.id, ui_name: node.uiName })}:`,
         `  FQDN: ${node.fqdn || "unknown"}`,
         `  Core version: ${node.coreVersion || "unknown"}`,
       ];
@@ -1173,28 +1173,25 @@ export default {
 
           lines.push(
             "Context: Application",
-            `  Instance: ${c.appId}`,
-            `  Name: ${app.uiName || "(none)"}`,
+            `  Instance: ${
+              app.uiName ? `${app.uiName} (${c.appId})` : c.appId
+            }`,
             `  Version: ${app.version || "unknown"}`
           );
 
           if (app.node) {
-            lines.push(`Node ${app.node}:`, ...nodeLines(findNode(app.node)));
+            lines.push(...nodeLines(findNode(app.node)));
           }
           break;
         }
         case "node":
-          lines.push(
-            "Context: Node",
-            `Node ${c.nodeId}:`,
-            ...nodeLines(findNode(c.nodeId))
-          );
+          lines.push("Context: Node", ...nodeLines(findNode(c.nodeId)));
           break;
         default:
           lines.push("Context: Cluster");
 
           for (const node of this.nodesInfo) {
-            lines.push(`Node ${node.id}:`, ...nodeLines(node));
+            lines.push(...nodeLines(node));
           }
       }
       lines.push(
