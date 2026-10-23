@@ -194,7 +194,7 @@ export default {
       lokiInstances: [],
       coreVersions: {},
       nodeFqdns: {},
-      copyDetailsRequested: false,
+      clusterInfoRequested: false,
       searches: [],
       verticalLayout: false,
       filtersShown: true,
@@ -365,10 +365,10 @@ export default {
     // core versions and FQDNs only decorate copied logs: they are not worth
     // their tasks until a search shows something to copy
     onSearchStarted() {
-      if (this.copyDetailsRequested) {
+      if (this.clusterInfoRequested) {
         return;
       }
-      this.copyDetailsRequested = true;
+      this.clusterInfoRequested = true;
       this.listCoreModules();
       this.listNodes();
     },
