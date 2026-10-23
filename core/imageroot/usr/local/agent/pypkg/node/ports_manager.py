@@ -88,6 +88,9 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
             for port_range in ports_used:
                 if range_start + required_ports - 1 < port_range[0]:
                     break # The gap before this range is large enough
+                # Never move backwards: skip ranges that end before
+                # range_start, or lie inside a range already passed
+                # (e.g. overlaps left by past concurrent allocations)
                 range_start = max(range_start, port_range[1] + 1)
 
             if range_start + required_ports - 1 > range_end:
