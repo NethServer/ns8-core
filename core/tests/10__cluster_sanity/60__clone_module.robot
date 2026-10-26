@@ -11,6 +11,7 @@ Setup a dummy module
     Build the dummy image
     Add a dummy instance
     Set the dummy instance name
+    Leave a stray file in the wants dir
     Store dummy module configuration
 
 Clone a module instance
@@ -64,6 +65,13 @@ Modules must have the same name
 Units must be enabled on clone
     ${out}    ${rc} =    Execute Command    runagent -m ${CLONE_MODULE} systemctl --user is-enabled dummy.service dummy-tick.timer    return_rc=True
     Should Be Equal As Integers    0    ${rc}    Units not enabled on ${CLONE_MODULE}: ${out}
+
+Leave a stray file in the wants dir
+    [Documentation]     A regular file, like an editor backup, is not an
+    ...                 enabled unit: the clone must skip it, otherwise
+    ...                 systemctl enable fails on the target node
+    ${out}    ${rc} =    Execute Command    runagent -m ${DUMMY_MODULE} sh -c 'touch "$AGENT_INSTALL_DIR/systemd/user/default.target.wants/stray.service~"'    return_rc=True
+    Should Be Equal As Integers    0    ${rc}    ${out}
 
 Build the dummy image
     [Documentation]     Upload the dummy sources and built the image to make it
