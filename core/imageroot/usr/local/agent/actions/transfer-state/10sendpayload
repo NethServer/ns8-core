@@ -27,7 +27,8 @@ def list_enabled_units(target):
     # Rocky Linux, are linked elsewhere and may not exist on the target node
     wants_dir = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/{target}.wants'
     try:
-        return sorted(os.listdir(wants_dir))
+        with os.scandir(wants_dir) as entries:
+            return sorted(e.name for e in entries if e.is_symlink())
     except FileNotFoundError:
         return []
 
