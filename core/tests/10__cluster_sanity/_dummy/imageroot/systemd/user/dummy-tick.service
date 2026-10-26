@@ -1,0 +1,6 @@
+[Unit]
+Description=Dummy timer job
+
+[Service]
+Type=oneshot
+ExecStart=/bin/true

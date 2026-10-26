@@ -22,6 +22,7 @@ Clone a module instance
     Modules must have the same state
     Modules must have the same volumes
     Modules must have the same name
+    Units must be enabled on clone
 
 Move a module instance
     ${clone_response} =     Run task    cluster/clone-module
@@ -32,6 +33,7 @@ Move a module instance
     Modules must have the same state
     Modules must have the same volumes
     Modules must have the same name
+    Units must be enabled on clone
 
 *** Keywords ***
 Store dummy module configuration
@@ -58,6 +60,10 @@ Modules must have the same volumes
 Modules must have the same name
     ${clone_name} =    Run task    module/${CLONE_MODULE}/get-name    {}
     Should Be Equal    ${clone_name['name']}    ${DUMMY_NAME}
+
+Units must be enabled on clone
+    ${out}    ${rc} =    Execute Command    runagent -m ${CLONE_MODULE} systemctl --user is-enabled dummy.service dummy-tick.timer    return_rc=True
+    Should Be Equal As Integers    0    ${rc}    Units not enabled on ${CLONE_MODULE}: ${out}
 
 Build the dummy image
     [Documentation]     Upload the dummy sources and built the image to make it
