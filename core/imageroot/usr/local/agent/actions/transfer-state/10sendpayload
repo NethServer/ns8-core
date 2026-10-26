@@ -21,17 +21,29 @@ username, password = request['credentials']
 # Prepare a copy of the source module environment that can be transfered
 agent.run_helper('cp', '-v', 'environment', 'environment.clone-module').check_returncode()
 
+def list_enabled_units(target):
+    """Return the units the module enabled itself for the given target"""
+    # Units enabled globally by the distro, like grub-boot-success.timer on
+    # Rocky Linux, are linked elsewhere and may not exist on the target node
+    wants_dir = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/{target}.wants'
+    try:
+        with os.scandir(wants_dir) as entries:
+            return sorted(e.name for e in entries if e.is_symlink())
+    except FileNotFoundError:
+        return []
+
 if os.geteuid() != 0:
     # Dump the Systemd enabled services list
     with open('default-target.clone-module', 'w') as fpout:
-        agent.run_helper(*'systemctl --user show default.target -p Wants --value'.split(), stdout=fpout).check_returncode()
+        fpout.write(' '.join(list_enabled_units('default.target')) + '\n')
 
     with open('timers-target.clone-module', 'w') as fpout:
-        proc = subprocess.run('systemctl --user show timers.target -p Wants --value'.split(), text=True, capture_output=True)
-        if proc.returncode != 0:
-            sysm.exit(3)
-        tlist = re.sub(r"\bbackup[0-9]+\.timer\b", '', proc.stdout) # remove backup timers
-        fpout.write(tlist)
+        tlist = []
+        for unit in list_enabled_units('timers.target'):
+            if re.fullmatch(r"backup[0-9]+\.timer", unit):
+                continue # remove backup timers
+            tlist.append(unit)
+        fpout.write(' '.join(tlist) + '\n')
 
 errors = 0
 os.environ['RSYNC_PASSWORD'] = password

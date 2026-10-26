@@ -17,3 +17,6 @@ echo -n ${secret} > /data/vol00/secret0
 echo -n ${secret} > /data/vol01/secret1
 echo -n ${secret} > /data/vol02/secret2
 EOF
+
+# Enable units, so clone-module must restore them on the clone
+systemctl --user enable --now dummy.service dummy-tick.timer
