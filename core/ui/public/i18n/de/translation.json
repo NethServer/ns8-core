@@ -1336,7 +1336,9 @@
         "showing_lines_no_interval": "Showing {n} lines",
         "showing_lines": "Showing {n} lines from {from} to {to}",
         "showing_lines_of": "Showing {n} of {max} lines from {from} to {to}",
-        "regexp": "Regular expression"
+        "regexp": "Regular expression",
+        "copy_output": "Copy output",
+        "copied_to_clipboard": "Copied to clipboard"
     },
     "settings_cluster": {
         "title": "Cluster"
