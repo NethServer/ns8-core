@@ -1261,6 +1261,8 @@
         "collapse_filters": "Collapse filters",
         "expand_filters": "Expand filters",
         "clear_logs": "Clear",
+        "copy_output": "Copy output",
+        "copied_to_clipboard": "Copied to clipboard",
         "stop_following": "Stop following",
         "scroll_to_bottom": "Scroll to bottom",
         "add_search": "Add search",

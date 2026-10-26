@@ -352,6 +352,24 @@
               class="mg-right mg-bottom-sm"
               >{{ $t("system_logs.clear_logs") }}</NsButton
             >
+            <cv-tooltip
+              alignment="center"
+              direction="top"
+              :tip="
+                justCopied
+                  ? $t('system_logs.copied_to_clipboard')
+                  : $t('common.copy_to_clipboard')
+              "
+              class="mg-right mg-bottom-sm"
+            >
+              <NsButton
+                kind="tertiary"
+                :icon="Copy20"
+                :disabled="!outputLines.length || loading.logs"
+                @click="copyLogs"
+                >{{ $t("system_logs.copy_output") }}</NsButton
+              >
+            </cv-tooltip>
             <div class="checkbox-filter">
               <cv-checkbox
                 :label="$t('system_logs.wrap_text')"
@@ -493,6 +511,10 @@ export default {
     verticalLayout: Boolean,
     loadingApps: Boolean,
     loadingLoki: Boolean,
+    nodesInfo: {
+      type: Array,
+      default: () => [],
+    },
     closeAriaLabel: { type: String, default: "Close modal" },
     light: Boolean,
   },
@@ -524,8 +546,26 @@ export default {
       searchStarted: false,
       noLogsFound: false,
       highlight: "",
-      searchedMaxLines: "",
-      searchedFollowLogs: false,
+      // filters of the search that ran, the form may have changed since
+      searchedCriteria: {
+        context: "",
+        nodeId: "",
+        appId: "",
+        query: "",
+        regexp: false,
+        followLogs: false,
+        startDate: "",
+        startTime: "",
+        endDate: "",
+        endTime: "",
+        maxLines: "",
+        timezone: "",
+        lokiId: "",
+      },
+      bufferTruncated: false,
+      abortReason: "",
+      justCopied: false,
+      copiedTimer: null,
       loading: {
         logs: false,
         stopFollowing: false,
@@ -606,7 +646,7 @@ export default {
       const numLines = this.outputLines.length;
       const interval = this.logsInterval;
 
-      if (this.searchedFollowLogs) {
+      if (this.searchedCriteria.followLogs) {
         return interval
           ? this.$t("system_logs.showing_lines", {
               n: numLines,
@@ -618,13 +658,13 @@ export default {
       return interval
         ? this.$t("system_logs.showing_lines_of", {
             n: numLines,
-            max: this.searchedMaxLines,
+            max: this.searchedCriteria.maxLines,
             from: interval.from,
             to: interval.to,
           })
         : this.$t("system_logs.showing_lines_of_no_interval", {
             n: numLines,
-            max: this.searchedMaxLines,
+            max: this.searchedCriteria.maxLines,
           });
     },
   },
@@ -657,7 +697,10 @@ export default {
       ) {
         return;
       }
-      this.onQueryAborted(this.$t("system_logs.websocket_disconnected"));
+      this.onQueryAborted(
+        this.$t("system_logs.websocket_disconnected"),
+        "connection to the server lost"
+      );
     },
     timezone: function () {
       if (this.mainSearch) {
@@ -813,6 +856,7 @@ export default {
     this.$root.$off(`logsStart-${this.searchId}`);
     this.$root.$off(`logsStop-${this.searchId}`);
     this.$root.$off("logSearchClosed");
+    clearTimeout(this.copiedTimer);
 
     if (this.pid) {
       this.logsStop();
@@ -936,8 +980,6 @@ export default {
       // a pattern written for RE2 is not one the browser engine can locate, so
       // the regexp mode leaves the lines unmarked
       this.highlight = this.internalRegexp ? "" : this.internalSearchQuery;
-      this.searchedMaxLines = this.internalMaxLines;
-      this.searchedFollowLogs = this.internalFollowLogs;
       this.clearLogs();
       let entityName;
       let timezone = "UTC";
@@ -967,6 +1009,25 @@ export default {
       if (this.internalFollowLogs || this.internalTimezone == "local") {
         timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       }
+
+      // only ids are kept: a search started from the URL may run before nodes,
+      // apps and Loki instances are loaded, so their details are read on copy
+      this.searchedCriteria = {
+        context: this.internalContext,
+        nodeId: this.internalSelectedNodeId,
+        appId: this.internalSelectedAppId,
+        query: this.internalSearchQuery,
+        regexp: this.internalRegexp,
+        followLogs: this.internalFollowLogs,
+        startDate: this.internalStartDate,
+        startTime: this.internalStartTime,
+        endDate: this.internalEndDate,
+        endTime: this.internalEndTime,
+        maxLines: this.internalMaxLines,
+        timezone,
+        lokiId: this.internalSelectedLokiId,
+      };
+      this.$emit("searchStarted");
 
       const logsStartObj = {
         action: "logs-start",
@@ -1023,13 +1084,15 @@ export default {
     },
     // a query dying in the browser reads like one dying on the server: the
     // reason is printed where the logs are
-    onQueryAborted(message) {
+    // the reason is kept in English: the copied text is not translated
+    onQueryAborted(message, reason) {
       this.loading.logs = false;
       this.loading.stopFollowing = false;
       this.isFollowing = false;
       this.pid = "";
       this.noLogsFound = false;
       this.outputLines = [...this.outputLines, message];
+      this.abortReason = reason;
       this.$root.$off(`logsStart-${this.searchId}`);
       this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
@@ -1048,6 +1111,7 @@ export default {
       if (this.outputLines.length > this.MAX_LINES_LIMIT) {
         const numLinesToDelete = this.outputLines.length - this.MAX_LINES_LIMIT;
         this.outputLines.splice(0, numLinesToDelete);
+        this.bufferTruncated = true;
       }
 
       // signal LogOutput
@@ -1055,6 +1119,128 @@ export default {
     },
     clearLogs() {
       this.outputLines = [];
+      this.bufferTruncated = false;
+      this.abortReason = "";
+    },
+    // built on click: joining up to MAX_LINES_LIMIT lines on every follow
+    // update would be wasted work
+    copyLogs() {
+      this.$copyText(this.buildClipboardText()).then(
+        this.onCopy,
+        this.onCopyError
+      );
+    },
+    onCopy() {
+      this.justCopied = true;
+      clearTimeout(this.copiedTimer);
+      this.copiedTimer = setTimeout(() => {
+        this.justCopied = false;
+      }, 3000);
+    },
+    onCopyError() {
+      console.error("cannot copy to clipboard");
+    },
+    // not translated: the text goes to support tickets and AI assistants
+    buildClipboardText() {
+      const c = this.searchedCriteria;
+      // the abort reason is the last output line, it is not a log line
+      const logLines = this.abortReason
+        ? this.outputLines.slice(0, -1)
+        : this.outputLines;
+      const numLines = logLines.length;
+      const interval = this.logsInterval;
+      const lines = [
+        `${this.$root.config.PRODUCT_NAME} - System logs`,
+        `Copied at: ${this.formatInTimeZone(
+          new Date(),
+          "yyyy-MM-dd HH:mm:ss",
+          c.timezone
+        )} (${c.timezone})`,
+        "",
+      ];
+      // node details are read now: their tasks may answer after the search
+      const nodeLines = (node) => [
+        `${
+          node.uiName ? `${node.uiName} (Node ${node.id})` : `Node ${node.id}`
+        }:`,
+        `  FQDN: ${node.fqdn || "unknown"}`,
+        `  Core version: ${node.coreVersion || "unknown"}`,
+      ];
+      const findNode = (nodeId) =>
+        this.nodesInfo.find((node) => node.id == nodeId) || { id: nodeId };
+
+      switch (c.context) {
+        case "module": {
+          const app = this.apps.find((app) => app.value == c.appId) || {};
+
+          lines.push(
+            "Context: Application",
+            `  Instance: ${
+              app.uiName ? `${app.uiName} (${c.appId})` : c.appId
+            }`,
+            `  Version: ${app.version || "unknown"}`
+          );
+
+          if (app.node) {
+            lines.push(...nodeLines(findNode(app.node)));
+          }
+          break;
+        }
+        case "node":
+          lines.push("Context: Node", ...nodeLines(findNode(c.nodeId)));
+          break;
+        default:
+          lines.push("Context: Cluster");
+
+          for (const node of this.nodesInfo) {
+            lines.push(...nodeLines(node));
+          }
+      }
+      lines.push(
+        "",
+        `Search query: ${c.query ? `"${c.query}"` : "(none)"} ` +
+          `(regular expression: ${c.regexp ? "yes" : "no"})`
+      );
+      lines.push(`Mode: ${c.followLogs ? "Follow" : "Dump"}`);
+
+      if (!c.followLogs) {
+        // the date inputs are read as browser time, whatever the timezone field
+        const browserTimezone =
+          Intl.DateTimeFormat().resolvedOptions().timeZone;
+        lines.push(
+          `From: ${c.startDate} ${c.startTime} to ${c.endDate} ${c.endTime} ` +
+            `(${browserTimezone})`
+        );
+        lines.push(`Timezone: ${c.timezone}`);
+      }
+      const loki = this.lokiInstances.find((loki) => loki.value == c.lokiId);
+      lines.push(
+        `Loki instance: ${c.lokiId}${loki && loki.active ? " (active)" : ""}`
+      );
+
+      let result = c.followLogs
+        ? `Result: showing ${numLines} lines`
+        : `Result: showing ${numLines} of ${c.maxLines} lines`;
+
+      if (interval) {
+        result += ` from ${interval.from} to ${interval.to}`;
+      }
+      if (c.followLogs && this.bufferTruncated) {
+        result += " (oldest lines dropped)";
+      } else if (!c.followLogs && numLines >= Number(c.maxLines)) {
+        result += " (max lines reached)";
+      }
+
+      if (!c.followLogs) {
+        lines.push(`Max lines: ${c.maxLines}`);
+      }
+      lines.push(result);
+
+      if (this.abortReason) {
+        lines.push(`Aborted: ${this.abortReason}`);
+      }
+      lines.push("----", ...logLines);
+      return lines.join("\n");
     },
     onEnterKeyPress() {
       if (!this.isFollowing) {
