@@ -31,19 +31,20 @@ Returned TCP endpoints are local (`host` is `127.0.0.1`) and do not
 require TLS. The port number depends on the LDAP domain.
 
 Those ports are held by the [Ldapproxy
-module](https://github.com/NethServer/ns8-core/blob/main/ldapproxy/README.md).
+module](https://github.com/NethServer/ns8-ldapproxy).
 It is a L4 proxy that relays the TCP connection to an LDAP backend server,
-enabling TLS and handling backend failures as needed.
+enabling TLS and handling backend failures as needed. It listens on all
+IPv4 addresses of the node. The node firewall keeps its ports closed on
+public interfaces, but other cluster nodes can connect to them through
+the VPN. This does not widen access to the LDAP databases: the backend
+servers relayed by Ldapproxy, like OpenLDAP and Samba DC, already listen
+on the node VPN or LAN IP addresses.
 
-If the LDAP client module runs in a Podman container with a
-`private` network, add the following arguments to the `podman run`
-command:
-
-    --network=slirp4netns:allow_host_loopback=true
-
-Then replace `127.0.0.1` with the special `10.0.2.2` IP address, that is
-translated by Podman back to the loopback device, 127.0.0.1 on the root
-network namespace.
+If the LDAP client module runs in a Podman container with a `private`
+network (like the rootless default, Pasta), replace `127.0.0.1` with
+`cluster-localnode`. This name resolves to the node cluster VPN IP address
+and it does not require additional `podman run` arguments. See also
+[Network]({{site.baseurl}}/modules/network#reach-the-node-from-a-container).
 
 Python code example:
 
