@@ -51,10 +51,12 @@ def get_installed_modules(rdb):
     cluster.modules.decorate_with_updates(rdb, available)
     installed_modules = []
     for srcapp in available:
+        # Ignore instances that only have a testing_update
+        stable_updates = {mup['id'] for mup in srcapp['updates'] if 'update' in mup}
         for instapp in srcapp['installed']:
             instapp['name'] = srcapp['name'] # Human-readable repo application name
             instapp['certification_level'] = srcapp['certification_level']
-            instapp['update_available'] = bool(srcapp['updates'])
+            instapp['update_available'] = instapp['id'] in stable_updates
             installed_modules.append(instapp)
     return installed_modules
 
