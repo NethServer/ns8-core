@@ -12,6 +12,16 @@
             "enabled": true,
             "encrypt_smtp": "starttls",
             "tls_verify": false
+        },
+        {
+            "host": "10.5.4.1",
+            "port": 25,
+            "username": "",
+            "password": "",
+            "enabled": true,
+            "encrypt_smtp": "none",
+            "tls_verify": false,
+            "mail_id": "mail1"
         }
     ],
     "type": "object",
@@ -63,6 +73,11 @@
             "type": "boolean",
             "title": "tls_verify",
             "description": "Enable or disable the usage of a valid certificate"
+        },
+        "mail_id": {
+            "type": "string",
+            "title": "mail_id",
+            "description": "Mail module ID used as smarthost. Settings follow this module if it is moved or restored"
         }
     }
 }

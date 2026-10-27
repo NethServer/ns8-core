@@ -469,6 +469,7 @@ export default {
           encrypt_smtp: "none",
           enabled: true,
           tls_verify: false,
+          mail_id: this.selected_mail_id,
         };
       }
 

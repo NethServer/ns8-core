@@ -14,8 +14,8 @@ rdb = agent.redis_connect() # full read-only access on every key
 
 manual_configuration = True
 smtp = agent.get_smarthost_settings(rdb)
+mail_uuid = rdb.hget('cluster/smarthost', 'mail_uuid')
 modules=[]
-rdb = agent.redis_connect()
 # we query all the list of service provider
 for key in agent.list_service_providers(rdb,'submission','tcp'):
     node_name = rdb.get('node/'+ key['node'] + '/ui_name') or ""
@@ -26,7 +26,9 @@ for key in agent.list_service_providers(rdb,'submission','tcp'):
         "node_name": node_name,
         "host": key['host']
     }
-    if manual_configuration == True:
+    if mail_uuid and key['module_uuid'] == mail_uuid:
+        manual_configuration = False
+    elif manual_configuration == True:
         # no need to check the rest of the list if manual_configuration == False
         manual_configuration = False if key['host'] == smtp['host'] and str(smtp['port']) == "25" else True
     modules.append(obj)
