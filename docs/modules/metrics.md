@@ -101,17 +101,44 @@ When the command is removed, its metrics are removed at the next run.
 
 ## Alerts
 
+A module ships its own alert rules in the Redis hash
+`module/<module_id>/metrics_alert_rules`, one field per rule set. After
+each change it emits the `metrics-alert-rules-changed` event, and
+Prometheus reloads its rules without a restart. See
+"metrics-alert-rules-changed event" in the
+[ns8-metrics README](https://github.com/NethServer/ns8-metrics#metrics-alert-rules-changed-event).
+
 - Prometheus copies the `module` label to `module_id`, the label module
   alert rules are scoped by. See "Per-module node series" in the
   [ns8-metrics README](https://github.com/NethServer/ns8-metrics#per-module-node-series).
 - Module rules get the `module_id` matcher of their own module
   automatically.
+- Give each rule a `severity` label, `warning` or `critical`, and the
+  `summary_en`, `summary_it`, `description_en` and `description_it`
+  annotations.
+- Rules of a removed module are deleted automatically.
 - The core defines no alert on module metrics.
 
-Example: more active users than the license allows.
+Example: more active users than the license allows, in `license.yml`:
 
-```promql
-myapp_active_users > 100
+```yaml
+alert: MyappTooManyUsers
+expr: myapp_active_users > 100
+for: 1h
+labels:
+  severity: warning
+annotations:
+  summary_en: Too many active users
+  summary_it: Troppi utenti attivi
+  description_en: Active users exceed the license limit
+  description_it: Gli utenti attivi superano il limite della licenza
+```
+
+Publish it for `mail1`:
+
+```text
+redis-cli -x HSET module/mail1/metrics_alert_rules license < license.yml
+redis-cli PUBLISH module/mail1/event/metrics-alert-rules-changed '{}'
 ```
 
 ## Collector
