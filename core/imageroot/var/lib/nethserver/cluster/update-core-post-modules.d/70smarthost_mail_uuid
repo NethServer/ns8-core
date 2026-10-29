@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Link an existing smarthost to the Mail module it points to, so it
+# follows the module when it is moved or restored.
+
+import agent
+import cluster.smarthost
+
+rdb = agent.redis_connect(privileged=True)
+smarthost = rdb.hgetall('cluster/smarthost')
+
+if not smarthost.get('mail_uuid'):
+    mail_uuid = cluster.smarthost.find_mail_uuid(rdb, smarthost)
+    if mail_uuid:
+        rdb.hset('cluster/smarthost', 'mail_uuid', mail_uuid)
