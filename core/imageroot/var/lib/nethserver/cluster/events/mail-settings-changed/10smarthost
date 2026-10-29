@@ -5,36 +5,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-# Point the smarthost to the Mail module chosen in the UI, after it
-# is moved or restored on another node.
+# Point the smarthost to the linked Mail module, after it is moved or
+# restored on another node.
 
-import json
 import sys
 import agent
+import cluster.smarthost
 
-event = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
-
-mail_uuid = rdb.hget('cluster/smarthost', 'mail_uuid')
-if not mail_uuid or rdb.hget('cluster/smarthost', 'enabled') != '1':
-    sys.exit(0)
-
-event_uuid = event.get('module_uuid') or rdb.hget('cluster/module_uuid', event.get('module_id', ''))
-if event_uuid != mail_uuid:
-    sys.exit(0)
-
-providers = agent.list_service_providers(rdb, 'submission', 'tcp', filters={'module_uuid': mail_uuid})
-if not providers:
-    sys.exit(0)
-
-host = providers[0]['host']
-if host == rdb.hget('cluster/smarthost', 'host'):
-    sys.exit(0)
-
-print(f"Smarthost follows Mail module {providers[0]['module_id']} at {host}", file=sys.stderr)
-trx = rdb.pipeline()
-trx.hset('cluster/smarthost', 'host', host)
-trx.publish('cluster/event/smarthost-changed', json.dumps({
-    'key': 'cluster/smarthost',
-}))
-trx.execute()
+host = cluster.smarthost.sync_mail_host(rdb)
+if host:
+    print(f"Smarthost follows its Mail module at {host}", file=sys.stderr)

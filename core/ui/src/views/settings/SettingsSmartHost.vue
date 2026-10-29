@@ -395,8 +395,10 @@ export default {
       );
       this.$nextTick(() => {
         if (smarthost.mail_server) {
-          const selected_mail_server = smarthost.mail_server.filter(
-            (mail) => mail.host === smarthost.host
+          const selected_mail_server = smarthost.mail_server.filter((mail) =>
+            smarthost.mail_id
+              ? mail.mail_id === smarthost.mail_id
+              : mail.host === smarthost.host
           )[0];
           this.selected_mail_id = selected_mail_server
             ? selected_mail_server.mail_id
@@ -469,7 +471,6 @@ export default {
           encrypt_smtp: "none",
           enabled: true,
           tls_verify: false,
-          mail_id: this.selected_mail_id,
         };
       }
 

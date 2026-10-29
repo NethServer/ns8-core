@@ -9,12 +9,12 @@
 # follows the module when it is moved or restored.
 
 import agent
+import cluster.smarthost
 
 rdb = agent.redis_connect(privileged=True)
 smarthost = rdb.hgetall('cluster/smarthost')
 
-if smarthost.get('enabled') == '1' and smarthost.get('port') == '25' and not smarthost.get('mail_uuid'):
-    matches = [p for p in agent.list_service_providers(rdb, 'submission', 'tcp') if p.get('host') == smarthost.get('host')]
-    # More Mail modules on the same node: the right one cannot be guessed
-    if len(matches) == 1 and matches[0].get('module_uuid'):
-        rdb.hset('cluster/smarthost', 'mail_uuid', matches[0]['module_uuid'])
+if not smarthost.get('mail_uuid'):
+    mail_uuid = cluster.smarthost.find_mail_uuid(rdb, smarthost)
+    if mail_uuid:
+        rdb.hset('cluster/smarthost', 'mail_uuid', mail_uuid)

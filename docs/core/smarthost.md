@@ -45,10 +45,12 @@ any command from it. For instance:
 mycommand && systemctl --user reload mymodule.service
 ```
 
-When a Mail module of the cluster is chosen as smarthost, the cluster
-stores its UUID. If the Mail module is moved or restored on another
-node, the cluster updates the smarthost host and fires
-`smarthost-changed` again.
+When the smarthost points to a Mail module of the cluster (its host,
+port 25, no credentials, no encryption), the cluster stores the module
+UUID. If the Mail module is moved or restored on another node, the
+cluster updates the smarthost host and fires `smarthost-changed` again.
+If the move or restore fails, the host goes back to the module that is
+left.
 
 ## Send mail from modules
 

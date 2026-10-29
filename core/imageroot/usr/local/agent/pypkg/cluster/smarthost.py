@@ -1,0 +1,50 @@
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import agent
+
+def is_mail_profile(smarthost):
+    """Return True if the smarthost settings are the ones the UI writes
+    when a Mail module of the cluster is chosen"""
+    return smarthost.get('enabled') == '1' \
+        and str(smarthost.get('port')) == '25' \
+        and not smarthost.get('username') \
+        and smarthost.get('encrypt_smtp', 'none') == 'none'
+
+def find_mail_uuid(rdb, smarthost):
+    """Return the UUID of the Mail module the smarthost points to, or
+    None if it is not a Mail module of the cluster"""
+    if not is_mail_profile(smarthost):
+        return None
+    providers = agent.list_service_providers(rdb, 'submission', 'tcp')
+    # Keep the current link if it still matches, to tell apart Mail modules on the same node
+    for xprov in providers:
+        if xprov.get('module_uuid') == smarthost.get('mail_uuid') and xprov.get('host') == smarthost.get('host'):
+            return xprov['module_uuid']
+    matches = [xprov for xprov in providers if xprov.get('host') == smarthost.get('host')]
+    # More Mail modules on the same node: the right one cannot be guessed
+    if len(matches) == 1:
+        return matches[0].get('module_uuid')
+    return None
+
+def sync_mail_host(rdb):
+    """Point the smarthost to the current host of the linked Mail module.
+    Return the new host, or None if nothing changed"""
+    smarthost = rdb.hgetall('cluster/smarthost')
+    mail_uuid = smarthost.get('mail_uuid')
+    if not mail_uuid or not is_mail_profile(smarthost):
+        return None
+    providers = agent.list_service_providers(rdb, 'submission', 'tcp', filters={'module_uuid': mail_uuid})
+    if not providers or providers[0]['host'] == smarthost.get('host'):
+        return None
+    host = providers[0]['host']
+    trx = rdb.pipeline()
+    trx.hset('cluster/smarthost', 'host', host)
+    trx.publish('cluster/event/smarthost-changed', json.dumps({
+        'key': 'cluster/smarthost',
+    }))
+    trx.execute()
+    return host

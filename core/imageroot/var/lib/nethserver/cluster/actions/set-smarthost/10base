@@ -7,6 +7,7 @@
 
 import agent
 import agent.tasks
+import cluster.smarthost
 import os
 import sys
 import json
@@ -29,10 +30,10 @@ values = {
 rdb = agent.redis_connect(privileged=True)
 
 # Remember the Mail module by UUID: its ID and host change on move or restore
-mail_uuid = None
-if data['enabled'] and data.get('mail_id'):
-    mail_uuid = rdb.hget('cluster/module_uuid', data['mail_id'])
-    agent.assert_exp(mail_uuid, f"Unknown module {data['mail_id']}")
+mail_uuid = cluster.smarthost.find_mail_uuid(rdb, {
+    **values,
+    "mail_uuid": rdb.hget(agent_id + '/smarthost', 'mail_uuid'),
+})
 
 # Advertise the smarthost changes:
 trx = rdb.pipeline()
