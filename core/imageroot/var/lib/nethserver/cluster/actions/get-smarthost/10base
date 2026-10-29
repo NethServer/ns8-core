@@ -26,14 +26,15 @@ for key in agent.list_service_providers(rdb,'submission','tcp'):
         "node_name": node_name,
         "host": key['host']
     }
-    if mail_uuid:
-        if key['module_uuid'] == mail_uuid:
-            manual_configuration = False
-            smtp['mail_id'] = key['module_id']
+    if mail_uuid and key['module_uuid'] == mail_uuid:
+        smtp['mail_id'] = key['module_id']
     elif manual_configuration == True:
         # no need to check the rest of the list if manual_configuration == False
         manual_configuration = False if key['host'] == smtp['host'] and str(smtp['port']) == "25" else True
     modules.append(obj)
+if 'mail_id' in smtp:
+    # The linked Mail module wins over a host match, even if the host is stale
+    manual_configuration = False
 smtp.update({"mail_server":modules, "manual_configuration": manual_configuration})
 
 json.dump(smtp, fp=sys.stdout)

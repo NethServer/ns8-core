@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+import os
 import json
 import agent
 
@@ -27,14 +28,17 @@ def find_mail_uuid(rdb, smarthost):
 def sync_mail_host(rdb):
     """Point the smarthost to the current host of the linked Mail module.
     Return the new host, or None if nothing changed"""
+    # The cluster agent of every node gets the event, but only the leader Redis is writable
+    if os.environ.get('NODE_ID') != rdb.hget('cluster/environment', 'NODE_ID'):
+        return None
     smarthost = rdb.hgetall('cluster/smarthost')
     mail_uuid = smarthost.get('mail_uuid')
     if not mail_uuid or not is_mail_profile(smarthost):
         return None
     providers = agent.list_service_providers(rdb, 'submission', 'tcp', filters={'module_uuid': mail_uuid})
-    if not providers or providers[0]['host'] == smarthost.get('host'):
+    host = providers[0].get('host') if providers else None
+    if not host or host == smarthost.get('host'):
         return None
-    host = providers[0]['host']
     trx = rdb.pipeline()
     trx.hset('cluster/smarthost', 'host', host)
     trx.publish('cluster/event/smarthost-changed', json.dumps({
