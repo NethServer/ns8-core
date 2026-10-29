@@ -19,15 +19,9 @@ def find_mail_uuid(rdb, smarthost):
     None if it is not a Mail module of the cluster"""
     if not is_mail_profile(smarthost):
         return None
-    providers = agent.list_service_providers(rdb, 'submission', 'tcp')
-    # Keep the current link if it still matches, to tell apart Mail modules on the same node
-    for xprov in providers:
-        if xprov.get('module_uuid') == smarthost.get('mail_uuid') and xprov.get('host') == smarthost.get('host'):
-            return xprov['module_uuid']
-    matches = [xprov for xprov in providers if xprov.get('host') == smarthost.get('host')]
-    # More Mail modules on the same node: the right one cannot be guessed
-    if len(matches) == 1:
-        return matches[0].get('module_uuid')
+    for xprov in agent.list_service_providers(rdb, 'submission', 'tcp'):
+        if xprov.get('host') == smarthost.get('host'):
+            return xprov.get('module_uuid')
     return None
 
 def sync_mail_host(rdb):

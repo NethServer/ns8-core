@@ -30,10 +30,7 @@ values = {
 rdb = agent.redis_connect(privileged=True)
 
 # Remember the Mail module by UUID: its ID and host change on move or restore
-mail_uuid = cluster.smarthost.find_mail_uuid(rdb, {
-    **values,
-    "mail_uuid": rdb.hget(agent_id + '/smarthost', 'mail_uuid'),
-})
+mail_uuid = cluster.smarthost.find_mail_uuid(rdb, values)
 
 # Advertise the smarthost changes:
 trx = rdb.pipeline()
