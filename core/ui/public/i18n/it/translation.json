@@ -352,7 +352,9 @@
         "showing_lines_no_interval": "Mostrate {n} righe",
         "showing_lines": "Mostrate {n} righe da {from} a {to}",
         "showing_lines_of": "Mostrate {n} di {max} righe da {from} a {to}",
-        "regexp": "Espressione regolare"
+        "regexp": "Espressione regolare",
+        "copy_output": "Copy output",
+        "copied_to_clipboard": "Copied to clipboard"
     },
     "node_detail": {
         "title": "Dettagli nodo",
