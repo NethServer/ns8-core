@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# diagnostics.d plugin for NS8 node health
+#
+# Checks core systemd services, Redis connectivity, running modules,
+# failed units, and certificate expiry. Outputs JSON PluginResult
+# with structured details for UI consumption.
+#
+# Exit codes: 0=ok, 1=warning, 2=critical
+#
+
+import json
+import subprocess
+import sys
+import os
+from datetime import datetime, timezone
+
+checks = []
+overall = "ok"  # ok < warning < critical
+
+def rank(status):
+    return {"ok": 0, "warning": 1, "critical": 2, "error": 3}.get(status, 0)
+
+def worst(a, b):
+    return a if rank(a) >= rank(b) else b
+
+
+# 1. Check core systemd services
+core_services = [
+    "redis.service",
+    "api-server.service",
+    "agent@cluster.service",
+    "agent@node.service",
+]
+
+services_status = []
+for svc in core_services:
+    try:
+        result = subprocess.run(
+            ["systemctl", "is-active", svc],
+            capture_output=True, text=True, timeout=5
+        )
+        state = result.stdout.strip()
+        status = "ok" if state == "active" else "critical"
+        services_status.append({"name": svc, "state": state})
+        overall = worst(overall, status)
+    except Exception:
+        services_status.append({"name": svc, "state": "unknown"})
+        overall = worst(overall, "error")
+
+all_active = all(s["state"] == "active" for s in services_status)
+checks.append({
+    "name": "core_services",
+    "status": "ok" if all_active else "critical",
+    "value": f"{sum(1 for s in services_status if s['state'] == 'active')}/{len(services_status)} active",
+    "details": services_status,
+})
+
+
+# 2. Check Redis connectivity
+try:
+    result = subprocess.run(
+        ["redis-cli", "ping"],
+        capture_output=True, text=True, timeout=5
+    )
+    redis_ok = result.stdout.strip() == "PONG"
+    status = "ok" if redis_ok else "critical"
+    checks.append({
+        "name": "redis",
+        "status": status,
+        "value": result.stdout.strip(),
+    })
+    overall = worst(overall, status)
+except Exception as e:
+    checks.append({
+        "name": "redis",
+        "status": "critical",
+        "value": "unreachable",
+        "details": {"error": str(e)},
+    })
+    overall = worst(overall, "critical")
+
+
+# 3. Check modules on this node
+try:
+    result = subprocess.run(
+        ["redis-cli", "HGETALL", "cluster/module_node"],
+        capture_output=True, text=True, timeout=5
+    )
+    lines = result.stdout.strip().split("\n") if result.stdout.strip() else []
+
+    node_env = "/var/lib/nethserver/node/state/environment"
+    node_id = "1"
+    if os.path.isfile(node_env):
+        with open(node_env) as f:
+            for line in f:
+                if line.startswith("NODE_ID="):
+                    node_id = line.strip().split("=", 1)[1]
+                    break
+
+    module_names = []
+    for i in range(0, len(lines) - 1, 2):
+        if lines[i + 1] == node_id:
+            module_names.append(lines[i])
+
+    checks.append({
+        "name": "modules",
+        "status": "ok",
+        "value": str(len(module_names)),
+        "details": {"node_id": node_id, "modules": module_names},
+    })
+except Exception:
+    pass
+
+
+# 4. Check failed systemd units
+try:
+    result = subprocess.run(
+        ["systemctl", "list-units", "--state=failed", "--no-legend", "--no-pager", "--plain"],
+        capture_output=True, text=True, timeout=5
+    )
+    failed_lines = [l for l in result.stdout.strip().split("\n") if l.strip()]
+    failed_count = len(failed_lines)
+
+    failed_units = []
+    for line in failed_lines[:20]:
+        parts = line.split()
+        if parts:
+            unit_name = parts[0]
+            description = " ".join(parts[4:]) if len(parts) > 4 else ""
+            failed_units.append({"unit": unit_name, "description": description})
+
+    status = "warning" if failed_count > 0 else "ok"
+    checks.append({
+        "name": "failed_units",
+        "status": status,
+        "value": str(failed_count),
+        "details": failed_units if failed_units else None,
+    })
+    overall = worst(overall, status)
+except Exception:
+    pass
+
+
+# 5. Check TLS certificate freshness (Traefik ACME)
+try:
+    cert_paths = [
+        "/etc/nethserver/traefik/acme/acme.json",
+        "/home/traefik1/.config/state/acme.json",
+    ]
+    for cert_path in cert_paths:
+        if os.path.isfile(cert_path):
+            mtime = os.path.getmtime(cert_path)
+            age_days = int((datetime.now(timezone.utc).timestamp() - mtime) / 86400)
+            status = "warning" if age_days > 60 else "ok"
+            checks.append({
+                "name": "tls_acme",
+                "status": status,
+                "value": f"{age_days}d",
+                "details": {"path": cert_path, "age_days": age_days},
+            })
+            overall = worst(overall, status)
+            break
+except Exception:
+    pass
+
+
+# Build summary
+ok_count = sum(1 for c in checks if c["status"] == "ok")
+warn_count = sum(1 for c in checks if c["status"] == "warning")
+crit_count = sum(1 for c in checks if c["status"] == "critical")
+summary = f"{ok_count} ok, {warn_count} warning, {crit_count} critical"
+
+result = {
+    "id": "health",
+    "name": "NS8 Node Health",
+    "status": overall,
+    "summary": summary,
+    "checks": checks,
+}
+
+json.dump(result, sys.stdout)
+
+# Exit code reflects overall status
+if overall == "critical":
+    sys.exit(2)
+elif overall == "warning":
+    sys.exit(1)
+else:
+    sys.exit(0)
