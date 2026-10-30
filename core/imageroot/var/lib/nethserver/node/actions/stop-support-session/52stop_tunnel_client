@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Beta: the WebSocket support tunnel follows the remote support session.
+
+exec 1>&2
+
+"${AGENT_INSTALL_DIR:?}/actions/stop-tunnel-client/50stop_tunnel_client" < /dev/null || \
+    echo "WARNING: support tunnel not stopped"
+
+exit 0

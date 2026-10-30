@@ -5,6 +5,9 @@
 
 [Unit]
 Description=Support tunnel client
+# Beta: stop together with the remote support session (don), whatever
+# stops it (action, expiry, RuntimeMaxSec)
+PartOf=support.service
 After=network-online.target support-tunnel-cleanup.service
 Wants=network-online.target
 

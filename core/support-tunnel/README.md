@@ -50,11 +50,14 @@ if the client was killed, and at boot by `support-tunnel-cleanup.service`
 
 ## Coexistence with don
 
-The tunnel coexists with the OpenVPN-based "don" support (`support.service`).
-They are two independent remote access paths, each started explicitly by
-the administrator, with its own service, state and support accounts:
+The tunnel runs alongside the OpenVPN-based "don" support (`support.service`),
+each with its own service, state and support accounts:
 
 - don: `/var/lib/nethserver/support/`, `support.service`, `start-support-session`
 - tunnel: `/var/lib/nethserver/support-tunnel/`, `support-tunnel.service`, `start-tunnel-client`
 
-Starting or stopping one does not affect the other.
+During the beta the tunnel follows don: `start-support-session` and
+`stop-support-session` also start and stop it, and `support-tunnel.service`
+is `PartOf=support.service`, so it stops whenever don does (expiry included).
+A tunnel failure never makes the don session fail. `start-tunnel-client` and
+`stop-tunnel-client` still drive the tunnel alone.
