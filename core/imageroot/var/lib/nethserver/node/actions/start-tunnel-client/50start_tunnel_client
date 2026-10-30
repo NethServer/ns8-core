@@ -16,7 +16,7 @@ import agent
 
 SUPPORT_DIR = "/var/lib/nethserver/support-tunnel"
 ENV_FILE = f"{SUPPORT_DIR}/support.env"
-DEFAULT_URL = "wss://support.nethesis.it/api/tunnel"
+DEFAULT_URL = "wss://support.my.nethesis.it/api/tunnel"
 
 # Values end up in a systemd EnvironmentFile: no whitespace, quotes or
 # backslashes, so they cannot inject extra variables.

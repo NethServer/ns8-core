@@ -31,7 +31,7 @@ Credentials default to the my subscription (`cluster/subscription`
 `system_id` and `auth_token`, provider `nsent`). The optional
 `cluster/support_tunnel` hash overrides them and sets other options:
 
-- `url`: `wss://` tunnel URL
+- `url`: `wss://` tunnel URL (default `wss://support.my.nethesis.it/api/tunnel`, QA `wss://support.qa.my.nethesis.it/api/tunnel`)
 - `key`, `secret`: system credentials, both required to override
 - `exclude_patterns`: comma-separated globs of services to hide
 
