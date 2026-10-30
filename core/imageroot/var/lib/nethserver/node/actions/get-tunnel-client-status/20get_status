@@ -42,7 +42,6 @@ json.dump({
     "active": active,
     "node_id": node_id,
     "support_url": session.get("support_url", ""),
-    "system_key": session.get("system_key", ""),
     "connected": session.get("connected", "") == "true",
     "services": int(session.get("services_count", "0") or "0"),
     "pid": pid,

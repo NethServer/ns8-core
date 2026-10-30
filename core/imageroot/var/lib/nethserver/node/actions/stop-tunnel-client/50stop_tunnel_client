@@ -10,11 +10,8 @@ exec 1>&2
 
 # Stop the tunnel service. The tunnel-client handles user cleanup on
 # SIGTERM: it runs teardown on users.d plugins and deletes ephemeral
-# users (cluster-admin, domain users) before exiting.
-systemctl stop support-tunnel.service 2>/dev/null || true
+# users (cluster-admin, domain users) before exiting. ExecStopPost runs
+# --cleanup-only for anything a killed client left behind.
+systemctl stop support-tunnel.service || :
 
-# Clean up Redis state (use default user on local replica)
-source /var/lib/nethserver/node/state/environment
-NODE_ID="${NODE_ID:-1}"
-unset REDISCLI_AUTH
-redis-cli DEL "node/${NODE_ID}/tunnel" > /dev/null
+redis-exec DEL "node/${NODE_ID:?}/tunnel" > /dev/null

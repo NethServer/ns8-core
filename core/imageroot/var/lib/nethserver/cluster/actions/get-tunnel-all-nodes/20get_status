@@ -38,7 +38,8 @@ results = agent.tasks.runp(
 
 nodes_status = []
 for result in results:
-    if isinstance(result, dict) and "output" in result:
+    if isinstance(result, dict) and isinstance(result.get("output"), dict):
+        result["output"].pop("system_key", None)
         nodes_status.append(result["output"])
 
 any_active = any(n.get("active", False) for n in nodes_status)

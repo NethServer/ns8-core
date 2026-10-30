@@ -10,9 +10,13 @@ import sys
 import agent
 
 rdb = agent.redis_connect(use_replica=True)
-tunnel_config = rdb.hgetall("cluster/support_tunnel")
+tunnel_config = rdb.hgetall("cluster/support_tunnel") or {}
+subscription = rdb.hgetall("cluster/subscription") or {}
 
-if not tunnel_config.get("key") or not tunnel_config.get("secret"):
+has_override = tunnel_config.get("key") and tunnel_config.get("secret")
+has_subscription = subscription.get("provider") == "nsent" and subscription.get("system_id") and subscription.get("auth_token")
+
+if not has_override and not has_subscription:
     agent.set_status('validation-failed')
     json.dump([{
         "field": "support_tunnel",

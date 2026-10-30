@@ -25,6 +25,8 @@ Input files (JSON):
 
 import json
 import os
+import pwd
+import re
 import subprocess
 import sys
 
@@ -78,8 +80,23 @@ def get_domain_passwords(users_data):
     return passwords
 
 
+USERNAME_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
+PASSWORD_RE = re.compile(r"^[A-Za-z0-9!@#%^&*]{8,128}$")
+MODULE_RE = re.compile(r"^[a-z][a-z0-9_-]{0,63}$")
+
+
+def valid_username(username):
+    return bool(username) and USERNAME_RE.match(username) is not None
+
+
+def valid_password(password):
+    return bool(password) and PASSWORD_RE.match(password) is not None
+
+
 def get_mariadb_password(module_id):
     """Read MARIADB_ROOT_PASSWORD from the module's passwords.env file."""
+    if not MODULE_RE.match(module_id):
+        return None
     passwords_file = f"/home/{module_id}/.config/state/passwords.env"
     if not os.path.isfile(passwords_file):
         return None
@@ -91,22 +108,31 @@ def get_mariadb_password(module_id):
 
 
 def run_mysql(module_id, db_password, sql):
-    """Execute a MySQL command inside the mariadb container of a NethVoice module."""
-    result = subprocess.run(
+    """Execute SQL inside the mariadb container of a NethVoice module.
+
+    The SQL goes through stdin and the root password through the
+    environment, so neither shows up in any process argv.
+    """
+    uid = pwd.getpwnam(module_id).pw_uid
+    env = {
+        "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin",
+        "XDG_RUNTIME_DIR": f"/run/user/{uid}",
+        "MYSQL_PWD": db_password,
+    }
+    return subprocess.run(
         [
-            "su", "-", module_id, "-s", "/bin/bash", "-c",
-            f"podman exec -e MYSQL_PWD='{db_password}' mariadb "
-            f"mysql -uroot -N -B asterisk -e \"{sql}\""
+            "runuser", "-l", module_id, "-s", "/bin/bash",
+            "-w", "XDG_RUNTIME_DIR,MYSQL_PWD",
+            "-c", "exec podman exec -i -e MYSQL_PWD mariadb mysql -uroot -N -B asterisk",
         ],
-        capture_output=True, text=True, timeout=15,
+        input=sql, env=env, capture_output=True, text=True, timeout=15,
     )
-    return result
 
 
 def setup(users_data, instances_data):
     """Create FreePBX admin user for each local NethVoice instance."""
     username = get_support_username(users_data)
-    if not username:
+    if not valid_username(username):
         return []
 
     domain_passwords = get_domain_passwords(users_data)
@@ -124,7 +150,7 @@ def setup(users_data, instances_data):
 
         # Get the password for this instance's domain
         password = domain_passwords.get(domain, "")
-        if not password:
+        if not valid_password(password):
             continue
 
         # Create the support user in ampusers with SHA1 hashed password
@@ -169,7 +195,7 @@ def setup(users_data, instances_data):
 def teardown(users_data, instances_data):
     """Remove FreePBX admin user from each local NethVoice instance."""
     username = get_support_username(users_data)
-    if not username:
+    if not valid_username(username):
         return
 
     for inst in instances_data.get("instances", []):

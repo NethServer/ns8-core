@@ -10,9 +10,11 @@
                 "type": "object",
                 "properties": {
                     "active": { "type": "boolean" },
-                    "session_id": { "type": "string" },
-                    "started_at": { "type": "string" },
-                    "node_id": { "type": "string" }
+                    "node_id": { "type": "string" },
+                    "support_url": { "type": "string" },
+                    "connected": { "type": "boolean" },
+                    "services": { "type": "integer" },
+                    "pid": { "type": "integer" }
                 }
             }
         }

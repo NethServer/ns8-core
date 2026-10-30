@@ -1,6 +1,7 @@
 # Support Tunnel Client
 
-WebSocket-based remote support system that replaces the OpenVPN-based "don" support.
+WebSocket-based remote support client, started on demand by the cluster
+administrator.
 
 ## Binary
 
@@ -13,7 +14,34 @@ To build it:
 cd /path/to/my/services/support
 make build-tunnel-client
 cp build/tunnel-client /path/to/ns8-core/core/support-tunnel/tunnel-client-linux-amd64
+cd /path/to/ns8-core/core/support-tunnel
+sha256sum tunnel-client-linux-amd64 > tunnel-client-linux-amd64.sha256
 ```
+
+`build-image.sh` fails if the binary or its `.sha256` file is missing or
+the checksum does not match.
+
+## Configuration
+
+`start-tunnel-client` writes `/var/lib/nethserver/support-tunnel/support.env`
+(mode 0600, directory 0700); the client reads everything from that
+environment, no secret is passed on the command line.
+
+Credentials default to the my subscription (`cluster/subscription`
+`system_id` and `auth_token`, provider `nsent`). The optional
+`cluster/support_tunnel` hash overrides them and sets other options:
+
+- `url`: `wss://` tunnel URL
+- `key`, `secret`: system credentials, both required to override
+- `exclude_patterns`: comma-separated globs of services to hide
+
+## Ephemeral accounts cleanup
+
+The accounts created for a session are recorded in
+`/var/lib/nethserver/support-tunnel/users-state.json`. They are removed by
+the client on stop, by `tunnel-client --cleanup-only` in `ExecStopPost`
+if the client was killed, and at boot by `support-tunnel-cleanup.service`
+(enabled by the first `start-tunnel-client`).
 
 ## Plugin directories
 
@@ -22,7 +50,11 @@ cp build/tunnel-client /path/to/ns8-core/core/support-tunnel/tunnel-client-linux
 
 ## Coexistence with don
 
-This system coexists with the existing OpenVPN-based "don" support (`support.service`).
-The two systems use separate paths and service names:
-- don: `/var/lib/nethserver/support/`, `support.service`
-- tunnel: `/var/lib/nethserver/support-tunnel/`, `support-tunnel.service`
+The tunnel coexists with the OpenVPN-based "don" support (`support.service`).
+They are two independent remote access paths, each started explicitly by
+the administrator, with its own service, state and support accounts:
+
+- don: `/var/lib/nethserver/support/`, `support.service`, `start-support-session`
+- tunnel: `/var/lib/nethserver/support-tunnel/`, `support-tunnel.service`, `start-tunnel-client`
+
+Starting or stopping one does not affect the other.
