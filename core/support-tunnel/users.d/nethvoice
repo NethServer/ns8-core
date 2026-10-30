@@ -123,7 +123,7 @@ def run_mysql(module_id, db_password, sql):
         [
             "runuser", "-l", module_id, "-s", "/bin/bash",
             "-w", "XDG_RUNTIME_DIR,MYSQL_PWD",
-            "-c", "exec podman exec -i -e MYSQL_PWD mariadb mysql -uroot -N -B asterisk",
+            "-c", "exec podman exec -i -e MYSQL_PWD mariadb mariadb -uroot -N -B asterisk",
         ],
         input=sql, env=env, capture_output=True, text=True, timeout=15,
     )
