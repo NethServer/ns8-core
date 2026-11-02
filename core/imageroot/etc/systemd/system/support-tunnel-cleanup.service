@@ -1,0 +1,23 @@
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+[Unit]
+Description=Remove support tunnel accounts left by a previous session
+Wants=redis.service network-online.target
+After=redis.service network-online.target agent@cluster.service agent@node.service
+ConditionPathExists=/var/lib/nethserver/support-tunnel/users-state.json
+ConditionPathExists=/usr/local/bin/tunnel-client
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/var/lib/nethserver/support-tunnel/support.env
+Environment=USERS_STATE_FILE=/var/lib/nethserver/support-tunnel/users-state.json
+UMask=0077
+ExecStart=/usr/local/bin/tunnel-client --cleanup-only
+TimeoutStartSec=5min
+SyslogIdentifier=%N
+
+[Install]
+WantedBy=default.target

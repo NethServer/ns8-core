@@ -70,6 +70,12 @@ buildah add "${container}" api-server/api-server-logs /usr/local/bin/api-server-
 buildah add "${container}" ui/dist /var/lib/nethserver/cluster/ui
 buildah add "${container}" api-moduled/api-moduled /usr/local/bin/api-moduled
 buildah add "${container}" install.sh /var/lib/nethserver/node/install.sh
+
+# Support tunnel client (WebSocket-based support, coexists with OpenVPN-based don)
+(cd support-tunnel && sha256sum -c tunnel-client-linux-amd64.sha256)
+buildah add "${container}" support-tunnel/tunnel-client-linux-amd64 /var/lib/nethserver/node/support-tunnel/tunnel-client
+buildah add "${container}" support-tunnel/users.d /var/lib/nethserver/node/support-tunnel/users.d
+buildah add "${container}" support-tunnel/diagnostics.d /var/lib/nethserver/node/support-tunnel/diagnostics.d
 core_env_file=$(mktemp)
 cleanup_list+=("${core_env_file}")
 printf "CORE_IMAGE=${repobase}/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
