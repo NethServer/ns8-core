@@ -1,0 +1,21 @@
+# Untitled string in list-nodes output Schema
+
+```txt
+http://schema.nethserver.org/cluster/list-nodes.json#/$defs/node-info/properties/os_release/properties/name
+```
+
+
+
+| Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                          |
+| :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :------------------------------------------------------------------ |
+| Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [list-nodes.json\*](cluster/list-nodes.json "open original schema") |
+
+## name Type
+
+`string`
+
+## name Examples
+
+```json
+"Rocky Linux"
+```

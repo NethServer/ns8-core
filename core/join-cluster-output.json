@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"join-cluster output","$id":"http://schema.nethserver.org/cluster/join-cluster-output.json","description":"","examples":[{"node_id":3}],"type":"object","required":["node_id"],"properties":{"node_id":{"title":"Node identifier","description":"Allocated identifier of the new node","type":"integer","minimumExclusive":1}}}

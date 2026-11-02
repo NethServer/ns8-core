@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"validate-leader-fqdn input","$id":"http://schema.nethserver.org/node/validate-leader-fqdn-input.json","description":"Input schema of the validate-leader-fqdn action","examples":[{"fqdn":"dn2.example.org"}],"type":"object","required":["fqdn"],"properties":{"fqdn":{"type":"string","minLength":1,"format":"hostname"}}}

@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"list-installed-modules input","$id":"http://schema.nethserver.org/cluster/list-installed-modules-input.json","description":"The action does not accept any input","examples":[null],"type":"null"}
