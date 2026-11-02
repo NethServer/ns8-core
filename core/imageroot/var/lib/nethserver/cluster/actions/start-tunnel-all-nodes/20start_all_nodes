@@ -41,12 +41,14 @@ nodes = []
 errors = 0
 for i, result in enumerate(results):
     node_id = node_ids[i]
-    if isinstance(result, Exception) or (isinstance(result, dict) and result.get("error")):
+    # "error" carries the task stderr, which a successful start fills with
+    # its own log lines: only the exit code tells a failure apart
+    if isinstance(result, Exception) or (isinstance(result, dict) and result.get("exit_code") != 0):
         errors += 1
         nodes.append({
             "node_id": node_id,
             "connected": False,
-            "error": str(result),
+            "error": str(result.get("error", "")).strip() if isinstance(result, dict) else str(result),
         })
     elif isinstance(result, dict) and "output" in result:
         output = result["output"]
