@@ -42,6 +42,8 @@ func Instance() *redis.Client {
 		DB:        0, // redis database
 		OnConnect: setClientNameCallback,
 		Protocol:  2, // RESP2, as go-redis v8: keep reply types unchanged
+		// Run pipelines on the main pool, as go-redis v8
+		PipelinePoolSize: -1,
 	})
 }
 
