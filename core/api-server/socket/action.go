@@ -33,7 +33,7 @@ import (
 	"sync"
 	"syscall"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
+	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/gin-gonic/gin"
 	"github.com/olahol/melody"
 	"github.com/pkg/errors"
@@ -283,7 +283,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			utils.LogError(errors.Wrap(err, "Websocket auth error"))
 			oErrorMsg := map[string]string{
 				"type":    "authorize-error",
-				"payload": err.Error(),
+				"payload": middleware.TokenErrorMessage(err),
 			}
 			jErrorMsg, _ := json.Marshal(oErrorMsg)
 			s.Write(jErrorMsg)

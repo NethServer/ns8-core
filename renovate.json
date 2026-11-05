@@ -14,15 +14,6 @@
       "matchDatasources": ["docker", "github-tags"],
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
-    },
-    {
-      "description": "Go major updates that change the import path need a manual code migration",
-      "matchManagers": ["gomod"],
-      "matchPackageNames": [
-        "github.com/appleboy/gin-jwt/v2"
-      ],
-      "matchUpdateTypes": ["major"],
-      "enabled": false
     }
   ],
   "customManagers": [
