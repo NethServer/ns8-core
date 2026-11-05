@@ -29,7 +29,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 func Instance() *redis.Client {
@@ -41,6 +41,7 @@ func Instance() *redis.Client {
 		Password:  configuration.Config.RedisPassword,
 		DB:        0, // redis database
 		OnConnect: setClientNameCallback,
+		Protocol:  2, // RESP2, as go-redis v8: keep reply types unchanged
 	})
 }
 

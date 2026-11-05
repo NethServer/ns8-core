@@ -38,7 +38,7 @@ import (
 
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/NethServer/ns8-core/core/agent/validation"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) {
@@ -313,6 +313,7 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 		Password:        redisPassword,
 		DB:              0,
 		OnConnect:       setClientNameCallback,
+		Protocol:        2, // RESP2, as go-redis v8: keep reply types unchanged
 		MaxRetries:      10,
 		MinRetryBackoff: 100 * time.Millisecond,
 		MaxRetryBackoff: 5000 * time.Millisecond,
