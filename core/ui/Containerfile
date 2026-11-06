@@ -1,4 +1,8 @@
 FROM node:24-bookworm-slim
+# renovate: datasource=npm packageName=corepack
+ARG COREPACK_VERSION=0.36.0
+RUN npm install -g corepack@${COREPACK_VERSION} \
+    && corepack enable
 WORKDIR /app
 ENV NODE_OPTIONS=--openssl-legacy-provider
 EXPOSE 8080
