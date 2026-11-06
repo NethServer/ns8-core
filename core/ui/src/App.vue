@@ -24,6 +24,7 @@ import WebSocketService from "@/mixins/websocket";
 import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import LoginService from "@/mixins/login";
+import SessionService from "@/mixins/session";
 import TaskErrorModal from "@/components/error/TaskErrorModal";
 import NotificationService from "@/mixins/notification";
 import {
@@ -44,6 +45,7 @@ export default {
     StorageService,
     WebSocketService,
     LoginService,
+    SessionService,
     TaskService,
     NotificationService,
     UtilService,
@@ -73,7 +75,9 @@ export default {
 
     // register to events
     this.$root.$on("login", this.initWebSocket);
+    this.$root.$on("login", this.scheduleTokenRefresh);
     this.$root.$on("logout", this.logout);
+    this.$root.$on("sessionTokenChanged", this.onSessionTokenChanged);
     this.$root.$on("createErrorNotification", this.createErrorNotification);
     this.$root.$on("createNotificationForApp", this.createNotificationForApp);
     this.$root.$on("deleteNotificationForApp", this.deleteNotificationForApp);
@@ -96,11 +100,14 @@ export default {
       this.setLoggedUserInStore(loginInfo.username);
       // verify token with WS authentication
       this.initWebSocket();
+      this.scheduleTokenRefresh();
     } else {
       this.isLoaded = true;
     }
   },
   beforeDestroy() {
+    this.cancelTokenRefresh();
+    window.removeEventListener("storage", this.onStorageChange);
     this.closeWebSocket();
     window.removeEventListener("blur", this.clickOutsideDrawers);
     window.removeEventListener(
@@ -157,6 +164,9 @@ export default {
 
       // global shortcuts
       this.configureKeyboardShortcuts(window);
+
+      // another browser tab refreshed the session token
+      window.addEventListener("storage", this.onStorageChange);
     },
     clickOutsideDrawers() {
       if (document.activeElement.id == "app-frame") {
@@ -195,12 +205,44 @@ export default {
         function (response) {
           return response;
         },
-        function (error) {
+        async function (error) {
           console.error(error);
 
           // print specific error message, if available
           if (error.response?.data?.message) {
             console.error(error.response.data.message);
+          }
+
+          const requestUrl = error.config?.url || "";
+
+          // a failed refresh is handled by the session service
+          if (requestUrl.endsWith("/refresh")) {
+            return Promise.reject(error);
+          }
+
+          // on 401, get a new access token and repeat the request once
+          const loginInfo = context.getFromStorage("loginInfo");
+          if (
+            error.response?.status == 401 &&
+            loginInfo?.refreshToken &&
+            error.config &&
+            !error.config.sessionRetry &&
+            !requestUrl.endsWith("/login") &&
+            !requestUrl.endsWith("/logout")
+          ) {
+            const staleToken = (
+              error.config.headers?.Authorization || ""
+            ).replace(/^Bearer /, "");
+            const result = await context.refreshSession(staleToken);
+
+            if (result === "ok") {
+              context.onSessionTokenChanged();
+              error.config.sessionRetry = true;
+              error.config.headers.Authorization = `Bearer ${
+                context.getFromStorage("loginInfo").token
+              }`;
+              return axios(error.config);
+            }
           }
 
           // logout if 401 response code is intercepted
@@ -210,7 +252,11 @@ export default {
             let sessionExpiredTitle = "";
             let sessionExpiredDescription = "";
 
-            if (error.response?.data?.message === "Token is expired") {
+            if (
+              ["Token is expired", "session is not valid"].includes(
+                error.response?.data?.message
+              )
+            ) {
               sessionExpiredTitle = context.$t("login.session_expired_title");
               sessionExpiredDescription = context.$t(
                 "login.session_expired_description"
@@ -228,6 +274,8 @@ export default {
       );
     },
     async logout(logoutInfoTitle, logoutInfoDescription) {
+      this.cancelTokenRefresh();
+
       // invoke logout API
       const res = await to(this.executeLogout());
       const logoutError = res[0];
@@ -378,11 +426,35 @@ export default {
         this.createNotification(notification);
       }
     },
+    onSessionTokenChanged() {
+      this.authorizeWebSocket();
+      this.scheduleTokenRefresh();
+    },
+    onStorageChange(event) {
+      if (event.key === "loginInfo" && event.newValue) {
+        const loginInfo = JSON.parse(event.newValue);
+        if (loginInfo?.refreshToken) {
+          this.onSessionTokenChanged();
+        }
+      }
+    },
     onWebsocketError(error) {
       console.error("WebsocketError", error);
     },
-    onWebsocketAuthError(error) {
+    async onWebsocketAuthError(error) {
       console.error("WebsocketAuthError", error);
+
+      // the server closes the socket: if the token can be refreshed,
+      // the socket reconnects and sends the new token
+      const loginInfo = this.getFromStorage("loginInfo");
+      if (loginInfo?.refreshToken) {
+        const result = await this.refreshSession(loginInfo.token);
+        if (result === "ok") {
+          this.onSessionTokenChanged();
+          return;
+        }
+      }
+
       const sessionExpiredTitle = this.$t("login.session_expired_title");
       const sessionExpiredDescription = this.$t(
         "login.session_expired_description"

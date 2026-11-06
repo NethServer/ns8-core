@@ -15,6 +15,24 @@ export default {
       });
     },
     /**
+     * Create the token of a join code: it can only add a node to the
+     * cluster and expires after one hour
+     */
+    createJoinToken() {
+      const token = this.getFromStorage("loginInfo")
+        ? this.getFromStorage("loginInfo").token
+        : "";
+      return this.axios.post(
+        `${this.$root.apiUrl}/cluster/join-token`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    },
+    /**
      * Given the output of list-installed-modules, returns an object where the keys are node IDs, and the values are the list of app instances installed on that node
      */
     getInstalledAppsByNode(listInstalledModulesOutput) {
