@@ -36,6 +36,7 @@ type Configuration struct {
 	Secret        string   `json:"secret"`
 	StaticPath    string   `json:"static_path"`
 	AuditFile     string   `json:"audit_file"`
+	SessionsFile  string   `json:"sessions_file"`
 	Issuer        string   `json:"issuer"`
 	SensitiveList []string `json:"sensitive_list"`
 
@@ -88,6 +89,12 @@ func Init() {
 		Config.AuditFile = os.Getenv("AUDIT_FILE")
 	} else {
 		Config.AuditFile = ""
+	}
+
+	if os.Getenv("SESSIONS_FILE") != "" {
+		Config.SessionsFile = os.Getenv("SESSIONS_FILE")
+	} else {
+		Config.SessionsFile = "/var/lib/nethserver/api-server/sessions.db"
 	}
 
 	if os.Getenv("ISSUER") != "" {
