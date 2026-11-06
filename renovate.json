@@ -19,7 +19,6 @@
       "description": "Go major updates that change the import path need a manual code migration",
       "matchManagers": ["gomod"],
       "matchPackageNames": [
-        "github.com/go-redis/redis/v8",
         "github.com/appleboy/gin-jwt/v2"
       ],
       "matchUpdateTypes": ["major"],

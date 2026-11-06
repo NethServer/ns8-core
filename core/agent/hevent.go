@@ -29,7 +29,7 @@ import (
 	"time"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 func listenEventsAsync(ctx context.Context, complete chan int) {
@@ -45,14 +45,16 @@ func listenEventsAsync(ctx context.Context, complete chan int) {
 		redisAddress = "127.0.0.1:6379"
 	}
 	rdb := redis.NewClient(&redis.Options{
-		Addr:            redisAddress,
-		Username:        "default",
-		Password:        agentPrefix,
-		DB:              0,
-		OnConnect:       setClientNameCallback,
-		MaxRetries:      10,
-		MinRetryBackoff: 100 * time.Millisecond,
-		MaxRetryBackoff: 5000 * time.Millisecond,
+		Addr:             redisAddress,
+		Username:         "default",
+		Password:         agentPrefix,
+		DB:               0,
+		OnConnect:        setClientNameCallback,
+		Protocol:         2,  // RESP2, as go-redis v8: keep reply types unchanged
+		PipelinePoolSize: -1, // run pipelines on the main pool, as go-redis v8
+		MaxRetries:       10,
+		MinRetryBackoff:  100 * time.Millisecond,
+		MaxRetryBackoff:  5000 * time.Millisecond,
 	})
 
 	pubsub := rdb.PSubscribe(ctx, "*/event/*")
