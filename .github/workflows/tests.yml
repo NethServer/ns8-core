@@ -74,7 +74,7 @@ jobs:
     name: "Run tests"
     needs: [ns8, check_ui_tests_needed]
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
       statuses: write
     # Job level, like module tests: a failed build must not cancel the running test.

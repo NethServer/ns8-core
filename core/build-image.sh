@@ -20,10 +20,15 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; 
         localhost/gobuilder-image
 fi
 
+# Node.js 25+ no longer ships Corepack, install it from npm
+# renovate: datasource=npm packageName=corepack
+corepack_version=0.36.0
+
 # Reuse existing nodebuilder-core container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-core; then
     echo "Pulling NodeJS runtime..."
     buildah from --name nodebuilder-core -v "${PWD}:/usr/src/core:z" docker.io/library/node:24.11.1-slim
+    buildah run nodebuilder-core sh -c "npm install -g corepack@${corepack_version} && corepack enable"
 fi
 
 echo "Build statically linked Go binaries..."
