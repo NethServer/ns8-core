@@ -340,8 +340,15 @@ def list_available(rdb, skip_core_modules=False):
         modules.append(omod)
     return modules
 
-def _get_available_modules(rdb):
-    modules = {}
+def _get_enabled_repositories(rdb):
+    """Return the list of (name, url) tuples of enabled repositories,
+    sorted by priority, where the first item has higher priority."""
+    if get_repo_view() == 'managed' and _has_subscription(rdb):
+        # Automatic updates of a subscribed cluster always come from the
+        # subscription repository, regardless of the repository
+        # configuration: it might not reflect the subscription status,
+        # for instance after a cluster restore.
+        return [("subscription", "https://subscription.nethserver.com/distfeed/")]
     repositories = []
     # List all modules from enabled repositories
     for krepo in rdb.scan_iter('cluster/repository/*'):
@@ -355,6 +362,11 @@ def _get_available_modules(rdb):
         if repo.get("status", "0") != "1":
             continue
         enabled_repos.append((nrepo, repo["url"]))
+    return enabled_repos
+
+def _get_available_modules(rdb):
+    modules = {}
+    enabled_repos = _get_enabled_repositories(rdb)
 
     # Fetch every enabled repository concurrently: sequentially, one
     # unreachable repository burns its own connect/read timeout on top of

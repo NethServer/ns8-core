@@ -29,6 +29,9 @@ Key points:
   higher priority than those earlier (e.g., "A").
 - If a repository has the **testing** flag enabled, pre-releases are
   treated as stable and are included in application update calculations.
+- Scheduled updates of a cluster with an active subscription ignore the
+  repository configuration, and read only the `subscription` repository
+  with the `managed` view. See [updates schedule]({{site.baseurl}}/core/updates#updates-schedule).
 
 Repository configurations are stored in a Redis HASH with the key prefix
 `cluster/repository/`. For example, to view the configuration of the
