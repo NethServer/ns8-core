@@ -1620,6 +1620,7 @@
         "add_node_to_cluster_step_4": "Select 'Join cluster'",
         "add_node_to_cluster_step_5": "Review node FQDN",
         "add_node_to_cluster_step_6": "Paste the join code",
+        "join_code_expires": "The join code expires at {time}. Close and open this dialog again to get a new one.",
         "leader": "Leader",
         "worker": "Worker",
         "cpu_usage": "CPU usage",
