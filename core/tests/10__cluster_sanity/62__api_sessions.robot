@@ -59,7 +59,7 @@ Join token can only add a node
     ${join_token} =    Set Variable    ${response.json()}[token]
     ${join_headers} =    Create Dictionary    Authorization=Bearer ${join_token}
     ${task} =    Evaluate    {"action": "list-actions", "data": None, "extra": {"title": "join token probe", "isNotificationHidden": True}}
-    POST    ${API}/cluster/tasks    json=${task}    headers=${join_headers}    verify=${FALSE}    expected_status=200
+    POST    ${API}/cluster/tasks    json=${task}    headers=${join_headers}    verify=${FALSE}    expected_status=201
     ${task} =    Evaluate    {"action": "list-modules", "data": None, "extra": {"title": "join token probe", "isNotificationHidden": True}}
     POST    ${API}/cluster/tasks    json=${task}    headers=${join_headers}    verify=${FALSE}    expected_status=403
     Get nodes    ${join_token}    403
