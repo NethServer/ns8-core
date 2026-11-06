@@ -34,6 +34,7 @@ import (
 
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/redis"
+	"github.com/NethServer/ns8-core/core/api-server/sessions"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
@@ -70,7 +71,7 @@ func Instance() *melody.Melody {
  */
 func onPong(s *melody.Session) {
 	muClock.Sync()
-	if !validSessionFilter(s) {
+	if !validSessionFilter(s) || !loginSessionValid(s) {
 		oErrorMsg := map[string]string{
 			"type":    "authorize-error",
 			"payload": "Token has expired",
@@ -167,6 +168,17 @@ func onMessage(s *melody.Session, msg []byte) {
 func validSessionFilter(s *melody.Session) bool {
 	if muClock.Now() > getSessionExpireTimestamp(s) {
 		return false // Session is expired
+	}
+	return true
+}
+
+// loginSessionValid tells if the login session of the token is still
+// valid: it can be revoked before the token expires. Tokens of agents
+// and join tokens have no login session.
+func loginSessionValid(s *melody.Session) bool {
+	sid, _ := s.Get("sid")
+	if id, _ := sid.(string); id != "" {
+		return sessions.Valid(id)
 	}
 	return true
 }

@@ -28,6 +28,12 @@ type UserAuthorizations struct {
 	Actions         []string `json:"actions" structs:"actions"`
 	OtpPass         bool     `json:"otppass" structs:"otppass"`
 	AllowedNetworks string   `json:"allowed_networks" structs:"allowed_networks"`
+	// SessionID is the login session of an administrator: agent
+	// accounts and join tokens have none
+	SessionID string `json:"-" structs:"-"`
+	// Scope limits what a token can do: "join" tokens can only add a
+	// node to the cluster
+	Scope string `json:"-" structs:"-"`
 }
 
 type OTPJson struct {

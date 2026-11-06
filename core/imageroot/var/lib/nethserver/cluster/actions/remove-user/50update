@@ -23,6 +23,7 @@
 import sys
 import agent
 import json
+import time
 import cluster.grants
 
 #
@@ -47,5 +48,11 @@ agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', user) == 1)
 cluster.grants.save_acls(rdb)
 
 rdb.delete(f'roles/{user}', f'user/{user}')
+
+# End the API server sessions of the removed user
+rdb.publish('cluster/event/user-credentials-changed', json.dumps({
+    "user": user,
+    "not_before": time.time(),
+}))
 
 print("true")

@@ -36,9 +36,12 @@ script uses `-ldflags='-extldflags=-static'` for static linking and adds
 
 ```
 POST /api/login                                        # no auth
-POST /api/logout                                       # no auth
+POST /api/logout                                       # no auth; ends the session
+POST /api/refresh                                      # no auth; refresh token -> new token pair
 GET  /api/module/:module_id/http-basic/:action         # basic auth, for app integration
-─── JWT middleware applied to /api routes below ───
+─── JWT and session check middlewares applied to /api routes below ───
+POST /api/logout-others                                # end the other sessions of the user
+POST /api/cluster/join-token                           # token for a node join code (needs add-node)
 GET  /api/cluster/tasks                                # list cluster tasks
 GET  /api/cluster/task/:task_id/status                 # task status
 GET  /api/cluster/task/:task_id/context                # task context
@@ -67,9 +70,19 @@ GET  /api/2FA/qr-code                                  # generate QR code
 ## Authentication
 
 - **Primary**: Redis ACL credentials validated on login
-- **JWT**: 14-day expiry; claims contain username, 2FA flag, and placeholder
+- **JWT**: claims contain username, 2FA flag, and placeholder
   `role`/`actions` fields (always empty). Actual role and actions are fetched
-  fresh from Redis on every request via `IdentityHandler`.
+  fresh from Redis on every request via `IdentityHandler`. Lifetime: 15
+  minutes for administrators, 14 days for agent accounts (`cluster`,
+  `node/*`, `module/*`), 1 hour for join tokens (`"scope": "join"`, limited
+  to `add-node`/`list-actions` by `joinTokenAllowed`).
+- **Sessions** (`sessions/`): an administrator login starts a session in a
+  local SQLite file (`SESSIONS_FILE`), never in Redis because it is
+  replicated to worker nodes. Tokens carry its ID in the `sid` claim, checked
+  on every request by `SessionCheck` and on WebSocket ping-pong. Refresh
+  tokens are stored as SHA-256 hashes and replaced at each use; sessions end
+  after 12 hours without refresh or 14 days after login. The
+  `cluster/event/user-credentials-changed` event ends the sessions of a user.
 - **Authorization**: Action-based (not role-based) using `filepath.Match`
   wildcard patterns against the user's authorized actions list (from Redis).
   All GET requests bypass authorization checks.
@@ -81,6 +94,7 @@ GET  /api/2FA/qr-code                                  # generate QR code
 
 All via environment variables: `LISTEN_ADDRESS`, `REDIS_ADDRESS`, `REDIS_USER`,
 `REDIS_PASSWORD`, `SECRET` (JWT key), `STATIC_PATH`, `AUDIT_FILE`,
+`SESSIONS_FILE` (default `/var/lib/nethserver/api-server/sessions.db`),
 `SENSITIVE_LIST`, `ISSUER` (TOTP issuer name, default `NethServer`),
 `GLOBAL_RATE_LIMIT_AVERAGE` (per-IP requests/sec across all routes, default
 `25`; `0` disables), and `GLOBAL_RATE_LIMIT_BURST` (burst allowance, default
@@ -95,7 +109,8 @@ to disable the limiter.
 
 - Response envelopes use `structs.Map()` for struct-to-JSON conversion.
 - Redis keys follow `task/<entity>/<id>/<task-id>/{context,output,error,exit_code}` (e.g. `task/node/<node-id>/<task-id>/output`).
-- Audit events: `login-ok`, `auth-fail`, `create-task` stored in SQLite.
-- WebSocket sessions are validated on each ping-pong (JWT expiry check).
-- No unit tests in this package; testing is via integration tests in
-  `core/tests/`.
+- Audit events: `login-ok`, `auth-fail`, `create-task`, `join-token` stored in SQLite.
+- WebSocket sessions are validated on each ping-pong (JWT expiry and login
+  session check); clients send `authorize` again after a token refresh.
+- Unit tests only for `sessions/` (`go test -tags sqlite_omit_load_extension
+  ./sessions/`); other testing is via integration tests in `core/tests/`.
