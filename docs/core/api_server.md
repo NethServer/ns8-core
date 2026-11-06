@@ -39,7 +39,8 @@ Response, note the JWT token saved inside the `token` field:
 {
   "code": 200,
   "expire": "2022-02-01T13:54:50Z",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb25zIjpbXSwiZXhwIjoxNjQzNzIzNjkwLCJpZCI6ImFkbWluIiwib3JpZ19pYXQiOjE2NDMxMTg4OTAsInJvbGUiOiIifQ.BzzmleO6ln40DQUZr4FUyFTFEle6PkK-ar-vqwXJ5uo"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb25zIjpbXSwiZXhwIjoxNjQzNzIzNjkwLCJpZCI6ImFkbWluIiwib3JpZ19pYXQiOjE2NDMxMTg4OTAsInJvbGUiOiIifQ.BzzmleO6ln40DQUZr4FUyFTFEle6PkK-ar-vqwXJ5uo",
+  "refresh_token": "Zm9vYmFyLWV4YW1wbGUtcmVmcmVzaC10b2tlbg"
 }
 ```
 
@@ -72,6 +73,56 @@ Usage example:
 node/1/get-node-status
 ...
 ```
+
+## Sessions
+
+A login of an administrator starts a session. The access token returned
+in the `token` field expires after 15 minutes. Before it expires, the
+client obtains a new access token with the `refresh_token`:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:9311/api/refresh' \
+  -H 'Content-Type: application/json' \
+  -d '{"refresh_token": "Zm9vYmFyLWV4YW1wbGUtcmVmcmVzaC10b2tlbg"}' | jq
+```
+
+The response has the same fields as the login response. The refresh
+token is replaced at each use: the previous one remains valid for 30
+seconds, then using it again ends the session. A session ends if it is
+not refreshed for 12 hours, and 14 days after login in any case.
+
+A session ends also when:
+
+- the client calls the `logout` API, with the access token and the
+  `refresh_token` field;
+- the user calls the `logout-others` API, which ends the other sessions
+  of the same user, for example after a password change;
+- an administrator changes the user password or resets the user 2FA with
+  the `cluster/alter-user` action, or removes the user with
+  `cluster/remove-user`. These actions publish the
+  `cluster/event/user-credentials-changed` event, with the `user` and
+  `not_before` (Unix timestamp) attributes: sessions started before
+  `not_before` end.
+
+A token of an ended session is rejected with HTTP 401, also before its
+expiration time. The WebSocket closes the connection of an ended session.
+After refreshing the access token, a WebSocket client sends the
+`authorize` action again with the new token, otherwise the connection is
+closed when the previous token expires.
+
+The agents of cluster, nodes and modules have no session: their tokens
+expire after 14 days and they log in again when needed.
+
+The join code of a new node carries a token returned by the
+`cluster/join-token` API. It can only run the `add-node` and
+`list-actions` actions of the cluster agent and read their status. It
+expires after one hour.
+
+Sessions are stored in a SQLite database, path from the `SESSIONS_FILE`
+variable, default `/var/lib/nethserver/api-server/sessions.db`. It is
+local to the leader node and it is not replicated: after a leader change
+administrators must log in again.
 
 ## Network access control
 
@@ -124,7 +175,7 @@ username: admin
 password:
 ```
 
-If authentication is successful the `login` subcommand stores a JWT token in `$XDG_RUNTIME_DIR/.api-cli.cache`. With such token the `run` subcommand sends API calls to `api-server`. To destroy the token run
+If authentication is successful the `login` subcommand stores a JWT token in `$XDG_RUNTIME_DIR/.api-cli.cache`. The token of an administrator expires after 15 minutes: run `login` again when needed. With such token the `run` subcommand sends API calls to `api-server`. To destroy the token run
 ```
 api-cli logout
 ```
