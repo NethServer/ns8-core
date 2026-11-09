@@ -260,6 +260,13 @@ the following way:
 
 3. grant `authmod2` role `roley` on any existing instance of module `coolmod`.
 
+To request more than one role on the same agent, write the agent selector
+once and separate the roles with a comma, without spaces. For instance
+
+    org.nethserver.authorizations = node:fwadm,portsadm
+
+If the agent selector is repeated (no matter its `@suffix` qualifier), the initial values are ignored and the last value is assigned. For example, a label like `node:fwadm node:portsadm`, is equal to `node:portsadm`.
+
 Other possible *agent selector* values:
 
 - `self` - selects the module itself. Note that the module instance is

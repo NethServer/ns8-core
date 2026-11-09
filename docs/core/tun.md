@@ -18,6 +18,10 @@ be authorized to use it, by adding `node:tunadm` to the module image label
 
        org.nethserver.authorizations=node:tunadm
 
+If the label already has a `node:` value, append the role to it with a
+comma, for example `node:tunadm,portsadm`. See [Roles and
+authorizations](../agents/#roles-and-authorizations).
+
 Please note that for backward compatibility with core 3.16 the _tunadm_
 authorization includes also the [_fwadm_](../firewall) one.
 
