@@ -265,11 +265,7 @@ once and separate the roles with a comma, without spaces. For instance
 
     org.nethserver.authorizations = node:fwadm,portsadm
 
-Do not repeat the same agent selector, like `node:fwadm node:portsadm`.
-Roles are not merged: each value overwrites the roles granted by a
-previous value that resolves to the same agent, so the module ends up with
-only one of them. The same happens with different selectors that resolve
-to the same agent, for example `traefik@node` and `traefik@any`.
+If the agent selector is repeated (no matter its `@suffix` qualifier), the initial values are ignored and the last value is assigned. For example, a label like `node:fwadm node:portsadm`, is equal to `node:portsadm`.
 
 Other possible *agent selector* values:
 
