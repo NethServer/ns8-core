@@ -129,36 +129,41 @@
             </span>
           </div>
         </div>
-        <div class="key-value-setting">
-          <div>
-            <span class="label">
-              {{ $t("software_center.execution_mode_label") }}
-            </span>
-            <span class="value">
-              <template v-if="app.rootfull">
-                <strong>{{ $t("software_center.rootfull_title") }}</strong>
-                <div>{{ $t("software_center.rootfull_description") }}</div>
-              </template>
-              <template v-else>
-                <strong>{{ $t("software_center.rootless_title") }}</strong>
-                <div>{{ $t("software_center.rootless_description") }}</div>
-              </template>
-            </span>
-          </div>
-        </div>
         <div v-if="appPermissions.length" class="key-value-setting">
           <div>
             <span class="label">
               {{ $t("software_center.permissions_label") }}
             </span>
             <span class="value">
-              <ul class="permission-list unordered-list">
-                <li v-for="perm in appPermissions" :key="perm.raw">
-                  <div>{{ perm.description }}</div>
-                  <div v-if="perm.scopeText">{{ perm.scopeText }}</div>
-                  <code class="permission-raw">{{ perm.raw }}</code>
-                </li>
-              </ul>
+              <cv-structured-list condensed class="permission-list">
+                <template slot="headings">
+                  <cv-structured-list-heading>{{
+                    $t("software_center.permission_description")
+                  }}</cv-structured-list-heading>
+                  <cv-structured-list-heading>{{
+                    $t("software_center.permission_target")
+                  }}</cv-structured-list-heading>
+                  <cv-structured-list-heading>{{
+                    $t("software_center.permission_label")
+                  }}</cv-structured-list-heading>
+                </template>
+                <template slot="items">
+                  <cv-structured-list-item
+                    v-for="perm in appPermissions"
+                    :key="perm.raw"
+                  >
+                    <cv-structured-list-data>{{
+                      perm.description
+                    }}</cv-structured-list-data>
+                    <cv-structured-list-data>{{
+                      perm.target
+                    }}</cv-structured-list-data>
+                    <cv-structured-list-data>
+                      <code class="permission-raw">{{ perm.raw }}</code>
+                    </cv-structured-list-data>
+                  </cv-structured-list-item>
+                </template>
+              </cv-structured-list>
             </span>
           </div>
         </div>
@@ -235,12 +240,24 @@ export default {
       }
     },
     appPermissions() {
-      if (!this.app || !this.app.versions.length) {
+      if (!this.app) {
         return [];
+      }
+      const permissions = [];
+
+      // a rootfull app is not limited by its roles, so this goes first
+      if (this.app.rootfull) {
+        permissions.push({
+          raw: "rootfull",
+          description: this.$t("software_center.app_permission_rootfull"),
+          target: this.$t("software_center.app_permission_targets.node"),
+        });
+      }
+      if (!this.app.versions.length) {
+        return permissions;
       }
       const label =
         this.app.versions[0]["labels"]["org.nethserver.authorizations"] || "";
-      const permissions = [];
 
       for (const entry of label.trim().split(/\s+/)) {
         const sep = entry.indexOf(":");
@@ -289,14 +306,16 @@ export default {
         });
       }
 
-      const scopeKey = `software_center.app_permission_scopes.${scope}`;
+      // plain "node" and "cluster" selectors have no scope, the module name is the target
+      const targetKey = scope
+        ? `software_center.app_permission_scopes.${scope}`
+        : `software_center.app_permission_targets.${module}`;
       return {
         raw: `${module}${scope ? "@" + scope : ""}:${role}`,
         description,
-        scopeText:
-          scope && this.$te(scopeKey)
-            ? this.$t(scopeKey, { module: moduleName })
-            : "",
+        target: this.$te(targetKey)
+          ? this.$t(targetKey, { module: moduleName })
+          : moduleName,
       };
     },
   },
@@ -340,11 +359,7 @@ export default {
 }
 
 .permission-list {
-  margin-left: $spacing-03;
-}
-
-.permission-list li {
-  margin-bottom: $spacing-03;
+  margin-bottom: 0;
 }
 
 .permission-raw {

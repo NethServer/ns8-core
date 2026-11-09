@@ -1196,12 +1196,11 @@
             "multimedia": "Multimedia"
         },
         "images_label": "Images",
-        "execution_mode_label": "Execution mode",
-        "rootless_title": "Runs rootless",
-        "rootless_description": "The application runs as a dedicated unprivileged user. It cannot change the system. It reaches other applications only through the permissions listed below.",
-        "rootfull_title": "Runs as root",
-        "rootfull_description": "The application runs with administrative privileges on the node. It has full access to the system and to the other applications, whatever permissions are listed below.",
         "permissions_label": "Permissions",
+        "permission_description": "Allowed actions",
+        "permission_target": "Scope",
+        "permission_label": "ID",
+        "app_permission_rootfull": "Unlimited access to the installation node",
         "app_permission_generic": "Role {role} on {module}",
         "app_permission_core_roles": {
             "reader": "Read the configuration and status of {module}"
@@ -1215,10 +1214,14 @@
             "nethvoice": "NethVoice",
             "nethvoice-proxy": "NethVoice proxy"
         },
+        "app_permission_targets": {
+            "node": "Installation node",
+            "cluster": "Cluster"
+        },
         "app_permission_scopes": {
-            "any": "Access {module} applications on any node",
-            "node": "Access the {module} application of the installation node",
-            "cluster": "Access the default {module} application of the cluster"
+            "any": "{module} on any node",
+            "node": "{module} on the installation node",
+            "cluster": "Default {module} of the cluster"
         },
         "app_permissions": {
             "node_reader": "Read the configuration and status of the node",
