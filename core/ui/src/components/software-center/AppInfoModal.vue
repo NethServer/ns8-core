@@ -158,9 +158,9 @@
                     <cv-structured-list-data>{{
                       perm.target
                     }}</cv-structured-list-data>
-                    <cv-structured-list-data>
-                      <code class="permission-raw">{{ perm.raw }}</code>
-                    </cv-structured-list-data>
+                    <cv-structured-list-data>{{
+                      perm.raw
+                    }}</cv-structured-list-data>
                   </cv-structured-list-item>
                 </template>
               </cv-structured-list>
@@ -374,10 +374,5 @@ export default {
 
 .permission-list {
   margin-bottom: 0;
-}
-
-.permission-raw {
-  font-size: 0.75rem;
-  color: $text-02;
 }
 </style>
