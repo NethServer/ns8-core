@@ -38,6 +38,10 @@ be authorized to use it, by adding `node:fwadm` to the module image label
 
        org.nethserver.authorizations=node:fwadm
 
+If the label already has a `node:` value, append the role to it with a
+comma, for example `node:fwadm,portsadm`. See [Roles and
+authorizations](../agents/#roles-and-authorizations).
+
 ### Managing Public Services
 
 The `agent` Python package provides functions to add and remove public services by opening specific ports in the firewall.
