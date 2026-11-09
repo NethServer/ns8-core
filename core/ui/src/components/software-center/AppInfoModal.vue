@@ -374,5 +374,6 @@ export default {
 
 .permission-list {
   margin-bottom: 0;
+  margin-left: $spacing-03;
 }
 </style>
