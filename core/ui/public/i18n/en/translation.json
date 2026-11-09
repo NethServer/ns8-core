@@ -1216,6 +1216,7 @@
         },
         "app_permission_targets": {
             "node": "Installation node",
+            "node_id": "Node {id}",
             "cluster": "Cluster"
         },
         "app_permission_scopes": {

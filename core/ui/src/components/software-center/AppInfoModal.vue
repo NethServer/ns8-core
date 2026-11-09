@@ -248,7 +248,7 @@ export default {
       // a rootfull app is not limited by its roles, so this goes first
       if (this.app.rootfull) {
         permissions.push({
-          raw: "rootfull",
+          raw: "org.nethserver.rootfull",
           description: this.$t("software_center.app_permission_rootfull"),
           target: this.$t("software_center.app_permission_targets.node"),
         });
@@ -258,6 +258,7 @@ export default {
       }
       const label =
         this.app.versions[0]["labels"]["org.nethserver.authorizations"] || "";
+      const seen = new Set();
 
       for (const entry of label.trim().split(/\s+/)) {
         const sep = entry.indexOf(":");
@@ -269,12 +270,17 @@ export default {
         const module = at < 0 ? selector : selector.slice(0, at);
         const scope = at < 0 ? "" : selector.slice(at + 1);
 
+        // core grants self:selfadm to every app, it gives nothing on other components
+        if (module === "self") {
+          continue;
+        }
         for (const role of entry.slice(sep + 1).split(",")) {
-          // core grants self:selfadm to every app, it gives nothing on other components
-          if (!role || module == "self") {
+          const raw = `${selector}:${role}`;
+          if (!role || seen.has(raw)) {
             continue;
           }
-          permissions.push(this.describePermission(module, scope, role));
+          seen.add(raw);
+          permissions.push(this.describePermission(module, scope, role, raw));
         }
       }
       return permissions;
@@ -287,16 +293,21 @@ export default {
     getApplicationCategories(app) {
       return this.getAppCategories(app, this);
     },
-    describePermission(module, scope, role) {
+    describePermission(module, scope, role, raw) {
+      // a bare number selects a node by its ID, like "1:fwadm"
+      const nodeId = !scope && /^\d+$/.test(module) ? module : "";
+      const agentType = nodeId ? "node" : module;
+      // without a scope, only node and cluster resolve to an agent
+      const resolved = scope || agentType === "node" || agentType === "cluster";
       const moduleKey = `software_center.app_permission_modules.${module}`;
       const moduleName = this.$te(moduleKey) ? this.$t(moduleKey) : module;
-      const pairKey = `software_center.app_permissions.${module}_${role}`;
+      const pairKey = `software_center.app_permissions.${agentType}_${role}`;
       const coreRoleKey = `software_center.app_permission_core_roles.${role}`;
       let description;
 
-      if (this.$te(pairKey)) {
+      if (resolved && this.$te(pairKey)) {
         description = this.$t(pairKey);
-      } else if (this.$te(coreRoleKey)) {
+      } else if (resolved && this.$te(coreRoleKey)) {
         // roles like "reader" are created by core on every module
         description = this.$t(coreRoleKey, { module: moduleName });
       } else {
@@ -306,17 +317,20 @@ export default {
         });
       }
 
-      // plain "node" and "cluster" selectors have no scope, the module name is the target
-      const targetKey = scope
-        ? `software_center.app_permission_scopes.${scope}`
-        : `software_center.app_permission_targets.${module}`;
-      return {
-        raw: `${module}${scope ? "@" + scope : ""}:${role}`,
-        description,
-        target: this.$te(targetKey)
-          ? this.$t(targetKey, { module: moduleName })
-          : moduleName,
-      };
+      let target = moduleName;
+      if (nodeId) {
+        target = this.$t("software_center.app_permission_targets.node_id", {
+          id: nodeId,
+        });
+      } else {
+        const targetKey = scope
+          ? `software_center.app_permission_scopes.${scope}`
+          : `software_center.app_permission_targets.${module}`;
+        if (this.$te(targetKey)) {
+          target = this.$t(targetKey, { module: moduleName });
+        }
+      }
+      return { raw, description, target };
     },
   },
 };
