@@ -129,6 +129,39 @@
             </span>
           </div>
         </div>
+        <div class="key-value-setting">
+          <div>
+            <span class="label">
+              {{ $t("software_center.execution_mode_label") }}
+            </span>
+            <span class="value">
+              <template v-if="app.rootfull">
+                <strong>{{ $t("software_center.rootfull_title") }}</strong>
+                <div>{{ $t("software_center.rootfull_description") }}</div>
+              </template>
+              <template v-else>
+                <strong>{{ $t("software_center.rootless_title") }}</strong>
+                <div>{{ $t("software_center.rootless_description") }}</div>
+              </template>
+            </span>
+          </div>
+        </div>
+        <div v-if="appPermissions.length" class="key-value-setting">
+          <div>
+            <span class="label">
+              {{ $t("software_center.permissions_label") }}
+            </span>
+            <span class="value">
+              <ul class="permission-list unordered-list">
+                <li v-for="perm in appPermissions" :key="perm.raw">
+                  <div>{{ perm.description }}</div>
+                  <div v-if="perm.scopeText">{{ perm.scopeText }}</div>
+                  <code class="permission-raw">{{ perm.raw }}</code>
+                </li>
+              </ul>
+            </span>
+          </div>
+        </div>
         <div class="info-divider"></div>
         <div class="key-value-setting">
           <div>
@@ -201,6 +234,34 @@ export default {
         return [];
       }
     },
+    appPermissions() {
+      if (!this.app || !this.app.versions.length) {
+        return [];
+      }
+      const label =
+        this.app.versions[0]["labels"]["org.nethserver.authorizations"] || "";
+      const permissions = [];
+
+      for (const entry of label.trim().split(/\s+/)) {
+        const sep = entry.indexOf(":");
+        if (sep < 1) {
+          continue;
+        }
+        const selector = entry.slice(0, sep);
+        const at = selector.indexOf("@");
+        const module = at < 0 ? selector : selector.slice(0, at);
+        const scope = at < 0 ? "" : selector.slice(at + 1);
+
+        for (const role of entry.slice(sep + 1).split(",")) {
+          // core grants self:selfadm to every app, it gives nothing on other components
+          if (!role || module == "self") {
+            continue;
+          }
+          permissions.push(this.describePermission(module, scope, role));
+        }
+      }
+      return permissions;
+    },
   },
   methods: {
     getApplicationDescription(app) {
@@ -208,6 +269,35 @@ export default {
     },
     getApplicationCategories(app) {
       return this.getAppCategories(app, this);
+    },
+    describePermission(module, scope, role) {
+      const moduleKey = `software_center.app_permission_modules.${module}`;
+      const moduleName = this.$te(moduleKey) ? this.$t(moduleKey) : module;
+      const pairKey = `software_center.app_permissions.${module}_${role}`;
+      const coreRoleKey = `software_center.app_permission_core_roles.${role}`;
+      let description;
+
+      if (this.$te(pairKey)) {
+        description = this.$t(pairKey);
+      } else if (this.$te(coreRoleKey)) {
+        // roles like "reader" are created by core on every module
+        description = this.$t(coreRoleKey, { module: moduleName });
+      } else {
+        description = this.$t("software_center.app_permission_generic", {
+          role,
+          module: moduleName,
+        });
+      }
+
+      const scopeKey = `software_center.app_permission_scopes.${scope}`;
+      return {
+        raw: `${module}${scope ? "@" + scope : ""}:${role}`,
+        description,
+        scopeText:
+          scope && this.$te(scopeKey)
+            ? this.$t(scopeKey, { module: moduleName })
+            : "",
+      };
     },
   },
 };
@@ -247,5 +337,18 @@ export default {
 
 .image-list {
   margin-left: $spacing-03;
+}
+
+.permission-list {
+  margin-left: $spacing-03;
+}
+
+.permission-list li {
+  margin-bottom: $spacing-03;
+}
+
+.permission-raw {
+  font-size: 0.75rem;
+  color: $text-02;
 }
 </style>

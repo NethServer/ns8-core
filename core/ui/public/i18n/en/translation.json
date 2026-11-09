@@ -1196,6 +1196,49 @@
             "multimedia": "Multimedia"
         },
         "images_label": "Images",
+        "execution_mode_label": "Execution mode",
+        "rootless_title": "Runs rootless",
+        "rootless_description": "The application runs as a dedicated unprivileged user. It cannot change the system. It reaches other applications only through the permissions listed below.",
+        "rootfull_title": "Runs as root",
+        "rootfull_description": "The application runs with administrative privileges on the node. It has full access to the system and to the other applications, whatever permissions are listed below.",
+        "permissions_label": "Permissions",
+        "app_permission_generic": "Role {role} on {module}",
+        "app_permission_core_roles": {
+            "reader": "Read the configuration and status of {module}"
+        },
+        "app_permission_modules": {
+            "mail": "Mail",
+            "traefik": "Traefik",
+            "openldap": "OpenLDAP",
+            "samba": "Samba",
+            "ldapproxy": "LDAP proxy",
+            "nethvoice": "NethVoice",
+            "nethvoice-proxy": "NethVoice proxy"
+        },
+        "app_permission_scopes": {
+            "any": "Access {module} applications on any node",
+            "node": "Access the {module} application of the installation node",
+            "cluster": "Access the default {module} application of the cluster"
+        },
+        "app_permissions": {
+            "node_reader": "Read the configuration and status of the node",
+            "node_fwadm": "Open ports and change the firewall of the node",
+            "node_portsadm": "Reserve extra network ports on the node",
+            "node_tunadm": "Create network tunnels and change the firewall of the node",
+            "cluster_reader": "Read the configuration and status of the cluster",
+            "cluster_accountconsumer": "Connect to a user domain to read users and groups",
+            "cluster_accountprovider": "Act as a user domain provider for the cluster",
+            "traefik_routeadm": "Publish and remove web routes",
+            "traefik_certadm": "Request and manage TLS certificates",
+            "traefik_fulladm": "Full control of web routes and TLS certificates",
+            "mail_mailadm": "Unlimited access to mail messages and configuration",
+            "openldap_domadm": "Create, change and delete users and groups",
+            "samba_domadm": "Create, change and delete users and groups",
+            "ldapproxy_accountprovider": "Publish a user domain through the LDAP proxy",
+            "nethvoice-proxy_routeadm": "Manage SIP routes of the voice proxy",
+            "nethvoice-proxy_trunkadm": "Manage SIP trunks of the voice proxy",
+            "nethvoice_pbookreader": "Read the phonebook database credentials"
+        },
         "rootfull_app_warning_title": "Administrative privileges",
         "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks.",
         "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
