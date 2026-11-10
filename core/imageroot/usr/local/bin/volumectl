@@ -8,13 +8,20 @@
 
 import sys
 import os
+import pwd
+import json
+import time
+import fcntl
+import signal
 import argparse
+import subprocess
 import agent
 from configparser import ConfigParser
 from pathlib import Path
 from agent import volumes
 
 VOLUMES_CONF = Path("/etc/nethserver/volumes.conf")
+RSYNC_ARGS = ["rsync", "-aHAXS", "--numeric-ids", "--delete", "--info=progress2"]
 
 
 def save_config(config: ConfigParser):
@@ -100,6 +107,325 @@ def cmd_remove_volume(args):
         sys.exit(2)
 
 
+class MoveVolumeError(Exception):
+    pass
+
+
+def _log(*args):
+    print("move-volume:", *args, file=sys.stderr, flush=True)
+
+
+def _get_default_disk_path() -> str:
+    """Return the mountpoint of the disk where applications are installed,
+    like the list-mountpoints node action does."""
+    proc = subprocess.run(["findmnt", "--json", "--output=target", "--target", os.getenv("HOME_BASEDIR", "/home")],
+        stdout=subprocess.PIPE, check=True)
+    return json.loads(proc.stdout)["filesystems"][0]["target"]
+
+
+def _disk_usage(path: Path) -> int:
+    if not path.exists():
+        return 0
+    proc = subprocess.run(["du", "-s", "-x", "--block-size=1", str(path)], stdout=subprocess.PIPE, text=True)
+    try:
+        return int(proc.stdout.split()[0])
+    except (IndexError, ValueError):
+        return 0
+
+
+class VolumeMove:
+    """Move the data of a rootless module volume to another base path.
+
+    The sync() step copies the data while the module is running. The
+    finalize() step stops the module user session, copies the last
+    changes, recreates the volume at the new location and starts the
+    session again. Old data is removed in background."""
+
+    def __init__(self, volume_name, module_id, target):
+        self.vol = volume_name
+        self.mid = module_id
+        if os.path.isdir(f"/var/lib/nethserver/{module_id}"):
+            raise MoveVolumeError(f"{module_id} is a rootfull module: only volumes of rootless modules can be moved")
+        try:
+            self.pw = pwd.getpwnam(module_id)
+        except KeyError:
+            raise MoveVolumeError(f"module {module_id} not found in the local node")
+        self.home = Path(self.pw.pw_dir)
+        if not (self.home / ".config/state/environment").is_file():
+            raise MoveVolumeError(f"{module_id} is not a module")
+        self.uid = self.pw.pw_uid
+        self.gid = self.pw.pw_gid
+        self.rundir = Path(f"/run/user/{self.uid}")
+        self.offline = False # True when the user session is stopped by us
+        self.default_path = _get_default_disk_path()
+        target = target.rstrip("/") or "/"
+        valid_targets = [bp["path"] for bp in volumes.get_base_paths()] + [self.default_path]
+        if target not in valid_targets:
+            raise MoveVolumeError(f"invalid target {target}. Must be one of {{ {', '.join(valid_targets)} }}")
+        self.target = target
+        if not self.session_is_active():
+            raise MoveVolumeError(f"the user session of {module_id} is not running. Start it with: systemctl start user@{self.uid}.service")
+        self.src, self.src_is_bind = self.inspect_volume()
+        if self.src_is_bind:
+            # Bind volumes are created as BASEPATH/MODULE_ID/VOLUME/_data
+            if self.src.parts[-3:] != (self.mid, self.vol, "_data") or len(self.src.parts) < 5:
+                raise MoveVolumeError(f"volume {self.vol} of {self.mid} is bound to {self.src}: expected path BASEPATH/{self.mid}/{self.vol}/_data")
+            current = str(self.src.parents[2])
+        else:
+            current = self.default_path
+        if current == self.target:
+            raise MoveVolumeError(f"volume {self.vol} of {self.mid} is already at {self.target}")
+        if self.target == self.default_path:
+            self.dst = self.home / ".local/share/volumectl-staging" / self.vol / "_data"
+        else:
+            self.dst = Path(self.target) / self.mid / self.vol / "_data"
+
+    def session_is_active(self):
+        return subprocess.run(["systemctl", "-q", "is-active", f"user@{self.uid}.service"]).returncode == 0
+
+    def podman(self, *args, check=True, stderr=None):
+        """Run rootless Podman for the module. When the user session is
+        stopped, run it with runuser, without PAM session: a login
+        shell (runuser -l) would start the user session again."""
+        if self.offline:
+            # The command is looked up in env["PATH"], too
+            cmd = ["runuser", "-u", self.mid, "--", "podman", "--cgroup-manager=cgroupfs", *args]
+            env = {
+                "HOME": str(self.home),
+                "USER": self.mid,
+                "LOGNAME": self.mid,
+                # The Podman database records the run root path: it
+                # must be the usual one, under XDG_RUNTIME_DIR
+                "XDG_RUNTIME_DIR": str(self.rundir),
+                "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            }
+            return subprocess.run(cmd, env=env, cwd=self.home, stdout=subprocess.PIPE, stderr=stderr, text=True, check=check)
+        else:
+            cmd = ["runagent", "-m", self.mid, "podman", *args]
+            return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=stderr, text=True, check=check)
+
+    def inspect_volume(self):
+        proc = self.podman("volume", "inspect", self.vol, check=False, stderr=subprocess.DEVNULL)
+        if proc.returncode != 0:
+            raise MoveVolumeError(f"volume {self.vol} of {self.mid} not found")
+        ovol = json.loads(proc.stdout)[0]
+        device = (ovol.get("Options") or {}).get("device")
+        if device:
+            return Path(device), True
+        return Path(ovol["Mountpoint"]), False
+
+    def check_space(self):
+        if self.dst.is_dir():
+            needed = _disk_usage(self.src) - _disk_usage(self.dst)
+            fspath = self.dst
+        else:
+            needed = _disk_usage(self.src)
+            fspath = Path(self.target) if self.target != self.default_path else self.home
+        st = os.statvfs(fspath)
+        available = st.f_bavail * st.f_frsize
+        if needed > available:
+            raise MoveVolumeError(f"not enough free space at {self.target}: needed {_human_readable(needed)}, available {_human_readable(available)}")
+
+    def prepare_destination(self):
+        if self.target == self.default_path:
+            staging_root = self.dst.parents[1]
+            if not staging_root.is_dir():
+                staging_root.mkdir(mode=0o700)
+                os.chown(staging_root, self.uid, self.gid)
+        else:
+            # Like the add-module node action does:
+            module_dir = self.dst.parents[1]
+            if not module_dir.is_dir():
+                module_dir.mkdir(mode=0o700)
+                os.chown(module_dir, self.uid, self.gid)
+        for xdir in [self.dst.parent, self.dst]:
+            if not xdir.is_dir():
+                xdir.mkdir(mode=0o755)
+                os.chown(xdir, self.uid, self.gid)
+
+    def rsync_image(self):
+        rsync_image = agent.read_envfile("/etc/nethserver/core.env")["RSYNC_IMAGE"]
+        if subprocess.run(["podman", "image", "exists", rsync_image]).returncode != 0:
+            subprocess.run(["podman", "pull", "-q", rsync_image], stdout=subprocess.DEVNULL, check=True)
+        return rsync_image
+
+    def rsync(self, final=False):
+        """Copy the volume data as root, preserving numeric ownership,
+        permissions, ACLs, extended attributes (SELinux labels too),
+        hard links and sparse files."""
+        _log(f"copying {self.src} to {self.dst}")
+        proc = subprocess.run(["podman", "run", "--rm", "--network=none", "--userns=host",
+            "--security-opt=label=disable",
+            f"--volume={self.src}:/srv/src:ro", f"--volume={self.dst}:/srv/dst",
+            self.rsync_image(), *RSYNC_ARGS, "/srv/src/", "/srv/dst/"])
+        if proc.returncode == 24 and not final:
+            _log("some files vanished during the copy: run the sync again")
+        elif proc.returncode != 0:
+            raise MoveVolumeError(f"rsync failed with exit code {proc.returncode}")
+
+    def agent_busy_pids(self):
+        proc = subprocess.run(["runagent", "-m", self.mid, "systemctl", "--user", "show", "agent.service",
+            "-p", "ControlGroup", "-p", "MainPID"], stdout=subprocess.PIPE, text=True, check=True)
+        props = dict(line.split("=", 1) for line in proc.stdout.splitlines() if "=" in line)
+        if not props.get("ControlGroup"):
+            return []
+        try:
+            with open(f"/sys/fs/cgroup{props['ControlGroup']}/cgroup.procs") as fprocs:
+                pids = fprocs.read().split()
+        except FileNotFoundError:
+            return []
+        return [pid for pid in pids if pid != props.get("MainPID")]
+
+    def stop_session(self):
+        _log(f"stopping the user session of {self.mid}")
+        self.offline = True
+        subprocess.run(["systemctl", "stop", f"user@{self.uid}.service", f"user-runtime-dir@{self.uid}.service"], check=True)
+        self.cleanup_runtime()
+        self.rundir.mkdir(mode=0o700)
+        os.chown(self.rundir, self.uid, self.gid)
+
+    def cleanup_runtime(self):
+        """Remove the runtime state of rootless Podman, as if the node was
+        rebooted: the next Podman run refreshes its state from scratch."""
+        subprocess.run(["pkill", "-KILL", "-U", str(self.uid)])
+        for _ in range(50):
+            if subprocess.run(["pgrep", "-U", str(self.uid)], stdout=subprocess.DEVNULL).returncode != 0:
+                break
+            time.sleep(0.1)
+        if os.path.ismount(self.rundir):
+            raise MoveVolumeError(f"{self.rundir} is still mounted")
+        subprocess.run(["rm", "-rf", str(self.rundir), f"/dev/shm/libpod_rootless_lock_{self.uid}"], check=True)
+
+    def start_session(self):
+        _log(f"starting the user session of {self.mid}")
+        self.cleanup_runtime()
+        self.offline = False
+        subprocess.run(["systemctl", "start", f"user@{self.uid}.service"], check=True)
+
+    def recreate_volume(self):
+        # Remove also stopped containers that still refer to the volume:
+        # application containers are recreated when services start
+        self.podman("volume", "rm", "--force", self.vol)
+        self.stage = "removed"
+        if self.target == self.default_path:
+            self.podman("volume", "create", self.vol)
+            self.stage = "created"
+            mountpoint = Path(json.loads(self.podman("volume", "inspect", self.vol).stdout)[0]["Mountpoint"])
+            mountpoint.rmdir() # empty _data dir
+            os.rename(self.dst, mountpoint)
+            for xdir in [self.dst.parent, self.dst.parents[1]]:
+                try:
+                    xdir.rmdir()
+                except OSError:
+                    pass
+        else:
+            self.podman("volume", "create", f"--opt=device={self.dst}", "--opt=type=bind", self.vol)
+            self.stage = "created"
+
+    def restore_volume(self, trash):
+        """Put the original volume back, after a failure."""
+        if self.stage in ["removed", "created"]:
+            # Drop the new volume, if any, and define the original one again
+            self.podman("volume", "rm", "--force", self.vol, check=False, stderr=subprocess.DEVNULL)
+            if self.src_is_bind:
+                self.podman("volume", "create", f"--opt=device={self.src}", "--opt=type=bind", self.vol)
+            else:
+                self.podman("volume", "create", self.vol)
+                self.src.rmdir() # empty _data dir
+        self.src.parent.mkdir(parents=True, exist_ok=True)
+        os.rename(trash, self.src)
+        try:
+            trash.parent.rmdir()
+        except OSError:
+            pass
+
+    def remove_in_background(self, trash):
+        """Remove the old data without delaying the application start. The
+        trash dir is under the module home or base path, so remove-module
+        cleans it up too."""
+        unit = f"volumectl-trash-{self.mid}-{self.vol}-{int(time.time())}"
+        # Note: "$$" escapes "$" from systemd-run variable expansion
+        subprocess.run(["systemd-run", "-q", "--collect", f"--unit={unit}", "nice", "ionice", "-c3",
+            "sh", "-c", 'rm -rf "$$1" && rmdir --ignore-fail-on-non-empty "$$2"', "-", str(trash), str(trash.parent)], check=True)
+        _log(f"removing old data {trash} in background. See: journalctl -u {unit}")
+
+    def sync(self):
+        self.check_space()
+        self.prepare_destination()
+        self.rsync()
+        _log(f"run the command without --sync to finalize the move of {self.vol}")
+
+    def finalize(self, force=False):
+        self.check_space()
+        self.prepare_destination()
+        self.rsync_image() # pull it now, to keep downtime short
+        busy = self.agent_busy_pids()
+        if busy and not force:
+            raise MoveVolumeError(f"the agent of {self.mid} is running a task (PIDs {' '.join(busy)}). Retry later, or use --force to stop it anyway")
+        elif busy:
+            _log(f"WARNING: stopping the agent of {self.mid} while it is running a task (PIDs {' '.join(busy)})")
+        if self.src_is_bind:
+            trash = self.src.parents[1] / ".volumectl-trash" / f"{self.vol}.{int(time.time())}"
+        else:
+            trash = self.home / ".local/share/volumectl-trash" / f"{self.vol}.{int(time.time())}"
+        tstart = time.monotonic()
+        self.stage = "started"
+        try:
+            self.stop_session()
+            # Check rootless Podman works without the user session,
+            # before touching the volume
+            self.podman("volume", "inspect", self.vol)
+            self.rsync(final=True)
+            # Move the old data aside: it is instant, on the same filesystem
+            trash.parent.mkdir(mode=0o700, exist_ok=True)
+            os.rename(self.src, trash)
+            self.stage = "moved"
+            if self.src_is_bind:
+                self.src.parent.rmdir()
+            self.recreate_volume()
+        except BaseException as ex:
+            signal.signal(signal.SIGINT, signal.SIG_IGN)
+            if self.stage != "started":
+                _log(f"restoring the original volume after error: {ex!r}")
+                try:
+                    self.restore_volume(trash)
+                except BaseException as rex:
+                    _log(f"ERROR: cannot restore the original volume: {rex!r}")
+                    _log(f"ERROR: the original data is in {trash}. Move it back to {self.src} and check the volume with: runagent -m {self.mid} podman volume inspect {self.vol}")
+            raise
+        finally:
+            signal.signal(signal.SIGINT, signal.SIG_IGN)
+            if self.offline:
+                self.start_session()
+            signal.signal(signal.SIGINT, signal.default_int_handler)
+        _log(f"volume {self.vol} of {self.mid} moved to {self.target}. Downtime {time.monotonic() - tstart:.1f}s")
+        self.remove_in_background(trash)
+
+
+def cmd_move_volume(args):
+    lockfile = open(f"/run/lock/volumectl-move-{args.for_app}.lock", "w")
+    try:
+        fcntl.flock(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        print(f"move-volume error: another move-volume of {args.for_app} is running", file=sys.stderr)
+        sys.exit(2)
+    try:
+        move = VolumeMove(args.volume_name, args.for_app, args.target)
+        if args.sync:
+            move.sync()
+        else:
+            move.finalize(force=args.force)
+    except MoveVolumeError as ex:
+        print(f"move-volume error: {ex}", file=sys.stderr)
+        sys.exit(2)
+    except subprocess.CalledProcessError as ex:
+        print(f"move-volume error: command failed with exit code {ex.returncode}: {' '.join(ex.cmd)}", file=sys.stderr)
+        sys.exit(1)
+    except OSError as ex:
+        print(f"move-volume error: {ex}", file=sys.stderr)
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="volumectl",
@@ -130,6 +456,22 @@ def main():
     p_remove.add_argument("--for", dest="for_app", required=True, help="Application type (e.g. samba)")
     p_remove.add_argument("volume_name", help="Name of the volume (e.g. shares)")
     p_remove.set_defaults(func=cmd_remove_volume)
+
+    # move-volume
+    p_move = sub.add_parser("move-volume", help="Move the data of an application volume to another base path",
+        description="Move the data of a rootless application volume to another base path. "
+            "Run it with --sync to copy the data while the application is running, as many times as needed. "
+            "Run it without --sync to finalize: the application is stopped, the last changes are copied, "
+            "the volume is recreated at the new location and the application is started again.")
+    p_move.add_argument("volume_name", help="Name of the volume (e.g. dovecot-data)")
+    p_move.add_argument("--for", dest="for_app", required=True, help="Application instance (e.g. mail1)")
+    p_move.add_argument("--target", required=True,
+        help="Base path from list-base-paths, or the default disk mountpoint (e.g. /) to move the volume back")
+    p_move.add_argument("--sync", action="store_true",
+        help="Only copy the data, without stopping the application")
+    p_move.add_argument("--force", action="store_true",
+        help="Finalize even if the application agent is running a task: the task is interrupted")
+    p_move.set_defaults(func=cmd_move_volume)
 
     args = parser.parse_args()
     args.func(args)

@@ -32,7 +32,7 @@ _volumectl_complete()
     fi
 
     if [[ $COMP_CWORD -eq 1 ]]; then
-        COMPREPLY=( $(compgen -W "list-base-paths add-volume remove-volume" -- "$cur") )
+        COMPREPLY=( $(compgen -W "list-base-paths add-volume remove-volume move-volume" -- "$cur") )
         return
     fi
 
@@ -61,6 +61,33 @@ _volumectl_complete()
                 *)
                     # Suggest volume names from config, plus ALL
                     COMPREPLY=( $(compgen -W "${volumes[*]} --for" -- "$cur") )
+                    ;;
+            esac
+            ;;
+        move-volume)
+            case "$prev" in
+                --target)
+                    local default_path
+                    default_path=$(findmnt -n -o TARGET --target "${HOME_BASEDIR:-/home}" 2>/dev/null)
+                    COMPREPLY=( $(compgen -W "${paths[*]} ${default_path}" -- "$cur") )
+                    ;;
+                --for)
+                    # Rootless application instances of this node
+                    COMPREPLY=( $(compgen -W "$(ls /var/lib/systemd/linger 2>/dev/null)" -- "$cur") )
+                    ;;
+                *)
+                    # Volume names of the application given with --for
+                    local i mid=""
+                    for (( i=2; i < COMP_CWORD; i++ )); do
+                        if [[ ${COMP_WORDS[i]} == --for ]]; then
+                            mid=${COMP_WORDS[i+1]}
+                        fi
+                    done
+                    local modvolumes=""
+                    if [[ -n $mid ]]; then
+                        modvolumes=$(runagent -m "$mid" podman volume ls -q 2>/dev/null)
+                    fi
+                    COMPREPLY=( $(compgen -W "${modvolumes} --for --target --sync --force" -- "$cur") )
                     ;;
             esac
             ;;
