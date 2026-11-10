@@ -38,7 +38,7 @@ import (
 
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/NethServer/ns8-core/core/agent/validation"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) {
@@ -307,21 +307,26 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 	if redisAddress == "" {
 		redisAddress = "127.0.0.1:6379"
 	}
-	rdb := redis.NewClient(&redis.Options{
-		Addr:            redisAddress,
-		Username:        redisUsername,
-		Password:        redisPassword,
-		DB:              0,
-		OnConnect:       setClientNameCallback,
-		MaxRetries:      10,
-		MinRetryBackoff: 100 * time.Millisecond,
-		MaxRetryBackoff: 5000 * time.Millisecond,
-	})
+	redisOptions := redis.Options{
+		Addr:             redisAddress,
+		Username:         redisUsername,
+		Password:         redisPassword,
+		DB:               0,
+		OnConnect:        setClientNameCallback,
+		Protocol:         2,  // RESP2, as go-redis v8: keep reply types unchanged
+		PipelinePoolSize: -1, // run pipelines on the main pool, as go-redis v8
+		MaxRetries:       10,
+		MinRetryBackoff:  100 * time.Millisecond,
+		MaxRetryBackoff:  5000 * time.Millisecond,
+	}
+	queueOptions := redisOptions // copy for the BRPOP client, see readTasks()
+	rdb := redis.NewClient(&redisOptions)
+	queueRdb := redis.NewClient(&queueOptions)
 
 	workersRegistry := NewWorkersLimiter(maxConcurrency, overloadSleep)
 	var tcMu sync.Mutex
 	taskCh := make(chan models.Task)
-	go readTasks(rdb, brpopCtx, taskCh)
+	go readTasks(queueRdb, rdb, brpopCtx, taskCh)
 MAINLOOP:
 	for {
 		select {
@@ -372,7 +377,15 @@ MAINLOOP:
 	}
 }
 
-func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task) {
+func readTasks(queueRdb *redis.Client, rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task) {
+	// go-redis v9 does not interrupt a blocking command when its context
+	// is canceled. Close the dedicated queue client instead: it aborts a
+	// pending BRPOP immediately, as go-redis v8 did on cancellation.
+	go func() {
+		<-brpopCtx.Done()
+		queueRdb.Close()
+	}()
+
 	// Ignore the credential error on agent startup
 	//
 	// Initialize to a well-known error condition, to avoid log pollution
@@ -384,7 +397,7 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 		var task models.Task
 
 		// Pop the task from the agent tasks queue
-		popResult, popErr := rdb.BRPop(brpopCtx, pollingDuration, agentPrefix+"/tasks").Result()
+		popResult, popErr := queueRdb.BRPop(brpopCtx, pollingDuration, agentPrefix+"/tasks").Result()
 		if popErr == redis.Nil {
 			// poll timeout, it's ok: start a new cycle
 			lastPopErr = nil // Clear the last error buffer
