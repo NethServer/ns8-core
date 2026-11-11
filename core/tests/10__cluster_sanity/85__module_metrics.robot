@@ -1,6 +1,9 @@
 *** Settings ***
 Library           SSHLibrary
-Suite Teardown    Remove the test command
+Suite Setup       Stop the metrics timer
+Suite Teardown    Run keywords
+...               Remove the test command    AND
+...               Start the metrics timer
 
 *** Variables ***
 ${MODULE}         traefik1
@@ -45,4 +48,16 @@ Get node metrics
 
 Remove the test command
     Execute Command    runagent -m ${MODULE} rm -f ../bin/export-metrics
-    Execute Command    runagent -m node refresh-module-metrics
+    Refresh module metrics
+
+Stop the metrics timer
+    # A timer run holds the lock: the test runs would exit without
+    # refreshing, and the timer run could publish old metrics
+    ${rc} =    Execute Command    systemctl stop refresh-module-metrics.timer refresh-module-metrics.service
+    ...    return_stdout=False    return_rc=True
+    Should Be Equal As Integers    ${rc}    0
+
+Start the metrics timer
+    ${rc} =    Execute Command    systemctl start refresh-module-metrics.timer
+    ...    return_stdout=False    return_rc=True
+    Should Be Equal As Integers    ${rc}    0
