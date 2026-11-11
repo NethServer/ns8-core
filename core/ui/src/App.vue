@@ -19,7 +19,6 @@
 import ShellHeader from "@/components/shell/ShellHeader";
 import SideMenu from "@/components/shell/SideMenu";
 import MobileSideMenu from "@/components/shell/MobileSideMenu";
-import axios from "axios";
 import WebSocketService from "@/mixins/websocket";
 import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
@@ -187,15 +186,39 @@ export default {
         }
       });
     },
+    isRetryableAgentRequest(error) {
+      return (
+        // The cluster agent may be temporarily unavailable while restarting.
+        error.config?.method?.toLowerCase() === "post" &&
+        error.response?.status == 404 &&
+        error.response?.data?.message === "client idle check failed" &&
+        error.config?.url?.endsWith("/cluster/tasks")
+      );
+    },
     configureAxiosInterceptors() {
       const context = this;
+      const maxAgentRestartRetries = 5;
 
       // response interceptor
-      axios.interceptors.response.use(
+      this.axios.interceptors.response.use(
         function (response) {
           return response;
         },
-        function (error) {
+        async function (error) {
+          if (context.isRetryableAgentRequest(error)) {
+            const retryConfig = error.config;
+            retryConfig.__agentRestartRetryCount =
+              (retryConfig.__agentRestartRetryCount || 0) + 1;
+
+            if (
+              retryConfig.__agentRestartRetryCount <=
+              maxAgentRestartRetries
+            ) {
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              return context.axios.request(retryConfig);
+            }
+          }
+
           console.error(error);
 
           // print specific error message, if available

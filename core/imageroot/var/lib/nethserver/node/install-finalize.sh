@@ -110,6 +110,7 @@ echo "Grant initial permissions:"
 runagent python3 <<'EOF'
 import agent
 import cluster.grants
+agent.set_env("FIRST_CONFIGURATION", "1")
 rdb = agent.redis_connect(privileged=True)
 cluster.grants.grant(rdb, action_clause="*",      to_clause="owner",  on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="list-*", to_clause="reader", on_clause='cluster')
