@@ -150,3 +150,6 @@ Top 5 modules by CPU usage over the last 5 minutes:
 ```
 topk(5, sum by (module) (rate(ns8_container_cpu_seconds_total[5m])))
 ```
+
+To be alerted when a module container stops, see [Container down
+alert]({{site.baseurl}}/modules/metrics#container-down-alert).
