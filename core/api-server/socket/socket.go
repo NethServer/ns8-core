@@ -25,6 +25,7 @@ package socket
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"syscall"
 	"time"
 
@@ -38,6 +39,13 @@ import (
 
 var socketConnection *melody.Melody
 var muClock *utils.MuClock
+
+// A session runs at most this many logcli processes: the UI runs 2
+const maxSessionLogcli = 4
+
+// childsLock guards the read-modify-write of the "childs" and "logcli"
+// session keys: logs requests update them from their own goroutines
+var childsLock sync.Mutex
 
 func Instance() *melody.Melody {
 	if socketConnection == nil {
@@ -78,15 +86,71 @@ func onPong(s *melody.Session) {
  * - Terminate any process spawned by the session
  */
 func onDisconnect(s *melody.Session) {
-	iChilds, keyExists := s.Get("childs")
-	if !keyExists {
-		return // nothing to do
-	}
-	for _, pid := range iChilds.([]int) {
+	for _, pid := range takeChilds(s) {
 		// negative pid terminates the whole process group (PG)
 		syscall.Kill(-pid, syscall.SIGTERM)
 	}
+}
+
+// acquireLogcli counts one more logcli process for the session. It returns
+// false when the session already runs maxSessionLogcli of them.
+func acquireLogcli(s *melody.Session) bool {
+	childsLock.Lock()
+	defer childsLock.Unlock()
+	iCount, _ := s.Get("logcli")
+	count, _ := iCount.(int)
+	if count >= maxSessionLogcli {
+		return false
+	}
+	s.Set("logcli", count+1)
+	return true
+}
+
+// releaseLogcli frees the slot of a logcli process that has ended
+func releaseLogcli(s *melody.Session) {
+	childsLock.Lock()
+	defer childsLock.Unlock()
+	iCount, _ := s.Get("logcli")
+	count, _ := iCount.(int)
+	if count > 0 {
+		s.Set("logcli", count-1)
+	}
+}
+
+// addChild stores the pid of a running process, so logs-stop and
+// onDisconnect can terminate it
+func addChild(s *melody.Session, pid int) {
+	childsLock.Lock()
+	defer childsLock.Unlock()
+	iChilds, _ := s.Get("childs")
+	aChilds, _ := iChilds.([]int)
+	s.Set("childs", append(aChilds, pid))
+}
+
+// removeChild forgets the pid of a process; it returns false if the pid
+// does not belong to the session
+func removeChild(s *melody.Session, pid int) bool {
+	childsLock.Lock()
+	defer childsLock.Unlock()
+	iChilds, _ := s.Get("childs")
+	aChilds, _ := iChilds.([]int)
+	for idx, xPid := range aChilds {
+		if xPid == pid {
+			s.Set("childs", append(aChilds[:idx], aChilds[idx+1:]...))
+			return true
+		}
+	}
+	return false
+}
+
+// takeChilds forgets and returns the pids of all the session processes
+func takeChilds(s *melody.Session) []int {
+	childsLock.Lock()
+	defer childsLock.Unlock()
+	iChilds, _ := s.Get("childs")
+	aChilds, _ := iChilds.([]int)
 	s.UnSet("childs")
+	return aChilds
 }
 
 func onMessage(s *melody.Session, msg []byte) {
