@@ -66,21 +66,12 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		if err != nil {
 			break
 		}
-		iChilds, keyExists := s.Get("childs")
-		if keyExists {
-			aChilds := iChilds.([]int)
-			for idx, xPid := range aChilds {
-				// If a match is found, the Pid belongs to the session and
-				// it can be terminated
-				if tPid == xPid {
-					// negative pid terminates the whole process group (PG)
-					syscall.Kill(-tPid, syscall.SIGTERM)
-					// update the session storage, removing the idx-element from the array
-					s.Set("childs", append(aChilds[:idx], aChilds[idx+1:]...))
-					writeSocketResponse(s, "logs-stop", gin.H{"id": logsAction.Id, "pid": logsAction.Pid, "message": "logs follow stopped"})
-					break
-				}
-			}
+		// If a match is found, the Pid belongs to the session and it can be
+		// terminated
+		if removeChild(s, tPid) {
+			// negative pid terminates the whole process group (PG)
+			syscall.Kill(-tPid, syscall.SIGTERM)
+			writeSocketResponse(s, "logs-stop", gin.H{"id": logsAction.Id, "pid": logsAction.Pid, "message": "logs follow stopped"})
 		}
 
 	case "logs-start":
@@ -96,6 +87,29 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// convert json string into struct
 		if errLogsAction := json.Unmarshal(jsonStr, &logsAction); errLogsAction != nil {
 			utils.LogError(errors.Wrap(errLogsAction, "[SOCKET] error in Logs action start json unmarshal"))
+		}
+
+		// s is nil for the local api-server-logs command: a socket session
+		// must have sent a valid authorize message
+		if s != nil && !validSessionFilter(s) {
+			refuseLogsStart(s, logsAction, "not authorized")
+			break
+		}
+
+		if s != nil && logsAction.Mode == "dump" {
+			lines, errLines := dumpLines(logsAction.Lines)
+			if errLines != nil {
+				refuseLogsStart(s, logsAction, errLines.Error())
+				break
+			}
+			logsAction.Lines = strconv.Itoa(lines)
+		}
+
+		// count the process before its goroutine starts: requests arriving
+		// together must not all pass the limit
+		if s != nil && (logsAction.Mode == "tail" || logsAction.Mode == "dump") && !acquireLogcli(s) {
+			refuseLogsStart(s, logsAction, "too many log requests running")
+			break
 		}
 
 		// filter logs params
@@ -161,6 +175,9 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 					defer func() {
 						writeSocketResponse(s, "logs-stop", gin.H{"id": logsAction.Id, "pid": "", "message": "logs follow stopped"})
 					}()
+					// runs first: the frontend may start a new stream as
+					// soon as it reads logs-stop
+					defer releaseLogcli(s)
 				}
 
 				// stdout and stderr share one pipe: what logcli writes about a
@@ -191,14 +208,14 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 				if s != nil {
 					// In a Melody session, store the command pid so it
 					// can be killed if connection is closed
-					var aChilds []int
-					iChilds, keyExists := s.Get("childs")
-					if keyExists {
-						aChilds = append(iChilds.([]int), cmd.Process.Pid)
-					} else {
-						aChilds = []int{cmd.Process.Pid}
+					addChild(s, cmd.Process.Pid)
+					// melody closes the session before onDisconnect runs:
+					// if the pid came too late for onDisconnect, the session
+					// is closed here and nobody else will stop the process
+					if s.IsClosed() {
+						// negative pid terminates the whole process group (PG)
+						syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
 					}
-					s.Set("childs", aChilds)
 					// send feedback for command received
 					writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": strconv.Itoa(cmd.Process.Pid), "message": ""})
 				}
@@ -221,6 +238,10 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 
 				// use Wait to avoid defunct process when killed
 				err = cmd.Wait()
+				if s != nil {
+					// the process is gone: its pid may be reused
+					removeChild(s, cmd.Process.Pid)
+				}
 				if err != nil {
 					// logs-stop kills the process: that exit is expected
 					if exitErr, isExitErr := err.(*exec.ExitError); isExitErr {
@@ -242,6 +263,11 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		if logsAction.Mode == "dump" {
 			go func() {
 				out, err := cmd.Output()
+				if s != nil {
+					// free the slot before answering: the frontend may
+					// start a new search as soon as it reads the answer
+					releaseLogcli(s)
+				}
 				if err != nil {
 					message := err.Error()
 					if exitErr, isExitErr := err.(*exec.ExitError); isExitErr && len(exitErr.Stderr) > 0 {
@@ -316,6 +342,27 @@ func writeLogsError(s *melody.Session, id string, message string) {
 	}
 
 	writeSocketResponse(s, "logs-start", gin.H{"id": id, "pid": "", "message": message})
+}
+
+// A refused logs-start answers like a failed query; a refused follow also
+// gets logs-stop, or the frontend stays in the follow state.
+func refuseLogsStart(s *melody.Session, logsAction models.LogsStartAction, message string) {
+	writeLogsError(s, logsAction.Id, message)
+	if logsAction.Mode == "tail" {
+		writeSocketResponse(s, "logs-stop", gin.H{"id": logsAction.Id, "pid": "", "message": "logs follow stopped"})
+	}
+}
+
+// The UI asks for at most 2000 lines (MAX_LINES_LIMIT): a larger dump from
+// the socket is lowered to it.
+const maxDumpLines = 2000
+
+func dumpLines(lines string) (int, error) {
+	n, err := strconv.Atoi(lines)
+	if err != nil || n < 1 {
+		return 0, errors.New("lines must be a number greater than 0")
+	}
+	return min(n, maxDumpLines), nil
 }
 
 // LogQL strings use Go escape rules: a raw backslash must be doubled.
