@@ -1,0 +1,21 @@
+name: Test module update hooks
+on:
+  pull_request:
+    paths:
+      - core/imageroot/usr/local/agent/actions/update-module/**
+      - core/tests/unit/test_update_module_hooks.py
+      - .github/workflows/test-update-module-hooks.yml
+  push:
+    paths:
+      - core/imageroot/usr/local/agent/actions/update-module/**
+      - core/tests/unit/test_update_module_hooks.py
+      - .github/workflows/test-update-module-hooks.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s core/tests/unit -v
+      - run: shellcheck core/imageroot/usr/local/agent/actions/update-module/50run_scriptdir

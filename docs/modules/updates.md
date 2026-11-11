@@ -37,6 +37,25 @@ printed. Example of a script that restarts a Systemd service,
 
 Make sure the `20restart` is executable, otherwise it is ignored.
 
+For a critical hook (for example, a required database migration), ship a
+non-executable regular file with the same path plus `.fatal`, such as
+`imageroot/update-module.d/20restart.fatal`. Its contents are ignored. If
+the hook fails, the runner returns its exit code and skips later hooks
+and action steps. Hooks without a marker keep the warning-only behavior.
+The marker does not make a missing or non-executable hook run.
+
+The core runner must support `.fatal` markers **before** the module update
+starts. Once this support is released, set the module's
+`org.nethserver.min-core` label to that release or later. Older runners
+ignore the marker. A new module action override alone cannot change the
+first update: the agent selects action steps before extracting the new
+module files. Use normal non-zero exit codes for critical failures;
+`agent.set_status()` only accepts `validation-failed`, which is intended
+for input validation rather than migration or startup errors.
+
+The runner does not undo a failed hook. Keep recovery data and leave
+consumers stopped when schema or service initialization fails.
+
 To update an instance from command line, use:
 
     update-module ghcr.io/nethserver/mymodule:1.0.0 mymodule1

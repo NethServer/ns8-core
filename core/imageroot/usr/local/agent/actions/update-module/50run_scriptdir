@@ -54,8 +54,16 @@ for script in "${AGENT_INSTALL_DIR}"/update-module.d/* ; do
 
     echo "Running ${script}..."
 
-    if ! command ${script} ; then
-        echo "${SD_WARNING}${script} has failed"
+    if command "${script}" ; then
+        continue
+    else
+        status=$?
+        echo "${SD_WARNING}${script} has failed (exit ${status})"
+        # Modules opt in per hook. Preserve warning-only behavior otherwise.
+        if [[ -f "${script}.fatal" ]]; then
+            echo "<3>Critical update hook failed; stopping update-module"
+            exit "${status}"
+        fi
     fi
 
 done
