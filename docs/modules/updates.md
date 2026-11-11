@@ -45,10 +45,16 @@ Multiple instances of the same module can be updated together:
 
     update-module ghcr.io/nethserver/mymodule:1.0.0 mymodule1 mymodule2
 
+Like `update-core`, an instance is updated only if the `module_url` tag
+is a semver version greater than the installed one. Instances already at
+the same or a greater version, or running an image without a semver tag
+(e.g. `latest`), are skipped with a warning. Non-semver tags, like
+`latest` or a branch name, require `--force`.
+
 If the given `module_url` is already present in the local Podman storage,
 no remote download occurs and the local image is used instead. During
-development this might be unwanted and to work around this behavior
-pass `--force`:
+development this might be unwanted. To work around both behaviors pass
+`--force`:
 
     update-module ghcr.io/nethserver/mymodule:1.0.0 mymodule1 --force
 

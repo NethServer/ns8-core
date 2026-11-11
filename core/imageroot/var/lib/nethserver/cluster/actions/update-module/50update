@@ -25,6 +25,7 @@ import agent
 import agent.tasks
 import sys, os
 import subprocess
+import semver
 import cluster.grants
 
 request = json.load(sys.stdin)
@@ -34,6 +35,34 @@ image_id = ''
 force = "force" in request and request["force"] is True
 
 rdb = agent.redis_connect(privileged=True)
+
+if not force:
+    # Like update-core, an instance is updated only if the module_url
+    # semver tag is greater than the installed one. A tag that is not
+    # semver requires the force flag.
+    try:
+        bver = semver.VersionInfo.parse(image_url.split(':')[-1])
+    except ValueError:
+        print(agent.SD_WARNING + f'New image has no semver tag: {image_url}', file=sys.stderr)
+        bver = semver.VersionInfo.parse('0.0.0') # Only a manually forced update can override this small value
+    update_instances = []
+    for module_id in instances:
+        current_url = rdb.hget(f'module/{module_id}/environment', 'IMAGE_URL') or ''
+        try:
+            aver = semver.VersionInfo.parse(current_url.split(':')[-1])
+        except ValueError:
+            print(agent.SD_WARNING + f'Instance {module_id} image has no semver tag: {current_url}', file=sys.stderr)
+            aver = semver.VersionInfo.parse('9999.9999.9999') # Only a manually forced update can override this big value
+        if aver >= bver:
+            print(agent.SD_WARNING + f'The new image {image_url} does not update instance {module_id} ({current_url}). Skipped.', file=sys.stderr)
+            continue
+        update_instances.append(module_id)
+    instances = update_instances
+
+if not instances:
+    print('No instance to update. Nothing to do.', file=sys.stderr)
+    json.dump({}, fp=sys.stdout)
+    sys.exit(0)
 
 # Modules sanity check: send a "list-actions" ping task and wait the result.
 # If any module fails abort the whole action.

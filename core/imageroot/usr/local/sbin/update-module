@@ -13,7 +13,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('module_url')
 parser.add_argument('instances', nargs='+')
-parser.add_argument('--force', help='force update even if module_url is already present locally', action='store_true')
+parser.add_argument('--force', help='force update even if module_url does not update the installed version, or is already present locally', action='store_true')
 parser.add_argument('--verbose', help='show update-module action stderr on success', action='store_true')
 args = parser.parse_args()
 
