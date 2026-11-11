@@ -1,0 +1,24 @@
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+[Unit]
+Description=Support tunnel client
+# Beta: stop together with the remote support session (don), whatever
+# stops it (action, expiry, RuntimeMaxSec)
+PartOf=support.service
+After=network-online.target support-tunnel-cleanup.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Configuration and credentials are read from the environment only
+EnvironmentFile=/var/lib/nethserver/support-tunnel/support.env
+UMask=0077
+ExecStart=/usr/local/bin/tunnel-client
+ExecStopPost=/usr/local/bin/tunnel-client --cleanup-only
+TimeoutStopSec=90
+Restart=no
+RuntimeMaxSec=7d
+SyslogIdentifier=support-tunnel
