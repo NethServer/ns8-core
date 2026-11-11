@@ -45,6 +45,13 @@ any command from it. For instance:
 mycommand && systemctl --user reload mymodule.service
 ```
 
+When the smarthost points to a Mail module of the cluster (its host,
+port 25, no credentials, no encryption), the cluster stores the module
+UUID. If the Mail module is moved or restored on another node, the
+cluster updates the smarthost host and fires `smarthost-changed` again.
+If the move or restore fails, the host goes back to the module that is
+left.
+
 ## Send mail from modules
 
 All agents have access to `ns8-sendmail`, a Python script that reads the SMTP smarthost configuration and sends an email. The script reads the email content from the standard input and sends it to the recipient addresses specified as one or more trailing arguments.

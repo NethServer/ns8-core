@@ -7,6 +7,7 @@
 
 import agent
 import agent.tasks
+import cluster.smarthost
 import os
 import sys
 import json
@@ -26,10 +27,18 @@ values = {
     "tls_verify": '1' if data['tls_verify'] else '0'
 }
 
-# Advertise the smarthost changes:
 rdb = agent.redis_connect(privileged=True)
+
+# Remember the Mail module by UUID: its ID and host change on move or restore
+mail_uuid = cluster.smarthost.find_mail_uuid(rdb, values)
+
+# Advertise the smarthost changes:
 trx = rdb.pipeline()
 trx.hset(agent_id + '/smarthost', mapping=values)
+if mail_uuid:
+    trx.hset(agent_id + '/smarthost', 'mail_uuid', mail_uuid)
+else:
+    trx.hdel(agent_id + '/smarthost', 'mail_uuid')
 trx.publish(agent_id + '/event/smarthost-changed', json.dumps({
     'key': agent_id + '/smarthost',
 }))
