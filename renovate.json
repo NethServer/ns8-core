@@ -38,12 +38,12 @@
     },
     {
       "customType": "regex",
-      "description": "Keep the Redis image of the test suites aligned with the one of build-image.sh: same depName, same Renovate PR",
+      "description": "Keep the Redis and Go images of the test suites aligned with the ones of build-image.sh: same depName, same Renovate PR",
       "fileMatch": [
         "(^|/)test-[^/]+\\.sh$"
       ],
       "matchStrings": [
-        "docker\\.io/library/(?<depName>redis):(?<currentValue>[-0-9a-zA-Z_.]+)"
+        "docker\\.io/library/(?<depName>redis|golang):(?<currentValue>[-0-9a-zA-Z_.]+)"
       ],
       "datasourceTemplate": "docker"
     }
