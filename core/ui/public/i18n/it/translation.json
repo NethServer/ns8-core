@@ -633,7 +633,7 @@
         "domain_summary": "Riepilogo",
         "install_provider": "Installa provider",
         "unconfigured_domains_or_providers_description": "È possibile riprendere la loro configurazione o eliminarli",
-        "installing_account_provider": "Installazione del dell'account provider, attendere...",
+        "installing_account_provider": "Installazione dell'account provider, attendere...",
         "ipaddress_avail_check_failed": "Indirizzo IP non disponibile",
         "ipaddress_private_check_failed": "Indirizzo IP non valido",
         "ipaddress_format": "Indirizzo IP non valido",
