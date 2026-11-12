@@ -8,9 +8,9 @@ on:
 jobs:
   test-agent:
     name: Test agent
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: bash test-agent.sh
         working-directory: core/agent
       - run: |
@@ -18,7 +18,7 @@ jobs:
           mkdir -p tstate
           podman volume export tstate | tar -C tstate -v -x -f -
         if: always()
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           overwrite: true
           name: test-agent
