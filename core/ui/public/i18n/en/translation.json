@@ -1238,7 +1238,6 @@
             "mail_mailadm": "Read all mailboxes and the mail configuration, change relay and always-BCC rules",
             "openldap_domadm": "Create, change and delete users and groups",
             "samba_domadm": "Create, change and delete users and groups",
-            "ldapproxy_accountprovider": "Publish a user domain through the LDAP proxy",
             "nethvoice-proxy_routeadm": "Manage SIP routes of the voice proxy",
             "nethvoice-proxy_trunkadm": "Manage SIP trunks of the voice proxy",
             "nethvoice_pbookreader": "Read the phonebook database credentials"
