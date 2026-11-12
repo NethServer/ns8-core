@@ -1235,7 +1235,7 @@
             "traefik_routeadm": "Publish and remove web routes",
             "traefik_certadm": "Request and manage TLS certificates",
             "traefik_fulladm": "Full control of web routes and TLS certificates",
-            "mail_mailadm": "Unlimited access to mail messages and configuration",
+            "mail_mailadm": "Read all mailboxes and the mail configuration, change relay and always-BCC rules",
             "openldap_domadm": "Create, change and delete users and groups",
             "samba_domadm": "Create, change and delete users and groups",
             "ldapproxy_accountprovider": "Publish a user domain through the LDAP proxy",
