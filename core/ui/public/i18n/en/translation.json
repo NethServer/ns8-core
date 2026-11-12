@@ -1220,7 +1220,7 @@
             "cluster": "Cluster"
         },
         "app_permission_scopes": {
-            "any": "{module} on any node",
+            "any": "Any {module}",
             "node": "{module} on the installation node",
             "cluster": "Default {module} of the cluster"
         },
