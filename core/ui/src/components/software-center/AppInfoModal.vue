@@ -390,9 +390,4 @@ export default {
   margin-top: $spacing-03;
   margin-left: $spacing-03;
 }
-
-// Carbon turns pagination white inside modals, keep it grey like the table rows
-.permission-tile ::v-deep .bx--pagination {
-  background-color: $ui-01;
-}
 </style>
