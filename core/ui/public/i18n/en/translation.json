@@ -1221,7 +1221,7 @@
         },
         "app_permission_scopes": {
             "any": "Any {module}",
-            "node": "{module} on the installation node",
+            "node": "Default {module} of the node at installation time",
             "cluster": "Default {module} of the cluster"
         },
         "app_permissions": {
