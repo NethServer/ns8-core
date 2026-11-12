@@ -1222,7 +1222,7 @@
         "app_permission_scopes": {
             "any": "Any {module}",
             "node": "Default {module} of the node at installation time",
-            "cluster": "Default {module} of the cluster"
+            "cluster": "Default {module} of the cluster at installation time"
         },
         "app_permissions": {
             "node_reader": "Read the configuration and status of the node",
