@@ -85,7 +85,7 @@ jobs:
       fail-fast: false
       matrix:
         distro: [rocky9, debian13]
-    uses: NethServer/ns8-github-actions/.github/workflows/test-on-qemu.yml@v1
+    uses: NethServer/ns8-github-actions/.github/workflows/test-on-qemu.yml@fix/debian13-generic-image
     with:
       distro: ${{ matrix.distro }}
       # The suite installs the core and creates the cluster itself.
