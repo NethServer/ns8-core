@@ -1170,7 +1170,9 @@
         "showing_lines_no_interval": "{n} regels weergegeven",
         "showing_lines": "{n} regels weergegeven van {from} tot {to}",
         "showing_lines_of": "{n} van {max} regels weergegeven van {from} tot {to}",
-        "regexp": "Reguliere expressie"
+        "regexp": "Reguliere expressie",
+        "copy_output": "Copy output",
+        "copied_to_clipboard": "Copied to clipboard"
     },
     "login": {
         "2fa_description": "Open je authenticator app en voer de code in",
