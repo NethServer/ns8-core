@@ -135,33 +135,36 @@
               {{ $t("software_center.permissions_label") }}
             </span>
           </div>
-          <NsDataTable
-            class="permission-table"
-            :allRows="appPermissions"
-            :columns="permissionColumnLabels"
-            :rawColumns="permissionColumns"
-            :sortable="true"
-            :pageSizes="[10, 25, 50, 100]"
-            :itemsPerPageLabel="$t('pagination.items_per_page')"
-            :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
-            :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-            :backwardText="$t('pagination.previous_page')"
-            :forwardText="$t('pagination.next_page')"
-            :pageNumberLabel="$t('pagination.page_number')"
-            @updatePage="permissionTablePage = $event"
-          >
-            <template slot="data">
-              <cv-data-table-row
-                v-for="perm in permissionTablePage"
-                :key="perm.raw"
-                :value="perm.raw"
-              >
-                <cv-data-table-cell>{{ perm.description }}</cv-data-table-cell>
-                <cv-data-table-cell>{{ perm.target }}</cv-data-table-cell>
-                <cv-data-table-cell>{{ perm.raw }}</cv-data-table-cell>
-              </cv-data-table-row>
-            </template>
-          </NsDataTable>
+          <NsTile :light="true" class="permission-tile">
+            <NsDataTable
+              :allRows="appPermissions"
+              :columns="permissionColumnLabels"
+              :rawColumns="permissionColumns"
+              :sortable="true"
+              :pageSizes="[10, 25, 50, 100]"
+              :itemsPerPageLabel="$t('pagination.items_per_page')"
+              :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
+              :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+              :backwardText="$t('pagination.previous_page')"
+              :forwardText="$t('pagination.next_page')"
+              :pageNumberLabel="$t('pagination.page_number')"
+              @updatePage="permissionTablePage = $event"
+            >
+              <template slot="data">
+                <cv-data-table-row
+                  v-for="perm in permissionTablePage"
+                  :key="perm.raw"
+                  :value="perm.raw"
+                >
+                  <cv-data-table-cell>{{
+                    perm.description
+                  }}</cv-data-table-cell>
+                  <cv-data-table-cell>{{ perm.target }}</cv-data-table-cell>
+                  <cv-data-table-cell>{{ perm.raw }}</cv-data-table-cell>
+                </cv-data-table-row>
+              </template>
+            </NsDataTable>
+          </NsTile>
         </div>
         <div class="info-divider"></div>
         <div class="key-value-setting">
@@ -380,7 +383,13 @@ export default {
   margin-left: $spacing-03;
 }
 
-.permission-table {
+.permission-tile {
   margin-top: $spacing-03;
+  margin-left: $spacing-03;
+}
+
+// Carbon turns pagination white inside modals, keep it grey like the table rows
+.permission-tile ::v-deep .bx--pagination {
+  background-color: $ui-01;
 }
 </style>
