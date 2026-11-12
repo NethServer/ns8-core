@@ -1206,15 +1206,6 @@
             "owner": "Run any action on {module}",
             "reader": "Read the configuration and status of {module}"
         },
-        "app_permission_modules": {
-            "mail": "Mail",
-            "traefik": "Traefik",
-            "openldap": "OpenLDAP",
-            "samba": "Samba",
-            "ldapproxy": "LDAP proxy",
-            "nethvoice": "NethVoice",
-            "nethvoice-proxy": "NethVoice proxy"
-        },
         "app_permission_targets": {
             "node": "Installation node",
             "node_id": "Node {id}",

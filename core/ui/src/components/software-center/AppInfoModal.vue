@@ -134,38 +134,34 @@
             <span class="label">
               {{ $t("software_center.permissions_label") }}
             </span>
-            <span class="value">
-              <cv-structured-list condensed class="permission-list">
-                <template slot="headings">
-                  <cv-structured-list-heading>{{
-                    $t("software_center.permission_description")
-                  }}</cv-structured-list-heading>
-                  <cv-structured-list-heading>{{
-                    $t("software_center.permission_target")
-                  }}</cv-structured-list-heading>
-                  <cv-structured-list-heading>{{
-                    $t("software_center.permission_label")
-                  }}</cv-structured-list-heading>
-                </template>
-                <template slot="items">
-                  <cv-structured-list-item
-                    v-for="perm in appPermissions"
-                    :key="perm.raw"
-                  >
-                    <cv-structured-list-data>{{
-                      perm.description
-                    }}</cv-structured-list-data>
-                    <cv-structured-list-data>{{
-                      perm.target
-                    }}</cv-structured-list-data>
-                    <cv-structured-list-data>{{
-                      perm.raw
-                    }}</cv-structured-list-data>
-                  </cv-structured-list-item>
-                </template>
-              </cv-structured-list>
-            </span>
           </div>
+          <NsDataTable
+            class="permission-table"
+            :allRows="appPermissions"
+            :columns="permissionColumnLabels"
+            :rawColumns="permissionColumns"
+            :sortable="true"
+            :pageSizes="[10, 25, 50, 100]"
+            :itemsPerPageLabel="$t('pagination.items_per_page')"
+            :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
+            :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+            :backwardText="$t('pagination.previous_page')"
+            :forwardText="$t('pagination.next_page')"
+            :pageNumberLabel="$t('pagination.page_number')"
+            @updatePage="permissionTablePage = $event"
+          >
+            <template slot="data">
+              <cv-data-table-row
+                v-for="perm in permissionTablePage"
+                :key="perm.raw"
+                :value="perm.raw"
+              >
+                <cv-data-table-cell>{{ perm.description }}</cv-data-table-cell>
+                <cv-data-table-cell>{{ perm.target }}</cv-data-table-cell>
+                <cv-data-table-cell>{{ perm.raw }}</cv-data-table-cell>
+              </cv-data-table-row>
+            </template>
+          </NsDataTable>
         </div>
         <div class="info-divider"></div>
         <div class="key-value-setting">
@@ -224,7 +220,20 @@ export default {
     isShown: Boolean,
     app: { type: [Object, null] },
   },
+  data() {
+    return {
+      permissionColumns: ["description", "target", "raw"],
+      permissionTablePage: [],
+    };
+  },
   computed: {
+    permissionColumnLabels() {
+      return [
+        this.$t("software_center.permission_description"),
+        this.$t("software_center.permission_target"),
+        this.$t("software_center.permission_label"),
+      ];
+    },
     appImages() {
       if (
         this.app &&
@@ -299,8 +308,7 @@ export default {
       const agentType = nodeId ? "node" : module;
       // without a scope, only node and cluster resolve to an agent
       const resolved = scope || agentType === "node" || agentType === "cluster";
-      const moduleKey = `software_center.app_permission_modules.${module}`;
-      const moduleName = this.$te(moduleKey) ? this.$t(moduleKey) : module;
+      const moduleName = module.charAt(0).toUpperCase() + module.slice(1);
       const pairKey = `software_center.app_permissions.${agentType}_${role}`;
       const coreRoleKey = `software_center.app_permission_core_roles.${role}`;
       let description;
@@ -372,8 +380,7 @@ export default {
   margin-left: $spacing-03;
 }
 
-.permission-list {
-  margin-bottom: 0;
-  margin-left: $spacing-03;
+.permission-table {
+  margin-top: $spacing-03;
 }
 </style>
