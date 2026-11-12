@@ -1203,6 +1203,7 @@
         "app_permission_rootfull": "Unlimited access to the installation node",
         "app_permission_generic": "Role {role} on {module}",
         "app_permission_core_roles": {
+            "owner": "Run any action on {module}",
             "reader": "Read the configuration and status of {module}"
         },
         "app_permission_modules": {
@@ -1243,7 +1244,7 @@
             "nethvoice_pbookreader": "Read the phonebook database credentials"
         },
         "rootfull_app_warning_title": "Administrative privileges",
-        "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks.",
+        "rootfull_app_warning_description": "After installation {appName} will have full access to the installation node: this can pose significant security risks.",
         "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
         "level_level": "Level {level}",
         "certification": "Certification",
