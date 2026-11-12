@@ -155,3 +155,51 @@ This configuration file example shows how specific volume targets apply to
 different applications. It will store `nextcloud-app-data` data
 volume of `nextcloud4` application under `/mnt/disk01`, whilst data of
 other Nextcloud applications will reside under `/mnt/disk00`.
+
+## Move a volume of an installed application
+
+Assignments in `volumes.conf` are evaluated only when a volume is
+created. To move the data of an existing volume to another disk, use
+`volumectl move-volume`. It works only with rootless applications.
+
+The move has two steps, to keep the application downtime short:
+
+1. Sync. Copy the volume data to the target base path, while the
+   application is running. The first copy can take a long time: run it
+   as many times as needed, each run copies only the changes since the
+   previous one.
+
+       # volumectl move-volume dovecot-data --for mail1 --target /mnt/disk00 --sync
+
+2. Finalize. Stop the application, copy the last changes, recreate the
+   volume at the new location and start the application again. Run it
+   right after a sync, so the last copy is short.
+
+       # volumectl move-volume dovecot-data --for mail1 --target /mnt/disk00
+
+The target is one of the base paths printed by `volumectl
+list-base-paths`, or the mountpoint of the default disk (for example
+`/`) to move the volume back to it. Data is copied preserving numeric
+ownership, permissions, ACLs, extended attributes (including SELinux
+labels), hard links and sparse files. Both steps check the target has
+enough free space.
+
+During the finalize step the whole user session of the application is
+stopped: all its services, timers and its agent. If the agent is running
+a task, the command refuses to stop it. Retry later, or add `--force` to
+stop the agent anyway: the running task is interrupted and never
+returns a result to its caller.
+
+If finalize fails, or it is interrupted with Ctrl-C, the original volume
+is restored and the application is started again. When finalize
+completes, the old data is removed in background by a transient Systemd
+unit, `volumectl-trash-*`. Its name is printed by the command, to check
+its progress with `journalctl -u`.
+
+Until finalize runs, the original volume is untouched. To cancel a move,
+remove the copied data from the target base path, for example:
+
+    rm -rf /mnt/disk00/mail1/dovecot-data
+
+When the target is the default disk, the copy is under the application
+home directory, for example `/home/mail1/.local/share/volumectl-staging/dovecot-data`.
