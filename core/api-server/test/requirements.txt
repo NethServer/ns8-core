@@ -1,0 +1,4 @@
+robotframework==7.1
+robotframework-requests==0.9.7
+redis==5.2.1
+websocket-client==1.8.0
