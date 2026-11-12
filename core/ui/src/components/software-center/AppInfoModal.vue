@@ -268,9 +268,10 @@ export default {
       if (!this.app.versions.length) {
         return permissions;
       }
-      const label =
-        this.app.versions[0]["labels"]["org.nethserver.authorizations"] || "";
-      const seen = new Set();
+      const labels = this.app.versions[0]["labels"];
+      const label = (labels && labels["org.nethserver.authorizations"]) || "";
+      // core keeps only the last entry of a repeated selector, roles are not merged
+      const rolesBySelector = new Map();
 
       for (const entry of label.trim().split(/\s+/)) {
         const sep = entry.indexOf(":");
@@ -278,21 +279,23 @@ export default {
           continue;
         }
         const selector = entry.slice(0, sep);
+        rolesBySelector.delete(selector);
+        rolesBySelector.set(selector, entry.slice(sep + 1).split(","));
+      }
+
+      for (const [selector, roles] of rolesBySelector) {
         const at = selector.indexOf("@");
         const module = at < 0 ? selector : selector.slice(0, at);
         const scope = at < 0 ? "" : selector.slice(at + 1);
 
-        // core grants self:selfadm to every app, it gives nothing on other components
-        if (module === "self") {
-          continue;
-        }
-        for (const role of entry.slice(sep + 1).split(",")) {
-          const raw = `${selector}:${role}`;
-          if (!role || seen.has(raw)) {
+        for (const role of new Set(roles)) {
+          // core grants self:selfadm to every app, it gives nothing on other components
+          if (!role || (module === "self" && role === "selfadm")) {
             continue;
           }
-          seen.add(raw);
-          permissions.push(this.describePermission(module, scope, role, raw));
+          permissions.push(
+            this.describePermission(module, scope, role, `${selector}:${role}`)
+          );
         }
       }
       return permissions;
