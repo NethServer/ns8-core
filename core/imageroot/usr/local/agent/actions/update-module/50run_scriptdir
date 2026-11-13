@@ -49,11 +49,16 @@ SD_WARNING='<4>'
 # while a backup is reading the module data. Share the module-backup lock
 # file: wait for a running backup to complete, and prevent a new one from
 # starting until the scripts are finished. A backup that finds the lock
-# taken exits and is retried later by the node run-backup command.
+# taken exits and is retried later by the node run-backup command. The
+# 04wait_backup step already waited for a running backup: on timeout,
+# run the scripts anyway, because the new imageroot is already in place.
+BACKUP_WAIT_TIMEOUT=3600 # seconds
 exec 202>"${AGENT_STATE_DIR}"/.module-backup.lock
 if ! flock --nonblock 202; then
     echo "${SD_NOTICE}A module backup is running: waiting for its completion..."
-    flock 202
+    if ! flock --wait "${BACKUP_WAIT_TIMEOUT}" 202; then
+        echo "${SD_WARNING}The module backup is still running after ${BACKUP_WAIT_TIMEOUT} seconds: running update scripts anyway"
+    fi
 fi
 
 shopt -s nullglob
