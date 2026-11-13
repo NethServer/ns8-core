@@ -5,12 +5,14 @@
   ],
   "enabledManagers": [
     "npm",
+    "github-actions",
     "gomod",
     "regex"
   ],
   "packageRules": [
     {
-      "description": "Suppress PRs for major and minor updates",
+      "description": "Suppress PRs for major and minor updates of the images and tools of the build and test scripts",
+      "matchManagers": ["regex"],
       "matchDatasources": ["docker", "github-tags"],
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
