@@ -1154,7 +1154,45 @@
         "go_to_core_applications": "Go to Core applications",
         "core_and_app_updates_available": "Core updates and {numUpdates} application update are available. | Core updates and {numUpdates} application updates are available.",
         "applications_update": "Applications update",
-        "updates_disabled": "Updates disabled"
+        "updates_disabled": "Updates disabled",
+        "permission_label": "ID",
+        "app_permissions": {
+            "cluster_accountconsumer": "Connect to a user domain to read users and groups",
+            "cluster_reader": "Read the configuration and status of the cluster",
+            "nethvoice-proxy_trunkadm": "Manage SIP trunks of the voice proxy",
+            "mail_mailadm": "Read all mailboxes and the mail configuration, change relay and always-BCC rules",
+            "node_portsadm": "Reserve extra network ports on the node",
+            "nethvoice_pbookreader": "Read the phonebook database credentials",
+            "cluster_accountprovider": "Act as a user domain provider for the cluster",
+            "traefik_fulladm": "Full control of web routes and TLS certificates",
+            "node_tunadm": "Create network tunnels and change the firewall of the node",
+            "node_fwadm": "Open ports and change the firewall of the node",
+            "nethvoice-proxy_routeadm": "Manage SIP routes of the voice proxy",
+            "traefik_routeadm": "Publish and remove web routes",
+            "node_reader": "Read the configuration and status of the node",
+            "samba_domadm": "Create, change and delete users and groups",
+            "traefik_certadm": "Request and manage TLS certificates",
+            "openldap_domadm": "Create, change and delete users and groups"
+        },
+        "permissions_label": "Permissions",
+        "app_permission_core_roles": {
+            "owner": "Run any action on {module}",
+            "reader": "Read the configuration and status of {module}"
+        },
+        "app_permission_scopes": {
+            "any": "Any {module}",
+            "cluster": "Default {module} of the cluster at installation time",
+            "node": "Default {module} of the node at installation time"
+        },
+        "app_permission_rootfull": "Unlimited access to the installation node",
+        "app_permission_generic": "Role {role} on {module}",
+        "app_permission_targets": {
+            "cluster": "Cluster",
+            "node": "Installation node",
+            "node_id": "Node {id}"
+        },
+        "permission_target": "Scope",
+        "permission_description": "Allowed actions"
     },
     "system_logs": {
         "stop_following": "Stop following",
