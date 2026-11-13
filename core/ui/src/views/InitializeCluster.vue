@@ -912,6 +912,7 @@ import {
 import { mapActions } from "vuex";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
+import LoginService from "@/mixins/login";
 import RestoreMultipleInstancesSelector from "@/components/backup/RestoreMultipleInstancesSelector";
 import SkipRestoreAppsModal from "@/components/initialize-cluster/SkipRestoreAppsModal";
 import WelcomeLogo from "@/components/initialize-cluster/WelcomeLogo";
@@ -935,6 +936,7 @@ export default {
     NotificationService,
     LottieService,
     PageTitleService,
+    LoginService,
   ],
   pageTitle() {
     return this.$t("init.welcome", { product: this.$root.config.PRODUCT_NAME });
@@ -1432,8 +1434,14 @@ export default {
         }
       }
     },
-    changeUserPasswordCompleted() {
+    async changeUserPasswordCompleted() {
       this.isPasswordChangeNeeded = false;
+
+      // the default password is public: end the other sessions
+      const [err] = await to(this.executeLogoutOthers());
+      if (err) {
+        console.error("error ending other sessions", err);
+      }
     },
     changeUserPasswordValidationFailed(validationErrors) {
       this.isChangingPassword = false;

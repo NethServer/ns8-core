@@ -40,6 +40,7 @@ import (
 
 	"github.com/NethServer/ns8-core/core/api-server/middleware"
 	"github.com/NethServer/ns8-core/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/api-server/sessions"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
@@ -321,11 +322,28 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// sessions:
 		mClaims := jwt.ExtractClaimsFromToken(oJwt)
 
-		exp := int64(mClaims["exp"].(float64))
+		// The login session of the token must be still valid
+		if !middleware.ClaimsSessionValid(mClaims) {
+			oErrorMsg := map[string]string{
+				"type":    "authorize-error",
+				"payload": sessions.ErrInvalid.Error(),
+			}
+			jErrorMsg, _ := json.Marshal(oErrorMsg)
+			s.Write(jErrorMsg)
+			s.CloseWithMsg(melody.FormatCloseMessage(1000, "Bye"))
+			break
+		}
+
+		exp, _ := mClaims["exp"].(float64)
 
 		// Store the session expire timestamp. In case of conversion
-		// error, exp is zero.
-		s.Set("exp", exp)
+		// error, exp is zero. The client sends "authorize" again with
+		// a new token, after refreshing it.
+		s.Set("exp", int64(exp))
+
+		// Store the login session ID, checked again on ping-pong
+		sid, _ := mClaims["sid"].(string)
+		s.Set("sid", sid)
 
 		// Do not send back any message to a successfully authorized
 		// session, just keep the socket open.

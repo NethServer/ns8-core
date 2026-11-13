@@ -31,6 +31,7 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"golang.org/x/time/rate"
 
 	"github.com/NethServer/ns8-core/core/api-server/audit"
@@ -38,7 +39,9 @@ import (
 	"github.com/NethServer/ns8-core/core/api-server/methods"
 	"github.com/NethServer/ns8-core/core/api-server/middleware"
 	"github.com/NethServer/ns8-core/core/api-server/response"
+	"github.com/NethServer/ns8-core/core/api-server/sessions"
 	"github.com/NethServer/ns8-core/core/api-server/socket"
+	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
 // @title NethServer 8 API
@@ -66,6 +69,12 @@ func main() {
 
 	// init audit file
 	audit.Init()
+
+	// init the session database and listen for session revocations
+	if err := sessions.Init(configuration.Config.SessionsFile); err != nil {
+		utils.LogError(errors.Wrap(err, "[SESSIONS][INIT] administrators cannot log in"))
+	}
+	go sessions.ListenRevocations()
 
 	// init websocket and start listen Redis events
 	socketConnection := socket.Instance()
@@ -116,13 +125,18 @@ func main() {
 	// unauthenticated clients, so the body must be capped before binding.
 	api.POST("/login", middleware.BodyLimit(16<<10), middleware.InstanceJWT().LoginHandler)
 	api.POST("/logout", middleware.BodyLimit(1<<10), middleware.InstanceJWT().LogoutHandler)
+	api.POST("/refresh", middleware.BodyLimit(1<<10), middleware.RefreshHandler)
 
 	// define basic auth routes
 	api.GET("/module/:module_id/http-basic/:action", methods.BasicAuthModule)
 
 	// define JWT middleware
-	api.Use(middleware.InstanceJWT().MiddlewareFunc())
+	api.Use(middleware.InstanceJWT().MiddlewareFunc(), middleware.SessionCheck())
 	{
+		// sessions
+		api.POST("/logout-others", middleware.LogoutOthersHandler)
+		api.POST("/cluster/join-token", middleware.JoinTokenHandler)
+
 		// tasks APIs
 		// cluster
 		api.GET("/cluster/tasks", methods.GetClusterTasks)
