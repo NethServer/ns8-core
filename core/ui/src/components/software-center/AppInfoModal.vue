@@ -129,6 +129,43 @@
             </span>
           </div>
         </div>
+        <div v-if="appPermissions.length" class="key-value-setting">
+          <div>
+            <span class="label">
+              {{ $t("software_center.permissions_label") }}
+            </span>
+          </div>
+          <NsTile :light="true" class="permission-tile">
+            <NsDataTable
+              :allRows="appPermissions"
+              :columns="permissionColumnLabels"
+              :rawColumns="permissionColumns"
+              :sortable="true"
+              :pageSizes="[10, 25, 50, 100]"
+              :itemsPerPageLabel="$t('pagination.items_per_page')"
+              :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
+              :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+              :backwardText="$t('pagination.previous_page')"
+              :forwardText="$t('pagination.next_page')"
+              :pageNumberLabel="$t('pagination.page_number')"
+              @updatePage="permissionTablePage = $event"
+            >
+              <template slot="data">
+                <cv-data-table-row
+                  v-for="perm in permissionTablePage"
+                  :key="perm.raw"
+                  :value="perm.raw"
+                >
+                  <cv-data-table-cell>{{
+                    perm.description
+                  }}</cv-data-table-cell>
+                  <cv-data-table-cell>{{ perm.target }}</cv-data-table-cell>
+                  <cv-data-table-cell>{{ perm.raw }}</cv-data-table-cell>
+                </cv-data-table-row>
+              </template>
+            </NsDataTable>
+          </NsTile>
+        </div>
         <div class="info-divider"></div>
         <div class="key-value-setting">
           <div>
@@ -186,7 +223,20 @@ export default {
     isShown: Boolean,
     app: { type: [Object, null] },
   },
+  data() {
+    return {
+      permissionColumns: ["description", "target", "raw"],
+      permissionTablePage: [],
+    };
+  },
   computed: {
+    permissionColumnLabels() {
+      return [
+        this.$t("software_center.permission_description"),
+        this.$t("software_center.permission_target"),
+        this.$t("software_center.permission_label"),
+      ];
+    },
     appImages() {
       if (
         this.app &&
@@ -201,6 +251,55 @@ export default {
         return [];
       }
     },
+    appPermissions() {
+      if (!this.app) {
+        return [];
+      }
+      const permissions = [];
+
+      // a rootfull app is not limited by its roles, so this goes first
+      if (this.app.rootfull) {
+        permissions.push({
+          raw: "org.nethserver.rootfull",
+          description: this.$t("software_center.app_permission_rootfull"),
+          target: this.$t("software_center.app_permission_targets.node"),
+        });
+      }
+      if (!this.app.versions.length) {
+        return permissions;
+      }
+      const labels = this.app.versions[0]["labels"];
+      const label = (labels && labels["org.nethserver.authorizations"]) || "";
+      // core keeps only the last entry of a repeated selector, roles are not merged
+      const rolesBySelector = new Map();
+
+      for (const entry of label.trim().split(/\s+/)) {
+        const sep = entry.indexOf(":");
+        if (sep < 1) {
+          continue;
+        }
+        const selector = entry.slice(0, sep);
+        rolesBySelector.delete(selector);
+        rolesBySelector.set(selector, entry.slice(sep + 1).split(","));
+      }
+
+      for (const [selector, roles] of rolesBySelector) {
+        const at = selector.indexOf("@");
+        const module = at < 0 ? selector : selector.slice(0, at);
+        const scope = at < 0 ? "" : selector.slice(at + 1);
+
+        for (const role of new Set(roles)) {
+          // core grants self:selfadm to every app, it gives nothing on other components
+          if (!role || (module === "self" && role === "selfadm")) {
+            continue;
+          }
+          permissions.push(
+            this.describePermission(module, scope, role, `${selector}:${role}`)
+          );
+        }
+      }
+      return permissions;
+    },
   },
   methods: {
     getApplicationDescription(app) {
@@ -208,6 +307,44 @@ export default {
     },
     getApplicationCategories(app) {
       return this.getAppCategories(app, this);
+    },
+    describePermission(module, scope, role, raw) {
+      // a bare number selects a node by its ID, like "1:fwadm"
+      const nodeId = !scope && /^\d+$/.test(module) ? module : "";
+      const agentType = nodeId ? "node" : module;
+      // without a scope, only node and cluster resolve to an agent
+      const resolved = scope || agentType === "node" || agentType === "cluster";
+      const moduleName = module.charAt(0).toUpperCase() + module.slice(1);
+      const pairKey = `software_center.app_permissions.${agentType}_${role}`;
+      const coreRoleKey = `software_center.app_permission_core_roles.${role}`;
+      let description;
+
+      if (resolved && this.$te(pairKey)) {
+        description = this.$t(pairKey);
+      } else if (resolved && this.$te(coreRoleKey)) {
+        // roles like "reader" are created by core on every module
+        description = this.$t(coreRoleKey, { module: moduleName });
+      } else {
+        description = this.$t("software_center.app_permission_generic", {
+          role,
+          module: moduleName,
+        });
+      }
+
+      let target = moduleName;
+      if (nodeId) {
+        target = this.$t("software_center.app_permission_targets.node_id", {
+          id: nodeId,
+        });
+      } else {
+        const targetKey = scope
+          ? `software_center.app_permission_scopes.${scope}`
+          : `software_center.app_permission_targets.${module}`;
+        if (this.$te(targetKey)) {
+          target = this.$t(targetKey, { module: moduleName });
+        }
+      }
+      return { raw, description, target };
     },
   },
 };
@@ -246,6 +383,11 @@ export default {
 }
 
 .image-list {
+  margin-left: $spacing-03;
+}
+
+.permission-tile {
+  margin-top: $spacing-03;
   margin-left: $spacing-03;
 }
 </style>

@@ -1196,8 +1196,46 @@
             "multimedia": "Multimedia"
         },
         "images_label": "Images",
+        "permissions_label": "Permissions",
+        "permission_description": "Allowed actions",
+        "permission_target": "Scope",
+        "permission_label": "ID",
+        "app_permission_rootfull": "Unlimited access to the installation node",
+        "app_permission_generic": "Role {role} on {module}",
+        "app_permission_core_roles": {
+            "owner": "Run any action on {module}",
+            "reader": "Read the configuration and status of {module}"
+        },
+        "app_permission_targets": {
+            "node": "Installation node",
+            "node_id": "Node {id}",
+            "cluster": "Cluster"
+        },
+        "app_permission_scopes": {
+            "any": "Any {module}",
+            "node": "Default {module} of the node at installation time",
+            "cluster": "Default {module} of the cluster at installation time"
+        },
+        "app_permissions": {
+            "node_reader": "Read the configuration and status of the node",
+            "node_fwadm": "Open ports and change the firewall of the node",
+            "node_portsadm": "Reserve extra network ports on the node",
+            "node_tunadm": "Create network tunnels and change the firewall of the node",
+            "cluster_reader": "Read the configuration and status of the cluster",
+            "cluster_accountconsumer": "Connect to a user domain to read users and groups",
+            "cluster_accountprovider": "Act as a user domain provider for the cluster",
+            "traefik_routeadm": "Publish and remove web routes",
+            "traefik_certadm": "Request and manage TLS certificates",
+            "traefik_fulladm": "Full control of web routes and TLS certificates",
+            "mail_mailadm": "Read all mailboxes and the mail configuration, change relay and always-BCC rules",
+            "openldap_domadm": "Create, change and delete users and groups",
+            "samba_domadm": "Create, change and delete users and groups",
+            "nethvoice-proxy_routeadm": "Manage SIP routes of the voice proxy",
+            "nethvoice-proxy_trunkadm": "Manage SIP trunks of the voice proxy",
+            "nethvoice_pbookreader": "Read the phonebook database credentials"
+        },
         "rootfull_app_warning_title": "Administrative privileges",
-        "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks.",
+        "rootfull_app_warning_description": "After installation {appName} will have full access to the installation node: this can pose significant security risks.",
         "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
         "level_level": "Level {level}",
         "certification": "Certification",

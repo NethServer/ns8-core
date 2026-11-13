@@ -674,6 +674,11 @@ ul.unordered-list {
   display: inline-block !important;
 }
 
+// Carbon turns pagination white inside modals, keep it grey like the table rows
+.bx--modal .cv-data-table .bx--pagination {
+  background-color: $ui-01;
+}
+
 // data table filters container
 .data-table-filters {
   display: flex;
