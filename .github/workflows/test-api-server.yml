@@ -1,0 +1,37 @@
+name: test-api-server
+on:
+  push:
+    paths:
+      - core/api-server/**
+      - .github/workflows/test-api-server.yml
+
+jobs:
+  test-api-server:
+    name: Test API server
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: core/api-server/go.mod
+          cache-dependency-path: core/api-server/go.sum
+      - name: Unit tests
+        # the main package has two func main: test the other packages
+        run: go test -tags sqlite_omit_load_extension $(go list -f '{{if ne .Name "main"}}{{.ImportPath}}{{end}}' ./...)
+        working-directory: core/api-server
+      - run: bash test-api-server.sh
+        working-directory: core/api-server
+      - run: |
+          # Export test output
+          mkdir -p tstate
+          podman volume export tstate-api-server | tar -C tstate -v -x -f -
+        if: always()
+      - uses: actions/upload-artifact@v7
+        with:
+          overwrite: true
+          name: test-api-server
+          path: tstate/
+        if: always()
+      - run: podman stop -a
+        continue-on-error: true
+        if: always()

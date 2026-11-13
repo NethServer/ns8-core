@@ -14,6 +14,25 @@ Built with `CGO_ENABLED=1` (required by `go-sqlite3`). The `build-image.sh`
 script uses `-ldflags='-extldflags=-static'` for static linking and adds
 `-tags sqlite_omit_load_extension`.
 
+## Test
+
+```bash
+bash test-api-server.sh          # black-box Robot Framework suite (podman)
+go test -tags sqlite_omit_load_extension \
+  $(go list -f '{{if ne .Name "main"}}{{.ImportPath}}{{end}}' ./...)  # unit tests
+```
+
+`test-api-server.sh` builds the binary, starts a Redis server of the same
+version shipped by core, and runs `test/suite/` in a Python container: the
+suite prepares Redis like a leader node (ACL users from
+`install-finalize.sh`, roles, 2FA and allowed networks), starts
+`api-server` and checks it with HTTP and WebSocket clients, a fake agent
+that pops tasks from the queues, and the Redis `MONITOR` command
+(`test/suite/ApiServerLibrary.py`). Expected texts and status codes are
+the API contract: clients like the UI match them. Change a test only when
+the behavior change is intended. Arguments are passed to `robot`, e.g.
+`bash test-api-server.sh --test 'Expired token'`.
+
 ## Module layout
 
 | Path | Purpose |
@@ -97,5 +116,5 @@ to disable the limiter.
 - Redis keys follow `task/<entity>/<id>/<task-id>/{context,output,error,exit_code}` (e.g. `task/node/<node-id>/<task-id>/output`).
 - Audit events: `login-ok`, `auth-fail`, `create-task` stored in SQLite.
 - WebSocket sessions are validated on each ping-pong (JWT expiry check).
-- No unit tests in this package; testing is via integration tests in
-  `core/tests/`.
+- Tests: see the Test section above; end-to-end tests on a real cluster
+  are in `core/tests/`.
