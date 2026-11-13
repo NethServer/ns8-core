@@ -42,7 +42,19 @@ fi
 
 # systemd-journal log severity codes:
 SD_DEBUG='<7>'
+SD_NOTICE='<5>'
 SD_WARNING='<4>'
+
+# Update scripts usually restart the module services: they must not run
+# while a backup is reading the module data. Share the module-backup lock
+# file: wait for a running backup to complete, and prevent a new one from
+# starting until the scripts are finished. A backup that finds the lock
+# taken exits and is retried later by the node run-backup command.
+exec 202>"${AGENT_STATE_DIR}"/.module-backup.lock
+if ! flock --nonblock 202; then
+    echo "${SD_NOTICE}A module backup is running: waiting for its completion..."
+    flock 202
+fi
 
 shopt -s nullglob
 for script in "${AGENT_INSTALL_DIR}"/update-module.d/* ; do
