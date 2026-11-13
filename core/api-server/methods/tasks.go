@@ -37,7 +37,7 @@ import (
 	"github.com/mpvl/unique"
 	"github.com/nqd/flat"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
+	jwt "github.com/appleboy/gin-jwt/v3"
 
 	"github.com/NethServer/ns8-core/core/api-server/audit"
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
