@@ -5,7 +5,7 @@ go 1.26.10
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.3
 	github.com/fatih/structs v1.1.0
-	github.com/gin-contrib/cors v1.7.10
+	github.com/gin-contrib/cors v1.7.11
 	github.com/gin-contrib/gzip v1.2.9
 	github.com/gin-contrib/static v1.1.9
 	github.com/gin-gonic/gin v1.12.0
