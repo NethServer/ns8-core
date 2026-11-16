@@ -183,6 +183,20 @@ the `create-module` action.  A set element represent an exact action name
 or an action name pattern, expressed in [glob-pattern
 syntax](https://pkg.go.dev/path/filepath#Match) (e.g. `get-*`).
 
+The core defines two builtin roles on every module, every node and on
+the cluster:
+
+- `owner` can run any action (`*`)
+- `reader` can run actions matching `list-*`, `get-*`, `show-*` and
+  `read-*`
+
+A read-only action needs no extra role. Give it one of these prefixes
+and any agent or user with the `reader` role can run it. Another module
+requests it like any other role, for example
+`org.nethserver.authorizations = mariadb@any:reader`. For this reason
+actions with these prefixes must never return passwords or other
+secrets.
+
 The following Bash command in the `create-module` action allows agents
 with the `actionsreader` role to run `list-actions` on `AGENT_ID` (e.g.
 `module/mymod1`).
