@@ -276,6 +276,26 @@ class VolumeMove:
             return []
         return [pid for pid in pids if pid != props.get("MainPID")]
 
+    def lock_backup(self):
+        """Take the module-backup lock, shared with module-backup and the
+        update-module action, and keep it until the process exits. The
+        backup runs outside the agent service, so agent_busy_pids()
+        does not see it. While the lock is held, a backup that starts
+        exits at once and the node run-backup command retries it later.
+        Return False if the lock is held by someone else."""
+        if not hasattr(self, "backup_lock_fd"):
+            lock_path = self.home / ".config/state/.module-backup.lock"
+            fd = os.open(lock_path, os.O_WRONLY | os.O_CREAT | os.O_CLOEXEC, 0o644)
+            # module-backup runs as the module user: it must be able to
+            # open the file if we create it
+            os.fchown(fd, self.uid, self.gid)
+            self.backup_lock_fd = fd
+        try:
+            fcntl.flock(self.backup_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return False
+        return True
+
     def stop_session(self):
         _log(f"stopping the user session of {self.mid}")
         self.offline = True
@@ -359,6 +379,11 @@ class VolumeMove:
         self.check_space()
         self.prepare_destination()
         self.rsync_image() # pull it now, to keep downtime short
+        backup_locked = self.lock_backup()
+        if not backup_locked:
+            if not force:
+                raise MoveVolumeError(f"a backup or an update of {self.mid} is running. Retry later, or use --force to interrupt it anyway")
+            _log(f"WARNING: interrupting a running backup or update of {self.mid}")
         busy = self.agent_busy_pids()
         if busy and not force:
             raise MoveVolumeError(f"the agent of {self.mid} is running a task (PIDs {' '.join(busy)}). Retry later, or use --force to stop it anyway")
@@ -372,6 +397,11 @@ class VolumeMove:
         self.stage = "started"
         try:
             self.stop_session()
+            # The lock holder has been killed with the user session:
+            # take the lock now, so a backup or an update cannot start
+            # while the volume is moved
+            if not backup_locked and not self.lock_backup():
+                raise MoveVolumeError(f"cannot take the backup lock of {self.mid}")
             # Check rootless Podman works without the user session,
             # before touching the volume
             self.podman("volume", "inspect", self.vol)
