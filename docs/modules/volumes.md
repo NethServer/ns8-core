@@ -190,6 +190,11 @@ a task, the command refuses to stop it. Retry later, or add `--force` to
 stop the agent anyway: the running task is interrupted and never
 returns a result to its caller.
 
+The command refuses also if a backup of the application is running, or
+the scripts of an application update: `--force` interrupts them, too. A
+backup that starts while finalize runs is postponed: the node
+retries it every minute, for one hour.
+
 If finalize fails, or it is interrupted with Ctrl-C, the original volume
 is restored and the application is started again. When finalize
 completes, the old data is removed in background by a transient Systemd
