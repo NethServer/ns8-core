@@ -8,7 +8,7 @@ on:
 jobs:
   test-agent:
     name: Test agent
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - run: bash test-agent.sh
