@@ -32,6 +32,8 @@ RESTIC_EXIT_NO_REPOSITORY = 10
 
 backup_id = int(sys.argv[1])
 
+# The lock file is shared with the update-module action, to avoid running
+# a backup while update scripts restart the module services.
 lock_file = open(os.environ['AGENT_STATE_DIR'] + f"/.module-backup.lock", "w")
 try:
     fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)

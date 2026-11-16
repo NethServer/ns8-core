@@ -37,6 +37,17 @@ printed. Example of a script that restarts a Systemd service,
 
 Make sure the `20restart` is executable, otherwise it is ignored.
 
+Update scripts and module backups are mutually exclusive. If a backup of
+the module instance is running, the update waits for its completion. If
+the backup is still running after one hour, the update is aborted
+before any change, and can be retried later. A backup scheduled while
+the scripts are running is retried later.
+
+Custom steps added to the module `update-module` action do not take part
+in this mutual exclusion and can run while a backup is in progress: put
+any service restart or data migration in `update-module.d` scripts
+instead.
+
 To update an instance from command line, use:
 
     update-module ghcr.io/nethserver/mymodule:1.0.0 mymodule1

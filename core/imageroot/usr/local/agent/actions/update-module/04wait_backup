@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Wait for a running module backup to complete before changing anything.
+# If the backup is still running after the timeout, abort the update: the
+# module is left untouched and the update can be retried later.
+
+exec 1>&2
+
+# systemd-journal log severity codes:
+SD_NOTICE='<5>'
+SD_ERR='<3>'
+
+BACKUP_WAIT_TIMEOUT=3600 # seconds
+
+exec 202>"${AGENT_STATE_DIR}"/.module-backup.lock
+if ! flock --nonblock 202; then
+    echo "${SD_NOTICE}A module backup is running: waiting for its completion..."
+    if ! flock --wait "${BACKUP_WAIT_TIMEOUT}" 202; then
+        echo "${SD_ERR}The module backup is still running after ${BACKUP_WAIT_TIMEOUT} seconds: update aborted, retry it later"
+        exit 1
+    fi
+fi
