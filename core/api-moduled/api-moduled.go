@@ -7,6 +7,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -20,11 +21,13 @@ import (
 	"time"
 
 	"github.com/NethServer/ns8-core/core/api-moduled/validation"
-	jwt "github.com/appleboy/gin-jwt/v2"
+	jwt "github.com/appleboy/gin-jwt/v3"
+	"github.com/appleboy/gin-jwt/v3/core"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	gojwt "github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/viper"
 	"golang.org/x/time/rate"
 )
@@ -300,16 +303,77 @@ func apiPostHandler(ginCtx *gin.Context) {
 	ginCtx.JSON(http.StatusOK, responsePayload)
 }
 
+// noRefreshTokenStore discards the refresh tokens that gin-jwt v3
+// generates on every login. The API has no refresh endpoint and never
+// returns refresh tokens to clients, so storing them would only make
+// the default in-memory store grow for each login.
+type noRefreshTokenStore struct{}
+
+func (noRefreshTokenStore) Set(ctx context.Context, token string, userData any, expiry time.Time) error {
+	return nil
+}
+
+func (noRefreshTokenStore) Get(ctx context.Context, token string) (any, error) {
+	return nil, core.ErrRefreshTokenNotFound
+}
+
+func (noRefreshTokenStore) Delete(ctx context.Context, token string) error {
+	return nil
+}
+
+func (noRefreshTokenStore) Cleanup(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
+func (noRefreshTokenStore) Count(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
+// tokenErrorMessage returns the message of a token validation error as
+// gin-jwt v2 (golang-jwt v4) worded it, so clients matching on it, like
+// a check for "Token is expired", keep working.
+func tokenErrorMessage(err error) string {
+	switch {
+	case errors.Is(err, jwt.ErrExpiredToken), errors.Is(err, gojwt.ErrTokenExpired):
+		return "Token is expired"
+	case errors.Is(err, gojwt.ErrTokenNotValidYet):
+		return "Token is not valid yet"
+	case errors.Is(err, jwt.ErrInvalidSigningAlgorithm):
+		return jwt.ErrInvalidSigningAlgorithm.Error()
+	case errors.Is(err, gojwt.ErrSignatureInvalid):
+		return gojwt.ErrSignatureInvalid.Error()
+	case errors.Is(err, gojwt.ErrTokenMalformed):
+		return strings.TrimPrefix(err.Error(), gojwt.ErrTokenMalformed.Error()+": ")
+	}
+	return err.Error()
+}
+
 func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
+	realm := viper.GetString("jwt_realm")
+	if realm == "" {
+		realm = "gin jwt" // gin-jwt default value
+	}
 
 	jwtInstance, errDefine := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:         viper.GetString("jwt_realm"),
-		Key:           []byte(viper.GetString("jwt_secret")),
-		Timeout:       viper.GetDuration("jwt_timeout"),
-		IdentityKey:   viper.GetString("id_key"),
-		TokenLookup:   viper.GetString("jwt_token_lookup"),
-		TokenHeadName: "Bearer",
-		TimeFunc:      time.Now,
+		Realm:             realm,
+		Key:               []byte(viper.GetString("jwt_secret")),
+		Timeout:           viper.GetDuration("jwt_timeout"),
+		IdentityKey:       viper.GetString("id_key"),
+		TokenLookup:       viper.GetString("jwt_token_lookup"),
+		TokenHeadName:     "Bearer",
+		TimeFunc:          time.Now,
+		RefreshTokenStore: noRefreshTokenStore{},
+		HTTPStatusMessageFunc: func(ginCtx *gin.Context, e error) string {
+			return tokenErrorMessage(e)
+		},
+		Unauthorized: func(ginCtx *gin.Context, code int, message string) {
+			// keep the gin-jwt v2 header value and default response
+			ginCtx.Header("WWW-Authenticate", "JWT realm="+realm)
+			ginCtx.JSON(code, gin.H{
+				"code":    code,
+				"message": message,
+			})
+		},
 
 		Authenticator: func(ginCtx *gin.Context) (any, error) {
 			requestBytes, _ := io.ReadAll(ginCtx.Request.Body)
@@ -355,26 +419,26 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 				logger.Println(SD_ERR+"Login response error: ", jerr)
 				return nil, errors.New("internal error")
 			}
-			ginCtx.Set("JWT_PAYLOAD", jwt.MapClaims(responsePayload))
+			ginCtx.Set("JWT_PAYLOAD", gojwt.MapClaims(responsePayload))
 			return responsePayload, nil // Authentication is successful
 		},
-		PayloadFunc: func(data any) jwt.MapClaims {
+		PayloadFunc: func(data any) gojwt.MapClaims {
 			if claims, ok := data.(gin.H); ok {
-				return jwt.MapClaims(claims)
+				return gojwt.MapClaims(claims)
 			}
 			logger.Println(SD_CRIT + "PayloadFunc error: login output cannot be converted to jwt claims")
 			return nil
 		},
-		LoginResponse: func(ginCtx *gin.Context, code int, token string, texp time.Time) {
+		LoginResponse: func(ginCtx *gin.Context, token *core.Token) {
 			ginCtx.JSON(http.StatusOK, gin.H{
 				"code":    http.StatusOK,
-				"token":   token,
-				"expire":  texp.Format(time.RFC3339),
+				"token":   token.AccessToken,
+				"expire":  time.Unix(token.ExpiresAt, 0).Format(time.RFC3339),
 				"message": "login succeeded",
 				"claims":  jwt.ExtractClaims(ginCtx),
 			})
 		},
-		Authorizator: func(data any, ginCtx *gin.Context) bool {
+		Authorizer: func(ginCtx *gin.Context, data any) bool {
 			claims := jwt.ExtractClaims(ginCtx)
 
 			if ginCtx.FullPath() == "/api/logout" {

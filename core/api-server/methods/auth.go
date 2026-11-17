@@ -33,7 +33,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
+	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/dgryski/dgoogauth"
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"

@@ -23,9 +23,11 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -36,7 +38,9 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"golang.org/x/time/rate"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
+	jwt "github.com/appleboy/gin-jwt/v3"
+	"github.com/appleboy/gin-jwt/v3/core"
+	gojwt "github.com/golang-jwt/jwt/v5"
 
 	"github.com/NethServer/ns8-core/core/api-server/audit"
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
@@ -128,6 +132,53 @@ type login struct {
 var jwtMiddleware *jwt.GinJWTMiddleware
 var identityKey = "id"
 
+const jwtRealm = "nethserver"
+
+// noRefreshTokenStore discards the refresh tokens that gin-jwt v3
+// generates on every login. The API has no refresh endpoint and never
+// returns refresh tokens to clients, so storing them would only make
+// the default in-memory store grow for each login.
+type noRefreshTokenStore struct{}
+
+func (noRefreshTokenStore) Set(ctx context.Context, token string, userData any, expiry time.Time) error {
+	return nil
+}
+
+func (noRefreshTokenStore) Get(ctx context.Context, token string) (any, error) {
+	return nil, core.ErrRefreshTokenNotFound
+}
+
+func (noRefreshTokenStore) Delete(ctx context.Context, token string) error {
+	return nil
+}
+
+func (noRefreshTokenStore) Cleanup(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
+func (noRefreshTokenStore) Count(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
+// TokenErrorMessage returns the message of a token validation error as
+// gin-jwt v2 (golang-jwt v4) worded it, so clients matching on it, like
+// the UI check for "Token is expired", keep working.
+func TokenErrorMessage(err error) string {
+	switch {
+	case errors.Is(err, jwt.ErrExpiredToken), errors.Is(err, gojwt.ErrTokenExpired):
+		return "Token is expired"
+	case errors.Is(err, gojwt.ErrTokenNotValidYet):
+		return "Token is not valid yet"
+	case errors.Is(err, jwt.ErrInvalidSigningAlgorithm):
+		return jwt.ErrInvalidSigningAlgorithm.Error()
+	case errors.Is(err, gojwt.ErrSignatureInvalid):
+		return gojwt.ErrSignatureInvalid.Error()
+	case errors.Is(err, gojwt.ErrTokenMalformed):
+		return strings.TrimPrefix(err.Error(), gojwt.ErrTokenMalformed.Error()+": ")
+	}
+	return err.Error()
+}
+
 func InstanceJWT() *jwt.GinJWTMiddleware {
 	if jwtMiddleware == nil {
 		jwtMiddleware := InitJWT()
@@ -139,10 +190,11 @@ func InstanceJWT() *jwt.GinJWTMiddleware {
 func InitJWT() *jwt.GinJWTMiddleware {
 	// define jwt middleware
 	authMiddleware, errDefine := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "nethserver",
-		Key:         []byte(configuration.Config.Secret),
-		Timeout:     time.Hour * 24 * 14, // 2 weeks
-		IdentityKey: identityKey,
+		Realm:             jwtRealm,
+		Key:               []byte(configuration.Config.Secret),
+		Timeout:           time.Hour * 24 * 14, // 2 weeks
+		IdentityKey:       identityKey,
+		RefreshTokenStore: noRefreshTokenStore{},
 		Authenticator: func(c *gin.Context) (any, error) {
 			// check login credentials exists
 			var loginVals login
@@ -209,11 +261,11 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			}, nil
 
 		},
-		PayloadFunc: func(data any) jwt.MapClaims {
+		PayloadFunc: func(data any) gojwt.MapClaims {
 			// read current user
 			if user, ok := data.(*models.UserAuthorizations); ok {
 				// create claims map
-				return jwt.MapClaims{
+				return gojwt.MapClaims{
 					identityKey: user.Username,
 					"role":      "",
 					"actions":   []string{},
@@ -222,9 +274,16 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			}
 
 			// return claims map
-			return jwt.MapClaims{}
+			return gojwt.MapClaims{}
 		},
 		IdentityHandler: func(c *gin.Context) any {
+			// gin-jwt v3 LogoutHandler runs this handler if the request
+			// carries a valid token. Logout needs no identity: skip the
+			// Redis lookups, as gin-jwt v2 did.
+			if c.FullPath() == "/api/logout" {
+				return nil
+			}
+
 			// handle identity and extract claims
 			claims := jwt.ExtractClaims(c)
 
@@ -245,7 +304,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// return user
 			return user
 		},
-		Authorizator: func(data any, c *gin.Context) bool {
+		Authorizer: func(c *gin.Context, data any) bool {
 			// extract data payload and check authorizations
 			if v, ok := data.(*models.UserAuthorizations); ok {
 				// enforce IP allowlist on every request
@@ -301,13 +360,19 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// not authorized
 			return false
 		},
-		LoginResponse: func(c *gin.Context, code int, token string, t time.Time) {
-			c.JSON(200, gin.H{"code": 200, "expire": t, "token": token})
+		LoginResponse: func(c *gin.Context, token *core.Token) {
+			c.JSON(200, gin.H{"code": 200, "expire": time.Unix(token.ExpiresAt, 0), "token": token.AccessToken})
 		},
-		LogoutResponse: func(c *gin.Context, code int) {
+		LogoutResponse: func(c *gin.Context) {
 			c.JSON(200, gin.H{"code": 200})
 		},
+		HTTPStatusMessageFunc: func(c *gin.Context, e error) string {
+			return TokenErrorMessage(e)
+		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
+			// keep the gin-jwt v2 header value
+			c.Header("WWW-Authenticate", "JWT realm="+jwtRealm)
+
 			if message == "redis is not running" {
 				c.JSON(503, structs.Map(response.StatusServiceUnavailable{
 					Code:    503,
