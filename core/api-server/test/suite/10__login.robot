@@ -3,10 +3,10 @@ Documentation      Login, 2FA, allowed networks and logout
 Resource           api.resource
 
 *** Test Cases ***
-Login returns a token
+Login returns a token and a refresh token
     ${response} =    Login    admin
     ${keys} =    Get Dictionary Keys    ${response.json()}
-    Should Be Equal    ${keys}    ${{ ['code', 'expire', 'token'] }}
+    Should Be Equal    ${keys}    ${{ ['code', 'expire', 'refresh_token', 'token'] }}
     Should Be Equal As Integers    ${response.json()}[code]    200
     Dictionary Should Not Contain Key    ${response.headers}    Set-Cookie
 
@@ -17,8 +17,9 @@ Token claims and lifetime
     Should Be Equal    ${claims}[role]    ${EMPTY}
     Should Be Empty    ${claims}[actions]
     Should Be Equal    ${claims}[2fa]    ${FALSE}
+    Should Not Be Empty    ${claims}[sid]
     ${lifetime} =    Evaluate    $claims['exp'] - $claims['orig_iat']
-    Should Be Equal As Integers    ${lifetime}    ${{ ${TOKEN_DAYS} * 86400 }}
+    Should Be Equal As Integers    ${lifetime}    ${{ ${ACCESS_MINUTES} * 60 }}
 
 Wrong password is rejected
     ${response} =    Login    admin    wrong-password    expected_status=401
@@ -47,6 +48,14 @@ Agent accounts can log in from the loopback address
     ${response} =    Login    module/t1    t1-test-password
     ${claims} =    Decode Token Claims    ${response.json()}[token]
     Should Be Equal    ${claims}[id]    module/t1
+
+Agent tokens have no session and keep the long lifetime
+    ${response} =    Login    module/t1    t1-test-password
+    Dictionary Should Not Contain Key    ${response.json()}    refresh_token
+    ${claims} =    Decode Token Claims    ${response.json()}[token]
+    Dictionary Should Not Contain Key    ${claims}    sid
+    ${lifetime} =    Evaluate    $claims['exp'] - $claims['orig_iat']
+    Should Be Equal As Integers    ${lifetime}    ${{ ${AGENT_TOKEN_DAYS} * 86400 }}
 
 2FA user needs the OTP code
     ${response} =    Login    otpuser    expected_status=401
