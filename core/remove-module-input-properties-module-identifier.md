@@ -1,0 +1,25 @@
+# Module identifier Schema
+
+```txt
+http://schema.nethserver.org/node/remove-module-input.json#/properties/module_id
+```
+
+
+
+| Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                         |
+| :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :--------------------------------------------------------------------------------- |
+| Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [remove-module-input.json\*](node/remove-module-input.json "open original schema") |
+
+## module_id Type
+
+`string` ([Module identifier](remove-module-input-properties-module-identifier.md))
+
+## module_id Examples
+
+```json
+"dokuwiki1"
+```
+
+```json
+"nextcloud3"
+```

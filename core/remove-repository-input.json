@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"remove-repository input","$id":"http://schema.nethserver.org/cluster/remove-repository-input.json","description":"Input schema of the remove-repository action","examples":[{"name":"repository1"}],"type":"object","properties":{"name":{"description":"Repository name","type":"string"}},"required":["name"]}

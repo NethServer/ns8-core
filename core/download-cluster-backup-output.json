@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"download-cluster-backup output","$id":"http://schema.nethserver.org/cluster/download-cluster-backup-output.json","description":"Generate an URL to download an encrypted file containing the cluster backup","examples":[{"path":"ad40cfe5342d731cc4423daefc535e9489666a39264cf8659bc8a4a0e6c4f32e/dump.json.gz.gpg"}]}

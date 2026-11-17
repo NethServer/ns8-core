@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"get-user-info input","$id":"http://schema.nethserver.org/cluster/get-user-info-input.json","description":"Input schema of the get-user-info action","examples":[{"user":"admin"}],"type":"object","properties":{"user":{"description":"Target user.","type":"string"}},"required":["user"]}
