@@ -6,20 +6,38 @@
     "examples": [
         {
             "zone": "myzone",
-	    "interface": "eth0",
+            "interface": "eth0",
             "ports": [
                 "25/tcp"
             ],
-	    "rules": [ 
-		    "rule family=ipv4 source address=172.18.212.0/24 destination address=172.18.212.0/24 reject"
-	    ]
+            "rules": [
+                "rule family=ipv4 source address=172.18.212.0/24 destination address=172.18.212.0/24 reject"
+            ]
+        },
+        {
+            "zone": "tunvpn1",
+            "interface": "tunvpn1",
+            "ports": [
+                "53/udp"
+            ],
+            "rules": [
+                "rule family=ipv4 source address=10.8.0.0/24 port port=22 protocol=tcp reject"
+            ],
+            "masquerade": {
+                "internet": true,
+                "destinations": [
+                    "10.5.5.0/24:443/tcp"
+                ]
+            }
         }
     ],
     "type": "object",
     "if": {
         "properties": {
             "masquerade": {
-                "const": true
+                "not": {
+                    "const": false
+                }
             }
         },
         "required": [
@@ -52,20 +70,56 @@
         "ports": {
             "type": "array",
             "title": "Firewall ports configuration",
-            "examples": ["25/tcp", "21/udp", "9000-9010/tcp"],
+            "examples": [
+                "25/tcp",
+                "21/udp",
+                "9000-9010/tcp"
+            ],
             "minItems": 1
         },
         "rules": {
             "type": "array",
             "title": "Firewall rich rules",
-            "examples": ["rule family=ipv4 source address=172.18.212.1 destination address=172.18.212.0/24 accept"],
+            "examples": [
+                "rule family=ipv4 source address=172.18.212.1 destination address=172.18.212.0/24 accept"
+            ],
             "minItems": 1
         },
         "masquerade": {
-            "type": "boolean",
             "title": "Forward and masquerade the zone traffic",
-            "description": "If true, the traffic coming from the zone is forwarded to the public and trusted zones, with the node address as source. The policy name is the zone name with the -masq suffix, so the zone name is limited to 13 characters.",
-            "default": false
+            "description": "Forward the traffic of the zone with the node address as source. The interface must be a tun created by add-tun. The policy name is the zone name with the -masq suffix, so the zone name is limited to 13 characters. true is the same as {\"internet\": true}.",
+            "default": false,
+            "oneOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "internet": {
+                            "type": "boolean",
+                            "title": "Allow the Internet",
+                            "description": "Private networks stay closed unless a destination lists them",
+                            "default": false
+                        },
+                        "destinations": {
+                            "type": "array",
+                            "title": "Allowed destinations",
+                            "description": "IPv4 address or network, with an optional port and protocol",
+                            "items": {
+                                "type": "string",
+                                "pattern": "^[0-9]{1,3}(\\.[0-9]{1,3}){3}(/[0-9]{1,2})?(:[0-9]{1,5}(-[0-9]{1,5})?/(tcp|udp))?$"
+                            },
+                            "examples": [
+                                "10.5.5.0/24:443/tcp",
+                                "192.168.1.10:445/tcp",
+                                "192.168.1.0/24"
+                            ]
+                        }
+                    }
+                }
+            ]
         }
     }
 }
