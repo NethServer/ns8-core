@@ -76,6 +76,7 @@ else:
 if not cluster.grants.check_authorizations_sanity(authorizations):
     print(agent.SD_ERR + f'Invalid org.nethserver.authorizations label value image_url={image_url}:', authorizations, file=sys.stderr)
     sys.exit(2)
+authorizations = cluster.grants.filter_authorizations(authorizations, image_url)
 
 # Start the module update on each instance
 update_tasks = []
@@ -92,14 +93,13 @@ for module_id in instances:
         rdb.hdel('cluster/udp_ports_demand', module_id)
 
     if authorizations:
-        accepted_authorizations = cluster.grants.filter_authorizations(authorizations, f"module/{module_id}")
         # Replace existing authorizations with the new image:
         rdb.delete(f'cluster/authorizations/module/{module_id}')
-        rdb.sadd(f'cluster/authorizations/module/{module_id}', 'self:selfadm', *accepted_authorizations)
+        rdb.sadd(f'cluster/authorizations/module/{module_id}', 'self:selfadm', *authorizations)
 
         node_id = int(rdb.hget(f'cluster/module_node', module_id))
         # Update module permissions before running update-module on it
-        cluster.grants.add_module_permissions(rdb, module_id, accepted_authorizations, node_id)
+        cluster.grants.add_module_permissions(rdb, module_id, authorizations, node_id)
 
     update_tasks.append({
         "agent_id": f"module/{module_id}",
@@ -109,9 +109,6 @@ for module_id in instances:
             "force" : force
         }
     })
-
-# Clean up the owner role granted by an older image of the module
-cluster.grants.revoke_module_owner_roles(rdb)
 
 update_retvals = agent.tasks.runp(update_tasks,
     endpoint = "redis://cluster-leader",

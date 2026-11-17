@@ -114,7 +114,7 @@ def refresh_permissions(rdb):
     """Scan the stored authorizations and re-apply permissions to all modules"""
     for kauth_module in rdb.scan_iter('cluster/authorizations/module/*'):
         kmid = kauth_module.removeprefix('cluster/authorizations/module/')
-        authorizations = rdb.smembers(kauth_module) or []
+        authorizations = filter_authorizations(rdb.smembers(kauth_module) or [], f'module/{kmid}')
         mnode_id = rdb.hget('cluster/module_node', kmid)
         add_module_permissions(rdb, kmid, authorizations, mnode_id)
     revoke_module_owner_roles(rdb)
@@ -161,7 +161,7 @@ def filter_authorizations(authorizations, requester=None):
 
 def add_module_permissions(rdb, module_id, authorizations, node_id):
     """Parse authorizations and grant permissions to module_id"""
-    for authz in filter_authorizations(authorizations, f'module/{module_id}'):
+    for authz in authorizations:
         # authz examples: "traefik@node:routeadm", "node:fwadm,portsadm"
         xagent, xrole = authz.split(':')
 
