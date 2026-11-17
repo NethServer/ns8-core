@@ -19,6 +19,7 @@
 #
 
 import fnmatch
+import sys
 import agent
 
 def _lookup_grant_on(rdb, agent_pattern):
@@ -116,10 +117,51 @@ def refresh_permissions(rdb):
         authorizations = rdb.smembers(kauth_module) or []
         mnode_id = rdb.hget('cluster/module_node', kmid)
         add_module_permissions(rdb, kmid, authorizations, mnode_id)
+    revoke_module_owner_roles(rdb)
+
+def revoke_module_owner_roles(rdb):
+    """Remove the owner role granted to modules on agents other than themselves"""
+    for kroles in rdb.scan_iter('roles/module/*'):
+        self_id = kroles.removeprefix('roles/')
+        pipe = rdb.pipeline()
+        for agent_id, role in rdb.hgetall(kroles).items():
+            roles = [xrole.strip() for xrole in role.split(',')]
+            if agent_id == self_id or 'owner' not in roles:
+                continue
+            print(agent.SD_WARNING + f'Revoking role owner on {agent_id} from {self_id}', file=sys.stderr)
+            roles = [xrole for xrole in roles if xrole and xrole != 'owner']
+            if roles:
+                pipe.hset(kroles, agent_id, ','.join(roles))
+            else:
+                pipe.hdel(kroles, agent_id)
+        pipe.execute()
+
+def filter_authorizations(authorizations, requester=None):
+    """Return authorizations without malformed entries and without the owner role.
+    The owner role is reserved to users, it is accepted only on "self"."""
+    filtered = []
+    for authz in authorizations:
+        parts = authz.split(':')
+        if len(parts) != 2 or not parts[0] or not parts[1]:
+            print(agent.SD_WARNING + f'Ignoring malformed authorization "{authz}" requested by {requester}', file=sys.stderr)
+            continue
+        xagent, xrole = parts
+        roles = []
+        for role in xrole.split(','):
+            role = role.strip()
+            if not role:
+                continue
+            if role == 'owner' and xagent != 'self':
+                print(agent.SD_WARNING + f'Ignoring role owner on "{xagent}" requested by {requester}', file=sys.stderr)
+                continue
+            roles.append(role)
+        if roles:
+            filtered.append(xagent + ':' + ','.join(roles))
+    return filtered
 
 def add_module_permissions(rdb, module_id, authorizations, node_id):
     """Parse authorizations and grant permissions to module_id"""
-    for authz in authorizations:
+    for authz in filter_authorizations(authorizations, f'module/{module_id}'):
         # authz examples: "traefik@node:routeadm", "node:fwadm,portsadm"
         xagent, xrole = authz.split(':')
 
@@ -144,10 +186,10 @@ def add_module_permissions(rdb, module_id, authorizations, node_id):
 def check_authorizations_sanity(authorizations):
     for authz in authorizations:
         # Validation assertions:
+        # Malformed entries and the owner role are dropped later by
+        # filter_authorizations(), with a warning.
         contains_forbidden_char = ('*' in authz or '[' in authz or '?' in authz)
-        lacks_mandatory_separator = (not ':' in authz)
-        grants_too_much_permissions = (authz == 'cluster:owner')
-        if contains_forbidden_char or lacks_mandatory_separator or grants_too_much_permissions:
+        if contains_forbidden_char:
             return False
 
     return True
