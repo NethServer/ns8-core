@@ -43,6 +43,15 @@ def read_env(file_path):
     env = agent.read_envfile(file_path)
     os.environ.update(env)
 
+def get_login_env(pw):
+    """Return a minimal login environment for the user of the given
+    passwd entry, as a list of NAME=VALUE strings for env(1). PATH is
+    replaced by agent.env."""
+    login_env = [f"HOME={pw.pw_dir}", f"USER={pw.pw_name}", f"LOGNAME={pw.pw_name}", "SHELL=/usr/bin/env", "PATH=/usr/bin:/bin"]
+    if "TERM" in os.environ:
+        login_env.append(f"TERM={os.environ['TERM']}")
+    return login_env
+
 if args.list_modules:
     for line in subprocess.check_output(['pgrep', '-x', 'agent', '-a'], text=True).split("\n"):
         if not line:
@@ -83,17 +92,22 @@ else:
     # if module id is a local Unix user, change process UID and GID
     # and exec() again
     try:
-        module_uid = pwd.getpwnam(mid)[2]
+        module_pw = pwd.getpwnam(mid)
     except:
         print(f"runagent: [FATAL] Cannot find module {mid} in the local node", file=sys.stderr)
         sys.exit(1)
 
-    xdg_runtime_dir=f"/run/user/{module_uid}"
-    if os.path.isdir(xdg_runtime_dir):
-        os.execvp("/usr/sbin/runuser", ["runuser", "-s", "/usr/bin/env", "-l", mid, "--", f"XDG_RUNTIME_DIR={xdg_runtime_dir}"] + sys.argv)
-    else:
+    xdg_runtime_dir=f"/run/user/{module_pw.pw_uid}"
+    if not os.path.isdir(xdg_runtime_dir):
         print(f"runagent: [FATAL] Cannot find runtime directory for {mid}", file=sys.stderr)
         sys.exit(1)
+    # Switch user without a PAM login session (runuser -l): called by a
+    # system service, it would start the user session again, if it was
+    # stopped on purpose, for example by volumectl move-volume. The
+    # environment is cleared, like runuser -l does.
+    self_path = os.path.abspath(sys.argv[0])
+    os.chdir(module_pw.pw_dir)
+    os.execvp("/usr/sbin/runuser", ["runuser", "-u", mid, "--", "/usr/bin/env", "-i"] + get_login_env(module_pw) + [f"XDG_RUNTIME_DIR={xdg_runtime_dir}", self_path] + sys.argv[1:])
 
 if not args.current_dir:
     os.chdir(os.environ['AGENT_STATE_DIR'])
