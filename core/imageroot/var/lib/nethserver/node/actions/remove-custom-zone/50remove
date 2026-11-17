@@ -6,11 +6,16 @@
 #
 
 import sys
+import subprocess
 import json
 import agent
 
 request = json.load(sys.stdin)
 name = request['zone']
+
+# Delete the masquerade policy first, it would be left without its zone
+if agent.run_helper('firewall-cmd', '--permanent', f'--info-policy={name}-masq', stdout=subprocess.DEVNULL).returncode == 0:
+    agent.run_helper('firewall-cmd', '--permanent', f'--delete-policy={name}-masq').check_returncode()
 
 # Delete the zone
 agent.run_helper('firewall-cmd', '--permanent', f'--delete-zone={name}').check_returncode()

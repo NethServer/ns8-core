@@ -16,6 +16,23 @@
         }
     ],
     "type": "object",
+    "if": {
+        "properties": {
+            "masquerade": {
+                "const": true
+            }
+        },
+        "required": [
+            "masquerade"
+        ]
+    },
+    "then": {
+        "properties": {
+            "zone": {
+                "maxLength": 13
+            }
+        }
+    },
     "required": [
         "zone",
         "interface",
@@ -43,6 +60,12 @@
             "title": "Firewall rich rules",
             "examples": ["rule family=ipv4 source address=172.18.212.1 destination address=172.18.212.0/24 accept"],
             "minItems": 1
+        },
+        "masquerade": {
+            "type": "boolean",
+            "title": "Forward and masquerade the zone traffic",
+            "description": "If true, the traffic coming from the zone is forwarded to the public and trusted zones, with the node address as source. The policy name is the zone name with the -masq suffix, so the zone name is limited to 13 characters.",
+            "default": false
         }
     }
 }

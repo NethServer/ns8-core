@@ -6,6 +6,7 @@
 #
 
 import sys
+import subprocess
 import json
 import agent
 
@@ -14,8 +15,14 @@ name = request['zone']
 interface = request.get('interface')
 ports = request.get('ports')
 rules = request.get('rules')
+masquerade = request.get('masquerade', False)
+policy = f'{name}-masq'
 
 fw_cmd = ['firewall-cmd', '--permanent']
+
+# The policy refers to the zone, so it goes before the zone is deleted
+if agent.run_helper(*fw_cmd, f'--info-policy={policy}', stdout=subprocess.DEVNULL).returncode == 0:
+    agent.run_helper(*fw_cmd, f'--delete-policy={policy}').check_returncode()
 
 if agent.run_helper('firewall-cmd', f'--info-zone={name}').returncode == 0:
     agent.run_helper(*fw_cmd, f'--delete-zone={name}').check_returncode()
@@ -33,6 +40,15 @@ for port in ports:
 # Add rich rules
 for rule in rules:
     agent.run_helper(*fw_cmd, f'--zone={name}', f'--add-rich-rule={rule}').check_returncode()
+
+# Forward the zone traffic to the node networks and the Internet, with the node address as source
+if masquerade:
+    agent.run_helper(*fw_cmd, f'--new-policy={policy}').check_returncode()
+    agent.run_helper(*fw_cmd, f'--policy={policy}', f'--add-ingress-zone={name}').check_returncode()
+    for egress in ['public', 'trusted']:
+        agent.run_helper(*fw_cmd, f'--policy={policy}', f'--add-egress-zone={egress}').check_returncode()
+    agent.run_helper(*fw_cmd, f'--policy={policy}', '--set-target=ACCEPT').check_returncode()
+    agent.run_helper(*fw_cmd, f'--policy={policy}', '--add-masquerade').check_returncode()
 
 # Apply the configuration
 agent.run_helper('firewall-cmd', '--reload').check_returncode()

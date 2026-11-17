@@ -480,7 +480,7 @@ def remove_tun(name):
     )
     return response['exit_code'] == 0
 
-def add_custom_zone(name, interface, ports=[], rules=[]):
+def add_custom_zone(name, interface, ports=[], rules=[], masquerade=False):
     node_id = os.environ['NODE_ID']
     response = agent.tasks.run(
         agent_id=f'node/{node_id}',
@@ -489,7 +489,8 @@ def add_custom_zone(name, interface, ports=[], rules=[]):
             'zone': name,
             'interface': interface,
             'ports': ports,
-            'rules': rules
+            'rules': rules,
+            'masquerade': masquerade
         }
     )
     return response['exit_code'] == 0

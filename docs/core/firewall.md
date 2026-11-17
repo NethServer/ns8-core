@@ -89,6 +89,41 @@ import agent
 agent.remove_public_service(os.environ['MODULE_ID'])
 ```
 
+### Managing Custom Zones
+
+A module that brings its own network interface, for example a tun device
+for a VPN, puts it in a custom zone. The zone accepts the given ports and
+rich rules from that interface.
+
+In `create-module` or `configure-module`:
+
+```python
+import agent
+
+agent.assert_exp(agent.add_custom_zone("tun1", "tun1", ["53/udp", "443/tcp"]))
+```
+
+By default the node does not forward the traffic of a custom zone. Set
+`masquerade=True` to let it reach the public and trusted zones, which means
+the Internet, the LAN and the other cluster nodes. The traffic leaves with
+the node address as source:
+
+```python
+agent.assert_exp(agent.add_custom_zone("tun1", "tun1", ["53/udp", "443/tcp"], masquerade=True))
+```
+
+This creates a firewalld policy named after the zone with the `-masq`
+suffix, so the zone name is limited to 13 characters. Call
+`add_custom_zone()` again without `masquerade` to remove the policy.
+
+In `destroy-module`:
+
+```python
+import agent
+
+agent.remove_custom_zone("tun1")
+```
+
 ### Managing Rich Rules
 
 For more advanced firewall configurations, you can use rich rules to define complex firewall rules including port forwarding, source address filtering, and more.
