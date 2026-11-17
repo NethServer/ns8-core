@@ -1,0 +1,1121 @@
+basePath: /api
+definitions:
+  models.Task:
+    properties:
+      action:
+        type: string
+      data: {}
+      extra: {}
+      id:
+        type: string
+      parent:
+        type: string
+      queue:
+        type: string
+      timestamp:
+        type: string
+      user:
+        type: string
+    type: object
+  models.TaskJSON:
+    properties:
+      action:
+        example: list-modules
+        type: string
+      data: {}
+      extra: {}
+      id:
+        example: "null"
+        type: string
+      parent:
+        type: string
+    type: object
+  response.StatusBadRequest:
+    properties:
+      code:
+        example: 400
+        type: integer
+      data: {}
+      message:
+        example: Bad request
+        type: string
+    type: object
+  response.StatusCreated:
+    properties:
+      code:
+        example: 201
+        type: integer
+      data: {}
+      message:
+        example: Created
+        type: string
+    type: object
+  response.StatusForbidden:
+    properties:
+      code:
+        example: 403
+        type: integer
+      data: {}
+      message:
+        example: Forbidden
+        type: string
+    type: object
+  response.StatusInternalServerError:
+    properties:
+      code:
+        example: 500
+        type: integer
+      data: {}
+      message:
+        example: Internal server error
+        type: string
+    type: object
+  response.StatusOK:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data: {}
+      message:
+        example: Success
+        type: string
+    type: object
+  response.StatusUnauthorized:
+    properties:
+      code:
+        example: 401
+        type: integer
+      data: {}
+      message:
+        example: Unauthorized
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: NethServer Developer Team
+    url: https://nethserver.org/support
+  description: NethServer 8 API is used to create tasks across the nodes
+  license:
+    name: GNU GENERAL PUBLIC LICENSE
+  termsOfService: https://nethserver.org/terms/
+  title: NethServer 8 API
+  version: "1.0"
+paths:
+  /2FA:
+    delete:
+      description: revocate secret for 2FA
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusInternalServerError'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Revocate secret for 2FA
+      tags:
+      - /2FA auth
+    get:
+      description: get current 2FA status for user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusInternalServerError'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get current 2FA status for user
+      tags:
+      - /2FA auth
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Set the 2FA Redis flag, if OTP is verified
+      tags:
+      - /2FA auth
+  /2FA/qrcode:
+    get:
+      description: use this API to generate a valid qr-code for google auth
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusInternalServerError'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Generate QRCode for 2FA
+      tags:
+      - /2FA/qrcode auth
+  /audit:
+    get:
+      description: get audit logs (user, action, data, timestamp)
+      parameters:
+      - description: user search by user
+        in: query
+        name: user
+        type: string
+      - description: action search by action
+        in: query
+        name: action
+        type: string
+      - description: data full text search by data
+        in: query
+        name: data
+        type: string
+      - description: filter result search by from date ISO8601
+        in: query
+        name: from
+        type: string
+      - description: filter result search by to date ISO8601
+        in: query
+        name: to
+        type: string
+      - description: limit results to limit value
+        in: query
+        name: limit
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get audit logs for user, action and timestamp
+      tags:
+      - /audit audit
+  /audit/actions:
+    get:
+      description: get audit actions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get all actions in audit.db
+      tags:
+      - /audit audit
+  /audit/users:
+    get:
+      description: get audit users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get all users in audit.db
+      tags:
+      - /audit audit
+  /cluster/task/{task_id}/context:
+    get:
+      description: get task statuses (context)
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the context of a cluster task
+      tags:
+      - /tasks cluster
+  /cluster/task/{task_id}/status:
+    get:
+      description: get task statuses (output, error, exit_code)
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the output, error or exit code of a cluster task
+      tags:
+      - /tasks cluster
+  /cluster/tasks:
+    get:
+      description: get cluster tasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  items:
+                    $ref: '#/definitions/models.Task'
+                  type: array
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the list of current cluster tasks
+      tags:
+      - /tasks cluster
+    post:
+      description: create a cluster task
+      parameters:
+      - description: Task Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.TaskJSON'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusCreated'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  $ref: '#/definitions/models.Task'
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Create and queue a cluster task
+      tags:
+      - /tasks cluster
+  /logout:
+    post:
+      description: logout and remove JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusInternalServerError'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Login and remove JWT token
+      tags:
+      - /logout auth
+  /module/{module_id}/http-basic/{action}:
+    get:
+      description: for a specific action, check basic auth for module
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusUnauthorized'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusForbidden'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Use Basic HTTP auth for module
+      tags:
+      - /module basic_auth
+  /module/{module_id}/task/{task_id}/context:
+    get:
+      description: get task statuses (context)
+      parameters:
+      - description: Module ID
+        in: path
+        name: module_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the context of a module task
+      tags:
+      - /tasks module
+  /module/{module_id}/task/{task_id}/status:
+    get:
+      description: get task statuses (output, error, exit_code)
+      parameters:
+      - description: Module ID
+        in: path
+        name: module_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the output, error or exit code of a module task
+      tags:
+      - /tasks module
+  /module/{module_id}/tasks:
+    get:
+      description: get module tasks
+      parameters:
+      - description: Module ID
+        in: path
+        name: module_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  items:
+                    $ref: '#/definitions/models.Task'
+                  type: array
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the list of current module tasks
+      tags:
+      - /tasks module
+    post:
+      description: create a module task
+      parameters:
+      - description: Module ID
+        in: path
+        name: module_id
+        required: true
+        type: string
+      - description: Task Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.TaskJSON'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusCreated'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  $ref: '#/definitions/models.Task'
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Create and queue a module task
+      tags:
+      - /tasks module
+  /modules:
+    get:
+      description: get modules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  items:
+                    type: string
+                  type: array
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the list of modules
+      tags:
+      - /tasks node
+  /node/{node_id}/task/{task_id}/context:
+    get:
+      description: get task statuses (context)
+      parameters:
+      - description: Node ID
+        in: path
+        name: node_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the context of a node task
+      tags:
+      - /tasks node
+  /node/{node_id}/task/{task_id}/status:
+    get:
+      description: get task statuses (output, error, exit_code)
+      parameters:
+      - description: Node ID
+        in: path
+        name: node_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the output, error or exit code of a node task
+      tags:
+      - /tasks node
+  /node/{node_id}/tasks:
+    get:
+      description: get node tasks
+      parameters:
+      - description: Node ID
+        in: path
+        name: node_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  items:
+                    $ref: '#/definitions/models.Task'
+                  type: array
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the list of current node tasks
+      tags:
+      - /tasks node
+    post:
+      description: create a node task
+      parameters:
+      - description: Node ID
+        in: path
+        name: node_id
+        required: true
+        type: string
+      - description: Task Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.TaskJSON'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusCreated'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  $ref: '#/definitions/models.Task'
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Create and queue a node task
+      tags:
+      - /tasks node
+  /nodes:
+    get:
+      description: get nodes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  items:
+                    type: string
+                  type: array
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the list of nodes
+      tags:
+      - /tasks node
+schemes:
+- http
+swagger: "2.0"
