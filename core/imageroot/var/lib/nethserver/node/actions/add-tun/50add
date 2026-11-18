@@ -5,45 +5,79 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+
+import fcntl
 import os
 import pwd
+import struct
 import sys
 import json
 import agent
+
+TUNSETIFF = 0x400454ca
+TUNSETOWNER = 0x400454cc
+IFF_TUN = 0x0001
+IFF_NO_PI = 0x1000
 
 odir = '/etc/nethserver/tun'
 request = json.load(sys.stdin)
 tun = request['tun']
 ip = request['ip']
-
-# Recent kernels (upstream ffdf678dd166, in Debian 13 since 6.12.117)
-# refuse a rootless container to open a tun without owner. The owner is the module that asks for the tun,
-# taken from the task identity so that a module cannot name another one.
-# A rootfull module has no user and keeps a tun without owner.
-owner = ''
-task_user = os.environ.get('AGENT_TASK_USER', '')
-if task_user.startswith('module/'):
-    try:
-        owner = str(pwd.getpwnam(task_user.removeprefix('module/')).pw_uid)
-    except KeyError:
-        pass
-
 envfile = f'{odir}/{tun}.env'
-content = f"TUN={tun}\nIP={ip}\n"
-if owner:
-    content += f"OWNER={owner}\n"
 
 try:
-    with open(envfile) as fp:
-        changed = fp.read() != content
+    env = agent.read_envfile(envfile)
 except FileNotFoundError:
-    changed = True
+    env = {}
+
+# Recent kernels (upstream ffdf678dd166, in Debian 13 since 6.12.117)
+# refuse a rootless container to open a tun without owner. The owner is
+# the rootless module that asks for the tun. It comes from the task
+# identity, which a module cannot choose.
+owner = env.get('OWNER', '')
+task_user = os.environ.get('AGENT_TASK_USER', '')
+if task_user.startswith('module/'):
+    module_id = task_user.removeprefix('module/')
+    try:
+        caller = str(pwd.getpwnam(module_id).pw_uid)
+    except KeyError:
+        # A rootfull module has no user and needs no owner
+        caller = ''
+        print(agent.SD_INFO + f'No user for {module_id}: the tun {tun} keeps its owner', file=sys.stderr)
+    if caller and owner and caller != owner:
+        print(agent.SD_ERR + f'The tun {tun} belongs to uid {owner}, not to {module_id}', file=sys.stderr)
+        sys.exit(1)
+    owner = caller or owner
+
+env['TUN'] = tun
+env['IP'] = ip
+if owner:
+    env['OWNER'] = owner
 
 os.makedirs(odir, exist_ok=True)
-with open(envfile, 'w') as fp:
-    fp.write(content)
+agent.write_envfile(envfile, env)
+# Never restart: a running module holds the tun, and it cannot be created again under it
+agent.run_helper('systemctl', 'enable', '--now', f'tun-manager@{tun}').check_returncode()
 
-agent.run_helper('systemctl', 'enable', f'tun-manager@{tun}').check_returncode()
-# Restart only on change: an existing tun is created again with its owner,
-# and a module that calls add-tun at each configuration keeps its tun.
-agent.run_helper('systemctl', 'restart' if changed else 'start', f'tun-manager@{tun}').check_returncode()
+def set_owner(name, uid):
+    """Give an existing tun to uid, in place: its address and routes stay"""
+    fd = os.open('/dev/net/tun', os.O_RDWR)
+    try:
+        fcntl.ioctl(fd, TUNSETIFF, struct.pack('16sH', name.encode(), IFF_TUN | IFF_NO_PI))
+        fcntl.ioctl(fd, TUNSETOWNER, int(uid))
+    finally:
+        os.close(fd)
+
+# A tun created before this change has no owner yet
+try:
+    with open(f'/sys/class/net/{tun}/owner') as fp:
+        current = fp.read().strip()
+except FileNotFoundError:
+    current = owner
+if owner and current != owner:
+    try:
+        set_owner(tun, owner)
+        print(agent.SD_NOTICE + f'The tun {tun} now belongs to uid {owner}', file=sys.stderr)
+    except OSError as ex:
+        # A process holds it: the kernel still lets it in. tun-manager sets the owner at next boot.
+        print(agent.SD_WARNING + f'Cannot give the tun {tun} to uid {owner} now: {ex}', file=sys.stderr)
