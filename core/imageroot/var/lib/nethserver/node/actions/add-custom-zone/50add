@@ -5,17 +5,47 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 
+import os
 import sys
+import subprocess
 import json
+import ipaddress
 import agent
+
+# The Internet access must not open the private networks, unless a destination lists them
+PRIVATE_NETWORKS = ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10', '169.254.0.0/16']
 
 request = json.load(sys.stdin)
 name = request['zone']
 interface = request.get('interface')
 ports = request.get('ports')
 rules = request.get('rules')
+masquerade = request.get('masquerade', False)
+# true is a short form for Internet access only
+if masquerade is True:
+    masquerade = {'internet': True}
+policy = f'{name}-masq'
+
+def destination_rule(destination):
+    """Convert "cidr" or "cidr:port/proto" to a rich rule that accepts it"""
+    address, _, port = destination.partition(':')
+    address = str(ipaddress.ip_network(address, strict=False))
+    rule = f'rule priority=-20 family=ipv4 destination address={address}'
+    if port:
+        number, protocol = port.split('/')
+        rule += f' port port={number} protocol={protocol}'
+    return rule + ' accept'
+
+if masquerade:
+    # A module must not open forwarding from a physical network, only from its own tun
+    agent.assert_exp(os.path.exists(f'/etc/nethserver/tun/{interface}.env'), f'masquerade requires a tun interface created by add-tun: {interface}')
+    destination_rules = [destination_rule(d) for d in masquerade.get('destinations', [])]
 
 fw_cmd = ['firewall-cmd', '--permanent']
+
+# The policy refers to the zone, so it goes before the zone is deleted
+if agent.run_helper(*fw_cmd, f'--info-policy={policy}', stdout=subprocess.DEVNULL).returncode == 0:
+    agent.run_helper(*fw_cmd, f'--delete-policy={policy}').check_returncode()
 
 if agent.run_helper('firewall-cmd', f'--info-zone={name}').returncode == 0:
     agent.run_helper(*fw_cmd, f'--delete-zone={name}').check_returncode()
@@ -33,6 +63,24 @@ for port in ports:
 # Add rich rules
 for rule in rules:
     agent.run_helper(*fw_cmd, f'--zone={name}', f'--add-rich-rule={rule}').check_returncode()
+
+# Forward the zone traffic with the node address as source. The trusted zone accepts
+# everything from the node, so only the listed destinations and the Internet pass.
+if masquerade:
+    policy_cmd = [*fw_cmd, f'--policy={policy}']
+    agent.run_helper(*fw_cmd, f'--new-policy={policy}').check_returncode()
+    agent.run_helper(*policy_cmd, f'--add-ingress-zone={name}').check_returncode()
+    for egress in ['public', 'trusted']:
+        agent.run_helper(*policy_cmd, f'--add-egress-zone={egress}').check_returncode()
+    agent.run_helper(*policy_cmd, '--add-masquerade').check_returncode()
+    for rule in destination_rules:
+        agent.run_helper(*policy_cmd, f'--add-rich-rule={rule}').check_returncode()
+    if masquerade.get('internet'):
+        for network in PRIVATE_NETWORKS:
+            agent.run_helper(*policy_cmd, f'--add-rich-rule=rule priority=-10 family=ipv4 destination address={network} reject').check_returncode()
+        agent.run_helper(*policy_cmd, '--set-target=ACCEPT').check_returncode()
+    else:
+        agent.run_helper(*policy_cmd, '--set-target=REJECT').check_returncode()
 
 # Apply the configuration
 agent.run_helper('firewall-cmd', '--reload').check_returncode()
