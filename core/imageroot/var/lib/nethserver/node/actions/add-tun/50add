@@ -6,6 +6,7 @@
 #
 
 import os
+import pwd
 import sys
 import json
 import agent
@@ -15,10 +16,34 @@ request = json.load(sys.stdin)
 tun = request['tun']
 ip = request['ip']
 
+# Recent kernels (upstream ffdf678dd166, in Debian 13 since 6.12.117)
+# refuse a rootless container to open a tun without owner. The owner is the module that asks for the tun,
+# taken from the task identity so that a module cannot name another one.
+# A rootfull module has no user and keeps a tun without owner.
+owner = ''
+task_user = os.environ.get('AGENT_TASK_USER', '')
+if task_user.startswith('module/'):
+    try:
+        owner = str(pwd.getpwnam(task_user.removeprefix('module/')).pw_uid)
+    except KeyError:
+        pass
+
+envfile = f'{odir}/{tun}.env'
+content = f"TUN={tun}\nIP={ip}\n"
+if owner:
+    content += f"OWNER={owner}\n"
+
+try:
+    with open(envfile) as fp:
+        changed = fp.read() != content
+except FileNotFoundError:
+    changed = True
+
 os.makedirs(odir, exist_ok=True)
+with open(envfile, 'w') as fp:
+    fp.write(content)
 
-with open(f'{odir}/{tun}.env', 'w') as fp:
-    fp.write(f"TUN={tun}\n")
-    fp.write(f"IP={ip}\n")
-
-agent.run_helper('systemctl', 'enable', '--now', f'tun-manager@{tun}').check_returncode()
+agent.run_helper('systemctl', 'enable', f'tun-manager@{tun}').check_returncode()
+# Restart only on change: an existing tun is created again with its owner,
+# and a module that calls add-tun at each configuration keeps its tun.
+agent.run_helper('systemctl', 'restart' if changed else 'start', f'tun-manager@{tun}').check_returncode()

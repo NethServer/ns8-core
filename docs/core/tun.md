@@ -37,6 +37,17 @@ import agent
 agent.assert_exp(agent.add_tun("tun1", "192.168.1.1/24"))
 ```
 
+The tun is owned by the uid of the rootless module that calls
+`add-tun`, so the module containers can open it. Recent kernels (for
+example Debian 13 since 6.12.117) refuse a rootless container to open a
+tun without owner.
+
+A module installed before this change gets the owner when it calls
+`add_tun()` again, for example from an `update-module.d` script. The tun
+is created again only when its settings change. Stop the containers that
+use the tun before the call, and start them after it: the tun cannot be
+created again while a process holds it open.
+
 In `destroy-module`:
 
 ```python
