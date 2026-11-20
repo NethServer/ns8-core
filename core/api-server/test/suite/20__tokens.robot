@@ -13,10 +13,19 @@ Token in the jwt query parameter is accepted
     ${token} =    Get token of    admin
     GET On Session    api    /cluster/tasks    params=jwt=${token}    expected_status=200
 
-A token issued earlier is accepted
-    ${claims} =    Admin Claims    admin    expires_in=3600    issued_ago=${{ 13 * 86400 }}
+An agent token issued earlier is accepted
+    ${claims} =    Admin Claims    module/t1    expires_in=3600    issued_ago=${{ 13 * 86400 }}
     ${token} =    Forge Token    ${SECRET}    ${claims}
     API GET    /cluster/tasks    ${token}
+
+An administrator token without session is rejected
+    [Documentation]    Tokens issued before sessions were introduced have no
+    ...    "sid" claim: administrators log in again
+    ${claims} =    Admin Claims    admin    expires_in=3600    issued_ago=${{ 13 * 86400 }}
+    ${token} =    Forge Token    ${SECRET}    ${claims}
+    ${response} =    API GET    /cluster/tasks    ${token}    expected_status=401
+    Response message should be    ${response}    session is not valid
+    Should Be Equal    ${response.headers}[WWW-Authenticate]    JWT realm=nethserver
 
 Missing token
     ${response} =    API GET    /cluster/tasks    expected_status=401

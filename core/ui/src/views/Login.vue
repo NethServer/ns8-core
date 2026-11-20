@@ -259,8 +259,7 @@ export default {
           this.deleteFromStorage("username");
         }
         // credentials are valid, store JWT and complete login
-        this.jwtToken = response.data.token;
-        this.loginSuccessful();
+        this.loginSuccessful(response.data);
       }
     },
     handleLoginError(error) {
@@ -304,10 +303,13 @@ export default {
         this.focusElement("twoFaCode");
       });
     },
-    loginSuccessful() {
+    loginSuccessful(loginResponse) {
+      this.jwtToken = loginResponse.token;
       const loginInfo = {
         username: this.username,
-        token: this.jwtToken,
+        token: loginResponse.token,
+        refreshToken: loginResponse.refresh_token,
+        expire: loginResponse.expire,
       };
       this.saveToStorage("loginInfo", loginInfo);
 
@@ -345,8 +347,7 @@ export default {
         return;
       }
       // OTP is valid, store JWT and complete login
-      this.jwtToken = response.data.token;
-      this.loginSuccessful();
+      this.loginSuccessful(response.data);
     },
     handleVerify2FaError(error) {
       let errorMessage = this.$t("error.generic_error");

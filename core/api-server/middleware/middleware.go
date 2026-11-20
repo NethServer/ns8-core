@@ -47,6 +47,7 @@ import (
 	"github.com/NethServer/ns8-core/core/api-server/methods"
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/response"
+	"github.com/NethServer/ns8-core/core/api-server/sessions"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
@@ -134,29 +135,45 @@ var identityKey = "id"
 
 const jwtRealm = "nethserver"
 
-// noRefreshTokenStore discards the refresh tokens that gin-jwt v3
-// generates on every login. The API has no refresh endpoint and never
-// returns refresh tokens to clients, so storing them would only make
-// the default in-memory store grow for each login.
-type noRefreshTokenStore struct{}
+const (
+	// AgentTokenTimeout is the token lifetime of cluster, node and
+	// module agents: they have no session and no refresh token
+	AgentTokenTimeout = 14 * 24 * time.Hour
+	// JoinTokenTimeout is the lifetime of a join code token
+	JoinTokenTimeout = time.Hour
+	// JoinScope marks a token that can only add a node to the cluster
+	JoinScope = "join"
+	// ctxRefreshToken passes the session refresh token to LoginResponse
+	ctxRefreshToken = "session_refresh_token"
+)
 
-func (noRefreshTokenStore) Set(ctx context.Context, token string, userData any, expiry time.Time) error {
+// actions a join token can run on the cluster agent
+var joinActions = []string{"add-node", "list-actions"}
+
+// sessionTokenStore replaces the gin-jwt v3 refresh token store.
+// Refresh tokens are issued by the sessions package, with our own
+// /api/refresh endpoint: the random tokens that gin-jwt generates on
+// every login are discarded. Delete is called by gin-jwt LogoutHandler
+// with the refresh token sent by the client: it ends the session.
+type sessionTokenStore struct{}
+
+func (sessionTokenStore) Set(ctx context.Context, token string, userData any, expiry time.Time) error {
 	return nil
 }
 
-func (noRefreshTokenStore) Get(ctx context.Context, token string) (any, error) {
+func (sessionTokenStore) Get(ctx context.Context, token string) (any, error) {
 	return nil, core.ErrRefreshTokenNotFound
 }
 
-func (noRefreshTokenStore) Delete(ctx context.Context, token string) error {
-	return nil
+func (sessionTokenStore) Delete(ctx context.Context, token string) error {
+	return sessions.RevokeRefresh(token)
 }
 
-func (noRefreshTokenStore) Cleanup(ctx context.Context) (int, error) {
+func (sessionTokenStore) Cleanup(ctx context.Context) (int, error) {
 	return 0, nil
 }
 
-func (noRefreshTokenStore) Count(ctx context.Context) (int, error) {
+func (sessionTokenStore) Count(ctx context.Context) (int, error) {
 	return 0, nil
 }
 
@@ -181,8 +198,7 @@ func TokenErrorMessage(err error) string {
 
 func InstanceJWT() *jwt.GinJWTMiddleware {
 	if jwtMiddleware == nil {
-		jwtMiddleware := InitJWT()
-		return jwtMiddleware
+		jwtMiddleware = InitJWT()
 	}
 	return jwtMiddleware
 }
@@ -190,11 +206,22 @@ func InstanceJWT() *jwt.GinJWTMiddleware {
 func InitJWT() *jwt.GinJWTMiddleware {
 	// define jwt middleware
 	authMiddleware, errDefine := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:             jwtRealm,
-		Key:               []byte(configuration.Config.Secret),
-		Timeout:           time.Hour * 24 * 14, // 2 weeks
+		Realm:   jwtRealm,
+		Key:     []byte(configuration.Config.Secret),
+		Timeout: sessions.AccessTimeout,
+		TimeoutFunc: func(data any) time.Duration {
+			if user, ok := data.(*models.UserAuthorizations); ok {
+				if user.Scope == JoinScope {
+					return JoinTokenTimeout
+				}
+				if methods.IsAgentUser(user.Username) {
+					return AgentTokenTimeout
+				}
+			}
+			return sessions.AccessTimeout
+		},
 		IdentityKey:       identityKey,
-		RefreshTokenStore: noRefreshTokenStore{},
+		RefreshTokenStore: sessionTokenStore{},
 		Authenticator: func(c *gin.Context) (any, error) {
 			// check login credentials exists
 			var loginVals login
@@ -252,12 +279,26 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			}
 			audit.Store(auditData)
 
+			// Start a session for administrators: agents use long-lived
+			// tokens without refresh
+			sessionID := ""
+			if !methods.IsAgentUser(username) {
+				id, refreshToken, err := sessions.Create(username, otpPassClaim)
+				if err != nil {
+					utils.LogError(errors.Wrap(err, "[AUTH] session creation failed for user "+username))
+					return nil, sessions.ErrUnavailable
+				}
+				sessionID = id
+				c.Set(ctxRefreshToken, refreshToken)
+			}
+
 			utils.LogError(errors.New("[AUTH] login-ok " + generateLogMessage(c, username, otpNeed)))
 
 			// return user auth model
 			return &models.UserAuthorizations{
-				Username: username,
-				OtpPass:  otpPassClaim, // true if OTP passed, false if OTP is not needed
+				Username:  username,
+				OtpPass:   otpPassClaim, // true if OTP passed, false if OTP is not needed
+				SessionID: sessionID,
 			}, nil
 
 		},
@@ -265,12 +306,19 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// read current user
 			if user, ok := data.(*models.UserAuthorizations); ok {
 				// create claims map
-				return gojwt.MapClaims{
+				claims := gojwt.MapClaims{
 					identityKey: user.Username,
 					"role":      "",
 					"actions":   []string{},
 					"2fa":       user.OtpPass, // OTP value check result: true=success, false=not needed
 				}
+				if user.SessionID != "" {
+					claims["sid"] = user.SessionID
+				}
+				if user.Scope != "" {
+					claims["scope"] = user.Scope
+				}
+				return claims
 			}
 
 			// return claims map
@@ -300,6 +348,8 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				Actions:         userAuthorizations.Actions,
 				AllowedNetworks: methods.GetUserNetworks(claims[identityKey].(string)),
 			}
+			user.SessionID, _ = claims["sid"].(string)
+			user.Scope, _ = claims["scope"].(string)
 
 			// return user
 			return user
@@ -313,9 +363,24 @@ func InitJWT() *jwt.GinJWTMiddleware {
 					return false
 				}
 
+				// a join token can only add a node to the cluster
+				if v.Scope == JoinScope {
+					return joinTokenAllowed(c, v.Actions)
+				}
+
 				// bypass auth for GET requests: // TODO
 				if c.Request.Method == "GET" {
 					return true
+				}
+
+				// any user can end their other sessions
+				if c.Request.Method == "POST" && c.FullPath() == "/api/logout-others" {
+					return true
+				}
+
+				// a join code can be created by users allowed to add nodes
+				if c.Request.Method == "POST" && c.FullPath() == "/api/cluster/join-token" {
+					return actionAllowed(v.Actions, "add-node")
 				}
 
 				// bypass for 2FA apis
@@ -336,15 +401,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				}
 
 				// check action authorization
-				actionAllowed := false
-				for _, authorizedAction := range authorizedActions {
-					actionAllowed, _ = filepath.Match(authorizedAction, jsonTask.Action)
-					if actionAllowed {
-						break
-					}
-				}
-
-				return actionAllowed
+				return actionAllowed(authorizedActions, jsonTask.Action)
 			}
 
 			// store auth action
@@ -361,9 +418,24 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			return false
 		},
 		LoginResponse: func(c *gin.Context, token *core.Token) {
-			c.JSON(200, gin.H{"code": 200, "expire": time.Unix(token.ExpiresAt, 0), "token": token.AccessToken})
+			response := gin.H{"code": 200, "expire": time.Unix(token.ExpiresAt, 0), "token": token.AccessToken}
+			if refreshToken, ok := c.Get(ctxRefreshToken); ok {
+				response["refresh_token"] = refreshToken
+			}
+			c.JSON(200, response)
 		},
 		LogoutResponse: func(c *gin.Context) {
+			// The refresh token, if sent, was revoked by
+			// sessionTokenStore. End also the session of a valid access
+			// token, so clients that send only the access token are
+			// logged out too.
+			if claims, ok := c.Get("JWT_PAYLOAD"); ok {
+				if mapClaims, ok := claims.(gojwt.MapClaims); ok {
+					if sid, _ := mapClaims["sid"].(string); sid != "" {
+						sessions.Revoke(sid)
+					}
+				}
+			}
 			c.JSON(200, gin.H{"code": 200})
 		},
 		HTTPStatusMessageFunc: func(c *gin.Context, e error) string {
@@ -414,4 +486,190 @@ func InitJWT() *jwt.GinJWTMiddleware {
 func generateLogMessage(c *gin.Context, username string, otpNeed bool) string {
 	ipSource := c.ClientIP()
 	return fmt.Sprintf("user=%s source=%s 2fa=%t", username, ipSource, otpNeed)
+}
+
+// actionAllowed tells if action matches one of the authorized action
+// patterns
+func actionAllowed(authorizedActions []string, action string) bool {
+	for _, authorizedAction := range authorizedActions {
+		if ok, _ := filepath.Match(authorizedAction, action); ok {
+			return true
+		}
+	}
+	return false
+}
+
+// joinTokenAllowed limits a join token to the requests of the
+// join-cluster action of a new node: run add-node (and list-actions, as
+// credentials probe) on the cluster, and read the task status
+func joinTokenAllowed(c *gin.Context, authorizedActions []string) bool {
+	switch {
+	case c.Request.Method == "GET" && c.FullPath() == "/api/cluster/task/:task_id/status":
+		return true
+	case c.Request.Method == "POST" && c.FullPath() == "/api/cluster/tasks":
+		var jsonTask models.Task
+		if err := c.ShouldBindBodyWith(&jsonTask, binding.JSON); err != nil {
+			return false
+		}
+		for _, joinAction := range joinActions {
+			if jsonTask.Action == joinAction {
+				return actionAllowed(authorizedActions, jsonTask.Action)
+			}
+		}
+	}
+	utils.LogError(errors.New("[AUTH] request denied (join token) " + c.Request.Method + " " + c.Request.URL.Path))
+	return false
+}
+
+// ClaimsSessionValid tells if a token belongs to a valid session.
+// Agent and join tokens have no session.
+func ClaimsSessionValid(claims gojwt.MapClaims) bool {
+	username, _ := claims[identityKey].(string)
+	if methods.IsAgentUser(username) {
+		return true
+	}
+	if scope, _ := claims["scope"].(string); scope == JoinScope {
+		return true
+	}
+	sid, _ := claims["sid"].(string)
+	return sessions.Valid(sid)
+}
+
+// SessionCheck rejects tokens whose session ended: logged out, revoked
+// or expired. It runs after the JWT middleware.
+func SessionCheck() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !ClaimsSessionValid(jwt.ExtractClaims(c)) {
+			InstanceJWT().Unauthorized(c, http.StatusUnauthorized, sessions.ErrInvalid.Error())
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+type refreshRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+// RefreshHandler godoc
+// @Summary Get a new access token
+// @Description exchange the refresh token for a new access token and a new refresh token
+// @Produce json
+// @Success 200 {object} response.StatusOK{code=int}
+// @Failure 401 {object} response.StatusUnauthorized{code=int,message=string,data=object}
+// @Router /refresh [post]
+// @Tags /refresh auth
+func RefreshHandler(c *gin.Context) {
+	var request refreshRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		InstanceJWT().Unauthorized(c, http.StatusUnauthorized, "missing refresh_token")
+		return
+	}
+
+	session, refreshToken, err := sessions.Refresh(request.RefreshToken)
+	if err != nil {
+		if err != sessions.ErrInvalid {
+			utils.LogError(errors.Wrap(err, "[AUTH] session refresh failed"))
+		}
+		InstanceJWT().Unauthorized(c, http.StatusUnauthorized, sessions.ErrInvalid.Error())
+		return
+	}
+
+	if !methods.CheckIPAllowed(c.ClientIP(), methods.GetUserNetworks(session.Username)) {
+		utils.LogError(errors.New("[AUTH] refresh-denied (IP not allowed) " + generateLogMessage(c, session.Username, session.OtpPass)))
+		InstanceJWT().Unauthorized(c, http.StatusUnauthorized, sessions.ErrInvalid.Error())
+		return
+	}
+
+	token, err := InstanceJWT().TokenGenerator(c.Request.Context(), &models.UserAuthorizations{
+		Username:  session.Username,
+		OtpPass:   session.OtpPass,
+		SessionID: session.ID,
+	})
+	if err != nil {
+		utils.LogError(errors.Wrap(err, "[AUTH] token creation failed"))
+		InstanceJWT().Unauthorized(c, http.StatusInternalServerError, jwt.ErrFailedTokenCreation.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":          200,
+		"expire":        time.Unix(token.ExpiresAt, 0),
+		"token":         token.AccessToken,
+		"refresh_token": refreshToken,
+	})
+}
+
+// LogoutOthersHandler godoc
+// @Summary End the other sessions of the current user
+// @Description log out the current user from other browsers and devices
+// @Produce json
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=object}
+// @Router /logout-others [post]
+// @Tags /logout-others auth
+func LogoutOthersHandler(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	username, _ := claims[identityKey].(string)
+	sid, _ := claims["sid"].(string)
+	if sid == "" {
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
+			Code:    400,
+			Message: "the token has no session",
+			Data:    nil,
+		}))
+		return
+	}
+
+	count, err := sessions.RevokeOthers(username, sid)
+	if err != nil {
+		utils.LogError(errors.Wrap(err, "[AUTH] session revocation failed for user "+username))
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	utils.LogError(fmt.Errorf("[AUTH] sessions-revoked user=%s count=%d", username, count))
+
+	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
+		Code:    200,
+		Message: "other sessions ended",
+		Data:    count,
+	}))
+}
+
+// JoinTokenHandler godoc
+// @Summary Create the token of a join code
+// @Description the token can only add a node to the cluster and expires after one hour
+// @Produce json
+// @Success 200 {object} response.StatusOK{code=int}
+// @Router /cluster/join-token [post]
+// @Tags /cluster auth
+func JoinTokenHandler(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	username, _ := claims[identityKey].(string)
+	otpPass, _ := claims["2fa"].(bool)
+
+	token, err := InstanceJWT().TokenGenerator(c.Request.Context(), &models.UserAuthorizations{
+		Username: username,
+		OtpPass:  otpPass,
+		Scope:    JoinScope,
+	})
+	if err != nil {
+		utils.LogError(errors.Wrap(err, "[AUTH] join token creation failed"))
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	audit.Store(models.Audit{
+		ID:        0,
+		User:      username,
+		Action:    "join-token",
+		Data:      "",
+		Timestamp: time.Now().UTC(),
+	})
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":   200,
+		"expire": time.Unix(token.ExpiresAt, 0),
+		"token":  token.AccessToken,
+	})
 }

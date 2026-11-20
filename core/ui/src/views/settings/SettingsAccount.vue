@@ -237,6 +237,7 @@ import Enable2FaModal from "@/components/settings/Enable2FaModal";
 import ConfirmRevoke2FaModal from "@/components/settings/ConfirmRevoke2FaModal";
 import TwoFaService from "@/mixins/2fa";
 import NotificationService from "@/mixins/notification";
+import LoginService from "@/mixins/login";
 import EditAdminDisplayNameModal from "@/components/settings/EditAdminDisplayNameModal.vue";
 
 export default {
@@ -255,6 +256,7 @@ export default {
     PageTitleService,
     TwoFaService,
     NotificationService,
+    LoginService,
   ],
   pageTitle() {
     return this.$t("settings_account.title");
@@ -457,11 +459,17 @@ export default {
         this.focusElement("currentPassword");
       }
     },
-    changeUserPasswordCompleted() {
+    async changeUserPasswordCompleted() {
       this.currentPassword = "";
       this.newPassword = "";
       this.clearConfirmPasswordCommand++;
       this.loading.changeUserPassword = false;
+
+      // the old password may be known by others: end the other sessions
+      const [err] = await to(this.executeLogoutOthers());
+      if (err) {
+        console.error("error ending other sessions", err);
+      }
     },
     show2FaQrCodeModal() {
       this.isShown2FaQrCodeModal = true;

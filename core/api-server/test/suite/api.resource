@@ -12,7 +12,8 @@ ${API_SERVER_PASS}     api-server-test-password
 ${CLUSTER_PASS}        cluster-test-password
 ${ADMIN_PASS}          Nethesis,1234
 ${OTP_SECRET}          JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP
-${TOKEN_DAYS}          ${14}
+${ACCESS_MINUTES}      ${15}
+${AGENT_TOKEN_DAYS}    ${14}
 
 *** Keywords ***
 Prepare Redis
