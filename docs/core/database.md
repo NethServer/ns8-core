@@ -200,6 +200,7 @@ setting storage for [SMTP smarthost]({{site.baseurl}}/core/smarthost).
 |cluster/smarthost tls_verify           |0\|1   |(0 disabled, 1 enabled) verify if the certificate is valid and if the hostname is associated to the certificate|
 |cluster/smarthost username             |STRING |username for smtp credentials|
 |cluster/smarthost password             |STRING |password for smtp credentials|
+|cluster/smarthost mail_uuid            |STRING |UUID of the Mail module chosen as smarthost. If set, the host follows the module when it is moved or restored|
 
 #### cluster/repository/
 

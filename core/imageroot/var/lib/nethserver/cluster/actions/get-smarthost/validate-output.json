@@ -112,6 +112,11 @@
         },
         "manual_configuration": {
             "type": "boolean"
+        },
+        "mail_id": {
+            "type": "string",
+            "title": "mail_id",
+            "description": "Mail module ID the smarthost follows, if any"
         }
     }
 }

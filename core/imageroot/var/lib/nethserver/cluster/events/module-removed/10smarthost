@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# A failed move or restore removes the new Mail module: point the
+# smarthost back to the module that is left.
+
+import sys
+import agent
+import cluster.smarthost
+
+rdb = agent.redis_connect(privileged=True)
+host = cluster.smarthost.sync_mail_host(rdb)
+if host:
+    print(f"Smarthost follows its Mail module at {host}", file=sys.stderr)
