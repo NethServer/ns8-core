@@ -3206,14 +3206,14 @@ __metadata:
   linkType: hard
 
 "axios@npm:^1.20.0":
-  version: 1.21.0
-  resolution: "axios@npm:1.21.0"
+  version: 1.21.1
+  resolution: "axios@npm:1.21.1"
   dependencies:
-    follow-redirects: ^1.16.0
+    follow-redirects: ^1.16.2
     form-data: ^4.0.6
     https-proxy-agent: ^5.0.1
     proxy-from-env: ^2.1.0
-  checksum: d9858b39b6e382ac44967621ba9da1910e5f8dfb84c1866b16376f772eb18fa2544f70e1e6573fb90936192d2227277c3d5013db8df6c7002c940743f5f5bf64
+  checksum: c2e05c1dcf5c10945ca5ebe20550539dbec1a526843851f9a9a52b7a0b8bd1dbcfdcd5c3d016d62c3c73b408ece7d9ee1595bc8f3480b1738661e9b9460c1cd7
   languageName: node
   linkType: hard
 
@@ -6587,13 +6587,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.16.0":
-  version: 1.16.0
-  resolution: "follow-redirects@npm:1.16.0"
+"follow-redirects@npm:^1.16.2":
+  version: 1.16.3
+  resolution: "follow-redirects@npm:1.16.3"
   peerDependenciesMeta:
     debug:
       optional: true
-  checksum: e90dce4607b1f6b8b9883287f912585573c19088209ad82341d550a795b4ba514522b73b1b340cf618279df27975cd46504d09149be60291ba6767384c1fd8f8
+  checksum: 5500c44e473b8eb8f85ce43703f6fa93ffe63a2943dfca479ead0f08c6ad756b75696e5b8a654446b01feb0e63dd0c4f0192a8e2049c43e523567e7a1835aff3
   languageName: node
   linkType: hard
 
