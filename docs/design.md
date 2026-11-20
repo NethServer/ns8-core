@@ -117,9 +117,9 @@ It runs the following components:
 - Redis [database and message bus](core/database.md)
 - Node, cluster and module [agents](core/agents.md) written in Golang
 - Traefik as [edge proxy](core/proxy_certificates.md), for TLS termination and centralized certificates management
-- [LDAP proxy](core/user_domains.md), a rootless module listening on 127.0.0.1. It helps other
+- [LDAP proxy](core/user_domains.md), a rootless module listening on the node IPv4 addresses. It helps other
   modules to connect to account provider LDAP servers, with a clear text connection for local containers
-- LDAP local account provider: [Samba DC](https://github.com/NethServer/ns8-core/blob/main/samba/README.md), OpenLDAP (not implemented yet)
+- LDAP local account provider: [Samba DC](https://github.com/NethServer/ns8-samba), [OpenLDAP](https://github.com/NethServer/ns8-openldap)
 - [VPN](core/vpn.md), each node is connected to the leader using WireGuard in a star network topology
 - [API server](core/api_server.md), it handles authentication and authorization for UI and cli requests, it also audits executed tasks
 - [UI](ui/index.md), it allows configuration of the cluster and applications
