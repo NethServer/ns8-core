@@ -32,7 +32,7 @@ bcontainer="gobuilder-agent"
 
 # Reuse existing ${bcontainer}, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep "${bcontainer}" >/dev/null; then
-    buildah from --name "${bcontainer}" -v ${PWD}:/usr/src:Z docker.io/library/golang:1.26.5-bookworm
+    buildah from --name "${bcontainer}" -v ${PWD}:/usr/src:Z docker.io/library/golang:1.26.10-bookworm
 fi
 
 # Rebuild the "agent" Golang binary
@@ -44,7 +44,7 @@ if ! podman container exists test-agent-redis; then
     podman run -d -q --rm --replace \
         --name test-agent-redis \
         --network=private \
-        docker.io/redis:6-alpine \
+        docker.io/library/redis:8.8.4-alpine \
         --port 6379 --save 5 1 --protected-mode no --loglevel debug
 fi
 
