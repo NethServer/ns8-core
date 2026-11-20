@@ -185,10 +185,19 @@ labels), hard links and sparse files. Both steps check the target has
 enough free space.
 
 During the finalize step the whole user session of the application is
-stopped: all its services, timers and its agent. If the agent is running
+stopped: all its services, timers and its agent. Its runtime directory,
+`/run/user/UID`, is kept by a transient unit, `volumectl-rundir-*`, until
+the session starts again. While that unit is active, `user@UID.service`
+is kept stopped, so that other commands, like `runagent` run by a
+backup, cannot start it again. If the agent is running
 a task, the command refuses to stop it. Retry later, or add `--force` to
 stop the agent anyway: the running task is interrupted and never
 returns a result to its caller.
+
+The command refuses also if a backup of the application is running, or
+the scripts of an application update: `--force` interrupts them, too. A
+backup that starts while finalize runs is postponed: the node
+retries it every minute, for one hour.
 
 If finalize fails, or it is interrupted with Ctrl-C, the original volume
 is restored and the application is started again. When finalize
