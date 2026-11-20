@@ -117,6 +117,7 @@ if 'org.nethserver.authorizations' in inspect_labels:
     if not cluster.grants.check_authorizations_sanity(authorizations):
         print(agent.SD_ERR + f'Invalid org.nethserver.authorizations label value image_url={image_url}:', authorizations, file=sys.stderr)
         sys.exit(2)
+    authorizations = cluster.grants.filter_authorizations(authorizations, image_url)
 else:
     authorizations = []
 

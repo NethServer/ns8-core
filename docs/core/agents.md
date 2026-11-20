@@ -297,3 +297,12 @@ print(agent.resolve_agent_id('traefik@node', node_id=os.getenv('NODE_ID', 1)))
 ```
 
 The `node_id` argument is optional.
+
+The `owner` role is reserved to users. If the label requests `owner` on
+any agent selector except `self`, the core ignores it and logs a warning.
+The module is installed with the other roles of the label. A module that
+needs to drive another module must request a role defined by that
+module, like `routeadm`, `fwadm` or `portsadm`. Malformed values, without
+the `:` separator or with more than one, are ignored with a warning too.
+Values with glob characters (`*`, `[`, `?`) are still rejected and the
+module is not installed.
