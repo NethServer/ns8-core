@@ -47,7 +47,8 @@ Module images can use a list of well-known labels to configure the system:
 - `org.nethserver.images`: see [Service images](#service-images)
 - `org.nethserver.rootfull`: can be `0` or `1`, if set to `0` the module will run podman in rootless mode,
   if set to `1` the module will run podman in rootfull mode. See [Rootless vs Rootfull](../rootless_rootfull)
-- `org.nethserver.authorizations`: authorize the module to run actions of other modules. For instance `traefik@any:routeadm` allows setting Traefik routes.
+- `org.nethserver.authorizations`: authorize the module to run actions of other modules. For instance `traefik@node:routeadm` allows setting routes on the Traefik instance of the module node.
+  Request the narrowest scope: prefer `@node` over `@any`, unless the module really needs to drive instances on other nodes.
   See [Roles and authorizations]({{site.baseurl}}/core/agents/#roles-and-authorizations).
 - `org.nethserver.flags`: a space-separated list of well-known flags. Currently available flags are:
   - `core_module`: if present, it marks a module as core
