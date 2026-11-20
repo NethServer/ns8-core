@@ -144,7 +144,7 @@
         "level_2_description": "Applicazione sviluppata da terze parti, certificata dalla comunità di NethServer 8",
         "reason_max_per_node_limit": "Limite di un'applicazione raggiunto | Limite di {param} applicazioni raggiunto",
         "num_instances_installed": "Un'applicazione installata | {num} applicazioni installate",
-        "rootfull_app_warning_description": "Dopo l'installazione {appName} avrà pieno accesso al cluster: questo può comportare rischi di sicurezza significativi.",
+        "rootfull_app_warning_description": "Dopo l'installazione {appName} avrà pieno accesso al nodo di installazione: questo può comportare rischi di sicurezza significativi.",
         "updates_disabled_ns7_migration_description": "È in corso una migrazione da NS7. Gli aggiornamenti riprenderanno una volta completata la migrazione.",
         "updates_disabled_ns7_migration_title": "Gli aggiornamenti sono sospesi",
         "no_node_eligible_for_instance_cloning": "Nessun nodo è idoneo alla clonazione dell'applicazione",
@@ -196,7 +196,45 @@
         "go_to_core_applications": "Vai a Applicazioni core",
         "core_and_app_updates_available": "Sono disponibili aggiornamenti sia per il core che per le applicazioni.",
         "applications_update": "Aggiornamenti applicazioni",
-        "updates_disabled": "Aggiornamenti disabilitati"
+        "updates_disabled": "Aggiornamenti disabilitati",
+        "permission_label": "ID",
+        "app_permissions": {
+            "cluster_accountconsumer": "Collegarsi a un dominio utente per leggere utenti e gruppi",
+            "cluster_reader": "Leggi la configurazione e lo stato del cluster",
+            "nethvoice-proxy_trunkadm": "Gestisci i trunk SIP del proxy voce",
+            "mail_mailadm": "Leggi tutte le caselle di posta e la configurazione di Mail, cambia regole di relay e always-BCC",
+            "node_portsadm": "Prenota porte di rete extra sul nodo",
+            "nethvoice_pbookreader": "Leggi le credenziali del database della rubrica",
+            "cluster_accountprovider": "Agire da provider di dominio utente per il cluster",
+            "traefik_fulladm": "Controllo completo delle rotte web e dei certificati TLS",
+            "node_tunadm": "Crea tunnel di rete e modifica il firewall del nodo",
+            "node_fwadm": "Aprire le porte e modificare il firewall del nodo",
+            "nethvoice-proxy_routeadm": "Gestisci le rotte SIP del proxy voce",
+            "traefik_routeadm": "Pubblica e rimuovi le rotte web",
+            "node_reader": "Leggi la configurazione e lo stato del nodo",
+            "samba_domadm": "Crea, modifica ed elimina utenti e gruppi",
+            "traefik_certadm": "Richiedi e gestisci i certificati TLS",
+            "openldap_domadm": "Crea, modifica ed elimina utenti e gruppi"
+        },
+        "permissions_label": "Permessi",
+        "app_permission_core_roles": {
+            "owner": "Eseguire qualsiasi azione su {module}",
+            "reader": "Leggi la configurazione e lo stato di {module}"
+        },
+        "app_permission_scopes": {
+            "any": "Qualsiasi {module}",
+            "cluster": "{module} di default del cluster al momento dell'installazione",
+            "node": "{module} di default del nodo al momento dell'installazione"
+        },
+        "app_permission_rootfull": "Accesso illimitato al nodo di installazione",
+        "app_permission_generic": "Ruolo {role} su {module}",
+        "app_permission_targets": {
+            "cluster": "Cluster",
+            "node": "Nodo di installazione",
+            "node_id": "Nodo {id)"
+        },
+        "permission_target": "Ambito",
+        "permission_description": "Azioni consentite"
     },
     "nodes": {
         "title": "Nodi",
