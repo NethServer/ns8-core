@@ -27,6 +27,12 @@ except FileNotFoundError:
 # the rootless module that asks for the tun. It comes from the task
 # identity, which a module cannot choose.
 owner = env.get('OWNER', '')
+# A removed module can leave its env file behind: forget an owner without user
+if owner:
+    try:
+        pwd.getpwuid(int(owner))
+    except KeyError:
+        owner = ''
 task_user = os.environ.get('AGENT_TASK_USER', '')
 if task_user.startswith('module/'):
     module_id = task_user.removeprefix('module/')
