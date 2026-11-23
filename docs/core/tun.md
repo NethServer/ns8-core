@@ -42,10 +42,8 @@ The tun is owned by the uid of the rootless module that calls
 example Debian 13 since 6.12.117) refuse a rootless container to open a
 tun without owner.
 
-A tun created before this change gets its owner the next time the
-module calls `add_tun()`, for example from `configure-module`. The owner
-is set in place, without creating the tun again. If a process holds the
-tun at that time, the owner is set at the next boot instead.
+A tun created before this change gets its owner at the next boot after
+the module calls `add_tun()` again, for example from `configure-module`.
 
 In `destroy-module`:
 
