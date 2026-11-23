@@ -1,6 +1,8 @@
 [Unit]
 Description=Create User-State-Private link
 Documentation=https://github.com/NethServer/dev/issues/8028
+# Skip it like user@.service, see user@.service.d/40-hold.conf
+ConditionPathExists=!/run/nethserver/user-hold/%i
 
 [Service]
 User=%i
