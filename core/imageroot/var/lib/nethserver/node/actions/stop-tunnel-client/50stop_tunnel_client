@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+exec 1>&2
+
+# Stop the tunnel service. The tunnel-client handles user cleanup on
+# SIGTERM: it runs teardown on users.d plugins and deletes ephemeral
+# users (cluster-admin, domain users) before exiting. ExecStopPost runs
+# --cleanup-only for anything a killed client left behind.
+systemctl stop support-tunnel.service || :
+
+redis-exec DEL "node/${NODE_ID:?}/tunnel" > /dev/null
