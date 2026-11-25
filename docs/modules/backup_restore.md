@@ -48,6 +48,34 @@ implement specific restore steps. The basic `10restore` step actually runs
 the Restic restore procedure in a temporary container and extracts the
 backup data to the `state/` directory and to Podman named volumes.
 
+## Module version and migrations
+
+The `cluster/restore-module` action reads `IMAGE_URL` from the
+`state/environment` file of the backup, and installs a new module
+instance from that image. Then it runs the `restore-module` action of the
+new instance. As a result, the restore steps always run with the same
+module version that made the backup, and never receive data or settings
+from an older version.
+
+Do not add data or settings migrations to the `restore-module` action.
+Put them in the `update-module.d` scripts (see
+[Updates]({{site.baseurl}}/modules/updates)): they run when the restored
+instance is updated, as for any other instance. For the same reason,
+the restore steps of a release need to handle only the environment
+variables and data format of that same release: a backup made by an
+older release is restored by its own older image.
+
+Exceptions:
+
+- Traefik is restored into the instance already running on the node,
+  whatever its version, without installing a new one. Its restore steps
+  must accept the state of older versions, and merge it with the current
+  configuration.
+- The image is pulled by its tag. If the tag is not immutable, like a
+  development branch tag or `latest`, the restored image can be a newer
+  build than the one that made the backup. Released version tags do not
+  change.
+
 ## Include and exclude files
 
 Whenever possible, containers should use volumes to avoid UID/GID

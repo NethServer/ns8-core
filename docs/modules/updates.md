@@ -37,6 +37,11 @@ printed. Example of a script that restarts a Systemd service,
 
 Make sure the `20restart` is executable, otherwise it is ignored.
 
+Update scripts are the only place for data and settings migrations. A
+backup is restored with the same module version that made it, so the
+`restore-module` action needs no migration steps: see
+[Backup and Restore]({{site.baseurl}}/modules/backup_restore#module-version-and-migrations).
+
 Update scripts and module backups are mutually exclusive. If a backup of
 the module instance is running, the update waits for its completion. If
 the backup is still running after one hour, the update is aborted
