@@ -60,7 +60,7 @@ if agent.http_route_in_use(domain=hostname):
 import sys
 import agent
 path ='/path' # path fragment of the URL to check
-if agent.http_route_in_use(domain=none, path=path):
+if agent.http_route_in_use(domain=None, path=path):
     sys.exit(2)
 ```
 

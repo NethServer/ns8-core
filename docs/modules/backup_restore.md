@@ -48,6 +48,11 @@ implement specific restore steps. The basic `10restore` step actually runs
 the Restic restore procedure in a temporary container and extracts the
 backup data to the `state/` directory and to Podman named volumes.
 
+The `state/environment` file is not extracted. The backed up environment
+is passed to `restore-module` as the `environment` attribute of the action
+input. Restore steps that need old values must read them from
+`request['environment']` and set them with `agent.set_env()`.
+
 ## Include and exclude files
 
 Whenever possible, containers should use volumes to avoid UID/GID
