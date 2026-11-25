@@ -55,8 +55,19 @@ env['TUN'] = tun
 env['IP'] = ip
 if owner:
     env['OWNER'] = owner
+else:
+    env.pop('OWNER', None)
 
 os.makedirs(odir, exist_ok=True)
 agent.write_envfile(envfile, env)
 # Never restart: a running module holds the tun, and it cannot be created again under it
 agent.run_helper('systemctl', 'enable', '--now', f'tun-manager@{tun}').check_returncode()
+
+if caller:
+    try:
+        with open(f'/sys/class/net/{tun}/owner') as fp:
+            live_owner = int(fp.read())
+    except (OSError, ValueError):
+        live_owner = None
+    if live_owner is not None and live_owner != pwd.getpwnam(caller).pw_uid:
+        print(agent.SD_WARNING + f'The tun {tun} was created without {caller} as owner: recreate it to apply the owner', file=sys.stderr)
