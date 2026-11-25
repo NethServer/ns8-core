@@ -130,7 +130,7 @@ Then `rsyncd` server runs at step `10recvstate`. This server blocks the
 step until the "terminate" signal is received from the client, or the task
 itself is canceled.
 
-If the state data transfer is successful this step copies from
+When the rsyncd server exits without error, this step copies from
 `environment.clone-module` (source module environment) only the variables
 that are missing in the destination module `environment`. Existing
 destination values, like MODULE_ID, are kept. The source MODULE_UUID is

@@ -40,8 +40,9 @@ Note that `instance` must be a unique route identifier. If the module uses
 multiple HTTP routes, use MODULE_ID as prefix or suffix to distinguish
 them (e.g. `mymodule1-ui`, `mymodule1-api`, ...). When the module is
 removed, Traefik removes the HTTP route instances of the same node that
-contain `mymodule1` as a whole word. For example `mymodule1-ui` is
-removed, while `mymodule10` and `mymodule1ui` are not.
+contain `mymodule1` not next to a letter or a digit. For example
+`mymodule1-ui` and `mymodule1_ui` are removed, while `mymodule10` and
+`mymodule1ui` are not.
 
 Let's Encrypt remote validation may fail for many reasons. The default
 `set_route` behavior is to abort the caller process on any error, echoing

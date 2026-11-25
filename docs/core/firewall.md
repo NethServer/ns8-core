@@ -80,8 +80,10 @@ agent.add_public_service(os.environ['MODULE_ID'], ["9010/tcp","9012/tcp"], repla
 
 #### Removing Public Services
 
-The core does not remove public services and rich rules when a module is
-removed: do it in `destroy-module`:
+The core does not remove public services, rich rules, custom zones and
+tun interfaces when a module is removed. Remove them in `destroy-module`
+with `remove_public_service()`, `remove_rich_rules()`,
+`remove_custom_zone()` and `remove_tun()`:
 
 ```python
 import os
