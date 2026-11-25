@@ -63,6 +63,23 @@ Example:
 redis-cli PUBLISH module/traefik1/event/test '{"field": "value"}'
 ```
 
+From a module action step, a plain `redis-cli` has no write access.
+Publish the event with the agent Python library instead:
+
+```python
+import os
+import json
+import agent
+
+rdb = agent.redis_connect(privileged=True)
+rdb.publish(os.environ['AGENT_ID'] + '/event/my-settings-changed', json.dumps({
+    'module_id': os.environ['MODULE_ID'],
+}))
+```
+
+Use the leader connection, as above. The local Redis replica, returned by
+`use_replica=True`, is read-only.
+
 ## Handling events
 
 Events are handled like actions by the `agent` service.
