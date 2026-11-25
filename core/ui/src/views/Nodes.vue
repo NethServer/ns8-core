@@ -242,8 +242,15 @@
           <li>{{ $t("nodes.add_node_to_cluster_step_5") }}</li>
           <li>{{ $t("nodes.add_node_to_cluster_step_6") }}</li>
         </ol>
+        <NsInlineNotification
+          v-if="error.getFqdn"
+          kind="error"
+          :title="$t('common.join_code')"
+          :description="error.getFqdn"
+          :showCloseButton="false"
+        />
         <cv-skeleton-text
-          v-if="loading.getFqdn || !leaderNode"
+          v-else-if="loading.getFqdn || !leaderNode"
           :paragraph="true"
           :line-count="5"
           heading
@@ -262,6 +269,13 @@
             hideExpandButton
             >{{ joinCode }}</NsCodeSnippet
           >
+          <div v-if="joinCodeExpire" class="mg-top-sm">
+            {{
+              $t("nodes.join_code_expires", {
+                time: joinCodeExpire,
+              })
+            }}
+          </div>
         </template>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
@@ -347,6 +361,7 @@ import PromoteNodeModal from "@/components/nodes/PromoteNodeModal";
 import NewLeaderModal from "@/components/nodes/NewLeaderModal";
 import SetFqdnModal from "@/components/nodes/SetFqdnModal";
 import Recommend20 from "@carbon/icons-vue/es/recommend/20";
+import NodeService from "@/mixins/node";
 
 export default {
   name: "Nodes",
@@ -359,6 +374,7 @@ export default {
     Recommend20,
   },
   mixins: [
+    NodeService,
     TaskService,
     UtilService,
     IconService,
@@ -376,6 +392,7 @@ export default {
       },
       Recommend20,
       joinCode: "",
+      joinCodeExpire: "",
       nodes: [],
       clusterNodes: [],
       refreshDataInterval: null,
@@ -505,16 +522,27 @@ export default {
         return;
       }
     },
-    getFqdnCompleted(taskContext, taskResult) {
+    async getFqdnCompleted(taskContext, taskResult) {
       const fqdn = `${taskResult.output.hostname}.${taskResult.output.domain}`;
-      const loginInfo = this.getFromStorage("loginInfo");
+      const endpoint = window.location.protocol + "//" + fqdn;
 
-      if (loginInfo && loginInfo.token) {
-        const endpoint = window.location.protocol + "//" + fqdn;
+      // the join code carries a token that can only add a node to the
+      // cluster, and expires after one hour
+      const [err, response] = await to(this.createJoinToken());
 
-        // join code is obtained by concatenating FQDN and auth token with pipe character
-        this.joinCode = btoa(endpoint + "|" + loginInfo.token);
+      if (err) {
+        console.error("error creating join token", err);
+        this.error.getFqdn = this.getErrorMessage(err);
+        this.loading.getFqdn = false;
+        return;
       }
+
+      // join code is obtained by concatenating FQDN and auth token with pipe character
+      this.joinCode = btoa(endpoint + "|" + response.data.token);
+      this.joinCodeExpire = new Date(response.data.expire).toLocaleTimeString(
+        [],
+        { hour: "2-digit", minute: "2-digit" }
+      );
       this.loading.getFqdn = false;
     },
     getFqdnAborted(taskResult, taskContext) {

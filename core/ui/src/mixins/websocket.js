@@ -22,14 +22,22 @@ export default {
       this.$disconnect();
     },
     onOpen() {
+      this.authorizeWebSocket();
+      this.$root.$emit("websocketConnected");
+    },
+    /**
+     * Send the current access token to the server. It is sent again
+     * after each token refresh, otherwise the server closes the socket
+     * when the previous token expires.
+     */
+    authorizeWebSocket() {
       var loginInfo = this.getFromStorage("loginInfo");
-      if (loginInfo?.token) {
+      if (loginInfo?.token && this.$socket?.readyState === WebSocket.OPEN) {
         this.$socket.sendObj({
           action: "authorize",
           payload: { jwt: loginInfo.token },
         });
       }
-      this.$root.$emit("websocketConnected");
     },
     onError(error) {
       this.$root.$emit("websocketError", error);

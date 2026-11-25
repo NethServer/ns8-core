@@ -496,11 +496,17 @@ func getClusterNetworks() string {
 	return "127.0.0.1,::1," + vpnNetwork
 }
 
+// IsAgentUser tells if username is the account of a cluster, node or
+// module agent, as opposed to a cluster administrator
+func IsAgentUser(username string) bool {
+	return username == "cluster" || strings.HasPrefix(username, "node/") || strings.HasPrefix(username, "module/")
+}
+
 func GetUserNetworks(username string) string {
 	// Agent credentials (cluster, node/*, module/*) must only be usable from
 	// within the cluster: restrict them to loopback + VPN network regardless of
 	// any per-user networks setting stored in Redis.
-	if username == "cluster" || strings.HasPrefix(username, "node/") || strings.HasPrefix(username, "module/") {
+	if IsAgentUser(username) {
 		return getClusterNetworks()
 	}
 

@@ -23,6 +23,7 @@
 import sys
 import agent
 import json
+import time
 import cluster.grants
 
 #
@@ -88,3 +89,11 @@ for roledef in grant_list:
 
 # Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
+
+# End the API server sessions of the user, if the password was changed
+# or 2FA was reset by an administrator
+if 'password' in request.get('set', {}) or '2fa' in request.get('set', {}):
+    rdb.publish('cluster/event/user-credentials-changed', json.dumps({
+        "user": user,
+        "not_before": time.time(),
+    }))
