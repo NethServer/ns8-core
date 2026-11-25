@@ -10,8 +10,10 @@
 # The script requires the following env variables:
 # - TUN: the name of the tun
 # - IP: the IP of the tun with a mask (eg. 10.0.0.1/255.255.255.0 or 10.0.0.1/24)
-# - OWNER: optional, the uid allowed to open the tun without CAP_NET_ADMIN
+# - OWNER: optional, the module id allowed to open the tun without CAP_NET_ADMIN
 #
+
+set -e
 
 if [[ -z "$TUN"  || -z "$IP" ]]; then
     exit 1
@@ -20,7 +22,16 @@ fi
 action=${1:?missing action parameter}
 
 if [ "$action" == "add" ]; then
-    ip tuntap add dev "$TUN" mod tun ${OWNER:+user "$OWNER"}
+    owner_args=()
+    if [[ -n "$OWNER" ]]; then
+        # The uid is resolved now because a removed module frees its uid for reuse
+        if uid=$(id -u "$OWNER" 2>/dev/null); then
+            owner_args=(user "$uid")
+        else
+            echo "No user for $OWNER: the tun $TUN is created without owner" 1>&2
+        fi
+    fi
+    ip tuntap add dev "$TUN" mod tun "${owner_args[@]}"
     ip addr add "$IP" dev "$TUN"
     ip link set dev "$TUN" up
 elif [ "$action" == "remove" ]; then

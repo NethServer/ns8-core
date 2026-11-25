@@ -30,22 +30,26 @@ owner = env.get('OWNER', '')
 # A removed module can leave its env file behind: forget an owner without user
 if owner:
     try:
-        pwd.getpwuid(int(owner))
+        pwd.getpwnam(owner)
     except KeyError:
         owner = ''
+caller = ''
 task_user = os.environ.get('AGENT_TASK_USER', '')
 if task_user.startswith('module/'):
     module_id = task_user.removeprefix('module/')
     try:
-        caller = str(pwd.getpwnam(module_id).pw_uid)
+        pwd.getpwnam(module_id)
+        caller = module_id
     except KeyError:
         # A rootfull module has no user and needs no owner
-        caller = ''
-        print(agent.SD_INFO + f'No user for {module_id}: the tun {tun} keeps its owner', file=sys.stderr)
-    if caller and owner and caller != owner:
-        print(agent.SD_ERR + f'The tun {tun} belongs to uid {owner}, not to {module_id}', file=sys.stderr)
+        pass
+if caller:
+    if owner and owner != caller:
+        print(agent.SD_ERR + f'The tun {tun} belongs to {owner}, not to {caller}', file=sys.stderr)
         sys.exit(1)
-    owner = caller or owner
+    owner = caller
+elif owner:
+    print(agent.SD_INFO + f'The tun {tun} keeps its owner {owner}', file=sys.stderr)
 
 env['TUN'] = tun
 env['IP'] = ip
