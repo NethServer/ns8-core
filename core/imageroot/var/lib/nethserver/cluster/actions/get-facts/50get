@@ -50,6 +50,7 @@ facts = {
     'leader_node_id': rdb.hget("cluster/environment", "NODE_ID"),
     'user_domains': get_user_domains_facts(rdb),
     'subscription': inventory.fact_subscription(rdb),
+    'subscription_system_id': None if anon_enforcing else (rdb.hget('cluster/subscription', 'system_id') or None),
     'admins': inventory.fact_admins(rdb),
     'repositories': inventory.fact_repositories(rdb),
     'smarthost': inventory.fact_smarthost(rdb),
