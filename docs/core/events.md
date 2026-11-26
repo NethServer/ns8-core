@@ -58,13 +58,19 @@ Events fired by the `node` agent (i.e. channel is `node/<node id>/event/<event n
 To signal an event, just [PUBLISH](https://redis.io/commands/PUBLISH) a message to the channel.
 All events take a JSON object as a parameter.
 
-Example:
+Example, from a root shell, for testing or support:
 ```
 redis-cli PUBLISH module/traefik1/event/test '{"field": "value"}'
 ```
 
-From a module action step, a plain `redis-cli` has no write access.
-Publish the event with the agent Python library instead:
+Modules must not use `redis-cli`, because it pulls a local Redis image.
+In a Bash action step, use the `redis-exec` helper:
+
+```
+redis-exec PUBLISH "${AGENT_ID}/event/my-settings-changed" "{\"module_id\": \"${MODULE_ID}\"}"
+```
+
+A Python step is preferred. Publish the event with the agent library:
 
 ```python
 import os
