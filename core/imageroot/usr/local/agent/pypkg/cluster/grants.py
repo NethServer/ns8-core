@@ -19,7 +19,6 @@
 #
 
 import fnmatch
-import sys
 import agent
 
 def _lookup_grant_on(rdb, agent_pattern):
@@ -139,8 +138,7 @@ def _resolve_module_permissions(rdb, module_id, authorizations, node_id):
             agent_selector = agent.resolve_agent_id(xagent, node_id=node_id)
 
         if agent_selector is None:
-            print(agent.SD_WARNING + f"Cannot resolve {xagent} for module/{module_id}, authorization {authz} skipped", file=sys.stderr)
-            continue
+            continue # resolve_agent_id() already warns about it
 
         # If the agent_selector resolves multiple times to the same value,
         # the last authz wins: roles are not accumulated or merged. Still
@@ -156,18 +154,24 @@ def add_module_permissions(rdb, module_id, authorizations, node_id):
     if permissions:
         rdb.hset(f'roles/module/{module_id}', mapping=permissions)
 
-def update_module_permissions(rdb, module_id, old_authorizations, new_authorizations, node_id):
-    """Grant the new authorizations to module_id and revoke the permissions
-    granted by old authorizations that are no longer requested.
-    Permissions granted by other means are kept."""
-    old_permissions = _resolve_module_permissions(rdb, module_id, old_authorizations, node_id)
-    new_permissions = _resolve_module_permissions(rdb, module_id, new_authorizations, node_id)
+def update_module_permissions(rdb, module_id, authorizations, node_id):
+    """Replace the authorizations of module_id, grant the new permissions
+    and revoke the permissions granted by the previous authorizations that
+    are no longer requested. Permissions granted by other means are kept."""
+    kauthz = f'cluster/authorizations/module/{module_id}'
+    old_permissions = _resolve_module_permissions(rdb, module_id, rdb.smembers(kauthz), node_id)
+    new_permissions = _resolve_module_permissions(rdb, module_id, authorizations, node_id)
     current_permissions = rdb.hgetall(f'roles/module/{module_id}')
     # A field still holding the role of the old label was granted by it.
     # If it holds something else, it was changed by other means: keep it.
     obsolete = [agent_id for agent_id, role in old_permissions.items()
         if agent_id not in new_permissions and current_permissions.get(agent_id) == role]
+    # Write everything at once: if the previous authorizations were replaced
+    # alone, a failure here would lose track of the roles to revoke.
     trx = rdb.pipeline()
+    trx.delete(kauthz)
+    if authorizations:
+        trx.sadd(kauthz, *authorizations)
     if obsolete:
         trx.hdel(f'roles/module/{module_id}', *obsolete)
     if new_permissions:

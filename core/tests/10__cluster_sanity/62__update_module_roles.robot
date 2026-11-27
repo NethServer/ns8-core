@@ -21,7 +21,7 @@ Update keeps roles granted outside the label
     Execute Command    redis-cli HSET roles/module/${MODULE_ID} module/extra1 reader
     Update the module    roles1
     Module roles should be    node/1=fwadm    module/${TRAEFIK_ID}=routeadm    module/extra1=reader
-    Execute Command    redis-cli HDEL roles/module/${MODULE_ID} module/extra1
+    [Teardown]    Execute Command    redis-cli HDEL roles/module/${MODULE_ID} module/extra1
 
 Update revokes the role removed from the label
     Skip If    not $MODULE_ID    Module not installed
