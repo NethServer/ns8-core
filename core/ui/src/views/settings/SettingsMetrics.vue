@@ -282,7 +282,6 @@ export default {
   data() {
     return {
       metricsId: "metrics1",
-      prometheus_path: "",
       grafana_path: "",
       mail_to: [],
       mail_from: "",
@@ -311,7 +310,6 @@ export default {
       error: {
         getGrafana: "",
         setGrafana: "",
-        prometheus_path: "",
         grafana_path: "",
         mail_to: "",
         mail_from: "",
@@ -558,7 +556,6 @@ export default {
       this.hostname = window.location.hostname + "/" + config.grafana_path;
       // set enable_grafana toggle to true if grafana_path is not empty
       this.enable_grafana = this.grafana_path ? true : false;
-      this.prometheus_path = config.prometheus_path;
       // build textarea content from mail_to array
       this.mail_to = config.mail_to ? config.mail_to.join("\n") : [];
       // status_notifications toggle is true if mail_to is not empty
@@ -599,7 +596,6 @@ export default {
           action: taskAction,
           data: {
             grafana_path: this.enable_grafana ? "grafana" : "",
-            prometheus_path: "",
           },
           extra: {
             title: this.$t("action.set-metrics-configuration"),
@@ -701,7 +697,6 @@ export default {
           action: taskAction,
           data: {
             grafana_path: this.grafana_path ? this.grafana_path : "",
-            prometheus_path: "",
             mail_to:
               this.status_notifications || this.subscription.status === "active"
                 ? this.mail_to.split("\n")
