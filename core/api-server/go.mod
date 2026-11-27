@@ -6,7 +6,7 @@ require (
 	github.com/appleboy/gin-jwt/v3 v3.6.0
 	github.com/fatih/structs v1.1.0
 	github.com/gin-contrib/cors v1.7.10
-	github.com/gin-contrib/gzip v1.2.9
+	github.com/gin-contrib/gzip v1.2.10
 	github.com/gin-contrib/static v1.1.9
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
