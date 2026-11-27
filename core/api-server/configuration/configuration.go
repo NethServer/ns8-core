@@ -23,6 +23,8 @@
 package configuration
 
 import (
+	"crypto/ed25519"
+	"crypto/sha256"
 	"os"
 	"strconv"
 	"strings"
@@ -38,6 +40,9 @@ type Configuration struct {
 	AuditFile     string   `json:"audit_file"`
 	Issuer        string   `json:"issuer"`
 	SensitiveList []string `json:"sensitive_list"`
+
+	// Ed25519 key used to sign X-Auth-Token, derived from Secret
+	TokenSigningKey ed25519.PrivateKey `json:"-"`
 
 	// Generous global per-IP rate limit applied to every API route as a
 	// coarse safety net; 0 disables it
@@ -77,6 +82,8 @@ func Init() {
 		os.Stderr.WriteString("SECRET variable is empty. ")
 		os.Exit(1)
 	}
+	seed := sha256.Sum256([]byte("ns8-x-auth-token\x00" + Config.Secret))
+	Config.TokenSigningKey = ed25519.NewKeyFromSeed(seed[:])
 
 	if os.Getenv("STATIC_PATH") != "" {
 		Config.StaticPath = os.Getenv("STATIC_PATH")

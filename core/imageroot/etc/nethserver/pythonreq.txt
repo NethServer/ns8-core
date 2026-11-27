@@ -9,6 +9,7 @@ ansible-core==2.14.1
 ansible-runner==2.3.1
 async-timeout==3.0.1
 attrs==21.2.0
+bcrypt==5.0.0
 brotlipy==0.7.0
 cchardet==2.1.7
 certifi==2021.5.30

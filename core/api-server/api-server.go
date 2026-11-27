@@ -117,6 +117,8 @@ func main() {
 	api.POST("/login", middleware.BodyLimit(16<<10), middleware.InstanceJWT().LoginHandler)
 	api.POST("/logout", middleware.BodyLimit(1<<10), middleware.InstanceJWT().LogoutHandler)
 
+	api.GET("/module-token-pubkey", methods.ModuleTokenPubKey)
+
 	// define basic auth routes
 	api.GET("/module/:module_id/http-basic/:action", methods.BasicAuthModule)
 
