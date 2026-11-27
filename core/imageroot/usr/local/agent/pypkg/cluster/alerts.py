@@ -5,6 +5,7 @@
 
 import requests
 import sys
+import cluster.metrics
 
 def _decorate_with_our_attributes(oalert):
     if "alertname" in oalert.get("labels", {}):
@@ -29,7 +30,7 @@ def fetch_alerts():
     """Fetch active alerts from local Alertmanager."""
     alertmanager_url = "http://127.0.0.1:9093/api/v2/alerts"
     try:
-        r = requests.get(alertmanager_url)
+        r = requests.get(alertmanager_url, auth=cluster.metrics.basic_auth(), timeout=10)
         r.raise_for_status()
     except Exception as ex:
         print("cluster.fetch_alerts() cannot parse Metrics/Alertmanager response. Reason: ", ex, file=sys.stderr)

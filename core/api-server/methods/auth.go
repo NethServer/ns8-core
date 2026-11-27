@@ -449,6 +449,11 @@ func BasicAuthModule(c *gin.Context) {
 
 	// response
 	c.Header("X-Auth-User", username)
+	if token, errSign := SignModuleToken(configuration.Config.TokenSigningKey, username, c.Param("module_id")); errSign != nil {
+		utils.LogError(errors.Wrap(errSign, "[BASIC AUTH] token signing failed for user "+username))
+	} else {
+		c.Header("X-Auth-Token", token)
+	}
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "basic auth ok",

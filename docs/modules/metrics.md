@@ -141,6 +141,22 @@ redis-cli -x HSET module/mail1/metrics_alert_rules license < license.yml
 redis-cli PUBLISH module/mail1/event/metrics-alert-rules-changed '{}'
 ```
 
+## Access to the services
+
+Modules do not need credentials to integrate with metrics.
+
+- Prometheus (`127.0.0.1:9091`) and Alertmanager (`127.0.0.1:9093`)
+  require HTTP basic authentication, user `metrics`. Raise alerts with
+  Prometheus rules. The cluster `list-alerts` and `list-nodes` actions,
+  running as root on the leader node like the `metrics` module, read the
+  password from the module state (`basic_auth.json`). See
+  [Local credentials](https://github.com/NethServer/ns8-metrics#local-credentials).
+- Grafana accepts only the `X-Auth-Token` header, added by the `api-server`
+  to the forward-auth answer of the metrics routes. It verifies the token
+  with the public key served by `GET /api/module-token-pubkey` of the local
+  `api-server`. See
+  [Grafana authentication](https://github.com/NethServer/ns8-metrics#grafana-authentication).
+
 ## Collector
 
 - Command: `refresh-module-metrics`, run by the node agent.

@@ -10,16 +10,20 @@ import json
 import os
 import sys
 import agent
+import cluster.metrics
+
+# Prometheus requires the metrics module password
+PROM_AUTH = cluster.metrics.basic_auth()
 
 def discover_prom_query_url(base_url):
     api_path = '/api/v1/query'
     try:
         # Check if prefix is not necessary:
-        r = requests.get(base_url + '/-/ready', allow_redirects=False, timeout=2)
+        r = requests.get(base_url + '/-/ready', auth=PROM_AUTH, allow_redirects=False, timeout=2)
         if r.status_code != 200:
             # Extend base_url with the API path prefix, obtained from
             # the Location header:
-            r = requests.get(base_url, allow_redirects=False, timeout=2)
+            r = requests.get(base_url, auth=PROM_AUTH, allow_redirects=False, timeout=2)
             if r.status_code == 302 and 'Location' in r.headers:
                 base_url += r.headers['Location']
     except Exception as ex:
@@ -100,7 +104,7 @@ def get_network_interface_count(node_id):
 def q(expr: str) -> list:
     """Query Prometheus and return a list of results"""
     try:
-        r = requests.get(PROM_QUERY_URL, params={"query": expr})
+        r = requests.get(PROM_QUERY_URL, params={"query": expr}, auth=PROM_AUTH)
         r.raise_for_status()
         return r.json()["data"]["result"]
     except Exception as ex:

@@ -120,6 +120,11 @@ The api-server could check that the action passed from route is among the user (
     - `:module_id`: is the name of the module to check for action
     - `:action`: is the action to validate in the authorized actions
 
+    On success the response carries the `X-Auth-User` and `X-Auth-Token`
+    headers. The token is an EdDSA JWT valid for 60 seconds, with claims
+    `sub`, `aud` (`module/<module_id>`), `iss`, `iat` and `exp`. Its public key
+    (PEM) is served without authentication by `GET /api/module-token-pubkey`.
+
 ### 2FA (Two-Factor authentication)
 
 If you feel comfortable and more secure to use 2FA, you can enable it inside the user setting page o via API. To enable these are the steps:

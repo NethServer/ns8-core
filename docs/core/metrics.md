@@ -23,8 +23,10 @@ Key points:
 - Single instance running on the leader node
 - Monitors all cluster nodes automatically
 - Removed if the leader node becomes a worker
-- Prometheus: port 9091
-- Alertmanager: port 9093
+- Prometheus: port 9091, requires HTTP basic authentication
+- Alertmanager: port 9093, requires HTTP basic authentication
+- The cluster `list-alerts` and `list-nodes` actions read the password from
+  the module state, see [Local credentials](https://github.com/NethServer/ns8-metrics#local-credentials)
 - alert-proxy: port 9095
 - Grafana: port 3000 (disabled by default, enabled with Traefik route)
 
