@@ -49,8 +49,8 @@ Module images can use a list of well-known labels to configure the system:
   if set to `1` the module will run podman in rootfull mode. See [Rootless vs Rootfull](../rootless_rootfull)
 - `org.nethserver.authorizations`: authorize the module to run actions of other modules. For instance `traefik@node:routeadm` allows setting routes on the Traefik instance of the module node.
   Request the narrowest scope: prefer `@node` over `@any`, unless the module really needs to drive instances on other nodes.
-  On module update, the module roles are replaced with the ones of the new image label, before its update steps run.
-  Roles no longer listed are revoked, so the label must list every role the image code uses.
+  On module update, the roles of the new image label are granted before its update steps run.
+  Roles listed by the previous image label and no longer by the new one are revoked, so the label must list every role the image code uses.
   See [Roles and authorizations]({{site.baseurl}}/core/agents/#roles-and-authorizations).
 - `org.nethserver.flags`: a space-separated list of well-known flags. Currently available flags are:
   - `core_module`: if present, it marks a module as core

@@ -95,6 +95,7 @@ for module_id in instances:
     else:
         rdb.hdel('cluster/udp_ports_demand', module_id)
 
+    old_authorizations = rdb.smembers(f'cluster/authorizations/module/{module_id}')
     # Replace existing authorizations with the new image ones
     trx = rdb.pipeline()
     trx.delete(f'cluster/authorizations/module/{module_id}')
@@ -102,9 +103,10 @@ for module_id in instances:
     trx.execute()
 
     node_id = int(rdb.hget(f'cluster/module_node', module_id))
-    # Replace module permissions before running update-module on it:
-    # roles no longer requested by the new image are revoked.
-    cluster.grants.set_module_permissions(rdb, module_id, authorizations, node_id)
+    # Update module permissions before running update-module on it:
+    # roles requested by the old image and no longer by the new one are
+    # revoked.
+    cluster.grants.update_module_permissions(rdb, module_id, old_authorizations, authorizations, node_id)
 
     update_tasks.append({
         "agent_id": f"module/{module_id}",

@@ -19,6 +19,7 @@
 #
 
 import fnmatch
+import sys
 import agent
 
 def _lookup_grant_on(rdb, agent_pattern):
@@ -80,6 +81,19 @@ def revoke(rdb, action_clause, on_clause, to_clause):
     """
     return _change_role_definition(rdb, True, action_clause, on_clause, to_clause)
 
+def _lookup_role_targets(rdb, on_clause, role):
+    """Return the agent IDs matching ON_CLAUSE that define at least one
+    of the comma-separated role names of ROLE"""
+    targets = set()
+    for xrole in role.split(","):
+        # Make sure there is no white space around the role name:
+        xrole = xrole.strip()
+        if not xrole:
+            continue
+        for key in rdb.scan_iter(f'{on_clause}/roles/{xrole}'):
+            targets.add(key.removesuffix(f'/roles/{xrole}'))
+    return targets
+
 def alter_user(rdb, user, revoke, role, on_clause):
     """
     Grant/Revoke the ROLE ON some module to USER
@@ -91,15 +105,7 @@ def alter_user(rdb, user, revoke, role, on_clause):
     name must be already defined in the matching module(s).
     """
 
-    targets = set()
-    for xrole in role.split(","):
-        # Make sure there is no white space around the role name:
-        xrole = xrole.strip()
-        if not xrole:
-            continue
-        for key in rdb.scan_iter(f'{on_clause}/roles/{xrole}'):
-            agent_id = key.removesuffix(f'/roles/{xrole}')
-            targets.add(agent_id)
+    targets = _lookup_role_targets(rdb, on_clause, role)
 
     pipe = rdb.pipeline()
     for agent_id in targets:
@@ -132,16 +138,16 @@ def _resolve_module_permissions(rdb, module_id, authorizations, node_id):
         else:
             agent_selector = agent.resolve_agent_id(xagent, node_id=node_id)
 
-        # Same target lookup as alter_user(). If the agent_selector
-        # resolves multiple times to the same value, the last authz wins:
-        # roles are not accumulated or merged. Still it is allowed to
-        # pass a comma-separated list of roles as xrole value.
-        for role_name in xrole.split(","):
-            role_name = role_name.strip()
-            if not role_name:
-                continue
-            for key in rdb.scan_iter(f'{agent_selector}/roles/{role_name}'):
-                permissions[key.removesuffix(f'/roles/{role_name}')] = xrole
+        if agent_selector is None:
+            print(agent.SD_WARNING + f"Cannot resolve {xagent} for module/{module_id}, authorization {authz} skipped", file=sys.stderr)
+            continue
+
+        # If the agent_selector resolves multiple times to the same value,
+        # the last authz wins: roles are not accumulated or merged. Still
+        # it is allowed to pass a comma-separated list of roles as xrole
+        # value.
+        for agent_id in _lookup_role_targets(rdb, agent_selector, xrole):
+            permissions[agent_id] = xrole
     return permissions
 
 def add_module_permissions(rdb, module_id, authorizations, node_id):
@@ -150,15 +156,22 @@ def add_module_permissions(rdb, module_id, authorizations, node_id):
     if permissions:
         rdb.hset(f'roles/module/{module_id}', mapping=permissions)
 
-def set_module_permissions(rdb, module_id, authorizations, node_id):
-    """Parse authorizations and replace the permissions of module_id.
-    Permissions not listed in authorizations are revoked."""
-    permissions = _resolve_module_permissions(rdb, module_id, authorizations, node_id)
-    # Replace in one transaction, so the module is never left without roles
+def update_module_permissions(rdb, module_id, old_authorizations, new_authorizations, node_id):
+    """Grant the new authorizations to module_id and revoke the permissions
+    granted by old authorizations that are no longer requested.
+    Permissions granted by other means are kept."""
+    old_permissions = _resolve_module_permissions(rdb, module_id, old_authorizations, node_id)
+    new_permissions = _resolve_module_permissions(rdb, module_id, new_authorizations, node_id)
+    current_permissions = rdb.hgetall(f'roles/module/{module_id}')
+    # A field still holding the role of the old label was granted by it.
+    # If it holds something else, it was changed by other means: keep it.
+    obsolete = [agent_id for agent_id, role in old_permissions.items()
+        if agent_id not in new_permissions and current_permissions.get(agent_id) == role]
     trx = rdb.pipeline()
-    trx.delete(f'roles/module/{module_id}')
-    if permissions:
-        trx.hset(f'roles/module/{module_id}', mapping=permissions)
+    if obsolete:
+        trx.hdel(f'roles/module/{module_id}', *obsolete)
+    if new_permissions:
+        trx.hset(f'roles/module/{module_id}', mapping=new_permissions)
     trx.execute()
 
 def check_authorizations_sanity(authorizations):
