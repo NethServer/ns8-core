@@ -40,7 +40,7 @@ Build the dummy images
     [Documentation]     Build three dummy images, each one with a different
     ...                 org.nethserver.authorizations label
     Put Directory    ${CURDIR}/_dummy    dummy    recursive=True
-    ${stdout}    ${rc} =    Execute Command    ( cd dummy ; bash -x build-images.sh roles1 "node:fwadm traefik@node:routeadm" && bash -x build-images.sh roles2 "traefik@node:routeadm" && bash -x build-images.sh roles3 ; ) 2>&1 ; rm -rf dummy    return_stdout=True    return_rc=True
+    ${stdout}    ${rc} =    Execute Command    ( cd dummy ; bash -x build-images.sh roles1 "node:fwadm traefik@node:routeadm" && bash -x build-images.sh roles2 "traefik@node:routeadm" && bash -x build-images.sh roles3 ; ) 2>&1 ; rc=$? ; rm -rf dummy ; exit $rc    return_stdout=True    return_rc=True
     Should Be Equal As Integers    0    ${rc}    ${stdout}
 
 Update the module
