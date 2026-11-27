@@ -117,8 +117,10 @@ def refresh_permissions(rdb):
         mnode_id = rdb.hget('cluster/module_node', kmid)
         add_module_permissions(rdb, kmid, authorizations, mnode_id)
 
-def add_module_permissions(rdb, module_id, authorizations, node_id):
-    """Parse authorizations and grant permissions to module_id"""
+def _resolve_module_permissions(rdb, module_id, authorizations, node_id):
+    """Parse authorizations and return the {agent_id: role} map to grant
+    to module_id. Redis is only read."""
+    permissions = {}
     for authz in authorizations:
         # authz examples: "traefik@node:routeadm", "node:fwadm,portsadm"
         xagent, xrole = authz.split(':')
@@ -130,16 +132,34 @@ def add_module_permissions(rdb, module_id, authorizations, node_id):
         else:
             agent_selector = agent.resolve_agent_id(xagent, node_id=node_id)
 
-        # If the agent_selector resolves multiple times to the same value,
-        # the last alter_user() call wins: roles are not accumulated or
-        # merged across calls. Still it is allowed to pass a
-        # comma-separated list of roles as xrole value.
-        alter_user(rdb,
-            user=f'module/{module_id}',
-            revoke=False,
-            role=xrole,
-            on_clause=agent_selector,
-        )
+        # Same target lookup as alter_user(). If the agent_selector
+        # resolves multiple times to the same value, the last authz wins:
+        # roles are not accumulated or merged. Still it is allowed to
+        # pass a comma-separated list of roles as xrole value.
+        for role_name in xrole.split(","):
+            role_name = role_name.strip()
+            if not role_name:
+                continue
+            for key in rdb.scan_iter(f'{agent_selector}/roles/{role_name}'):
+                permissions[key.removesuffix(f'/roles/{role_name}')] = xrole
+    return permissions
+
+def add_module_permissions(rdb, module_id, authorizations, node_id):
+    """Parse authorizations and grant permissions to module_id"""
+    permissions = _resolve_module_permissions(rdb, module_id, authorizations, node_id)
+    if permissions:
+        rdb.hset(f'roles/module/{module_id}', mapping=permissions)
+
+def set_module_permissions(rdb, module_id, authorizations, node_id):
+    """Parse authorizations and replace the permissions of module_id.
+    Permissions not listed in authorizations are revoked."""
+    permissions = _resolve_module_permissions(rdb, module_id, authorizations, node_id)
+    # Replace in one transaction, so the module is never left without roles
+    trx = rdb.pipeline()
+    trx.delete(f'roles/module/{module_id}')
+    if permissions:
+        trx.hset(f'roles/module/{module_id}', mapping=permissions)
+    trx.execute()
 
 def check_authorizations_sanity(authorizations):
     for authz in authorizations:
