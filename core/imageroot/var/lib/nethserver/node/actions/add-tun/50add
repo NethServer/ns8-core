@@ -6,6 +6,7 @@
 #
 
 import os
+import pwd
 import sys
 import json
 import agent
@@ -14,11 +15,59 @@ odir = '/etc/nethserver/tun'
 request = json.load(sys.stdin)
 tun = request['tun']
 ip = request['ip']
+envfile = f'{odir}/{tun}.env'
+
+try:
+    env = agent.read_envfile(envfile)
+except FileNotFoundError:
+    env = {}
+
+# Recent kernels (upstream ffdf678dd166, in Debian 13 since 6.12.117)
+# refuse a rootless container to open a tun without owner. The owner is
+# the rootless module that asks for the tun. It comes from the task
+# identity, which a module cannot choose.
+owner = env.get('OWNER', '')
+# A removed module can leave its env file behind: forget an owner without user
+if owner:
+    try:
+        pwd.getpwnam(owner)
+    except KeyError:
+        owner = ''
+caller = ''
+task_user = os.environ.get('AGENT_TASK_USER', '')
+if task_user.startswith('module/'):
+    module_id = task_user.removeprefix('module/')
+    try:
+        pwd.getpwnam(module_id)
+        caller = module_id
+    except KeyError:
+        # A rootfull module has no user and needs no owner
+        pass
+if caller:
+    if owner and owner != caller:
+        print(agent.SD_ERR + f'The tun {tun} belongs to {owner}, not to {caller}', file=sys.stderr)
+        sys.exit(1)
+    owner = caller
+elif owner:
+    print(agent.SD_INFO + f'The tun {tun} keeps its owner {owner}', file=sys.stderr)
+
+env['TUN'] = tun
+env['IP'] = ip
+if owner:
+    env['OWNER'] = owner
+else:
+    env.pop('OWNER', None)
 
 os.makedirs(odir, exist_ok=True)
-
-with open(f'{odir}/{tun}.env', 'w') as fp:
-    fp.write(f"TUN={tun}\n")
-    fp.write(f"IP={ip}\n")
-
+agent.write_envfile(envfile, env)
+# Never restart: a running module holds the tun, and it cannot be created again under it
 agent.run_helper('systemctl', 'enable', '--now', f'tun-manager@{tun}').check_returncode()
+
+if caller:
+    try:
+        with open(f'/sys/class/net/{tun}/owner') as fp:
+            live_owner = int(fp.read())
+    except (OSError, ValueError):
+        live_owner = None
+    if live_owner is not None and live_owner != pwd.getpwnam(caller).pw_uid:
+        print(agent.SD_WARNING + f'The tun {tun} was created without {caller} as owner: recreate it to apply the owner', file=sys.stderr)
