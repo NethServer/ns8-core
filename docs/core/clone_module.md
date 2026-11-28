@@ -77,9 +77,9 @@ The step `10sendpayload` transfers data for the first time, thus it is
 expected to be slower.
 
 The step `50sendstate` stops the services, quickly transfers the latest
-differences. If the transfer is successful the Rsync client sends a
-"terminate" signal to the server. Then the step starts again the services
-if the `replace` flag is false.
+differences. Then the Rsync client sends a "terminate" signal to the
+server, even if the transfer failed. The step starts again the services if
+the `replace` flag is false, or if an error occurred.
 
 Additional notes:
 
@@ -130,10 +130,12 @@ Then `rsyncd` server runs at step `10recvstate`. This server blocks the
 step until the "terminate" signal is received from the client, or the task
 itself is canceled.
 
-If the state data transfer is successful this step merges the contents of
-`environment.clone-module` (source module environment) with the
-destination module `environment`. It also preserves the source variable
-MODULE_UUID, if the `replace` flag is `true`.
+When the rsyncd server exits without error, this step copies from
+`environment.clone-module` (source module environment) only the variables
+that are missing in the destination module `environment`. Existing
+destination values, like MODULE_ID, are kept. The source MODULE_UUID is
+not set here: with `"replace":true` it is already assigned when the
+cluster creates the destination module.
 
 Consider that even if the `state/` directory and all Podman volumes are
 copied and merged properly by the core action steps, a module often needs

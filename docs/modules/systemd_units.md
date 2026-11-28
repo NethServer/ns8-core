@@ -15,7 +15,7 @@ The Systemd unit should:
 
 The Systemd unit can:
 - change the working directory to ease finding additional files: `WorkingDirectory=%S/state`
-- execute ancillary commands in `Exec*` steps with the `runagent` helper: `ExecStartPre=/usr/local/bin/runagent expand-templates`
+- execute ancillary commands in `Exec*` steps with the `runagent` helper: `ExecStartPre=/usr/local/bin/runagent discover-smarthost`, where `discover-smarthost` is a script of the module `bin/` directory
 - import and use additional environment variables: `EnvironmentFile=%S/state/environment`
 
 When `EnvironmentFile=%S/state/environment` is used in Systemd service
