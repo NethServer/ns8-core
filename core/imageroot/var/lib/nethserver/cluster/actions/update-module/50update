@@ -77,6 +77,10 @@ if not cluster.grants.check_authorizations_sanity(authorizations):
     print(agent.SD_ERR + f'Invalid org.nethserver.authorizations label value image_url={image_url}:', authorizations, file=sys.stderr)
     sys.exit(2)
 
+# Every module is authorized for self-administration
+if not 'self:selfadm' in authorizations:
+    authorizations.append('self:selfadm')
+
 # Start the module update on each instance
 update_tasks = []
 for module_id in instances:
@@ -91,14 +95,11 @@ for module_id in instances:
     else:
         rdb.hdel('cluster/udp_ports_demand', module_id)
 
-    if authorizations:
-        # Replace existing authorizations with the new image:
-        rdb.delete(f'cluster/authorizations/module/{module_id}')
-        rdb.sadd(f'cluster/authorizations/module/{module_id}', 'self:selfadm', *authorizations)
-
-        node_id = int(rdb.hget(f'cluster/module_node', module_id))
-        # Update module permissions before running update-module on it
-        cluster.grants.add_module_permissions(rdb, module_id, authorizations, node_id)
+    node_id = int(rdb.hget(f'cluster/module_node', module_id))
+    # Replace the module authorizations with the new image ones before
+    # running update-module on it: roles requested by the old image and
+    # no longer by the new one are revoked.
+    cluster.grants.update_module_permissions(rdb, module_id, authorizations, node_id)
 
     update_tasks.append({
         "agent_id": f"module/{module_id}",

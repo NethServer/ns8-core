@@ -17,9 +17,15 @@ if ! command -v buildah; then
     fi
 fi
 
+image_tag="${1:-latest}"
+authorizations="${2:-}"
+
 container=$(buildah from scratch)
 
 buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui /ui
 buildah config --entrypoint='["/"]' "${container}"
-buildah commit "${container}" "localhost/dummy:latest"
+if [[ -n "${authorizations}" ]]; then
+    buildah config --label="org.nethserver.authorizations=${authorizations}" "${container}"
+fi
+buildah commit "${container}" "localhost/dummy:${image_tag}"
